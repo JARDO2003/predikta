@@ -2,14 +2,15 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#6366f1">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Tableau de Bord - Predikta</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Predikta - Plateforme de Prédictions</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#6366f1">
+    <meta name="description" content="Pariez sur l'avenir, gagnez aujourd'hui">
+    <link rel="icon" type="image/png" sizes="192x192" href="icon-192x192.png">
+    <link rel="apple-touch-icon" href="icon-192x192.png">
     <style>
         :root {
             --primary: #6366f1;
@@ -18,16 +19,14 @@
             --success: #22c55e;
             --danger: #ef4444;
             --warning: #f59e0b;
-            --info: #3b82f6;
             --dark: #0f172a;
             --dark-light: #1e293b;
             --dark-lighter: #334155;
             --text: #f8fafc;
             --text-muted: #94a3b8;
             --gradient: linear-gradient(135deg, #6366f1 0%, #ec4899 100%);
-            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.1);
-            --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.15);
-            --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.2);
+            --gradient-success: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+            --gradient-danger: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
         }
 
         * {
@@ -36,838 +35,185 @@
             box-sizing: border-box;
         }
 
-        html {
-            scroll-behavior: smooth;
-            -webkit-overflow-scrolling: touch;
-            font-size: 16px;
-            height: 100%;
-        }
-
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-family: 'Inter', sans-serif;
             background: var(--dark);
             color: var(--text);
             min-height: 100vh;
-            min-height: -webkit-fill-available;
-            overflow-x: hidden;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
             position: relative;
+            overflow-x: hidden;
         }
 
-        /* ===== MOBILE HEADER - FIXED ===== */
-        .mobile-header {
+        .bg-animation {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
-            background: var(--dark-light);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 1rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            z-index: 100;
-            backdrop-filter: blur(10px);
-            height: 64px;
+            bottom: 0;
+            overflow: hidden;
+            z-index: 0;
         }
 
-        .mobile-logo {
+        .bg-animation::before {
+            content: '';
+            position: absolute;
+            width: 150%;
+            height: 150%;
+            top: -25%;
+            left: -25%;
+            background: radial-gradient(ellipse at 20% 20%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
+                        radial-gradient(ellipse at 80% 80%, rgba(236, 72, 153, 0.15) 0%, transparent 50%),
+                        radial-gradient(ellipse at 50% 50%, rgba(99, 102, 241, 0.1) 0%, transparent 70%);
+            animation: bgMove 20s ease-in-out infinite;
+        }
+
+        @keyframes bgMove {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            33% { transform: translate(2%, 2%) rotate(1deg); }
+            66% { transform: translate(-1%, 1%) rotate(-1deg); }
+        }
+
+        .floating-shapes {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .shape {
+            position: absolute;
+            border-radius: 50%;
+            background: var(--gradient);
+            opacity: 0.1;
+            animation: float 15s ease-in-out infinite;
+        }
+
+        .shape:nth-child(1) {
+            width: 300px;
+            height: 300px;
+            top: 10%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+
+        .shape:nth-child(2) {
+            width: 200px;
+            height: 200px;
+            top: 60%;
+            right: 10%;
+            animation-delay: -5s;
+        }
+
+        .shape:nth-child(3) {
+            width: 150px;
+            height: 150px;
+            bottom: 20%;
+            left: 20%;
+            animation-delay: -10s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-30px) rotate(180deg); }
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 450px;
+            padding: 0 1rem;
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .logo-icon {
+            width: 80px;
+            height: 80px;
+            background: var(--gradient);
+            border-radius: 24px;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
-            font-size: 1.25rem;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            font-size: 2.5rem;
+            box-shadow: 0 20px 40px rgba(99, 102, 241, 0.4);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 20px 40px rgba(99, 102, 241, 0.4); }
+            50% { transform: scale(1.05); box-shadow: 0 25px 50px rgba(99, 102, 241, 0.5); }
+        }
+
+        .logo h1 {
+            font-size: clamp(2rem, 6vw, 2.5rem);
             font-weight: 800;
             background: var(--gradient);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+            margin-bottom: 0.5rem;
         }
 
-        .mobile-actions {
+        .logo p {
+            color: var(--text-muted);
+            font-size: clamp(0.9rem, 2.5vw, 1rem);
+        }
+
+        .card {
+            background: var(--dark-light);
+            border-radius: 24px;
+            padding: clamp(1.5rem, 4vw, 2rem);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+        }
+
+        .tabs {
             display: flex;
-            align-items: center;
-            gap: 0.75rem;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            background: rgba(15, 23, 42, 0.5);
+            padding: 0.5rem;
+            border-radius: 12px;
         }
 
-        .icon-btn {
-            background: none;
+        .tab {
+            flex: 1;
+            padding: 0.75rem;
             border: none;
-            color: var(--text);
-            font-size: 1.25rem;
+            background: transparent;
+            color: var(--text-muted);
+            font-weight: 600;
             cursor: pointer;
-            padding: 0.5rem;
             border-radius: 8px;
             transition: all 0.3s;
-            position: relative;
-            min-width: 44px;
-            min-height: 44px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            font-size: clamp(0.85rem, 2.5vw, 0.95rem);
         }
 
-        .icon-btn:active {
-            background: rgba(255, 255, 255, 0.1);
-            transform: scale(0.95);
-        }
-
-        /* ===== SIDEBAR ===== */
-        .sidebar-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(2px);
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s;
-            z-index: 998;
-        }
-
-        .sidebar-overlay.active {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .sidebar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            bottom: 0;
-            width: min(85vw, 320px);
-            background: var(--dark-light);
-            border-right: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 1.5rem;
-            transform: translateX(-100%);
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            z-index: 999;
-            overflow-y: auto;
-            overscroll-behavior: contain;
-        }
-
-        .sidebar.open {
-            transform: translateX(0);
-        }
-
-        .sidebar-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding-bottom: 1.5rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            margin-bottom: 1.5rem;
-        }
-
-        .sidebar-logo {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            font-size: 1.5rem;
-            font-weight: 800;
-            background: var(--gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .sidebar-close {
-            background: none;
-            border: none;
-            color: var(--text-muted);
-            font-size: 1.5rem;
-            cursor: pointer;
-            padding: 0.5rem;
-            min-width: 44px;
-            min-height: 44px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .user-info {
-            background: rgba(99, 102, 241, 0.1);
-            border-radius: 16px;
-            padding: 1.25rem;
-            margin-bottom: 1.5rem;
-            border: 1px solid rgba(99, 102, 241, 0.2);
-        }
-
-        .user-avatar {
-            width: 60px;
-            height: 60px;
-            background: var(--gradient);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            font-weight: 700;
-            margin-bottom: 1rem;
-        }
-
-        .user-name {
-            font-weight: 600;
-            margin-bottom: 0.25rem;
-        }
-
-        .user-pseudo {
-            font-size: 0.875rem;
-            color: var(--text-muted);
-        }
-
-        .balance-card {
-            background: var(--gradient);
-            border-radius: 12px;
-            padding: 1rem;
-            margin-top: 1rem;
-        }
-
-        .balance-label {
-            font-size: 0.75rem;
-            opacity: 0.9;
-            margin-bottom: 0.25rem;
-        }
-
-        .balance-value {
-            font-size: 1.5rem;
-            font-weight: 800;
-        }
-
-        .nav-section {
-            margin-bottom: 1.5rem;
-        }
-
-        .nav-section-title {
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            color: var(--text-muted);
-            letter-spacing: 0.05em;
-            margin-bottom: 0.75rem;
-            padding-left: 0.75rem;
-        }
-
-        .nav-menu {
-            list-style: none;
-        }
-
-        .nav-item {
-            margin-bottom: 0.25rem;
-        }
-
-        .nav-link {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 1rem 0.75rem;
-            color: var(--text-muted);
-            text-decoration: none;
-            border-radius: 10px;
-            transition: all 0.3s;
-            cursor: pointer;
-            font-size: 0.95rem;
-            min-height: 48px;
-        }
-
-        .nav-link:active,
-        .nav-link.active {
-            background: rgba(99, 102, 241, 0.15);
-            color: var(--text);
-        }
-
-        .nav-link.active {
-            border-left: 3px solid var(--primary);
-        }
-
-        .nav-link i {
-            width: 20px;
-            text-align: center;
-        }
-
-        .btn-logout {
-            width: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.75rem;
-            padding: 1rem;
-            color: var(--danger);
-            background: rgba(239, 68, 68, 0.1);
-            border: none;
-            border-radius: 12px;
-            cursor: pointer;
-            font-size: 1rem;
-            font-weight: 600;
-            margin-top: 1.5rem;
-            min-height: 48px;
-        }
-
-        .btn-logout:active {
-            background: rgba(239, 68, 68, 0.2);
-        }
-
-        /* ===== MAIN CONTENT - ADJUSTED FOR FIXED HEADER ===== */
-        .main-content {
-            padding: 1rem;
-            padding-top: 80px; /* Space for fixed header */
-            padding-bottom: 2rem;
-            min-height: 100vh;
-        }
-
-        .page-header {
-            margin-bottom: 1.5rem;
-        }
-
-        .page-title {
-            font-size: clamp(1.75rem, 5vw, 2.25rem);
-            font-weight: 800;
-            margin-bottom: 0.5rem;
-        }
-
-        .page-title span {
-            background: var(--gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .page-subtitle {
-            color: var(--text-muted);
-            font-size: 0.95rem;
-        }
-
-        .header-actions {
-            display: flex;
-            gap: 0.75rem;
-            margin-top: 1rem;
-        }
-
-        /* ===== BUTTONS ===== */
-        .btn {
-            padding: 0.875rem 1.25rem;
-            border-radius: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            border: none;
-            font-size: 0.95rem;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            min-height: 48px;
-            text-decoration: none;
-        }
-
-        .btn:active {
-            transform: scale(0.98);
-        }
-
-        .btn-primary {
+        .tab.active {
             background: var(--gradient);
             color: white;
         }
 
-        .btn-success {
-            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
-            color: white;
-        }
-
-        .btn-outline {
-            background: transparent;
-            border: 2px solid var(--primary);
-            color: var(--primary);
-        }
-
-        .btn-full {
-            width: 100%;
-        }
-
-        .btn-sm {
-            padding: 0.625rem 1rem;
-            font-size: 0.875rem;
-            min-height: 40px;
-        }
-
-        /* ===== STATS GRID ===== */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .stat-card {
-            background: var(--dark-light);
-            border-radius: 16px;
-            padding: 1.25rem;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            transition: all 0.3s;
-        }
-
-        .stat-card:active {
-            transform: translateY(-2px);
-            border-color: var(--primary);
-        }
-
-        .stat-icon {
-            width: 44px;
-            height: 44px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.25rem;
-            margin-bottom: 0.75rem;
-        }
-
-        .stat-icon.purple { background: rgba(99, 102, 241, 0.2); color: var(--primary); }
-        .stat-icon.green { background: rgba(34, 197, 94, 0.2); color: var(--success); }
-        .stat-icon.orange { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
-        .stat-icon.blue { background: rgba(59, 130, 246, 0.2); color: var(--info); }
-
-        .stat-value {
-            font-size: clamp(1.25rem, 4vw, 1.75rem);
-            font-weight: 800;
-            margin-bottom: 0.25rem;
-            line-height: 1.2;
-        }
-
-        .stat-label {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-        }
-
-        /* ===== CAROUSEL - FIXED ===== */
-        .carousel-section {
-            margin-bottom: 1.5rem;
-        }
-
-        .carousel-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 1rem;
-            background: var(--dark-light);
-            border-radius: 16px 16px 0 0;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-bottom: none;
-        }
-
-        .carousel-title {
-            font-size: 1.1rem;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .carousel-title i {
-            color: var(--primary);
-        }
-
-        .carousel-container {
-            background: var(--dark-light);
-            border-radius: 0 0 16px 16px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            overflow-x: auto;
-            overflow-y: hidden;
-            -webkit-overflow-scrolling: touch;
-            scrollbar-width: none;
-            position: relative;
-        }
-
-        .carousel-container::-webkit-scrollbar {
+        .tab-content {
             display: none;
         }
 
-        .carousel-track {
-            display: flex;
-            gap: 1rem;
-            padding: 1rem;
-            width: max-content;
-            min-width: 100%;
-        }
-
-        .carousel-item {
-            flex-shrink: 0;
-            width: min(280px, 75vw);
-            border-radius: 12px;
-            overflow: hidden;
-            background: rgba(15, 23, 42, 0.5);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            transition: all 0.3s;
-        }
-
-        .carousel-item:active {
-            transform: scale(0.98);
-        }
-
-        .carousel-image {
-            width: 100%;
-            height: 140px;
-            object-fit: cover;
+        .tab-content.active {
             display: block;
-        }
-
-        .carousel-content {
-            padding: 1rem;
-        }
-
-        .carousel-category {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.375rem;
-            padding: 0.25rem 0.625rem;
-            background: rgba(99, 102, 241, 0.2);
-            color: var(--primary);
-            border-radius: 20px;
-            font-size: 0.7rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            margin-bottom: 0.5rem;
-        }
-
-        .carousel-question {
-            font-size: 0.9rem;
-            font-weight: 600;
-            line-height: 1.4;
-            margin-bottom: 0.5rem;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-
-        .carousel-date {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            display: flex;
-            align-items: center;
-            gap: 0.375rem;
-        }
-
-        /* ===== SECTIONS ===== */
-        .section {
-            background: var(--dark-light);
-            border-radius: 16px;
-            padding: 1.25rem;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            margin-bottom: 1.5rem;
-        }
-
-        .section-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 1.25rem;
-        }
-
-        .section-title {
-            font-size: 1.1rem;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .section-title i {
-            color: var(--primary);
-        }
-
-        /* ===== EVENT CARDS ===== */
-        .event-card {
-            background: rgba(15, 23, 42, 0.5);
-            border-radius: 12px;
-            padding: 1.25rem;
-            margin-bottom: 1rem;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .event-card:last-child {
-            margin-bottom: 0;
-        }
-
-        .event-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 1rem;
-            gap: 0.5rem;
-            flex-wrap: wrap;
-        }
-
-        .event-category {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.375rem 0.75rem;
-            background: rgba(99, 102, 241, 0.2);
-            color: var(--primary);
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-
-        .event-status {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.375rem;
-            padding: 0.375rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-
-        .event-status.active {
-            background: rgba(34, 197, 94, 0.2);
-            color: var(--success);
-        }
-
-        .event-question {
-            font-size: 1rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-            line-height: 1.5;
-        }
-
-        .event-stats {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 0.75rem;
-            margin-bottom: 1rem;
-        }
-
-        .event-stat {
-            background: var(--dark-light);
-            padding: 0.875rem;
-            border-radius: 10px;
-            text-align: center;
-        }
-
-        .event-stat.yes { border: 2px solid var(--success); }
-        .event-stat.no { border: 2px solid var(--danger); }
-
-        .event-stat-label {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            margin-bottom: 0.25rem;
-        }
-
-        .event-stat-value {
-            font-size: 1.1rem;
-            font-weight: 700;
-        }
-
-        .event-stat.yes .event-stat-value { color: var(--success); }
-        .event-stat.no .event-stat-value { color: var(--danger); }
-
-        .event-footer {
-            padding-top: 1rem;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .event-info {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 1rem;
-            flex-wrap: wrap;
-        }
-
-        .event-info-item {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.875rem;
-            color: var(--text-muted);
-        }
-
-        .event-info-item i {
-            color: var(--warning);
-        }
-
-        .event-actions {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 0.75rem;
-        }
-
-        .btn-yes, .btn-no {
-            padding: 0.875rem;
-            border: none;
-            border-radius: 10px;
-            font-weight: 700;
-            font-size: 0.95rem;
-            cursor: pointer;
-            transition: all 0.3s;
-            min-height: 48px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-        }
-
-        .btn-yes {
-            background: var(--success);
-            color: white;
-        }
-
-        .btn-yes:active {
-            background: #16a34a;
-            transform: scale(0.98);
-        }
-
-        .btn-no {
-            background: var(--danger);
-            color: white;
-        }
-
-        .btn-no:active {
-            background: #dc2626;
-            transform: scale(0.98);
-        }
-
-        /* ===== HISTORY LIST ===== */
-        .history-list {
-            max-height: 500px;
-            overflow-y: auto;
-        }
-
-        .history-item {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            padding: 1rem;
-            background: rgba(15, 23, 42, 0.5);
-            border-radius: 10px;
-            margin-bottom: 0.75rem;
-        }
-
-        .history-item:last-child {
-            margin-bottom: 0;
-        }
-
-        .history-icon {
-            width: 44px;
-            height: 44px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.1rem;
-            flex-shrink: 0;
-        }
-
-        .history-icon.bet { background: rgba(99, 102, 241, 0.2); color: var(--primary); }
-        .history-icon.win { background: rgba(34, 197, 94, 0.2); color: var(--success); }
-        .history-icon.loss { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
-
-        .history-details {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .history-title {
-            font-weight: 600;
-            font-size: 0.9rem;
-            margin-bottom: 0.25rem;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-        }
-
-        .history-date {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-        }
-
-        .history-amount {
-            font-weight: 700;
-            font-size: 0.95rem;
-            white-space: nowrap;
-        }
-
-        .history-amount.positive { color: var(--success); }
-        .history-amount.negative { color: var(--danger); }
-
-        /* ===== MODALS ===== */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.85);
-            display: none;
-            align-items: flex-end;
-            justify-content: center;
-            z-index: 1000;
-            backdrop-filter: blur(4px);
-        }
-
-        .modal-overlay.active {
-            display: flex;
-        }
-
-        .modal {
-            background: var(--dark-light);
-            border-radius: 20px 20px 0 0;
-            width: 100%;
-            max-height: 90vh;
-            overflow-y: auto;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        @keyframes slideUp {
-            from {
-                transform: translateY(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
-        }
-
-        .modal-header {
-            position: sticky;
-            top: 0;
-            background: var(--dark-light);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 1.25rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            z-index: 10;
-        }
-
-        .modal-title {
-            font-size: 1.25rem;
-            font-weight: 700;
-        }
-
-        .modal-close {
-            background: none;
-            border: none;
-            color: var(--text-muted);
-            font-size: 1.5rem;
-            cursor: pointer;
-            padding: 0.5rem;
-            min-width: 44px;
-            min-height: 44px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal-body {
-            padding: 1.25rem;
         }
 
         .form-group {
@@ -877,254 +223,115 @@
         .form-group label {
             display: block;
             margin-bottom: 0.5rem;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 1rem 1.25rem;
+            background: rgba(15, 23, 42, 0.5);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            color: var(--text);
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        }
+
+        .form-group input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
             font-weight: 600;
-            font-size: 0.9rem;
-        }
-
-        .form-group input,
-        .form-group select,
-        .form-group textarea {
-            width: 100%;
-            padding: 1rem;
-            background: rgba(15, 23, 42, 0.5);
-            border: 2px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            color: var(--text);
-            font-size: 16px !important;
-            font-family: inherit;
+            cursor: pointer;
             transition: all 0.3s;
-        }
-
-        .form-group input:focus,
-        .form-group select:focus,
-        .form-group textarea:focus {
-            outline: none;
-            border-color: var(--primary);
-            background: rgba(15, 23, 42, 0.8);
-        }
-
-        /* ===== BET MODAL ===== */
-        .bet-amount-display {
-            text-align: center;
-            padding: 2rem 1rem;
-            background: rgba(15, 23, 42, 0.5);
-            border-radius: 16px;
-            margin-bottom: 1.5rem;
-        }
-
-        .bet-amount-label {
-            font-size: 0.875rem;
-            color: var(--text-muted);
-            margin-bottom: 0.5rem;
-        }
-
-        .bet-amount-value {
-            font-size: clamp(2rem, 8vw, 3rem);
-            font-weight: 900;
-            background: var(--gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .bet-slider {
-            width: 100%;
-            height: 8px;
-            border-radius: 4px;
-            background: rgba(255, 255, 255, 0.1);
-            outline: none;
-            margin-bottom: 1rem;
-            -webkit-appearance: none;
-        }
-
-        .bet-slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            background: var(--gradient);
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.5);
-        }
-
-        .bet-slider::-moz-range-thumb {
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            background: var(--gradient);
-            cursor: pointer;
             border: none;
-        }
-
-        .bet-quick-amounts {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 0.75rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .bet-quick-amount {
-            padding: 0.875rem;
-            background: rgba(15, 23, 42, 0.5);
-            border: 2px solid rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            color: var(--text);
-            cursor: pointer;
-            transition: all 0.3s;
-            font-weight: 700;
-            font-size: 0.9rem;
-            min-height: 48px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .bet-quick-amount:active {
-            border-color: var(--primary);
-            background: rgba(99, 102, 241, 0.1);
-            transform: scale(0.95);
-        }
-
-        .bet-potential-win {
-            background: rgba(34, 197, 94, 0.1);
-            border: 2px solid rgba(34, 197, 94, 0.3);
-            border-radius: 12px;
-            padding: 1.25rem;
-            text-align: center;
-            margin-bottom: 1.5rem;
-        }
-
-        .bet-potential-win-label {
-            font-size: 0.875rem;
-            color: var(--text-muted);
-            margin-bottom: 0.5rem;
-        }
-
-        .bet-potential-win-value {
-            font-size: 1.75rem;
-            font-weight: 800;
-            color: var(--success);
-        }
-
-        .prediction-buttons {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .prediction-btn {
-            padding: 1.25rem;
-            border: 3px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            background: rgba(15, 23, 42, 0.5);
-            color: var(--text);
-            font-weight: 700;
-            font-size: 1.1rem;
-            cursor: pointer;
-            transition: all 0.3s;
-            min-height: 60px;
+            font-size: 1rem;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 0.5rem;
         }
 
-        .prediction-btn.yes.active {
-            border-color: var(--success);
-            background: rgba(34, 197, 94, 0.2);
-            color: var(--success);
+        .btn-primary {
+            background: var(--gradient);
+            color: white;
         }
 
-        .prediction-btn.no.active {
-            border-color: var(--danger);
-            background: rgba(239, 68, 68, 0.2);
-            color: var(--danger);
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.4);
         }
 
-        /* ===== DEPOSIT INFO ===== */
-        .info-box {
-            background: rgba(99, 102, 241, 0.1);
-            border: 1px solid rgba(99, 102, 241, 0.3);
-            border-radius: 12px;
-            padding: 1rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .info-item {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            margin-bottom: 0.75rem;
-            font-size: 0.9rem;
-        }
-
-        .info-item:last-child {
-            margin-bottom: 0;
-        }
-
-        .info-item i {
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--primary);
             color: var(--primary);
-            font-size: 1.1rem;
+            margin-top: 1rem;
         }
 
-        .steps {
+        .btn-outline:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .feature {
+            text-align: center;
+            padding: 1rem;
             background: rgba(15, 23, 42, 0.5);
             border-radius: 12px;
-            padding: 1rem;
-            margin-bottom: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
-        .step {
-            display: flex;
-            gap: 0.75rem;
-            margin-bottom: 1rem;
+        .feature i {
+            font-size: 1.5rem;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
         }
 
-        .step:last-child {
-            margin-bottom: 0;
+        .feature span {
+            display: block;
+            font-size: 0.75rem;
+            color: var(--text-muted);
         }
 
-        .step-number {
-            width: 28px;
-            height: 28px;
-            background: var(--gradient);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.85rem;
-            font-weight: 700;
-            flex-shrink: 0;
-        }
-
-        .step-text {
-            font-size: 0.9rem;
-            line-height: 1.6;
-        }
-
-        /* ===== TOAST ===== */
         .toast {
             position: fixed;
-            bottom: 1.5rem;
-            left: 1rem;
-            right: 1rem;
-            padding: 1rem 1.25rem;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            padding: 1rem 1.5rem;
             background: var(--dark-light);
             border-radius: 12px;
             border: 1px solid rgba(255, 255, 255, 0.1);
             display: flex;
             align-items: center;
             gap: 0.75rem;
-            transform: translateY(200px);
             opacity: 0;
             transition: all 0.3s;
-            z-index: 9999;
-            box-shadow: var(--shadow-lg);
+            z-index: 1000;
+            max-width: 90vw;
         }
 
         .toast.show {
-            transform: translateY(0);
+            transform: translateX(-50%) translateY(0);
             opacity: 1;
         }
 
@@ -1148,480 +355,190 @@
             color: var(--danger);
         }
 
-        /* ===== EMPTY STATE ===== */
-        .empty-state {
-            text-align: center;
-            padding: 3rem 1.5rem;
-        }
-
-        .empty-state i {
-            font-size: 3rem;
-            color: var(--text-muted);
-            margin-bottom: 1rem;
-            opacity: 0.5;
-        }
-
-        .empty-state h4 {
-            font-size: 1.1rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .empty-state p {
-            color: var(--text-muted);
-            font-size: 0.9rem;
-        }
-
-        /* ===== LOADING ===== */
         .loading {
             display: inline-block;
             width: 20px;
             height: 20px;
-            border: 3px solid rgba(255, 255, 255, 0.3);
+            border: 3px solid rgba(255,255,255,.3);
             border-radius: 50%;
             border-top-color: #fff;
             animation: spin 1s ease-in-out infinite;
         }
 
         @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
+            to { transform: rotate(360deg); }
         }
 
-        /* ===== DIVIDER ===== */
-        .divider {
-            text-align: center;
-            margin: 1.5rem 0;
-            color: var(--text-muted);
-            font-size: 0.875rem;
-            position: relative;
-        }
-
-        .divider::before,
-        .divider::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            width: 40%;
-            height: 1px;
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        .divider::before {
+        /* Notification Permission Banner */
+        .notification-banner {
+            position: fixed;
+            top: 0;
             left: 0;
-        }
-
-        .divider::after {
             right: 0;
+            background: var(--gradient);
+            padding: 1rem;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            z-index: 1001;
+            animation: slideDown 0.3s ease;
         }
 
-        /* ===== RESPONSIVE - TABLET ===== */
-        @media (min-width: 768px) {
-            .mobile-header {
-                display: none;
-            }
-
-            .sidebar {
-                position: fixed;
-                transform: translateX(0);
-                width: 280px;
-            }
-
-            .sidebar-close {
-                display: none;
-            }
-
-            .main-content {
-                margin-left: 280px;
-                padding: 2rem;
-                padding-top: 2rem;
-            }
-
-            .stats-grid {
-                grid-template-columns: repeat(4, 1fr);
-            }
-
-            .carousel-item {
-                width: 320px;
-            }
-
-            .modal {
-                border-radius: 20px;
-                max-width: 500px;
-                max-height: 85vh;
-            }
-
-            .modal-overlay {
-                align-items: center;
-            }
-
-            @keyframes slideUp {
-                from {
-                    transform: scale(0.9);
-                    opacity: 0;
-                }
-                to {
-                    transform: scale(1);
-                    opacity: 1;
-                }
-            }
-
-            .toast {
-                left: auto;
-                right: 2rem;
-                max-width: 400px;
-            }
+        .notification-banner.show {
+            display: flex;
         }
 
-        /* ===== RESPONSIVE - SMALL MOBILE ===== */
-        @media (max-width: 360px) {
-            .stats-grid {
+        @keyframes slideDown {
+            from { transform: translateY(-100%); }
+            to { transform: translateY(0); }
+        }
+
+        .notification-banner p {
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .notification-banner button {
+            background: white;
+            color: var(--primary);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .notification-banner .close-btn {
+            background: transparent;
+            color: white;
+            padding: 0.25rem;
+        }
+
+        @media (max-width: 480px) {
+            .features {
+                grid-template-columns: 1fr;
                 gap: 0.75rem;
             }
 
-            .stat-card {
-                padding: 1rem;
+            .feature {
+                display: flex;
+                align-items: center;
+                gap: 0.75rem;
+                text-align: left;
             }
 
-            .stat-value {
-                font-size: 1.25rem;
+            .feature i {
+                margin-bottom: 0;
             }
 
-            .bet-quick-amounts {
-                grid-template-columns: repeat(2, 1fr);
+            .notification-banner {
+                flex-direction: column;
+                text-align: center;
+                gap: 0.75rem;
             }
-
-            .event-actions {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        /* ===== UTILITIES ===== */
-        .text-center {
-            text-align: center;
-        }
-
-        .mb-1 {
-            margin-bottom: 1rem;
-        }
-
-        .mb-2 {
-            margin-bottom: 1.5rem;
-        }
-
-        .hidden {
-            display: none !important;
         }
     </style>
 </head>
 <body>
-    <!-- Mobile Header -->
-    <div class="mobile-header">
-        <div class="mobile-logo">
-            <i class="fas fa-chart-line"></i>
-            Predikta
-        </div>
-        <div class="mobile-actions">
-            <button class="icon-btn" onclick="openDepositModal()">
-                <i class="fas fa-plus-circle"></i>
-            </button>
-            <button class="icon-btn" onclick="toggleSidebar()">
-                <i class="fas fa-bars"></i>
-            </button>
-        </div>
+    <div class="bg-animation"></div>
+    <div class="floating-shapes">
+        <div class="shape"></div>
+        <div class="shape"></div>
+        <div class="shape"></div>
     </div>
 
-    <!-- Sidebar Overlay -->
-    <div class="sidebar-overlay" onclick="closeSidebar()"></div>
-
-    <!-- Sidebar -->
-    <aside class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <div class="sidebar-logo">
-                <i class="fas fa-chart-line"></i>
-                Predikta
-            </div>
-            <button class="sidebar-close" onclick="closeSidebar()">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-
-        <div class="user-info">
-            <div class="user-avatar" id="userAvatar">U</div>
-            <div class="user-name" id="userName">Utilisateur</div>
-            <div class="user-pseudo" id="userPseudo">@pseudo</div>
-            <div class="balance-card">
-                <div class="balance-label">Solde disponible</div>
-                <div class="balance-value" id="userBalance">0 FCFA</div>
-            </div>
-        </div>
-
-        <div class="nav-section">
-            <div class="nav-section-title">Menu</div>
-            <ul class="nav-menu">
-                <li class="nav-item">
-                    <a class="nav-link active" onclick="showSection('events'); closeSidebar();">
-                        <i class="fas fa-calendar-alt"></i>
-                        Événements
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" onclick="showSection('my-bets'); closeSidebar();">
-                        <i class="fas fa-ticket-alt"></i>
-                        Mes Paris
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" onclick="showSection('history'); closeSidebar();">
-                        <i class="fas fa-history"></i>
-                        Historique
-                    </a>
-                </li>
-            </ul>
-        </div>
-
-        <div class="nav-section">
-            <div class="nav-section-title">Finance</div>
-            <ul class="nav-menu">
-                <li class="nav-item">
-                    <a class="nav-link" onclick="openDepositModal(); closeSidebar();">
-                        <i class="fas fa-plus-circle"></i>
-                        Déposer
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" onclick="showSection('transactions'); closeSidebar();">
-                        <i class="fas fa-exchange-alt"></i>
-                        Transactions
-                    </a>
-                </li>
-            </ul>
-        </div>
-
-        <button class="btn-logout" onclick="logout()">
-            <i class="fas fa-sign-out-alt"></i>
-            Déconnexion
+    <!-- Notification Permission Banner -->
+    <div class="notification-banner" id="notificationBanner">
+        <p><i class="fas fa-bell"></i> Activez les notifications pour recevoir les résultats de vos paris !</p>
+        <button onclick="requestNotificationPermission()">Activer</button>
+        <button class="close-btn" onclick="closeNotificationBanner()">
+            <i class="fas fa-times"></i>
         </button>
-    </aside>
+    </div>
 
-    <!-- Main Content -->
-    <main class="main-content">
-        <div class="page-header">
-            <h1 class="page-title">Tableau de <span>bord</span></h1>
-            <p class="page-subtitle">Bienvenue sur Predikta</p>
-            <div class="header-actions">
-                <button class="btn btn-primary btn-full" onclick="openDepositModal()">
-                    <i class="fas fa-plus"></i>
-                    Déposer des fonds
+    <div class="container">
+        <div class="logo">
+            <div class="logo-icon">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <h1>Predikta</h1>
+            <p>Pariez sur l'avenir, gagnez aujourd'hui</p>
+        </div>
+
+        <div class="card">
+            <div class="tabs">
+                <button class="tab active" onclick="showTab('login')">Connexion</button>
+                <button class="tab" onclick="showTab('register')">Inscription</button>
+            </div>
+
+            <div class="tab-content active" id="loginTab">
+                <form id="loginForm" onsubmit="login(event)">
+                    <div class="form-group">
+                        <label for="loginPseudo">Pseudo</label>
+                        <input type="text" id="loginPseudo" placeholder="Votre pseudo" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="loginPassword">Mot de passe</label>
+                        <input type="password" id="loginPassword" placeholder="Votre mot de passe" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="loginBtn">
+                        <i class="fas fa-sign-in-alt"></i>
+                        Se connecter
+                    </button>
+                </form>
+                <button class="btn btn-outline" onclick="adminLogin()">
+                    <i class="fas fa-user-shield"></i>
+                    Connexion Admin
                 </button>
             </div>
-        </div>
 
-        <!-- Stats Grid -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-icon purple">
-                    <i class="fas fa-wallet"></i>
-                </div>
-                <div class="stat-value" id="statBalance">0 FCFA</div>
-                <div class="stat-label">Solde total</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon green">
-                    <i class="fas fa-trophy"></i>
-                </div>
-                <div class="stat-value" id="statWins">0</div>
-                <div class="stat-label">Paris gagnés</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon orange">
-                    <i class="fas fa-ticket-alt"></i>
-                </div>
-                <div class="stat-value" id="statBets">0</div>
-                <div class="stat-label">Paris en cours</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon blue">
-                    <i class="fas fa-chart-line"></i>
-                </div>
-                <div class="stat-value" id="statTotal">0 FCFA</div>
-                <div class="stat-label">Total parié</div>
-            </div>
-        </div>
-
-        <!-- Carousel -->
-        <div class="carousel-section">
-            <div class="carousel-header">
-                <div class="carousel-title">
-                    <i class="fas fa-fire"></i>
-                    Événements populaires
-                </div>
-            </div>
-            <div class="carousel-container">
-                <div class="carousel-track" id="carouselTrack">
-                    <!-- Will be populated by JavaScript -->
-                </div>
-            </div>
-        </div>
-
-        <!-- Events Section -->
-        <div class="section">
-            <div class="section-header">
-                <h3 class="section-title">
-                    <i class="fas fa-fire"></i>
-                    Événements actifs
-                </h3>
-            </div>
-            <div id="eventsList">
-                <div class="empty-state">
-                    <i class="fas fa-spinner fa-spin"></i>
-                    <p>Chargement...</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- History Section -->
-        <div class="section">
-            <div class="section-header">
-                <h3 class="section-title">
-                    <i class="fas fa-history"></i>
-                    Historique récent
-                </h3>
-            </div>
-            <div class="history-list" id="historyList">
-                <div class="empty-state">
-                    <i class="fas fa-spinner fa-spin"></i>
-                    <p>Chargement...</p>
-                </div>
-            </div>
-        </div>
-    </main>
-
-    <!-- Deposit Modal -->
-    <div class="modal-overlay" id="depositModal">
-        <div class="modal">
-            <div class="modal-header">
-                <h3 class="modal-title">Effectuer un dépôt</h3>
-                <button class="modal-close" onclick="closeDepositModal()">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div class="info-box">
-                    <div class="info-item">
-                        <i class="fas fa-info-circle"></i>
-                        <span>Minimum : <strong>500 FCFA</strong></span>
-                    </div>
-                    <div class="info-item">
-                        <i class="fas fa-clock"></i>
-                        <span>Validation : <strong>5-15 min</strong></span>
-                    </div>
-                </div>
-
-                <div class="steps">
-                    <div class="step">
-                        <div class="step-number">1</div>
-                        <div class="step-text">Cliquez sur le bouton ci-dessous pour payer via Wave</div>
-                    </div>
-                    <div class="step">
-                        <div class="step-number">2</div>
-                        <div class="step-text">Effectuez votre transfert et gardez la capture</div>
-                    </div>
-                    <div class="step">
-                        <div class="step-number">3</div>
-                        <div class="step-text">Remplissez le formulaire de confirmation</div>
-                    </div>
-                </div>
-
-                <a href="https://pay.wave.com/m/M_ci_iqMcg8KwRE-W/c/ci/" target="_blank" class="btn btn-primary btn-full mb-1">
-                    <i class="fas fa-external-link-alt"></i>
-                    Payer avec Wave
-                </a>
-
-                <div class="divider">
-                    <span>Après le paiement</span>
-                </div>
-
-                <form id="depositForm" onsubmit="submitDeposit(event)">
+            <div class="tab-content" id="registerTab">
+                <form id="registerForm" onsubmit="register(event)">
                     <div class="form-group">
-                        <label>Montant déposé (FCFA) *</label>
-                        <input type="number" id="depositAmount" min="500" step="100" required placeholder="Ex: 5000">
+                        <label for="registerNom">Nom</label>
+                        <input type="text" id="registerNom" placeholder="Votre nom" required>
                     </div>
-
                     <div class="form-group">
-                        <label>Capture d'écran *</label>
-                        <input type="file" id="depositScreenshot" accept="image/*" required>
+                        <label for="registerPrenom">Prénom</label>
+                        <input type="text" id="registerPrenom" placeholder="Votre prénom" required>
                     </div>
-
                     <div class="form-group">
-                        <label>Numéro Wave utilisé *</label>
-                        <input type="tel" id="depositPhone" required placeholder="+225 XX XX XX XX XX">
+                        <label for="registerPseudo">Pseudo</label>
+                        <input type="text" id="registerPseudo" placeholder="Choisissez un pseudo" required>
                     </div>
-
                     <div class="form-group">
-                        <label>Commentaire (optionnel)</label>
-                        <input type="text" id="depositComment" placeholder="Informations supplémentaires">
+                        <label for="registerContact">Contact</label>
+                        <input type="tel" id="registerContact" placeholder="Numéro de téléphone" required>
                     </div>
-
-                    <button type="submit" class="btn btn-success btn-full" id="submitDepositBtn">
-                        <i class="fas fa-check-circle"></i>
-                        Envoyer la confirmation
+                    <div class="form-group">
+                        <label for="registerPassword">Mot de passe</label>
+                        <input type="password" id="registerPassword" placeholder="Créez un mot de passe" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="registerBtn">
+                        <i class="fas fa-user-plus"></i>
+                        S'inscrire
                     </button>
                 </form>
             </div>
         </div>
-    </div>
 
-    <!-- Bet Modal -->
-    <div class="modal-overlay" id="betModal">
-        <div class="modal">
-            <div class="modal-header">
-                <h3 class="modal-title">Placer un pari</h3>
-                <button class="modal-close" onclick="closeBetModal()">
-                    <i class="fas fa-times"></i>
-                </button>
+        <div class="features">
+            <div class="feature">
+                <i class="fas fa-shield-alt"></i>
+                <span>Sécurisé</span>
             </div>
-            <div class="modal-body">
-                <div class="bet-amount-display">
-                    <div class="bet-amount-label">Montant du pari</div>
-                    <div class="bet-amount-value" id="betAmountDisplay">100 FCFA</div>
-                </div>
-
-                <input type="range" class="bet-slider" id="betSlider" min="100" max="10000" step="100" value="100" oninput="updateBetAmount(this.value)">
-
-                <div class="bet-quick-amounts">
-                    <button class="bet-quick-amount" onclick="setBetAmount(100)">100</button>
-                    <button class="bet-quick-amount" onclick="setBetAmount(500)">500</button>
-                    <button class="bet-quick-amount" onclick="setBetAmount(1000)">1K</button>
-                    <button class="bet-quick-amount" onclick="setBetAmount(5000)">5K</button>
-                </div>
-
-                <div class="bet-potential-win">
-                    <div class="bet-potential-win-label">Gain potentiel estimé</div>
-                    <div class="bet-potential-win-value" id="potentialWin">+0 FCFA</div>
-                </div>
-
-                <div class="form-group">
-                    <label>Votre prédiction</label>
-                    <div class="prediction-buttons">
-                        <button class="prediction-btn yes" id="btnYes" onclick="setPrediction('yes')">
-                            <i class="fas fa-check"></i> OUI
-                        </button>
-                        <button class="prediction-btn no" id="btnNo" onclick="setPrediction('no')">
-                            <i class="fas fa-times"></i> NON
-                        </button>
-                    </div>
-                </div>
-
-                <button class="btn btn-primary btn-full" onclick="placeBet()" id="placeBetBtn">
-                    <i class="fas fa-check-circle"></i>
-                    Confirmer le pari
-                </button>
+            <div class="feature">
+                <i class="fas fa-bolt"></i>
+                <span>Rapide</span>
+            </div>
+            <div class="feature">
+                <i class="fas fa-percentage"></i>
+                <span>2% Commission</span>
             </div>
         </div>
     </div>
 
-    <!-- Toast -->
     <div class="toast" id="toast">
         <i class="fas fa-check-circle"></i>
         <span id="toastMessage">Message</span>
@@ -1630,9 +547,9 @@
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-messaging-compat.js"></script>
 
     <script>
-        // Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyCPGgtXoDUycykLaTSee0S0yY0tkeJpqKI",
             authDomain: "data-com-a94a8.firebaseapp.com",
@@ -1647,564 +564,272 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // Cloudinary Configuration
-        const cloudinaryConfig = {
-            cloudName: 'djxcqczh1',
-            uploadPreset: 'database'
+        // VAPID Key for Cloud Messaging
+        const vapidKey = "BPViQXia_vvFLKMAe2E2q5oTOX48XpRQIdx5P4xAFEPw";
+
+        // Storage helper functions to handle tracking prevention
+        const storage = {
+            setItem: function(key, value) {
+                try {
+                    sessionStorage.setItem(key, value);
+                    return true;
+                } catch (e) {
+                    console.warn('SessionStorage blocked:', e);
+                    // Fallback to in-memory storage
+                    window._memoryStorage = window._memoryStorage || {};
+                    window._memoryStorage[key] = value;
+                    return false;
+                }
+            },
+            getItem: function(key) {
+                try {
+                    return sessionStorage.getItem(key);
+                } catch (e) {
+                    console.warn('SessionStorage blocked:', e);
+                    // Fallback to in-memory storage
+                    return window._memoryStorage ? window._memoryStorage[key] : null;
+                }
+            },
+            removeItem: function(key) {
+                try {
+                    sessionStorage.removeItem(key);
+                } catch (e) {
+                    console.warn('SessionStorage blocked:', e);
+                    if (window._memoryStorage) {
+                        delete window._memoryStorage[key];
+                    }
+                }
+            }
         };
 
-        // Global Variables
-        let currentUser = null;
-        let currentEvent = null;
-        let currentPrediction = null;
-        let currentBetAmount = 100;
-        let eventsData = [];
-
-        // Carousel Sample Data
-        const carouselSamples = [
-            {
-                category: 'sport',
-                question: 'Le Real Madrid remportera-t-il la Liga cette saison ?',
-                date: '15 Juin 2024',
-                image: 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=400&h=250&fit=crop'
-            },
-            {
-                category: 'music',
-                question: 'Burna Boy gagnera-t-il un Grammy Award ?',
-                date: '20 Juin 2024',
-                image: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=250&fit=crop'
-            },
-            {
-                category: 'crypto',
-                question: 'Le Bitcoin dépassera-t-il 100 000$ cette année ?',
-                date: '30 Juin 2024',
-                image: 'https://images.unsplash.com/photo-1518546305927-5a555bb7020d?w=400&h=250&fit=crop'
-            }
-        ];
-
-        // Initialize
+        // Check if user is already logged in
         document.addEventListener('DOMContentLoaded', function() {
-            checkAuth();
-            renderCarousel();
-            initSwipeGestures();
-        });
-
-        function checkAuth() {
-            const userStr = sessionStorage.getItem('currentUser') || localStorage.getItem('currentUser');
-            if (!userStr) {
-                window.location.href = 'index.html';
-                return;
+            const userStr = storage.getItem('currentUser');
+            if (userStr) {
+                try {
+                    const user = JSON.parse(userStr);
+                    redirectUser(user);
+                } catch (e) {
+                    console.error('Error parsing user data:', e);
+                    storage.removeItem('currentUser');
+                }
             }
             
-            try {
-                currentUser = JSON.parse(userStr);
-                loadUserData();
-                loadEvents();
-                loadHistory();
-                updateStats();
-            } catch (e) {
-                console.error('Error parsing user data:', e);
-                window.location.href = 'index.html';
-            }
-        }
+            // Show notification banner after 2 seconds
+            setTimeout(() => {
+                if ('Notification' in window && Notification.permission === 'default') {
+                    document.getElementById('notificationBanner').classList.add('show');
+                }
+            }, 2000);
+        });
 
-        function loadUserData() {
-            if (!currentUser) return;
-
-            db.collection('users').doc(currentUser.id).get()
-                .then(doc => {
-                    if (doc.exists) {
-                        const userData = doc.data();
-                        currentUser = { ...currentUser, ...userData };
-                        
-                        // Update session
-                        const storage = localStorage.getItem('currentUser') ? localStorage : sessionStorage;
-                        storage.setItem('currentUser', JSON.stringify(currentUser));
-
-                        // Update UI
-                        document.getElementById('userAvatar').textContent = (userData.prenom || 'U').charAt(0).toUpperCase();
-                        document.getElementById('userName').textContent = `${userData.prenom || ''} ${userData.nom || ''}`.trim();
-                        document.getElementById('userPseudo').textContent = '@' + (userData.pseudo || 'user');
-                        
-                        const balance = userData.balance || 0;
-                        document.getElementById('userBalance').textContent = balance.toLocaleString() + ' FCFA';
-                        document.getElementById('statBalance').textContent = balance.toLocaleString() + ' FCFA';
-                    }
-                })
-                .catch(err => console.error('Error loading user data:', err));
-        }
-
-        function updateStats() {
-            if (!currentUser) return;
-
-            db.collection('bets').where('userId', '==', currentUser.id).get()
-                .then(snapshot => {
-                    const wins = snapshot.docs.filter(d => d.data().status === 'won').length;
-                    const activeBets = snapshot.docs.filter(d => d.data().status === 'pending').length;
-                    const totalBet = snapshot.docs.reduce((sum, d) => sum + (d.data().amount || 0), 0);
-
-                    document.getElementById('statWins').textContent = wins;
-                    document.getElementById('statBets').textContent = activeBets;
-                    document.getElementById('statTotal').textContent = totalBet.toLocaleString() + ' FCFA';
-                })
-                .catch(err => console.error('Error loading stats:', err));
-        }
-
-        function loadEvents() {
-            db.collection('events').where('status', '==', 'active').get()
-                .then(snapshot => {
-                    eventsData = [];
-                    snapshot.forEach(doc => {
-                        eventsData.push({ id: doc.id, ...doc.data() });
-                    });
-                    renderEvents();
-                })
-                .catch(err => {
-                    console.error('Error loading events:', err);
-                    renderEvents();
-                });
-        }
-
-        function renderEvents() {
-            const eventsList = document.getElementById('eventsList');
-
-            if (eventsData.length === 0) {
-                eventsList.innerHTML = `
-                    <div class="empty-state">
-                        <i class="fas fa-calendar-times"></i>
-                        <h4>Aucun événement disponible</h4>
-                        <p>Revenez plus tard pour de nouveaux événements</p>
-                    </div>
-                `;
+        // Notification functions
+        function requestNotificationPermission() {
+            if (!('Notification' in window)) {
+                showToast('Les notifications ne sont pas supportées par ce navigateur', 'error');
                 return;
             }
 
-            eventsList.innerHTML = eventsData.map(event => {
-                const yesBets = event.bets ? event.bets.filter(b => b.choice === 'yes').length : 0;
-                const noBets = event.bets ? event.bets.filter(b => b.choice === 'no').length : 0;
-                const totalPot = event.bets ? event.bets.reduce((sum, b) => sum + b.amount, 0) : 0;
-
-                return `
-                    <div class="event-card">
-                        <div class="event-header">
-                            <span class="event-category">
-                                <i class="fas fa-${getCategoryIcon(event.category)}"></i>
-                                ${event.category || 'Sport'}
-                            </span>
-                            <span class="event-status active">
-                                <i class="fas fa-circle" style="font-size: 0.5rem;"></i>
-                                En cours
-                            </span>
-                        </div>
-                        <div class="event-question">${event.question}</div>
-                        <div class="event-stats">
-                            <div class="event-stat yes">
-                                <div class="event-stat-label">OUI</div>
-                                <div class="event-stat-value">${yesBets} pers.</div>
-                            </div>
-                            <div class="event-stat no">
-                                <div class="event-stat-label">NON</div>
-                                <div class="event-stat-value">${noBets} pers.</div>
-                            </div>
-                        </div>
-                        <div class="event-footer">
-                            <div class="event-info">
-                                <div class="event-info-item">
-                                    <i class="fas fa-coins"></i>
-                                    <span>Min: ${event.minBet || 100} FCFA</span>
-                                </div>
-                                <div class="event-info-item">
-                                    <i class="fas fa-chart-line"></i>
-                                    <span>Pot: ${totalPot.toLocaleString()} FCFA</span>
-                                </div>
-                            </div>
-                            <div class="event-actions">
-                                <button class="btn-yes" onclick="openBetModal('${event.id}', 'yes')">
-                                    <i class="fas fa-check"></i> OUI
-                                </button>
-                                <button class="btn-no" onclick="openBetModal('${event.id}', 'no')">
-                                    <i class="fas fa-times"></i> NON
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
+            Notification.requestPermission().then((permission) => {
+                if (permission === 'granted') {
+                    showToast('Notifications activées !', 'success');
+                    initMessaging();
+                } else {
+                    showToast('Notifications refusées', 'error');
+                }
+                closeNotificationBanner();
+            });
         }
 
-        function getCategoryIcon(category) {
-            const icons = {
-                'sport': 'futbol',
-                'politique': 'landmark',
-                'entertainment': 'film',
-                'crypto': 'bitcoin',
-                'music': 'music'
-            };
-            return icons[category] || 'tag';
+        function closeNotificationBanner() {
+            document.getElementById('notificationBanner').classList.remove('show');
         }
 
-        function loadHistory() {
-            if (!currentUser) return;
+        function initMessaging() {
+            try {
+                const messaging = firebase.messaging();
+                
+                if ('serviceWorker' in navigator) {
+                    navigator.serviceWorker.register('firebase-messaging-sw.js')
+                        .then((registration) => {
+                            messaging.getToken({ vapidKey: vapidKey, serviceWorkerRegistration: registration })
+                                .then((currentToken) => {
+                                    if (currentToken) {
+                                        console.log('FCM Token:', currentToken);
+                                        // Save token with fallback storage
+                                        try {
+                                            localStorage.setItem('fcmToken', currentToken);
+                                        } catch (e) {
+                                            console.warn('LocalStorage blocked, token not saved');
+                                        }
+                                    }
+                                })
+                                .catch((err) => {
+                                    console.log('Error retrieving token:', err);
+                                });
+                        })
+                        .catch((err) => {
+                            console.log('Service worker registration failed:', err);
+                        });
+                }
+            } catch (error) {
+                console.error('Messaging initialization error:', error);
+            }
+        }
 
-            db.collection('bets').where('userId', '==', currentUser.id)
-                .orderBy('date', 'desc')
-                .limit(5)
-                .get()
+        function showTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tab + 'Tab').classList.add('active');
+        }
+
+        function login(e) {
+            e.preventDefault();
+            
+            const btn = document.getElementById('loginBtn');
+            btn.innerHTML = '<span class="loading"></span> Connexion...';
+            btn.disabled = true;
+
+            const pseudo = document.getElementById('loginPseudo').value;
+            const password = document.getElementById('loginPassword').value;
+
+            db.collection('users').where('pseudo', '==', pseudo).where('password', '==', password).get()
                 .then(snapshot => {
-                    const historyList = document.getElementById('historyList');
-
                     if (snapshot.empty) {
-                        historyList.innerHTML = `
-                            <div class="empty-state">
-                                <i class="fas fa-history"></i>
-                                <p>Aucun historique</p>
-                            </div>
-                        `;
+                        showToast('Pseudo ou mot de passe incorrect', 'error');
+                        btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Se connecter';
+                        btn.disabled = false;
                         return;
                     }
 
-                    Promise.all(snapshot.docs.map(doc => {
-                        const bet = { id: doc.id, ...doc.data() };
-                        return db.collection('events').doc(bet.eventId).get()
-                            .then(eventDoc => ({ bet, event: eventDoc.exists ? eventDoc.data() : null }));
-                    })).then(results => {
-                        historyList.innerHTML = results.map(({ bet, event }) => {
-                            let iconClass = 'bet';
-                            let amountClass = 'negative';
-                            let amountPrefix = '-';
-
-                            if (bet.status === 'won') {
-                                iconClass = 'win';
-                                amountClass = 'positive';
-                                amountPrefix = '+';
-                            } else if (bet.status === 'lost') {
-                                iconClass = 'loss';
-                            }
-
-                            const date = bet.date ? bet.date.toDate().toLocaleDateString('fr-FR') : '-';
-
-                            return `
-                                <div class="history-item">
-                                    <div class="history-icon ${iconClass}">
-                                        <i class="fas fa-${bet.status === 'won' ? 'trophy' : bet.status === 'lost' ? 'times' : 'ticket-alt'}"></i>
-                                    </div>
-                                    <div class="history-details">
-                                        <div class="history-title">${event ? event.question : 'Événement'}</div>
-                                        <div class="history-date">${date}</div>
-                                    </div>
-                                    <div class="history-amount ${amountClass}">
-                                        ${amountPrefix}${bet.amount.toLocaleString()} FCFA
-                                    </div>
-                                </div>
-                            `;
-                        }).join('');
-                    });
+                    const userDoc = snapshot.docs[0];
+                    const userData = { id: userDoc.id, ...userDoc.data() };
+                    
+                    storage.setItem('currentUser', JSON.stringify(userData));
+                    showToast('Connexion réussie !', 'success');
+                    
+                    setTimeout(() => {
+                        redirectUser(userData);
+                    }, 1000);
                 })
-                .catch(err => {
-                    console.error('Error loading history:', err);
-                    document.getElementById('historyList').innerHTML = `
-                        <div class="empty-state">
-                            <i class="fas fa-exclamation-triangle"></i>
-                            <p>Erreur de chargement</p>
-                        </div>
-                    `;
+                .catch(error => {
+                    showToast('Erreur: ' + error.message, 'error');
+                    btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Se connecter';
+                    btn.disabled = false;
                 });
         }
 
-        function renderCarousel() {
-            const track = document.getElementById('carouselTrack');
-            const items = [...carouselSamples, ...carouselSamples];
-
-            track.innerHTML = items.map(item => `
-                <div class="carousel-item" onclick="showToast('Bientôt disponible!', 'info')">
-                    <img src="${item.image}" alt="${item.category}" class="carousel-image">
-                    <div class="carousel-content">
-                        <span class="carousel-category">
-                            <i class="fas fa-${getCategoryIcon(item.category)}"></i>
-                            ${item.category}
-                        </span>
-                        <div class="carousel-question">${item.question}</div>
-                        <div class="carousel-date">
-                            <i class="fas fa-calendar-alt"></i>
-                            ${item.date}
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        // Sidebar Functions
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.querySelector('.sidebar-overlay');
-            sidebar.classList.add('open');
-            overlay.classList.add('active');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.querySelector('.sidebar-overlay');
-            sidebar.classList.remove('open');
-            overlay.classList.remove('active');
-            document.body.style.overflow = '';
-        }
-
-        function initSwipeGestures() {
-            const sidebar = document.getElementById('sidebar');
-            let touchStartX = 0;
-            let touchEndX = 0;
-
-            sidebar.addEventListener('touchstart', e => {
-                touchStartX = e.changedTouches[0].screenX;
-            });
-
-            sidebar.addEventListener('touchend', e => {
-                touchEndX = e.changedTouches[0].screenX;
-                if (touchStartX - touchEndX > 50) {
-                    closeSidebar();
-                }
-            });
-        }
-
-        // Modal Functions
-        function openDepositModal() {
-            document.getElementById('depositModal').classList.add('active');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeDepositModal() {
-            document.getElementById('depositModal').classList.remove('active');
-            document.body.style.overflow = '';
-            document.getElementById('depositForm').reset();
-        }
-
-        function submitDeposit(e) {
+        function register(e) {
             e.preventDefault();
-
-            if (!currentUser) {
-                showToast('Erreur: utilisateur non connecté', 'error');
-                return;
-            }
-
-            const btn = document.getElementById('submitDepositBtn');
-            btn.innerHTML = '<span class="loading"></span> Envoi...';
+            
+            const btn = document.getElementById('registerBtn');
+            btn.innerHTML = '<span class="loading"></span> Inscription...';
             btn.disabled = true;
 
-            const amount = parseInt(document.getElementById('depositAmount').value);
-            const phone = document.getElementById('depositPhone').value;
-            const comment = document.getElementById('depositComment').value;
-            const screenshot = document.getElementById('depositScreenshot').files[0];
+            const nom = document.getElementById('registerNom').value;
+            const prenom = document.getElementById('registerPrenom').value;
+            const pseudo = document.getElementById('registerPseudo').value;
+            const contact = document.getElementById('registerContact').value;
+            const password = document.getElementById('registerPassword').value;
 
-            if (!screenshot) {
-                showToast('Veuillez joindre une capture d\'écran', 'error');
-                btn.innerHTML = '<i class="fas fa-check-circle"></i> Envoyer la confirmation';
-                btn.disabled = false;
-                return;
-            }
+            db.collection('users').where('pseudo', '==', pseudo).get()
+                .then(snapshot => {
+                    if (!snapshot.empty) {
+                        showToast('Ce pseudo est déjà utilisé', 'error');
+                        btn.innerHTML = '<i class="fas fa-user-plus"></i> S\'inscrire';
+                        btn.disabled = false;
+                        return;
+                    }
 
-            const formData = new FormData();
-            formData.append('file', screenshot);
-            formData.append('upload_preset', cloudinaryConfig.uploadPreset);
-
-            fetch(`https://api.cloudinary.com/v1_1/${cloudinaryConfig.cloudName}/image/upload`, {
-                method: 'POST',
-                body: formData
-            })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.error) throw new Error(data.error.message);
-
-                    return db.collection('deposit_requests').add({
-                        userId: currentUser.id,
-                        userName: `${currentUser.prenom || ''} ${currentUser.nom || ''}`.trim(),
-                        amount: amount,
-                        phone: phone,
-                        screenshotURL: data.secure_url,
-                        comment: comment || '',
-                        status: 'pending',
+                    return db.collection('users').add({
+                        nom,
+                        prenom,
+                        pseudo,
+                        contact,
+                        password,
+                        balance: 0,
+                        role: 'user',
                         createdAt: firebase.firestore.FieldValue.serverTimestamp()
                     });
                 })
                 .then(() => {
-                    showToast('Demande envoyée ! Vous serez notifié une fois validée.', 'success');
-                    closeDepositModal();
-                    btn.innerHTML = '<i class="fas fa-check-circle"></i> Envoyer la confirmation';
+                    showToast('Inscription réussie ! Vous pouvez maintenant vous connecter.', 'success');
+                    document.getElementById('registerForm').reset();
+                    showTab('login');
+                    btn.innerHTML = '<i class="fas fa-user-plus"></i> S\'inscrire';
                     btn.disabled = false;
                 })
-                .catch(err => {
-                    console.error('Error:', err);
-                    showToast('Erreur: ' + err.message, 'error');
-                    btn.innerHTML = '<i class="fas fa-check-circle"></i> Envoyer la confirmation';
+                .catch(error => {
+                    showToast('Erreur: ' + error.message, 'error');
+                    btn.innerHTML = '<i class="fas fa-user-plus"></i> S\'inscrire';
                     btn.disabled = false;
                 });
         }
 
-        function openBetModal(eventId, prediction) {
-            currentEvent = eventsData.find(e => e.id === eventId);
-            if (!currentEvent) return;
+        function adminLogin() {
+            const pseudo = document.getElementById('loginPseudo').value;
+            const password = document.getElementById('loginPassword').value;
 
-            currentPrediction = prediction;
-            currentBetAmount = 100;
-
-            document.getElementById('betSlider').value = 100;
-            document.getElementById('betAmountDisplay').textContent = '100 FCFA';
-
-            setPrediction(prediction);
-            updatePotentialWin();
-
-            document.getElementById('betModal').classList.add('active');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeBetModal() {
-            document.getElementById('betModal').classList.remove('active');
-            document.body.style.overflow = '';
-            currentEvent = null;
-            currentPrediction = null;
-        }
-
-        function updateBetAmount(amount) {
-            currentBetAmount = parseInt(amount);
-            document.getElementById('betAmountDisplay').textContent = currentBetAmount.toLocaleString() + ' FCFA';
-            updatePotentialWin();
-        }
-
-        function setBetAmount(amount) {
-            document.getElementById('betSlider').value = amount;
-            updateBetAmount(amount);
-        }
-
-        function setPrediction(prediction) {
-            currentPrediction = prediction;
-            document.getElementById('btnYes').classList.toggle('active', prediction === 'yes');
-            document.getElementById('btnNo').classList.toggle('active', prediction === 'no');
-            updatePotentialWin();
-        }
-
-        function updatePotentialWin() {
-            if (!currentEvent) return;
-
-            const yesBets = currentEvent.bets ? currentEvent.bets.filter(b => b.choice === 'yes') : [];
-            const noBets = currentEvent.bets ? currentEvent.bets.filter(b => b.choice === 'no') : [];
-
-            const yesTotal = yesBets.reduce((sum, b) => sum + b.amount, 0);
-            const noTotal = noBets.reduce((sum, b) => sum + b.amount, 0);
-
-            let potentialWin = 0;
-
-            if (currentPrediction === 'yes') {
-                const totalWinners = yesBets.length + 1;
-                const commission = noTotal * 0.02;
-                const redistribution = noTotal - commission;
-                potentialWin = redistribution / totalWinners;
-            } else {
-                const totalWinners = noBets.length + 1;
-                const commission = yesTotal * 0.02;
-                const redistribution = yesTotal - commission;
-                potentialWin = redistribution / totalWinners;
-            }
-
-            document.getElementById('potentialWin').textContent = '+' + Math.floor(potentialWin).toLocaleString() + ' FCFA';
-        }
-
-        function placeBet() {
-            if (!currentUser || !currentEvent || !currentPrediction) return;
-
-            const btn = document.getElementById('placeBetBtn');
-            btn.innerHTML = '<span class="loading"></span> Traitement...';
-            btn.disabled = true;
-
-            if (currentUser.balance < currentBetAmount) {
-                showToast('Solde insuffisant. Effectuez un dépôt.', 'error');
-                btn.innerHTML = '<i class="fas fa-check-circle"></i> Confirmer le pari';
-                btn.disabled = false;
+            if (!pseudo || !password) {
+                showToast('Veuillez entrer vos identifiants', 'error');
                 return;
             }
 
-            const batch = db.batch();
+            db.collection('users').where('pseudo', '==', pseudo).where('password', '==', password).get()
+                .then(snapshot => {
+                    if (snapshot.empty) {
+                        showToast('Identifiants incorrects', 'error');
+                        return;
+                    }
 
-            const userRef = db.collection('users').doc(currentUser.id);
-            batch.update(userRef, {
-                balance: firebase.firestore.FieldValue.increment(-currentBetAmount)
-            });
+                    const userDoc = snapshot.docs[0];
+                    const userData = userDoc.data();
+                    
+                    if (userData.role !== 'admin' && userData.role !== 'creator') {
+                        showToast('Accès refusé', 'error');
+                        return;
+                    }
 
-            const betRef = db.collection('bets').doc();
-            batch.set(betRef, {
-                userId: currentUser.id,
-                eventId: currentEvent.id,
-                choice: currentPrediction,
-                amount: currentBetAmount,
-                status: 'pending',
-                date: firebase.firestore.FieldValue.serverTimestamp()
-            });
-
-            const eventRef = db.collection('events').doc(currentEvent.id);
-            batch.update(eventRef, {
-                bets: firebase.firestore.FieldValue.arrayUnion({
-                    userId: currentUser.id,
-                    choice: currentPrediction,
-                    amount: currentBetAmount
+                    const user = { id: userDoc.id, ...userData };
+                    storage.setItem('currentUser', JSON.stringify(user));
+                    showToast('Connexion admin réussie !', 'success');
+                    
+                    setTimeout(() => {
+                        window.location.href = 'creator-dashboard.html';
+                    }, 1000);
                 })
-            });
-
-            batch.commit()
-                .then(() => {
-                    showToast('Pari placé avec succès !', 'success');
-                    closeBetModal();
-
-                    currentUser.balance -= currentBetAmount;
-                    const storage = localStorage.getItem('currentUser') ? localStorage : sessionStorage;
-                    storage.setItem('currentUser', JSON.stringify(currentUser));
-
-                    loadUserData();
-                    loadEvents();
-                    loadHistory();
-                    updateStats();
-
-                    btn.innerHTML = '<i class="fas fa-check-circle"></i> Confirmer le pari';
-                    btn.disabled = false;
-                })
-                .catch(err => {
-                    console.error('Error placing bet:', err);
-                    showToast('Erreur: ' + err.message, 'error');
-                    btn.innerHTML = '<i class="fas fa-check-circle"></i> Confirmer le pari';
-                    btn.disabled = false;
+                .catch(error => {
+                    showToast('Erreur: ' + error.message, 'error');
                 });
+        }
+
+        function redirectUser(user) {
+            if (user.role === 'admin' || user.role === 'creator') {
+                window.location.href = 'creator-dashboard.html';
+            } else {
+                window.location.href = 'user-dashboard.html';
+            }
         }
 
         function showToast(message, type = 'success') {
             const toast = document.getElementById('toast');
             const toastMessage = document.getElementById('toastMessage');
             const icon = toast.querySelector('i');
-
+            
             toastMessage.textContent = message;
             toast.className = 'toast show ' + type;
-
+            
             if (type === 'success') {
                 icon.className = 'fas fa-check-circle';
             } else if (type === 'error') {
                 icon.className = 'fas fa-exclamation-circle';
-            } else {
-                icon.className = 'fas fa-info-circle';
             }
-
+            
             setTimeout(() => {
                 toast.classList.remove('show');
             }, 3000);
-        }
-
-        function logout() {
-            sessionStorage.removeItem('currentUser');
-            localStorage.removeItem('currentUser');
-            showToast('Déconnexion réussie', 'success');
-            setTimeout(() => {
-                window.location.href = 'index.html';
-            }, 1000);
-        }
-
-        function showSection(section) {
-            showToast('Section ' + section + ' en développement', 'info');
         }
     </script>
 </body>
