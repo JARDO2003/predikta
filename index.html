@@ -248,6 +248,18 @@
             color: var(--text-muted);
         }
 
+        .form-group input[type="checkbox"] {
+            width: auto;
+            margin-right: 0.5rem;
+        }
+
+        .remember-me {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+        }
+
         .btn {
             width: 100%;
             padding: 1rem 1.5rem;
@@ -343,6 +355,10 @@
             border-color: var(--danger);
         }
 
+        .toast.warning {
+            border-color: var(--warning);
+        }
+
         .toast i {
             font-size: 1.25rem;
         }
@@ -353,6 +369,10 @@
 
         .toast.error i {
             color: var(--danger);
+        }
+
+        .toast.warning i {
+            color: var(--warning);
         }
 
         .loading {
@@ -482,6 +502,10 @@
                         <label for="loginPassword">Mot de passe</label>
                         <input type="password" id="loginPassword" placeholder="Votre mot de passe" required>
                     </div>
+                    <div class="remember-me">
+                        <input type="checkbox" id="rememberMe">
+                        <label for="rememberMe" style="margin-bottom: 0; cursor: pointer;">Se souvenir de moi</label>
+                    </div>
                     <button type="submit" class="btn btn-primary" id="loginBtn">
                         <i class="fas fa-sign-in-alt"></i>
                         Se connecter
@@ -569,12 +593,16 @@
 
         // Storage helper functions to handle tracking prevention
         const storage = {
-            setItem: function(key, value) {
+            setItem: function(key, value, persistent = false) {
                 try {
-                    sessionStorage.setItem(key, value);
+                    if (persistent) {
+                        localStorage.setItem(key, value);
+                    } else {
+                        sessionStorage.setItem(key, value);
+                    }
                     return true;
                 } catch (e) {
-                    console.warn('SessionStorage blocked:', e);
+                    console.warn('Storage blocked:', e);
                     // Fallback to in-memory storage
                     window._memoryStorage = window._memoryStorage || {};
                     window._memoryStorage[key] = value;
@@ -583,18 +611,20 @@
             },
             getItem: function(key) {
                 try {
-                    return sessionStorage.getItem(key);
+                    // Check localStorage first, then sessionStorage
+                    return localStorage.getItem(key) || sessionStorage.getItem(key);
                 } catch (e) {
-                    console.warn('SessionStorage blocked:', e);
+                    console.warn('Storage blocked:', e);
                     // Fallback to in-memory storage
                     return window._memoryStorage ? window._memoryStorage[key] : null;
                 }
             },
             removeItem: function(key) {
                 try {
+                    localStorage.removeItem(key);
                     sessionStorage.removeItem(key);
                 } catch (e) {
-                    console.warn('SessionStorage blocked:', e);
+                    console.warn('Storage blocked:', e);
                     if (window._memoryStorage) {
                         delete window._memoryStorage[key];
                     }
@@ -607,8 +637,16 @@
             const userStr = storage.getItem('currentUser');
             if (userStr) {
                 try {
-                    const user = JSON.parse(userStr);
-                    redirectUser(user);
+                    const userData = JSON.parse(userStr);
+                    
+                    // Vérifier l'expiration de la session (si pas "Se souvenir de moi")
+                    if (userData.sessionExpiry && Date.now() > userData.sessionExpiry) {
+                        storage.removeItem('currentUser');
+                        showToast('Session expirée. Veuillez vous reconnecter.', 'warning');
+                        return;
+                    }
+                    
+                    redirectUser(userData);
                 } catch (e) {
                     console.error('Error parsing user data:', e);
                     storage.removeItem('currentUser');
@@ -677,18 +715,14 @@
             }
         }
 
-        // CORRECTION DU BUG: Fonction showTab corrigée
         function showTab(event, tab) {
-            // Empêcher le comportement par défaut si c'est un événement
             if (event) {
                 event.preventDefault();
             }
             
-            // Retirer la classe active de tous les onglets
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
             
-            // Ajouter la classe active au bon onglet
             if (event && event.currentTarget) {
                 event.currentTarget.classList.add('active');
             }
@@ -704,6 +738,7 @@
 
             const pseudo = document.getElementById('loginPseudo').value;
             const password = document.getElementById('loginPassword').value;
+            const rememberMe = document.getElementById('rememberMe').checked;
 
             db.collection('users').where('pseudo', '==', pseudo).where('password', '==', password).get()
                 .then(snapshot => {
@@ -717,7 +752,12 @@
                     const userDoc = snapshot.docs[0];
                     const userData = { id: userDoc.id, ...userDoc.data() };
                     
-                    storage.setItem('currentUser', JSON.stringify(userData));
+                    // Ajouter l'expiration de session (30 minutes) si "Se souvenir de moi" n'est pas coché
+                    if (!rememberMe) {
+                        userData.sessionExpiry = Date.now() + (30 * 60 * 1000); // 30 minutes
+                    }
+                    
+                    storage.setItem('currentUser', JSON.stringify(userData), rememberMe);
                     showToast('Connexion réussie !', 'success');
                     
                     setTimeout(() => {
@@ -744,7 +784,6 @@
             const contact = document.getElementById('registerContact').value;
             const password = document.getElementById('registerPassword').value;
 
-            // Vérifier si le pseudo existe déjà
             db.collection('users').where('pseudo', '==', pseudo).get()
                 .then(snapshot => {
                     if (!snapshot.empty) {
@@ -754,7 +793,6 @@
                         return Promise.reject('Pseudo existe déjà');
                     }
 
-                    // Créer le nouvel utilisateur
                     return db.collection('users').add({
                         nom,
                         prenom,
@@ -768,15 +806,18 @@
                 })
                 .then((docRef) => {
                     if (docRef) {
-                        showToast('Inscription réussie ! Vous pouvez maintenant vous connecter.', 'success');
+                        showToast('Inscription réussie ! Connectez-vous avec vos identifiants.', 'success');
                         document.getElementById('registerForm').reset();
                         
-                        // Basculer vers l'onglet connexion
                         setTimeout(() => {
                             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
                             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
                             document.querySelectorAll('.tab')[0].classList.add('active');
                             document.getElementById('loginTab').classList.add('active');
+                            
+                            // Pré-remplir le pseudo
+                            document.getElementById('loginPseudo').value = pseudo;
+                            document.getElementById('loginPassword').focus();
                         }, 1500);
                         
                         btn.innerHTML = '<i class="fas fa-user-plus"></i> S\'inscrire';
@@ -817,7 +858,7 @@
                     }
 
                     const user = { id: userDoc.id, ...userData };
-                    storage.setItem('currentUser', JSON.stringify(user));
+                    storage.setItem('currentUser', JSON.stringify(user), true); // Toujours persistant pour admin
                     showToast('Connexion admin réussie !', 'success');
                     
                     setTimeout(() => {
@@ -849,6 +890,8 @@
                 icon.className = 'fas fa-check-circle';
             } else if (type === 'error') {
                 icon.className = 'fas fa-exclamation-circle';
+            } else if (type === 'warning') {
+                icon.className = 'fas fa-exclamation-triangle';
             }
             
             setTimeout(() => {
