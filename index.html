@@ -286,21 +286,6 @@
             text-align: center;
         }
 
-        /* ===== ADMIN NAV LINK ===== */
-        .nav-link.admin-link {
-            color: var(--warning);
-            position: relative;
-        }
-
-        .nav-link.admin-link:hover {
-            background: rgba(245, 158, 11, 0.1);
-            color: var(--warning);
-        }
-
-        .nav-link.admin-link i {
-            color: var(--warning);
-        }
-
         .btn-logout {
             width: 100%;
             display: flex;
@@ -326,7 +311,7 @@
         /* ===== MAIN CONTENT - ADJUSTED FOR FIXED HEADER ===== */
         .main-content {
             padding: 1rem;
-            padding-top: 80px;
+            padding-top: 80px; /* Space for fixed header */
             padding-bottom: 2rem;
             min-height: 100vh;
         }
@@ -455,7 +440,7 @@
             color: var(--text-muted);
         }
 
-        /* ===== CAROUSEL ===== */
+        /* ===== CAROUSEL - FIXED ===== */
         .carousel-section {
             margin-bottom: 1.5rem;
         }
@@ -1230,157 +1215,6 @@
             right: 0;
         }
 
-        /* ===== ADMIN PASSWORD MODAL ===== */
-        .admin-modal-body {
-            padding: 2rem 1.25rem;
-            text-align: center;
-        }
-
-        .admin-icon-wrap {
-            width: 80px;
-            height: 80px;
-            background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(239, 68, 68, 0.2));
-            border: 2px solid rgba(245, 158, 11, 0.4);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 1.25rem;
-            font-size: 2rem;
-            color: var(--warning);
-        }
-
-        .admin-modal-title {
-            font-size: 1.3rem;
-            font-weight: 800;
-            margin-bottom: 0.5rem;
-        }
-
-        .admin-modal-subtitle {
-            color: var(--text-muted);
-            font-size: 0.9rem;
-            margin-bottom: 1.75rem;
-        }
-
-        .admin-password-input-wrap {
-            position: relative;
-            margin-bottom: 1.25rem;
-        }
-
-        .admin-password-input-wrap input {
-            width: 100%;
-            padding: 1rem 3rem 1rem 1rem;
-            background: rgba(15, 23, 42, 0.7);
-            border: 2px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            color: var(--text);
-            font-size: 16px !important;
-            font-family: inherit;
-            letter-spacing: 0.2em;
-            transition: all 0.3s;
-            text-align: center;
-        }
-
-        .admin-password-input-wrap input:focus {
-            outline: none;
-            border-color: var(--warning);
-            background: rgba(15, 23, 42, 0.9);
-        }
-
-        .admin-password-input-wrap input.error {
-            border-color: var(--danger);
-            animation: shake 0.4s ease;
-        }
-
-        .admin-password-input-wrap input.success {
-            border-color: var(--success);
-        }
-
-        .toggle-password {
-            position: absolute;
-            right: 1rem;
-            top: 50%;
-            transform: translateY(-50%);
-            background: none;
-            border: none;
-            color: var(--text-muted);
-            cursor: pointer;
-            font-size: 1.1rem;
-            padding: 0.25rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .toggle-password:hover {
-            color: var(--text);
-        }
-
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            20% { transform: translateX(-8px); }
-            40% { transform: translateX(8px); }
-            60% { transform: translateX(-6px); }
-            80% { transform: translateX(6px); }
-        }
-
-        .admin-error-msg {
-            color: var(--danger);
-            font-size: 0.85rem;
-            margin-bottom: 1rem;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            gap: 0.4rem;
-        }
-
-        .admin-error-msg.show {
-            display: flex;
-        }
-
-        .btn-admin-confirm {
-            width: 100%;
-            padding: 1rem;
-            background: linear-gradient(135deg, #f59e0b, #ef4444);
-            border: none;
-            border-radius: 12px;
-            color: white;
-            font-size: 1rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s;
-            min-height: 52px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-        }
-
-        .btn-admin-confirm:hover {
-            opacity: 0.9;
-            transform: translateY(-1px);
-        }
-
-        .btn-admin-confirm:active {
-            transform: scale(0.98);
-        }
-
-        .btn-admin-confirm:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-
-        .admin-attempts-msg {
-            margin-top: 1rem;
-            font-size: 0.8rem;
-            color: var(--text-muted);
-        }
-
-        .admin-attempts-msg span {
-            color: var(--danger);
-            font-weight: 600;
-        }
-
         /* ===== RESPONSIVE - TABLET ===== */
         @media (min-width: 768px) {
             .mobile-header {
@@ -1559,19 +1393,6 @@
                     <a class="nav-link" onclick="showSection('transactions'); closeSidebar();">
                         <i class="fas fa-exchange-alt"></i>
                         Transactions
-                    </a>
-                </li>
-            </ul>
-        </div>
-
-        <!-- Admin Section -->
-        <div class="nav-section">
-            <div class="nav-section-title">Administration</div>
-            <ul class="nav-menu">
-                <li class="nav-item">
-                    <a class="nav-link admin-link" onclick="openAdminModal(); closeSidebar();">
-                        <i class="fas fa-shield-alt"></i>
-                        Connexion Admin
                     </a>
                 </li>
             </ul>
@@ -1800,56 +1621,6 @@
         </div>
     </div>
 
-    <!-- Admin Password Modal -->
-    <div class="modal-overlay" id="adminModal">
-        <div class="modal">
-            <div class="modal-header">
-                <h3 class="modal-title">
-                    <i class="fas fa-lock" style="color: var(--warning); margin-right: 0.5rem;"></i>
-                    Accès Administrateur
-                </h3>
-                <button class="modal-close" onclick="closeAdminModal()">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="admin-modal-body">
-                <div class="admin-icon-wrap">
-                    <i class="fas fa-shield-alt"></i>
-                </div>
-                <div class="admin-modal-title">Zone Protégée</div>
-                <div class="admin-modal-subtitle">Entrez le mot de passe administrateur pour accéder au tableau de bord de création.</div>
-
-                <div class="admin-password-input-wrap">
-                    <input
-                        type="password"
-                        id="adminPasswordInput"
-                        placeholder="Mot de passe"
-                        onkeydown="handleAdminKeydown(event)"
-                        oninput="resetAdminError()"
-                        autocomplete="current-password"
-                    >
-                    <button class="toggle-password" onclick="toggleAdminPasswordVisibility()" type="button" id="togglePwdBtn">
-                        <i class="fas fa-eye" id="togglePwdIcon"></i>
-                    </button>
-                </div>
-
-                <div class="admin-error-msg" id="adminErrorMsg">
-                    <i class="fas fa-exclamation-circle"></i>
-                    <span id="adminErrorText">Mot de passe incorrect</span>
-                </div>
-
-                <button class="btn-admin-confirm" onclick="verifyAdminPassword()" id="adminConfirmBtn">
-                    <i class="fas fa-unlock-alt"></i>
-                    Accéder au Dashboard
-                </button>
-
-                <div class="admin-attempts-msg" id="adminAttemptsMsg" style="display:none;">
-                    Tentatives restantes : <span id="attemptsLeft">3</span>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- Toast -->
     <div class="toast" id="toast">
         <i class="fas fa-check-circle"></i>
@@ -1888,11 +1659,6 @@
         let currentPrediction = null;
         let currentBetAmount = 100;
         let eventsData = [];
-
-        // Admin config
-        const ADMIN_PASSWORD = 'marcio200@';
-        let adminAttempts = 3;
-        let adminLocked = false;
 
         // Carousel Sample Data
         const carouselSamples = [
@@ -1951,9 +1717,11 @@
                         const userData = doc.data();
                         currentUser = { ...currentUser, ...userData };
                         
+                        // Update session
                         const storage = localStorage.getItem('currentUser') ? localStorage : sessionStorage;
                         storage.setItem('currentUser', JSON.stringify(currentUser));
 
+                        // Update UI
                         document.getElementById('userAvatar').textContent = (userData.prenom || 'U').charAt(0).toUpperCase();
                         document.getElementById('userName').textContent = `${userData.prenom || ''} ${userData.nom || ''}`.trim();
                         document.getElementById('userPseudo').textContent = '@' + (userData.pseudo || 'user');
@@ -2199,7 +1967,7 @@
             });
         }
 
-        // Deposit Modal Functions
+        // Modal Functions
         function openDepositModal() {
             document.getElementById('depositModal').classList.add('active');
             document.body.style.overflow = 'hidden';
@@ -2272,7 +2040,6 @@
                 });
         }
 
-        // Bet Modal Functions
         function openBetModal(eventId, prediction) {
             currentEvent = eventsData.find(e => e.id === eventId);
             if (!currentEvent) return;
@@ -2406,133 +2173,6 @@
                 });
         }
 
-        // ===== ADMIN MODAL FUNCTIONS =====
-        function openAdminModal() {
-            if (adminLocked) {
-                showToast('Accès bloqué. Trop de tentatives.', 'error');
-                return;
-            }
-            const modal = document.getElementById('adminModal');
-            modal.classList.add('active');
-            document.body.style.overflow = 'hidden';
-            // Reset state
-            document.getElementById('adminPasswordInput').value = '';
-            document.getElementById('adminPasswordInput').className = '';
-            document.getElementById('adminErrorMsg').classList.remove('show');
-            document.getElementById('adminConfirmBtn').disabled = false;
-            document.getElementById('adminConfirmBtn').innerHTML = '<i class="fas fa-unlock-alt"></i> Accéder au Dashboard';
-            // Focus after animation
-            setTimeout(() => {
-                document.getElementById('adminPasswordInput').focus();
-            }, 350);
-        }
-
-        function closeAdminModal() {
-            document.getElementById('adminModal').classList.remove('active');
-            document.body.style.overflow = '';
-            document.getElementById('adminPasswordInput').value = '';
-            document.getElementById('adminErrorMsg').classList.remove('show');
-            document.getElementById('adminPasswordInput').className = '';
-            // Reset visibility toggle
-            const input = document.getElementById('adminPasswordInput');
-            input.type = 'password';
-            document.getElementById('togglePwdIcon').className = 'fas fa-eye';
-        }
-
-        function toggleAdminPasswordVisibility() {
-            const input = document.getElementById('adminPasswordInput');
-            const icon = document.getElementById('togglePwdIcon');
-            if (input.type === 'password') {
-                input.type = 'text';
-                icon.className = 'fas fa-eye-slash';
-            } else {
-                input.type = 'password';
-                icon.className = 'fas fa-eye';
-            }
-        }
-
-        function handleAdminKeydown(event) {
-            if (event.key === 'Enter') {
-                verifyAdminPassword();
-            }
-        }
-
-        function resetAdminError() {
-            document.getElementById('adminErrorMsg').classList.remove('show');
-            document.getElementById('adminPasswordInput').classList.remove('error');
-        }
-
-        function verifyAdminPassword() {
-            if (adminLocked) return;
-
-            const input = document.getElementById('adminPasswordInput');
-            const enteredPassword = input.value;
-            const btn = document.getElementById('adminConfirmBtn');
-
-            if (!enteredPassword) {
-                input.classList.add('error');
-                const errorMsg = document.getElementById('adminErrorMsg');
-                document.getElementById('adminErrorText').textContent = 'Veuillez entrer le mot de passe.';
-                errorMsg.classList.add('show');
-                return;
-            }
-
-            // Show loading state
-            btn.innerHTML = '<span class="loading"></span> Vérification...';
-            btn.disabled = true;
-
-            // Small delay for UX feel
-            setTimeout(() => {
-                if (enteredPassword === ADMIN_PASSWORD) {
-                    // Success!
-                    input.classList.remove('error');
-                    input.classList.add('success');
-                    btn.innerHTML = '<i class="fas fa-check-circle"></i> Accès accordé !';
-                    btn.style.background = 'linear-gradient(135deg, #22c55e, #16a34a)';
-                    showToast('Bienvenue, Administrateur !', 'success');
-
-                    // Redirect after short delay
-                    setTimeout(() => {
-                        closeAdminModal();
-                        window.location.href = 'creator-dashboard.html';
-                    }, 800);
-                } else {
-                    // Wrong password
-                    adminAttempts--;
-                    input.value = '';
-                    input.classList.add('error');
-                    input.classList.remove('success');
-                    btn.disabled = false;
-                    btn.innerHTML = '<i class="fas fa-unlock-alt"></i> Accéder au Dashboard';
-
-                    const errorMsg = document.getElementById('adminErrorMsg');
-                    const attemptsMsg = document.getElementById('adminAttemptsMsg');
-
-                    if (adminAttempts <= 0) {
-                        adminLocked = true;
-                        document.getElementById('adminErrorText').textContent = 'Accès bloqué. Trop de tentatives incorrectes.';
-                        errorMsg.classList.add('show');
-                        btn.disabled = true;
-                        btn.innerHTML = '<i class="fas fa-ban"></i> Accès bloqué';
-                        btn.style.opacity = '0.5';
-                        attemptsMsg.style.display = 'none';
-                        showToast('Trop de tentatives. Accès bloqué.', 'error');
-                    } else {
-                        document.getElementById('adminErrorText').textContent = 'Mot de passe incorrect.';
-                        errorMsg.classList.add('show');
-                        attemptsMsg.style.display = 'block';
-                        document.getElementById('attemptsLeft').textContent = adminAttempts;
-
-                        // Re-focus input
-                        setTimeout(() => {
-                            input.focus();
-                        }, 100);
-                    }
-                }
-            }, 600);
-        }
-
-        // Toast Function
         function showToast(message, type = 'success') {
             const toast = document.getElementById('toast');
             const toastMessage = document.getElementById('toastMessage');
