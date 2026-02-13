@@ -7,6 +7,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#6366f1">
+    <meta name="description" content="Pariez sur l'avenir, gagnez aujourd'hui">
+    <link rel="icon" type="image/png" sizes="192x192" href="icon-192x192.png">
+    <link rel="apple-touch-icon" href="icon-192x192.png">
     <style>
         :root {
             --primary: #6366f1;
@@ -561,13 +565,54 @@
         const db = firebase.firestore();
 
         // VAPID Key for Cloud Messaging
-        const vapidKey = "PViQXia_vvFLKMAe2E2q5oTOX48XpRQIdx5P4xAFEPw";
+        const vapidKey = "BPViQXia_vvFLKMAe2E2q5oTOX48XpRQIdx5P4xAFEPw";
+
+        // Storage helper functions to handle tracking prevention
+        const storage = {
+            setItem: function(key, value) {
+                try {
+                    sessionStorage.setItem(key, value);
+                    return true;
+                } catch (e) {
+                    console.warn('SessionStorage blocked:', e);
+                    // Fallback to in-memory storage
+                    window._memoryStorage = window._memoryStorage || {};
+                    window._memoryStorage[key] = value;
+                    return false;
+                }
+            },
+            getItem: function(key) {
+                try {
+                    return sessionStorage.getItem(key);
+                } catch (e) {
+                    console.warn('SessionStorage blocked:', e);
+                    // Fallback to in-memory storage
+                    return window._memoryStorage ? window._memoryStorage[key] : null;
+                }
+            },
+            removeItem: function(key) {
+                try {
+                    sessionStorage.removeItem(key);
+                } catch (e) {
+                    console.warn('SessionStorage blocked:', e);
+                    if (window._memoryStorage) {
+                        delete window._memoryStorage[key];
+                    }
+                }
+            }
+        };
 
         // Check if user is already logged in
         document.addEventListener('DOMContentLoaded', function() {
-            const user = JSON.parse(sessionStorage.getItem('currentUser'));
-            if (user) {
-                redirectUser(user);
+            const userStr = storage.getItem('currentUser');
+            if (userStr) {
+                try {
+                    const user = JSON.parse(userStr);
+                    redirectUser(user);
+                } catch (e) {
+                    console.error('Error parsing user data:', e);
+                    storage.removeItem('currentUser');
+                }
             }
             
             // Show notification banner after 2 seconds
@@ -601,23 +646,34 @@
         }
 
         function initMessaging() {
-            const messaging = firebase.messaging();
-            
-            if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register('firebase-messaging-sw.js')
-                    .then((registration) => {
-                        messaging.getToken({ vapidKey: vapidKey, serviceWorkerRegistration: registration })
-                            .then((currentToken) => {
-                                if (currentToken) {
-                                    console.log('FCM Token:', currentToken);
-                                    // Save token to local storage for later use
-                                    localStorage.setItem('fcmToken', currentToken);
-                                }
-                            })
-                            .catch((err) => {
-                                console.log('An error occurred while retrieving token:', err);
-                            });
-                    });
+            try {
+                const messaging = firebase.messaging();
+                
+                if ('serviceWorker' in navigator) {
+                    navigator.serviceWorker.register('firebase-messaging-sw.js')
+                        .then((registration) => {
+                            messaging.getToken({ vapidKey: vapidKey, serviceWorkerRegistration: registration })
+                                .then((currentToken) => {
+                                    if (currentToken) {
+                                        console.log('FCM Token:', currentToken);
+                                        // Save token with fallback storage
+                                        try {
+                                            localStorage.setItem('fcmToken', currentToken);
+                                        } catch (e) {
+                                            console.warn('LocalStorage blocked, token not saved');
+                                        }
+                                    }
+                                })
+                                .catch((err) => {
+                                    console.log('Error retrieving token:', err);
+                                });
+                        })
+                        .catch((err) => {
+                            console.log('Service worker registration failed:', err);
+                        });
+                }
+            } catch (error) {
+                console.error('Messaging initialization error:', error);
             }
         }
 
@@ -651,7 +707,7 @@
                     const userDoc = snapshot.docs[0];
                     const userData = { id: userDoc.id, ...userDoc.data() };
                     
-                    sessionStorage.setItem('currentUser', JSON.stringify(userData));
+                    storage.setItem('currentUser', JSON.stringify(userData));
                     showToast('Connexion réussie !', 'success');
                     
                     setTimeout(() => {
@@ -737,7 +793,7 @@
                     }
 
                     const user = { id: userDoc.id, ...userData };
-                    sessionStorage.setItem('currentUser', JSON.stringify(user));
+                    storage.setItem('currentUser', JSON.stringify(user));
                     showToast('Connexion admin réussie !', 'success');
                     
                     setTimeout(() => {
