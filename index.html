@@ -468,8 +468,8 @@
 
         <div class="card">
             <div class="tabs">
-                <button class="tab active" onclick="showTab('login')">Connexion</button>
-                <button class="tab" onclick="showTab('register')">Inscription</button>
+                <button class="tab active" onclick="showTab(event, 'login')">Connexion</button>
+                <button class="tab" onclick="showTab(event, 'register')">Inscription</button>
             </div>
 
             <div class="tab-content active" id="loginTab">
@@ -677,11 +677,21 @@
             }
         }
 
-        function showTab(tab) {
+        // CORRECTION DU BUG: Fonction showTab corrigée
+        function showTab(event, tab) {
+            // Empêcher le comportement par défaut si c'est un événement
+            if (event) {
+                event.preventDefault();
+            }
+            
+            // Retirer la classe active de tous les onglets
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
             
-            event.target.classList.add('active');
+            // Ajouter la classe active au bon onglet
+            if (event && event.currentTarget) {
+                event.currentTarget.classList.add('active');
+            }
             document.getElementById(tab + 'Tab').classList.add('active');
         }
 
@@ -734,15 +744,17 @@
             const contact = document.getElementById('registerContact').value;
             const password = document.getElementById('registerPassword').value;
 
+            // Vérifier si le pseudo existe déjà
             db.collection('users').where('pseudo', '==', pseudo).get()
                 .then(snapshot => {
                     if (!snapshot.empty) {
                         showToast('Ce pseudo est déjà utilisé', 'error');
                         btn.innerHTML = '<i class="fas fa-user-plus"></i> S\'inscrire';
                         btn.disabled = false;
-                        return;
+                        return Promise.reject('Pseudo existe déjà');
                     }
 
+                    // Créer le nouvel utilisateur
                     return db.collection('users').add({
                         nom,
                         prenom,
@@ -754,17 +766,29 @@
                         createdAt: firebase.firestore.FieldValue.serverTimestamp()
                     });
                 })
-                .then(() => {
-                    showToast('Inscription réussie ! Vous pouvez maintenant vous connecter.', 'success');
-                    document.getElementById('registerForm').reset();
-                    showTab('login');
-                    btn.innerHTML = '<i class="fas fa-user-plus"></i> S\'inscrire';
-                    btn.disabled = false;
+                .then((docRef) => {
+                    if (docRef) {
+                        showToast('Inscription réussie ! Vous pouvez maintenant vous connecter.', 'success');
+                        document.getElementById('registerForm').reset();
+                        
+                        // Basculer vers l'onglet connexion
+                        setTimeout(() => {
+                            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                            document.querySelectorAll('.tab')[0].classList.add('active');
+                            document.getElementById('loginTab').classList.add('active');
+                        }, 1500);
+                        
+                        btn.innerHTML = '<i class="fas fa-user-plus"></i> S\'inscrire';
+                        btn.disabled = false;
+                    }
                 })
                 .catch(error => {
-                    showToast('Erreur: ' + error.message, 'error');
-                    btn.innerHTML = '<i class="fas fa-user-plus"></i> S\'inscrire';
-                    btn.disabled = false;
+                    if (error !== 'Pseudo existe déjà') {
+                        showToast('Erreur: ' + error.message, 'error');
+                        btn.innerHTML = '<i class="fas fa-user-plus"></i> S\'inscrire';
+                        btn.disabled = false;
+                    }
                 });
         }
 
