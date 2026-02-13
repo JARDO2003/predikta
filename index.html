@@ -487,10 +487,10 @@
                         Se connecter
                     </button>
                 </form>
-                <button class="btn btn-outline" onclick="adminLogin()">
-                    <i class="fas fa-user-shield"></i>
-                    Connexion Admin
-                </button>
+               <button class="btn btn-outline" onclick="adminLogin()">
+    <i class="fas fa-user-shield"></i>
+    Connexion Admin
+</button>
             </div>
 
             <div class="tab-content" id="registerTab">
@@ -831,6 +831,19 @@
                 toast.classList.remove('show');
             }, 3000);
         }
+
+
+        function adminLogin() {
+    const password = prompt("Entrez le mot de passe administrateur :");
+
+    const adminPassword = "marci@200@";
+
+    if (password === adminPassword) {
+        window.location.href = "creator-dashboard.html";
+    } else if (password !== null) {
+        alert("Mot de passe incorrect !");
+    }
+}
     </script>
 </body>
 </html>
