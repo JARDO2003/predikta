@@ -2,7 +2,10 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#0f172a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Anit - Gestion Predikta</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -30,44 +33,50 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html {
+            height: 100%;
+            overflow-x: hidden;
         }
 
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             background: var(--dark);
             color: var(--text);
             min-height: 100vh;
+            min-height: -webkit-fill-available;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
         }
 
-        .dashboard {
-            display: grid;
-            grid-template-columns: 280px 1fr;
-            min-height: 100vh;
-        }
-
-        /* Mobile Header */
+        /* ===== MOBILE HEADER ===== */
         .mobile-header {
-            display: none;
-            align-items: center;
-            justify-content: space-between;
-            padding: 1rem;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 56px;
             background: var(--dark-light);
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            position: sticky;
-            top: 0;
+            padding: 0 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
             z-index: 99;
+            backdrop-filter: blur(10px);
         }
 
         .mobile-logo {
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            font-size: clamp(1rem, 3vw, 1.25rem);
+            font-size: 1.125rem;
             font-weight: 800;
             background: var(--gradient);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            background-clip: text;
         }
 
         .mobile-logo i {
@@ -79,51 +88,71 @@
             background: none;
             border: none;
             color: var(--text);
-            font-size: 1.5rem;
+            font-size: 1.25rem;
             cursor: pointer;
             padding: 0.5rem;
+            min-width: 44px;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
         }
 
+        .menu-toggle:active {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* ===== SIDEBAR ===== */
         .sidebar-overlay {
-            display: none;
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
             background: rgba(0, 0, 0, 0.7);
-            z-index: 98;
+            backdrop-filter: blur(4px);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+            z-index: 998;
         }
 
         .sidebar-overlay.active {
-            display: block;
+            opacity: 1;
+            visibility: visible;
         }
 
         .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: min(80vw, 280px);
             background: var(--dark-light);
             border-right: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 1.5rem;
-            position: fixed;
-            left: 0;
-            top: 0;
-            bottom: 0;
-            width: 280px;
+            padding: 1rem;
+            transform: translateX(-100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 999;
             overflow-y: auto;
-            z-index: 100;
-            transition: transform 0.3s ease;
+            overscroll-behavior: contain;
+        }
+
+        .sidebar.open {
+            transform: translateX(0);
         }
 
         .sidebar-logo {
             display: flex;
             align-items: center;
-            gap: 0.75rem;
-            font-size: clamp(1.1rem, 2vw, 1.5rem);
+            gap: 0.5rem;
+            font-size: 1.125rem;
             font-weight: 800;
             background: var(--gradient);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
             padding-bottom: 1rem;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
@@ -134,16 +163,16 @@
         }
 
         .nav-section {
-            margin-bottom: 1.5rem;
+            margin-bottom: 1.25rem;
         }
 
         .nav-section-title {
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             text-transform: uppercase;
             color: var(--text-muted);
             letter-spacing: 0.05em;
-            margin-bottom: 0.75rem;
-            padding-left: 0.75rem;
+            margin-bottom: 0.625rem;
+            padding-left: 0.625rem;
         }
 
         .nav-menu {
@@ -157,19 +186,20 @@
         .nav-link {
             display: flex;
             align-items: center;
-            gap: 0.75rem;
-            padding: 0.875rem 0.75rem;
+            gap: 0.625rem;
+            padding: 0.75rem 0.625rem;
             color: var(--text-muted);
             text-decoration: none;
-            border-radius: 10px;
-            transition: all 0.3s;
+            border-radius: 8px;
+            transition: all 0.2s;
             cursor: pointer;
             font-size: 0.9rem;
+            min-height: 44px;
         }
 
-        .nav-link:hover,
+        .nav-link:active,
         .nav-link.active {
-            background: rgba(99, 102, 241, 0.1);
+            background: rgba(99, 102, 241, 0.15);
             color: var(--text);
         }
 
@@ -180,74 +210,103 @@
         .nav-link i {
             width: 20px;
             text-align: center;
-            flex-shrink: 0;
+            font-size: 1rem;
         }
 
+        /* ===== MAIN CONTENT ===== */
         .main-content {
-            margin-left: 280px;
-            padding: clamp(1rem, 3vw, 2rem);
+            padding: 72px 1rem 1rem;
             min-height: 100vh;
         }
 
         .page-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: clamp(1rem, 3vw, 2rem);
-            flex-wrap: wrap;
-            gap: 1rem;
+            margin-bottom: 1.25rem;
         }
 
         .page-title {
-            font-size: clamp(1.25rem, 4vw, 1.875rem);
+            font-size: 1.375rem;
             font-weight: 700;
+            line-height: 1.2;
         }
 
         .page-title span {
             background: var(--gradient);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            background-clip: text;
         }
 
+        /* ===== INFO CARDS ===== */
+        .info-cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.75rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .info-card {
+            background: var(--dark-light);
+            border-radius: 12px;
+            padding: 1rem 0.75rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+        }
+
+        .info-card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.125rem;
+            margin: 0 auto 0.75rem;
+        }
+
+        .info-card-icon.purple { background: rgba(99, 102, 241, 0.2); color: var(--primary); }
+        .info-card-icon.green { background: rgba(34, 197, 94, 0.2); color: var(--success); }
+        .info-card-icon.orange { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
+
+        .info-card-value {
+            font-size: 1.125rem;
+            font-weight: 800;
+            margin-bottom: 0.25rem;
+        }
+
+        .info-card-label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+
+        /* ===== TABS ===== */
         .tabs {
             display: flex;
-            gap: 0.5rem;
-            margin-bottom: 2rem;
+            gap: 0.375rem;
+            margin-bottom: 1.25rem;
             background: rgba(15, 23, 42, 0.5);
-            padding: 0.5rem;
-            border-radius: 12px;
+            padding: 0.375rem;
+            border-radius: 10px;
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
         }
 
         .tabs::-webkit-scrollbar {
-            height: 4px;
-        }
-
-        .tabs::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 2px;
-        }
-
-        .tabs::-webkit-scrollbar-thumb {
-            background: var(--primary);
-            border-radius: 2px;
+            display: none;
         }
 
         .tab {
             flex: 1;
             min-width: max-content;
-            padding: clamp(0.675rem, 2vw, 0.875rem);
+            padding: 0.625rem 0.875rem;
             border: none;
             background: transparent;
             color: var(--text-muted);
             font-weight: 600;
             cursor: pointer;
             border-radius: 8px;
-            transition: all 0.3s;
+            transition: all 0.2s;
+            font-size: 0.8rem;
             white-space: nowrap;
-            font-size: clamp(0.8rem, 2vw, 0.95rem);
         }
 
         .tab.active {
@@ -263,77 +322,76 @@
             display: block;
         }
 
+        /* ===== SECTIONS ===== */
         .section {
             background: var(--dark-light);
-            border-radius: 16px;
-            padding: clamp(1rem, 3vw, 1.5rem);
+            border-radius: 12px;
+            padding: 1rem;
             border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 1rem;
         }
 
         .section-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 1.5rem;
+            margin-bottom: 1rem;
+            gap: 0.5rem;
             flex-wrap: wrap;
-            gap: 1rem;
         }
 
         .section-title {
-            font-size: clamp(1rem, 3vw, 1.25rem);
+            font-size: 1rem;
             font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
         }
 
         .section-title i {
             color: var(--primary);
-            margin-right: 0.5rem;
+            font-size: 0.875rem;
         }
 
+        /* ===== DEPOSIT CARDS ===== */
         .deposits-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(min(100%, 350px), 1fr));
-            gap: clamp(1rem, 2vw, 1.5rem);
+            grid-template-columns: 1fr;
+            gap: 0.75rem;
         }
 
         .deposit-card {
             background: rgba(15, 23, 42, 0.5);
-            border-radius: 16px;
-            padding: clamp(1rem, 2vw, 1.5rem);
+            border-radius: 12px;
+            padding: 1rem;
             border: 1px solid rgba(255, 255, 255, 0.05);
-            transition: all 0.3s;
-        }
-
-        .deposit-card:hover {
-            border-color: var(--primary);
-            transform: translateY(-5px);
         }
 
         .deposit-header {
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            margin-bottom: 1rem;
+            margin-bottom: 0.75rem;
             gap: 0.75rem;
-            flex-wrap: wrap;
         }
 
         .deposit-user {
             display: flex;
             align-items: center;
             gap: 0.75rem;
-            min-width: 0;
             flex: 1;
+            min-width: 0;
         }
 
         .deposit-avatar {
-            width: clamp(40px, 8vw, 48px);
-            height: clamp(40px, 8vw, 48px);
+            width: 40px;
+            height: 40px;
             background: var(--gradient);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: clamp(1rem, 3vw, 1.25rem);
+            font-size: 1rem;
             font-weight: 700;
             flex-shrink: 0;
         }
@@ -344,15 +402,16 @@
         }
 
         .deposit-user-info h4 {
-            font-size: clamp(0.9rem, 2vw, 1rem);
-            margin-bottom: 0.25rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 0.125rem;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
         }
 
         .deposit-user-info p {
-            font-size: clamp(0.8rem, 2vw, 0.875rem);
+            font-size: 0.75rem;
             color: var(--text-muted);
             overflow: hidden;
             text-overflow: ellipsis;
@@ -360,7 +419,7 @@
         }
 
         .deposit-amount {
-            font-size: clamp(1.25rem, 3vw, 1.5rem);
+            font-size: 1.125rem;
             font-weight: 800;
             color: var(--success);
             white-space: nowrap;
@@ -368,17 +427,17 @@
 
         .deposit-details {
             background: rgba(30, 41, 59, 0.5);
-            border-radius: 12px;
-            padding: 1rem;
-            margin-bottom: 1rem;
+            border-radius: 8px;
+            padding: 0.75rem;
+            margin-bottom: 0.75rem;
         }
 
         .deposit-detail {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 0.5rem;
-            font-size: clamp(0.85rem, 2vw, 0.9rem);
-            gap: 1rem;
+            margin-bottom: 0.375rem;
+            font-size: 0.8rem;
+            gap: 0.5rem;
         }
 
         .deposit-detail:last-child {
@@ -398,38 +457,41 @@
 
         .deposit-screenshot {
             width: 100%;
-            height: clamp(150px, 30vw, 200px);
+            height: 160px;
             object-fit: cover;
-            border-radius: 12px;
-            margin-bottom: 1rem;
+            border-radius: 8px;
+            margin-bottom: 0.75rem;
             cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .deposit-screenshot:hover {
-            transform: scale(1.02);
         }
 
         .deposit-actions {
-            display: flex;
-            gap: 0.75rem;
-            flex-wrap: wrap;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
         }
 
+        /* ===== BUTTONS ===== */
         .btn {
-            padding: clamp(0.675rem, 2vw, 0.75rem) clamp(1rem, 3vw, 1.5rem);
-            border-radius: 12px;
+            padding: 0.625rem 1rem;
+            border-radius: 8px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.2s;
             border: none;
-            font-size: clamp(0.85rem, 2vw, 0.95rem);
+            font-size: 0.875rem;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 0.5rem;
-            flex: 1;
-            min-width: max-content;
+            gap: 0.375rem;
+            min-height: 40px;
+            text-decoration: none;
+            -webkit-touch-callout: none;
+            user-select: none;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+            opacity: 0.9;
         }
 
         .btn-success {
@@ -437,29 +499,14 @@
             color: white;
         }
 
-        .btn-success:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(34, 197, 94, 0.4);
-        }
-
         .btn-danger {
             background: var(--gradient-danger);
             color: white;
         }
 
-        .btn-danger:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(239, 68, 68, 0.4);
-        }
-
         .btn-primary {
             background: var(--gradient);
             color: white;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.4);
         }
 
         .btn-outline {
@@ -468,42 +515,39 @@
             color: var(--primary);
         }
 
-        .btn-outline:hover {
-            background: var(--primary);
-            color: white;
-        }
-
         .btn-full {
             width: 100%;
         }
 
+        /* ===== FORMS ===== */
         .form-section {
-            max-width: 600px;
-            margin: 0 auto;
+            max-width: 100%;
         }
 
         .form-group {
-            margin-bottom: 1.5rem;
+            margin-bottom: 1rem;
         }
 
         .form-group label {
             display: block;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.375rem;
             font-weight: 500;
-            font-size: clamp(0.875rem, 2vw, 0.95rem);
+            font-size: 0.85rem;
         }
 
         .form-group input,
         .form-group select,
         .form-group textarea {
             width: 100%;
-            padding: clamp(0.875rem, 2vw, 1rem) clamp(1rem, 2vw, 1.25rem);
+            padding: 0.75rem;
             background: rgba(15, 23, 42, 0.5);
             border: 2px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
+            border-radius: 8px;
             color: var(--text);
-            font-size: clamp(0.9rem, 2vw, 1rem);
-            transition: all 0.3s;
+            font-size: 16px;
+            font-family: inherit;
+            transition: all 0.2s;
+            -webkit-appearance: none;
         }
 
         .form-group input:focus,
@@ -511,291 +555,61 @@
         .form-group textarea:focus {
             outline: none;
             border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
-        }
-
-        .form-group input::placeholder,
-        .form-group textarea::placeholder {
-            color: var(--text-muted);
         }
 
         .form-group textarea {
-            min-height: 120px;
+            min-height: 100px;
             resize: vertical;
         }
 
+        /* ===== UPLOAD AREA ===== */
         .upload-area {
             border: 2px dashed rgba(255, 255, 255, 0.2);
-            border-radius: 16px;
-            padding: clamp(2rem, 5vw, 3rem) clamp(1rem, 3vw, 2rem);
+            border-radius: 12px;
+            padding: 1.5rem 1rem;
             text-align: center;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.2s;
             background: rgba(15, 23, 42, 0.3);
         }
 
-        .upload-area:hover {
+        .upload-area:active {
             border-color: var(--primary);
             background: rgba(99, 102, 241, 0.1);
         }
 
         .upload-area i {
-            font-size: clamp(2rem, 6vw, 3rem);
+            font-size: 2rem;
             color: var(--primary);
-            margin-bottom: 1rem;
+            margin-bottom: 0.75rem;
         }
 
         .upload-area h4 {
-            font-size: clamp(1rem, 2vw, 1.1rem);
-            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+            margin-bottom: 0.25rem;
         }
 
         .upload-area p {
             color: var(--text-muted);
-            font-size: clamp(0.8rem, 2vw, 0.9rem);
+            font-size: 0.8rem;
         }
 
         .upload-preview {
-            margin-top: 1rem;
+            margin-top: 0.75rem;
         }
 
         .upload-preview img {
             max-width: 100%;
-            max-height: 300px;
-            border-radius: 12px;
+            max-height: 200px;
+            border-radius: 8px;
         }
 
-        .info-cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
-            gap: clamp(1rem, 2vw, 1.5rem);
-            margin-bottom: 2rem;
-        }
-
-        .info-card {
-            background: var(--dark-light);
-            border-radius: 16px;
-            padding: clamp(1rem, 3vw, 1.5rem);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            text-align: center;
-        }
-
-        .info-card-icon {
-            width: clamp(48px, 10vw, 60px);
-            height: clamp(48px, 10vw, 60px);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: clamp(1.25rem, 3vw, 1.5rem);
-            margin: 0 auto 1rem;
-        }
-
-        .info-card-icon.purple {
-            background: rgba(99, 102, 241, 0.2);
-            color: var(--primary);
-        }
-
-        .info-card-icon.green {
-            background: rgba(34, 197, 94, 0.2);
-            color: var(--success);
-        }
-
-        .info-card-icon.orange {
-            background: rgba(245, 158, 11, 0.2);
-            color: var(--warning);
-        }
-
-        .info-card-value {
-            font-size: clamp(1.5rem, 4vw, 2rem);
-            font-weight: 800;
-            margin-bottom: 0.25rem;
-        }
-
-        .info-card-label {
-            font-size: clamp(0.8rem, 2vw, 0.875rem);
-            color: var(--text-muted);
-        }
-
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.9);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            backdrop-filter: blur(5px);
-            padding: 1rem;
-        }
-
-        .modal-overlay.active {
-            display: flex;
-        }
-
-        .modal {
-            background: var(--dark-light);
-            border-radius: 20px;
-            padding: clamp(1rem, 3vw, 2rem);
-            max-width: 95%;
-            max-height: 90vh;
-            overflow-y: auto;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            position: relative;
-        }
-
-        .modal-close {
-            position: absolute;
-            top: 1rem;
-            right: 1rem;
-            background: rgba(0, 0, 0, 0.5);
-            border: none;
-            color: var(--text);
-            font-size: 1.5rem;
-            cursor: pointer;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s;
-        }
-
-        .modal-close:hover {
-            background: rgba(0, 0, 0, 0.8);
-        }
-
-        .modal-image {
-            max-width: 100%;
-            max-height: 80vh;
-            border-radius: 12px;
-        }
-
-        .toast {
-            position: fixed;
-            bottom: 2rem;
-            right: 2rem;
-            padding: 1rem 1.5rem;
-            background: var(--dark-light);
-            border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            transform: translateX(400px);
-            opacity: 0;
-            transition: all 0.3s;
-            z-index: 9999;
-            max-width: calc(100vw - 4rem);
-        }
-
-        .toast.show {
-            transform: translateX(0);
-            opacity: 1;
-        }
-
-        .toast.success {
-            border-color: var(--success);
-        }
-
-        .toast.error {
-            border-color: var(--danger);
-        }
-
-        .toast i {
-            font-size: 1.25rem;
-            flex-shrink: 0;
-        }
-
-        .toast.success i {
-            color: var(--success);
-        }
-
-        .toast.error i {
-            color: var(--danger);
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: clamp(2rem, 5vw, 4rem) clamp(1rem, 3vw, 2rem);
-        }
-
-        .empty-state i {
-            font-size: clamp(3rem, 8vw, 5rem);
-            color: var(--text-muted);
-            margin-bottom: 1.5rem;
-        }
-
-        .empty-state h4 {
-            font-size: clamp(1.1rem, 3vw, 1.5rem);
-            margin-bottom: 0.5rem;
-        }
-
-        .empty-state p {
-            color: var(--text-muted);
-            margin-bottom: 1.5rem;
-            font-size: clamp(0.9rem, 2vw, 1rem);
-        }
-
-        .status-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.375rem;
-            padding: 0.375rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-
-        .status-badge.pending {
-            background: rgba(245, 158, 11, 0.2);
-            color: var(--warning);
-        }
-
-        .status-badge.approved {
-            background: rgba(34, 197, 94, 0.2);
-            color: var(--success);
-        }
-
-        .status-badge.rejected {
-            background: rgba(239, 68, 68, 0.2);
-            color: var(--danger);
-        }
-
-        .status-badge.active {
-            background: rgba(34, 197, 94, 0.2);
-            color: var(--success);
-        }
-
-        .status-badge.closed {
-            background: rgba(239, 68, 68, 0.2);
-            color: var(--danger);
-        }
-
-        .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(255,255,255,.3);
-            border-radius: 50%;
-            border-top-color: #fff;
-            animation: spin 1s ease-in-out infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* Event Card Styles */
+        /* ===== EVENT CARDS ===== */
         .event-card {
             background: rgba(15, 23, 42, 0.5);
-            border-radius: 12px;
-            padding: clamp(1rem, 2vw, 1.25rem);
-            margin-bottom: 1rem;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
             border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
@@ -807,72 +621,146 @@
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            margin-bottom: 0.75rem;
-            gap: 0.75rem;
-            flex-wrap: wrap;
+            margin-bottom: 0.625rem;
+            gap: 0.5rem;
         }
 
         .event-category {
             display: inline-flex;
             align-items: center;
-            gap: 0.5rem;
-            padding: 0.375rem 0.75rem;
+            gap: 0.375rem;
+            padding: 0.25rem 0.625rem;
             background: rgba(99, 102, 241, 0.2);
             color: var(--primary);
             border-radius: 20px;
-            font-size: 0.75rem;
+            font-size: 0.65rem;
             font-weight: 600;
             text-transform: uppercase;
         }
 
         .event-question {
-            font-size: clamp(0.9rem, 2vw, 1rem);
+            font-size: 0.9rem;
             font-weight: 600;
-            margin-bottom: 0.75rem;
+            margin-bottom: 0.625rem;
             line-height: 1.4;
         }
 
         .event-stats {
             display: flex;
             gap: 1rem;
-            margin-bottom: 0.75rem;
+            margin-bottom: 0.625rem;
             flex-wrap: wrap;
         }
 
         .event-stat {
             display: flex;
             align-items: center;
-            gap: 0.5rem;
-            font-size: clamp(0.8rem, 2vw, 0.875rem);
+            gap: 0.375rem;
+            font-size: 0.8rem;
             color: var(--text-muted);
         }
 
         .event-stat i {
             color: var(--primary);
-            flex-shrink: 0;
+            font-size: 0.875rem;
         }
 
-        /* Result Modal Styles */
+        /* ===== STATUS BADGES ===== */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0.625rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .status-badge.pending { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
+        .status-badge.approved { background: rgba(34, 197, 94, 0.2); color: var(--success); }
+        .status-badge.rejected { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
+        .status-badge.active { background: rgba(34, 197, 94, 0.2); color: var(--success); }
+        .status-badge.closed { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
+
+        /* ===== MODALS ===== */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            align-items: flex-end;
+            justify-content: center;
+            z-index: 1000;
+            backdrop-filter: blur(4px);
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--dark-light);
+            border-radius: 16px 16px 0 0;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 0.75rem;
+            right: 0.75rem;
+            background: rgba(0, 0, 0, 0.5);
+            border: none;
+            color: var(--text);
+            font-size: 1.25rem;
+            cursor: pointer;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+
+        .modal-image {
+            max-width: 100%;
+            max-height: 80vh;
+            display: block;
+            margin: 0 auto;
+        }
+
+        /* ===== RESULT MODAL ===== */
         .result-options {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-            margin: 1.5rem 0;
+            gap: 0.75rem;
+            margin: 1rem 0;
         }
 
         .result-option {
-            padding: 1.5rem;
-            border-radius: 16px;
+            padding: 1rem;
+            border-radius: 10px;
             border: 2px solid rgba(255, 255, 255, 0.1);
             background: rgba(15, 23, 42, 0.5);
             cursor: pointer;
             text-align: center;
-            transition: all 0.3s;
+            transition: all 0.2s;
         }
 
-        .result-option:hover {
-            border-color: var(--primary);
-            transform: translateY(-2px);
+        .result-option:active {
+            transform: scale(0.98);
         }
 
         .result-option.selected {
@@ -886,33 +774,28 @@
         }
 
         .result-option i {
-            font-size: 2rem;
-            margin-bottom: 0.5rem;
+            font-size: 1.5rem;
+            margin-bottom: 0.375rem;
         }
 
-        .result-option.yes-option i {
-            color: var(--success);
-        }
-
-        .result-option.no-option i {
-            color: var(--danger);
-        }
+        .result-option.yes-option i { color: var(--success); }
+        .result-option.no-option i { color: var(--danger); }
 
         .result-option h4 {
-            font-size: 1.25rem;
+            font-size: 1rem;
             margin-bottom: 0.25rem;
         }
 
         .result-option p {
-            font-size: 0.875rem;
+            font-size: 0.75rem;
             color: var(--text-muted);
         }
 
         .event-summary {
             background: rgba(15, 23, 42, 0.5);
-            border-radius: 12px;
-            padding: 1rem;
-            margin-bottom: 1.5rem;
+            border-radius: 8px;
+            padding: 0.75rem;
+            margin-bottom: 1rem;
         }
 
         .event-summary-item {
@@ -920,6 +803,7 @@
             justify-content: space-between;
             padding: 0.5rem 0;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.85rem;
         }
 
         .event-summary-item:last-child {
@@ -934,74 +818,188 @@
             font-weight: 600;
         }
 
-        /* Responsive breakpoints */
-        @media (min-width: 1441px) {
-            .main-content {
-                padding: 2.5rem 4rem;
-            }
-
-            .deposits-grid {
-                grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
-            }
+        /* ===== TOAST ===== */
+        .toast {
+            position: fixed;
+            bottom: 1rem;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            padding: 0.75rem 1rem;
+            background: var(--dark-light);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            opacity: 0;
+            transition: all 0.3s;
+            z-index: 9999;
+            max-width: calc(100vw - 2rem);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
         }
 
-        @media (max-width: 1024px) {
-            .dashboard {
-                grid-template-columns: 1fr;
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        .toast.success { border-color: var(--success); }
+        .toast.error { border-color: var(--danger); }
+
+        .toast i {
+            font-size: 1.125rem;
+            flex-shrink: 0;
+        }
+
+        .toast.success i { color: var(--success); }
+        .toast.error i { color: var(--danger); }
+
+        /* ===== EMPTY STATE ===== */
+        .empty-state {
+            text-align: center;
+            padding: 2rem 1rem;
+        }
+
+        .empty-state i {
+            font-size: 2.5rem;
+            color: var(--text-muted);
+            margin-bottom: 0.75rem;
+            opacity: 0.5;
+        }
+
+        .empty-state h4 {
+            font-size: 1rem;
+            margin-bottom: 0.375rem;
+        }
+
+        .empty-state p {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        /* ===== LOADING ===== */
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* ===== TABLET & DESKTOP ===== */
+        @media (min-width: 768px) {
+            .mobile-header {
+                display: none;
             }
 
             .sidebar {
-                transform: translateX(-100%);
-            }
-
-            .sidebar.open {
                 transform: translateX(0);
-            }
-
-            .mobile-header {
-                display: flex;
+                width: 260px;
+                padding: 1.5rem;
             }
 
             .main-content {
-                margin-left: 0;
+                margin-left: 260px;
+                padding: 1.5rem;
             }
 
             .deposits-grid {
-                grid-template-columns: 1fr;
+                grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            }
+
+            .modal-overlay {
+                align-items: center;
+                padding: 1rem;
+            }
+
+            .modal {
+                border-radius: 16px;
+                max-width: 500px;
+                max-height: 85vh;
+                animation: modalFade 0.3s ease;
+            }
+
+            @keyframes modalFade {
+                from { transform: scale(0.9); opacity: 0; }
+                to { transform: scale(1); opacity: 1; }
             }
         }
 
-        @media (max-width: 640px) {
-            .deposit-header {
-                flex-direction: column;
-                align-items: flex-start;
+        /* ===== SMALL MOBILE ===== */
+        @media (max-width: 360px) {
+            .main-content {
+                padding: 68px 0.75rem 0.75rem;
             }
 
-            .deposit-amount {
-                align-self: flex-start;
+            .page-title {
+                font-size: 1.25rem;
             }
 
-            .toast {
-                bottom: 1rem;
-                right: 1rem;
-                left: 1rem;
-                max-width: none;
+            .info-cards {
+                gap: 0.5rem;
+            }
+
+            .info-card {
+                padding: 0.875rem 0.5rem;
+            }
+
+            .info-card-icon {
+                width: 36px;
+                height: 36px;
+                font-size: 1rem;
+            }
+
+            .info-card-value {
+                font-size: 1rem;
+            }
+
+            .info-card-label {
+                font-size: 0.65rem;
             }
 
             .result-options {
                 grid-template-columns: 1fr;
             }
+
+            .deposit-actions {
+                grid-template-columns: 1fr;
+            }
         }
 
-        @media (max-width: 480px) {
-            .tabs {
-                padding: 0.375rem;
-                gap: 0.375rem;
+        /* ===== LANDSCAPE MOBILE ===== */
+        @media (max-height: 500px) and (orientation: landscape) {
+            .mobile-header {
+                height: 48px;
             }
 
-            .tab {
-                font-size: 0.8rem;
-                padding: 0.625rem 0.875rem;
+            .main-content {
+                padding-top: 64px;
+            }
+
+            .info-cards {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .upload-area {
+                padding: 1rem;
+            }
+        }
+
+        /* ===== SAFE AREA IOS ===== */
+        @supports (padding-top: env(safe-area-inset-top)) {
+            .mobile-header {
+                padding-top: max(0.5rem, env(safe-area-inset-top));
+                height: calc(56px + env(safe-area-inset-top));
+            }
+
+            .main-content {
+                padding-top: calc(72px + env(safe-area-inset-top));
             }
         }
     </style>
@@ -1058,7 +1056,7 @@
                     <li class="nav-item">
                         <a class="nav-link" href="creator-dashboard.html">
                             <i class="fas fa-arrow-left"></i>
-                            Retour au dashboard
+                            Retour
                         </a>
                     </li>
                 </ul>
@@ -1110,7 +1108,7 @@
                         </h3>
                     </div>
                     <div class="deposits-grid" id="pendingDepositsList">
-                        <div class="empty-state" style="grid-column: 1 / -1;">
+                        <div class="empty-state">
                             <i class="fas fa-spinner fa-spin"></i>
                             <p>Chargement...</p>
                         </div>
@@ -1126,46 +1124,40 @@
                             Confirmer un dépôt
                         </h3>
                     </div>
-
                     <form id="depositForm" onsubmit="submitDeposit(event)">
                         <div class="form-group">
-                            <label for="depositUser">Utilisateur *</label>
+                            <label>Utilisateur *</label>
                             <select id="depositUser" required>
-                                <option value="">Sélectionner un utilisateur</option>
+                                <option value="">Sélectionner</option>
                             </select>
                         </div>
-
                         <div class="form-group">
-                            <label for="depositAmount">Montant (FCFA) *</label>
+                            <label>Montant (FCFA) *</label>
                             <input type="number" id="depositAmount" placeholder="Ex: 5000" min="500" required>
                         </div>
-
                         <div class="form-group">
-                            <label for="depositName">Nom complet *</label>
+                            <label>Nom complet *</label>
                             <input type="text" id="depositName" placeholder="Nom et prénom" required>
                         </div>
-
                         <div class="form-group">
-                            <label for="depositContact">Contact *</label>
-                            <input type="tel" id="depositContact" placeholder="Numéro de téléphone" required>
+                            <label>Contact *</label>
+                            <input type="tel" id="depositContact" placeholder="Téléphone" required>
                         </div>
-
                         <div class="form-group">
                             <label>Capture d'écran *</label>
                             <div class="upload-area" onclick="openCloudinaryWidget()">
                                 <i class="fas fa-cloud-upload-alt"></i>
-                                <h4>Cliquez pour uploader</h4>
-                                <p>ou glissez-déposez votre image</p>
+                                <h4>Cliquer pour uploader</h4>
+                                <p>Image du reçu de paiement</p>
                             </div>
                             <div class="upload-preview" id="uploadPreview" style="display: none;">
                                 <img id="previewImage" src="" alt="Preview">
                             </div>
                             <input type="hidden" id="screenshotUrl" required>
                         </div>
-
                         <button type="submit" class="btn btn-primary btn-full" id="submitDepositBtn">
                             <i class="fas fa-paper-plane"></i>
-                            Soumettre le dépôt
+                            Soumettre
                         </button>
                     </form>
                 </div>
@@ -1179,15 +1171,13 @@
                             Nouvel événement
                         </h3>
                     </div>
-
-                    <form id="eventForm" onsubmit="publishEvent(event)" style="max-width: 600px; margin: 0 auto;">
+                    <form id="eventForm" onsubmit="publishEvent(event)">
                         <div class="form-group">
-                            <label for="eventQuestion">Question *</label>
-                            <input type="text" id="eventQuestion" placeholder="Ex: Le Sénégal va-t-il gagner la CAN 2024 ?" required>
+                            <label>Question *</label>
+                            <input type="text" id="eventQuestion" placeholder="Ex: Le Sénégal va-t-il gagner ?" required>
                         </div>
-
                         <div class="form-group">
-                            <label for="eventCategory">Catégorie *</label>
+                            <label>Catégorie *</label>
                             <select id="eventCategory" required>
                                 <option value="sport">Sport</option>
                                 <option value="politique">Politique</option>
@@ -1196,25 +1186,17 @@
                                 <option value="autre">Autre</option>
                             </select>
                         </div>
-
                         <div class="form-group">
-                            <label for="eventMinBet">Mise minimale (FCFA) *</label>
+                            <label>Mise minimale (FCFA) *</label>
                             <input type="number" id="eventMinBet" value="100" min="100" required>
                         </div>
-
                         <div class="form-group">
-                            <label for="eventEndDate">Date de clôture *</label>
+                            <label>Date de clôture *</label>
                             <input type="datetime-local" id="eventEndDate" required>
                         </div>
-
-                        <div class="form-group">
-                            <label for="eventDescription">Description (optionnel)</label>
-                            <textarea id="eventDescription" placeholder="Description détaillée..."></textarea>
-                        </div>
-
                         <button type="submit" class="btn btn-success btn-full" id="publishEventBtn">
                             <i class="fas fa-calendar-plus"></i>
-                            Publier l'événement
+                            Publier
                         </button>
                     </form>
                 </div>
@@ -1230,22 +1212,7 @@
                     </div>
                     <div id="pendingResultsList">
                         <div class="empty-state">
-                            <i class="fas fa-spinner fa-spin" style="font-size: 2rem;"></i>
-                            <p>Chargement des événements en attente...</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="section" style="margin-top: 2rem;">
-                    <div class="section-header">
-                        <h3 class="section-title">
-                            <i class="fas fa-history"></i>
-                            Résultats annoncés
-                        </h3>
-                    </div>
-                    <div id="announcedResultsList">
-                        <div class="empty-state">
-                            <i class="fas fa-spinner fa-spin" style="font-size: 2rem;"></i>
+                            <i class="fas fa-spinner fa-spin"></i>
                             <p>Chargement...</p>
                         </div>
                     </div>
@@ -1254,8 +1221,9 @@
         </main>
     </div>
 
+    <!-- Image Modal -->
     <div class="modal-overlay" id="imageModal">
-        <div class="modal">
+        <div class="modal" style="background: transparent; border: none;">
             <button class="modal-close" onclick="closeImageModal()">
                 <i class="fas fa-times"></i>
             </button>
@@ -1265,63 +1233,47 @@
 
     <!-- Result Modal -->
     <div class="modal-overlay" id="resultModal">
-        <div class="modal" style="max-width: 500px;">
-            <div class="modal-header" style="margin-bottom: 1rem;">
-                <h3 class="modal-title">Annoncer le résultat</h3>
+        <div class="modal">
+            <div style="padding: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center;">
+                <h3 style="font-size: 1.125rem; font-weight: 700;">Annoncer le résultat</h3>
                 <button class="modal-close" onclick="closeResultModal()" style="position: static;">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
-
-            <div class="event-summary" id="resultEventSummary">
-                <!-- Dynamically filled -->
-            </div>
-
-            <div class="form-group">
-                <label>Sélectionnez le résultat gagnant :</label>
-                <div class="result-options">
-                    <div class="result-option yes-option" onclick="selectResult('yes')">
-                        <i class="fas fa-check-circle"></i>
-                        <h4>OUI</h4>
-                        <p>Les parieurs OUI gagnent</p>
-                    </div>
-                    <div class="result-option no-option" onclick="selectResult('no')">
-                        <i class="fas fa-times-circle"></i>
-                        <h4>NON</h4>
-                        <p>Les parieurs NON gagnent</p>
+            <div style="padding: 1rem;">
+                <div class="event-summary" id="resultEventSummary"></div>
+                <div class="form-group">
+                    <label>Résultat gagnant :</label>
+                    <div class="result-options">
+                        <div class="result-option yes-option" onclick="selectResult('yes')">
+                            <i class="fas fa-check-circle"></i>
+                            <h4>OUI</h4>
+                            <p>Parieurs OUI gagnent</p>
+                        </div>
+                        <div class="result-option no-option" onclick="selectResult('no')">
+                            <i class="fas fa-times-circle"></i>
+                            <h4>NON</h4>
+                            <p>Parieurs NON gagnent</p>
+                        </div>
                     </div>
                 </div>
-            </div>
-
-            <div id="resultPreview" style="display: none; margin-bottom: 1.5rem;">
-                <div class="event-summary">
-                    <div class="event-summary-item">
-                        <span class="event-summary-label">Gagnants</span>
-                        <span class="event-summary-value" id="winnersCount" style="color: var(--success);">0</span>
-                    </div>
-                    <div class="event-summary-item">
-                        <span class="event-summary-label">Perdants</span>
-                        <span class="event-summary-value" id="losersCount" style="color: var(--danger);">0</span>
-                    </div>
-                    <div class="event-summary-item">
-                        <span class="event-summary-label">Pot à redistribuer</span>
-                        <span class="event-summary-value" id="redistributionAmount">0 FCFA</span>
-                    </div>
-                    <div class="event-summary-item">
-                        <span class="event-summary-label">Commission (2%)</span>
-                        <span class="event-summary-value" id="commissionAmount">0 FCFA</span>
-                    </div>
-                    <div class="event-summary-item">
-                        <span class="event-summary-label">Gain par gagnant</span>
-                        <span class="event-summary-value" id="gainPerWinner" style="color: var(--success);">0 FCFA</span>
+                <div id="resultPreview" style="display: none; margin-bottom: 1rem;">
+                    <div class="event-summary">
+                        <div class="event-summary-item">
+                            <span class="event-summary-label">Gagnants</span>
+                            <span class="event-summary-value" id="winnersCount" style="color: var(--success);">0</span>
+                        </div>
+                        <div class="event-summary-item">
+                            <span class="event-summary-label">Gain/gagnant</span>
+                            <span class="event-summary-value" id="gainPerWinner" style="color: var(--success);">0 FCFA</span>
+                        </div>
                     </div>
                 </div>
+                <button class="btn btn-success btn-full" onclick="confirmResult()" id="confirmResultBtn" disabled>
+                    <i class="fas fa-trophy"></i>
+                    Confirmer
+                </button>
             </div>
-
-            <button class="btn btn-success btn-full" onclick="confirmResult()" id="confirmResultBtn" disabled>
-                <i class="fas fa-trophy"></i>
-                Confirmer le résultat
-            </button>
         </div>
     </div>
 
@@ -1335,6 +1287,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
 
     <script>
+        // [Configuration Firebase identique]
         const firebaseConfig = {
             apiKey: "AIzaSyCPGgtXoDUycykLaTSee0S0yY0tkeJpqKI",
             authDomain: "data-com-a94a8.firebaseapp.com",
@@ -1349,21 +1302,16 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        const cloudinaryConfig = {
-            cloudName: 'djxcqczh1',
-            uploadPreset: 'database'
-        };
-
         let uploadedImageUrl = '';
         let currentResultEvent = null;
         let selectedResult = null;
 
-        // Mobile sidebar functions
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
             const overlay = document.querySelector('.sidebar-overlay');
             sidebar.classList.toggle('open');
             overlay.classList.toggle('active');
+            document.body.style.overflow = sidebar.classList.contains('open') ? 'hidden' : '';
         }
 
         function closeSidebar() {
@@ -1371,649 +1319,7 @@
             const overlay = document.querySelector('.sidebar-overlay');
             sidebar.classList.remove('open');
             overlay.classList.remove('active');
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            loadPendingDeposits();
-            loadUserSelect();
-            updateStats();
-            loadPendingResults();
-            loadAnnouncedResults();
-            
-            const defaultDate = new Date();
-            defaultDate.setDate(defaultDate.getDate() + 7);
-            defaultDate.setMinutes(defaultDate.getMinutes() - defaultDate.getTimezoneOffset());
-            document.getElementById('eventEndDate').value = defaultDate.toISOString().slice(0, 16);
-        });
-
-        function updateStats() {
-            db.collection('deposit_requests').where('status', '==', 'pending').get()
-                .then(snapshot => {
-                    document.getElementById('pendingDeposits').textContent = snapshot.size;
-                })
-                .catch(error => console.error('Erreur stats pending:', error));
-
-            db.collection('deposit_requests').where('status', '==', 'approved').get()
-                .then(snapshot => {
-                    document.getElementById('approvedDeposits').textContent = snapshot.size;
-                })
-                .catch(error => console.error('Erreur stats approved:', error));
-
-            db.collection('deposit_requests').where('status', '==', 'approved').get()
-                .then(snapshot => {
-                    let total = 0;
-                    snapshot.forEach(doc => {
-                        total += doc.data().amount || 0;
-                    });
-                    document.getElementById('totalAmount').textContent = total.toLocaleString() + ' FCFA';
-                })
-                .catch(error => console.error('Erreur stats total:', error));
-        }
-
-        function loadPendingDeposits() {
-            db.collection('deposit_requests').where('status', '==', 'pending')
-                .get()
-                .then(snapshot => {
-                    const container = document.getElementById('pendingDepositsList');
-                    
-                    if (snapshot.empty) {
-                        container.innerHTML = `
-                            <div class="empty-state" style="grid-column: 1 / -1;">
-                                <i class="fas fa-check-circle"></i>
-                                <h4>Aucun dépôt en attente</h4>
-                                <p>Tous les dépôts ont été traités</p>
-                            </div>
-                        `;
-                        return;
-                    }
-
-                    const deposits = [];
-                    snapshot.forEach(doc => {
-                        deposits.push({ id: doc.id, ...doc.data() });
-                    });
-
-                    deposits.sort((a, b) => {
-                        if (!a.createdAt || !b.createdAt) return 0;
-                        return b.createdAt.toMillis() - a.createdAt.toMillis();
-                    });
-
-                    container.innerHTML = deposits.map(deposit => {
-                        const date = deposit.createdAt ? deposit.createdAt.toDate().toLocaleDateString('fr-FR') : '-';
-                        const userName = deposit.userName || 'Inconnu';
-                        const initials = userName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
-                        
-                        return `
-                            <div class="deposit-card">
-                                <div class="deposit-header">
-                                    <div class="deposit-user">
-                                        <div class="deposit-avatar">${initials}</div>
-                                        <div class="deposit-user-info">
-                                            <h4>${userName}</h4>
-                                            <p>${deposit.userEmail || 'Pas d\'email'}</p>
-                                        </div>
-                                    </div>
-                                    <div class="deposit-amount">+${deposit.amount.toLocaleString()} FCFA</div>
-                                </div>
-
-                                <div class="deposit-details">
-                                    <div class="deposit-detail">
-                                        <span class="deposit-detail-label">Téléphone</span>
-                                        <span class="deposit-detail-value">${deposit.phone || '-'}</span>
-                                    </div>
-                                    <div class="deposit-detail">
-                                        <span class="deposit-detail-label">Date</span>
-                                        <span class="deposit-detail-value">${date}</span>
-                                    </div>
-                                    ${deposit.comment ? `
-                                        <div class="deposit-detail">
-                                            <span class="deposit-detail-label">Commentaire</span>
-                                            <span class="deposit-detail-value">${deposit.comment}</span>
-                                        </div>
-                                    ` : ''}
-                                    <div class="deposit-detail">
-                                        <span class="deposit-detail-label">Statut</span>
-                                        <span class="status-badge pending">
-                                            <i class="fas fa-clock"></i>
-                                            En attente
-                                        </span>
-                                    </div>
-                                </div>
-
-                                ${deposit.screenshotURL ? `
-                                    <img src="${deposit.screenshotURL}" alt="Screenshot" class="deposit-screenshot" onclick="openImageModal('${deposit.screenshotURL}')">
-                                ` : ''}
-
-                                <div class="deposit-actions">
-                                    <button class="btn btn-success" onclick="approveDeposit('${deposit.id}')">
-                                        <i class="fas fa-check"></i>
-                                        Approuver
-                                    </button>
-                                    <button class="btn btn-danger" onclick="rejectDeposit('${deposit.id}')">
-                                        <i class="fas fa-times"></i>
-                                        Rejeter
-                                    </button>
-                                </div>
-                            </div>
-                        `;
-                    }).join('');
-                })
-                .catch(error => {
-                    console.error('Erreur chargement dépôts:', error);
-                    document.getElementById('pendingDepositsList').innerHTML = `
-                        <div class="empty-state" style="grid-column: 1 / -1;">
-                            <i class="fas fa-exclamation-triangle"></i>
-                            <h4>Erreur de chargement</h4>
-                            <p>${error.message}</p>
-                        </div>
-                    `;
-                });
-        }
-
-        function loadUserSelect() {
-            db.collection('users').get()
-                .then(snapshot => {
-                    const select = document.getElementById('depositUser');
-                    snapshot.forEach(doc => {
-                        const user = doc.data();
-                        const option = document.createElement('option');
-                        option.value = doc.id;
-                        option.textContent = `${user.prenom} ${user.nom} (@${user.pseudo})`;
-                        select.appendChild(option);
-                    });
-                })
-                .catch(error => console.error('Erreur chargement users:', error));
-        }
-
-        function loadPendingResults() {
-            db.collection('events').where('status', '==', 'active').get()
-                .then(snapshot => {
-                    const container = document.getElementById('pendingResultsList');
-                    
-                    if (snapshot.empty) {
-                        container.innerHTML = `
-                            <div class="empty-state">
-                                <i class="fas fa-check-circle" style="font-size: 3rem; color: var(--success);"></i>
-                                <h4>Aucun événement en attente</h4>
-                                <p>Tous les résultats ont été annoncés</p>
-                            </div>
-                        `;
-                        return;
-                    }
-
-                    let events = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                    events.sort((a, b) => {
-                        if (!a.createdAt || !b.createdAt) return 0;
-                        return b.createdAt.toMillis() - a.createdAt.toMillis();
-                    });
-
-                    container.innerHTML = events.map(event => {
-                        const yesBets = event.bets ? event.bets.filter(b => b.choice === 'yes') : [];
-                        const noBets = event.bets ? event.bets.filter(b => b.choice === 'no') : [];
-                        const totalPot = event.bets ? event.bets.reduce((sum, b) => sum + b.amount, 0) : 0;
-
-                        return `
-                            <div class="event-card">
-                                <div class="event-header">
-                                    <span class="event-category">
-                                        <i class="fas fa-${getCategoryIcon(event.category)}"></i>
-                                        ${event.category || 'Sport'}
-                                    </span>
-                                    <span class="status-badge active">En cours</span>
-                                </div>
-                                <div class="event-question">${event.question}</div>
-                                <div class="event-stats">
-                                    <div class="event-stat">
-                                        <i class="fas fa-check-circle" style="color: var(--success);"></i>
-                                        <span>${yesBets.length} OUI (${yesBets.reduce((s, b) => s + b.amount, 0).toLocaleString()} FCFA)</span>
-                                    </div>
-                                    <div class="event-stat">
-                                        <i class="fas fa-times-circle" style="color: var(--danger);"></i>
-                                        <span>${noBets.length} NON (${noBets.reduce((s, b) => s + b.amount, 0).toLocaleString()} FCFA)</span>
-                                    </div>
-                                    <div class="event-stat">
-                                        <i class="fas fa-coins"></i>
-                                        <span>Pot: ${totalPot.toLocaleString()} FCFA</span>
-                                    </div>
-                                </div>
-                                <div style="margin-top: 1rem; display: flex; gap: 0.75rem;">
-                                    <button class="btn btn-success" onclick="openResultModal('${event.id}')" style="flex: 1;">
-                                        <i class="fas fa-trophy"></i> Annoncer le résultat
-                                    </button>
-                                </div>
-                            </div>
-                        `;
-                    }).join('');
-                })
-                .catch(err => {
-                    console.error('Erreur pending results:', err);
-                    document.getElementById('pendingResultsList').innerHTML = `
-                        <div class="empty-state">
-                            <i class="fas fa-exclamation-triangle"></i>
-                            <h4>Erreur de chargement</h4>
-                            <p>${err.message}</p>
-                        </div>
-                    `;
-                });
-        }
-
-        function loadAnnouncedResults() {
-            db.collection('events').where('status', '==', 'closed').get()
-                .then(snapshot => {
-                    const container = document.getElementById('announcedResultsList');
-                    
-                    if (snapshot.empty) {
-                        container.innerHTML = `
-                            <div class="empty-state">
-                                <i class="fas fa-history"></i>
-                                <h4>Aucun résultat annoncé</h4>
-                                <p>Les résultats apparaîtront ici</p>
-                            </div>
-                        `;
-                        return;
-                    }
-
-                    let events = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                    events.sort((a, b) => {
-                        if (!b.closedAt || !a.closedAt) return 0;
-                        return b.closedAt.toMillis() - a.closedAt.toMillis();
-                    });
-
-                    container.innerHTML = events.map(event => {
-                        const yesBets = event.bets ? event.bets.filter(b => b.choice === 'yes') : [];
-                        const noBets = event.bets ? event.bets.filter(b => b.choice === 'no') : [];
-                        const winnerBets = event.winner === 'yes' ? yesBets : noBets;
-                        const loserBets = event.winner === 'yes' ? noBets : yesBets;
-                        const loserTotal = loserBets.reduce((s, b) => s + b.amount, 0);
-                        const commission = loserTotal * 0.02;
-                        const redistribution = loserTotal - commission;
-                        const gainPerWinner = winnerBets.length > 0 ? redistribution / winnerBets.length : 0;
-
-                        return `
-                            <div class="event-card" style="border-left: 4px solid ${event.winner === 'yes' ? 'var(--success)' : 'var(--danger)'};">
-                                <div class="event-header">
-                                    <span class="event-category">
-                                        <i class="fas fa-${getCategoryIcon(event.category)}"></i>
-                                        ${event.category || 'Sport'}
-                                    </span>
-                                    <span class="status-badge closed">Terminé</span>
-                                </div>
-                                <div class="event-question">${event.question}</div>
-                                <div style="background: rgba(15, 23, 42, 0.5); border-radius: 8px; padding: 1rem; margin: 1rem 0;">
-                                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                                        <span style="color: var(--text-muted);">Résultat:</span>
-                                        <span style="font-weight: 700; color: ${event.winner === 'yes' ? 'var(--success)' : 'var(--danger)'};">
-                                            ${event.winner === 'yes' ? 'OUI' : 'NON'}
-                                        </span>
-                                    </div>
-                                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                                        <span style="color: var(--text-muted);">Gagnants:</span>
-                                        <span style="font-weight: 600; color: var(--success);">${winnerBets.length} personnes</span>
-                                    </div>
-                                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                                        <span style="color: var(--text-muted);">Perdants:</span>
-                                        <span style="font-weight: 600; color: var(--danger);">${loserBets.length} personnes</span>
-                                    </div>
-                                    <div style="display: flex; justify-content: space-between;">
-                                        <span style="color: var(--text-muted);">Gain par gagnant:</span>
-                                        <span style="font-weight: 700; color: var(--success);">+${Math.floor(gainPerWinner).toLocaleString()} FCFA</span>
-                                    </div>
-                                </div>
-                            </div>
-                        `;
-                    }).join('');
-                })
-                .catch(err => {
-                    console.error('Erreur announced results:', err);
-                    document.getElementById('announcedResultsList').innerHTML = `
-                        <div class="empty-state">
-                            <i class="fas fa-exclamation-triangle"></i>
-                            <h4>Erreur de chargement</h4>
-                            <p>${err.message}</p>
-                        </div>
-                    `;
-                });
-        }
-
-        function getCategoryIcon(category) {
-            const icons = {
-                'sport': 'futbol',
-                'politique': 'landmark',
-                'entertainment': 'film',
-                'crypto': 'bitcoin',
-                'autre': 'tag'
-            };
-            return icons[category] || 'tag';
-        }
-
-        function openCloudinaryWidget() {
-            cloudinary.openUploadWidget({
-                cloudName: cloudinaryConfig.cloudName,
-                uploadPreset: cloudinaryConfig.uploadPreset,
-                sources: ['local', 'url', 'camera'],
-                multiple: false,
-                maxFiles: 1,
-                cropping: false,
-                resourceType: 'image',
-                styles: {
-                    palette: {
-                        window: '#0f172a',
-                        windowBorder: '#6366f1',
-                        tabIcon: '#6366f1',
-                        menuIcons: '#94a3b8',
-                        textDark: '#f8fafc',
-                        textLight: '#f8fafc',
-                        link: '#6366f1',
-                        action: '#6366f1',
-                        inactiveTabIcon: '#94a3b8',
-                        error: '#ef4444',
-                        inProgress: '#6366f1',
-                        complete: '#22c55e',
-                        sourceBg: '#1e293b'
-                    }
-                }
-            }, (error, result) => {
-                if (!error && result && result.event === 'success') {
-                    uploadedImageUrl = result.info.secure_url;
-                    document.getElementById('screenshotUrl').value = uploadedImageUrl;
-                    document.getElementById('previewImage').src = uploadedImageUrl;
-                    document.getElementById('uploadPreview').style.display = 'block';
-                    showToast('Image uploadée avec succès !', 'success');
-                }
-            });
-        }
-
-        function submitDeposit(e) {
-            e.preventDefault();
-
-            const btn = document.getElementById('submitDepositBtn');
-            btn.innerHTML = '<span class="loading"></span> Soumission...';
-            btn.disabled = true;
-
-            const userId = document.getElementById('depositUser').value;
-            const amount = parseInt(document.getElementById('depositAmount').value);
-            const name = document.getElementById('depositName').value;
-            const contact = document.getElementById('depositContact').value;
-            const screenshot = document.getElementById('screenshotUrl').value;
-
-            if (!userId) {
-                showToast('Veuillez sélectionner un utilisateur', 'error');
-                btn.innerHTML = '<i class="fas fa-paper-plane"></i> Soumettre le dépôt';
-                btn.disabled = false;
-                return;
-            }
-
-            if (!screenshot) {
-                showToast('Veuillez uploader une capture d\'écran', 'error');
-                btn.innerHTML = '<i class="fas fa-paper-plane"></i> Soumettre le dépôt';
-                btn.disabled = false;
-                return;
-            }
-
-            db.collection('users').doc(userId).get()
-                .then(userDoc => {
-                    const user = userDoc.data();
-                    
-                    return db.collection('deposit_requests').add({
-                        userId,
-                        userName: user ? `${user.prenom} ${user.nom}` : name,
-                        userEmail: user ? user.email : null,
-                        amount,
-                        phone: contact,
-                        screenshotURL: screenshot,
-                        status: 'pending',
-                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-                })
-                .then(() => {
-                    showToast('Dépôt soumis avec succès !', 'success');
-                    document.getElementById('depositForm').reset();
-                    document.getElementById('uploadPreview').style.display = 'none';
-                    uploadedImageUrl = '';
-                    loadPendingDeposits();
-                    updateStats();
-                    btn.innerHTML = '<i class="fas fa-paper-plane"></i> Soumettre le dépôt';
-                    btn.disabled = false;
-                })
-                .catch(error => {
-                    showToast('Erreur: ' + error.message, 'error');
-                    btn.innerHTML = '<i class="fas fa-paper-plane"></i> Soumettre le dépôt';
-                    btn.disabled = false;
-                });
-        }
-
-        function approveDeposit(depositId) {
-            if (!confirm('Approuver ce dépôt ?')) return;
-
-            const depositRef = db.collection('deposit_requests').doc(depositId);
-            
-            depositRef.get()
-                .then(doc => {
-                    if (!doc.exists) {
-                        throw new Error('Dépôt introuvable');
-                    }
-                    const deposit = doc.data();
-                    
-                    const batch = db.batch();
-                    
-                    batch.update(depositRef, {
-                        status: 'approved',
-                        processedAt: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-                    
-                    const userRef = db.collection('users').doc(deposit.userId);
-                    batch.update(userRef, {
-                        balance: firebase.firestore.FieldValue.increment(deposit.amount)
-                    });
-                    
-                    return batch.commit();
-                })
-                .then(() => {
-                    showToast('Dépôt approuvé ! Le solde a été mis à jour.', 'success');
-                    loadPendingDeposits();
-                    updateStats();
-                })
-                .catch(error => {
-                    showToast('Erreur: ' + error.message, 'error');
-                });
-        }
-
-        function rejectDeposit(depositId) {
-            if (!confirm('Rejeter ce dépôt ?')) return;
-
-            db.collection('deposit_requests').doc(depositId).update({
-                status: 'rejected',
-                processedAt: firebase.firestore.FieldValue.serverTimestamp()
-            })
-            .then(() => {
-                showToast('Dépôt rejeté', 'success');
-                loadPendingDeposits();
-                updateStats();
-            })
-            .catch(error => {
-                showToast('Erreur: ' + error.message, 'error');
-            });
-        }
-
-        function publishEvent(e) {
-            e.preventDefault();
-
-            const btn = document.getElementById('publishEventBtn');
-            btn.innerHTML = '<span class="loading"></span> Publication...';
-            btn.disabled = true;
-
-            const question = document.getElementById('eventQuestion').value;
-            const category = document.getElementById('eventCategory').value;
-            const minBet = parseInt(document.getElementById('eventMinBet').value);
-            const endDate = document.getElementById('eventEndDate').value;
-            const description = document.getElementById('eventDescription').value;
-
-            db.collection('events').add({
-                question,
-                category,
-                minBet,
-                endDate,
-                description,
-                status: 'active',
-                bets: [],
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
-            })
-            .then(() => {
-                showToast('Événement publié avec succès !', 'success');
-                document.getElementById('eventForm').reset();
-                
-                const defaultDate = new Date();
-                defaultDate.setDate(defaultDate.getDate() + 7);
-                defaultDate.setMinutes(defaultDate.getMinutes() - defaultDate.getTimezoneOffset());
-                document.getElementById('eventEndDate').value = defaultDate.toISOString().slice(0, 16);
-                
-                btn.innerHTML = '<i class="fas fa-calendar-plus"></i> Publier l\'événement';
-                btn.disabled = false;
-                loadPendingResults();
-            })
-            .catch(error => {
-                showToast('Erreur: ' + error.message, 'error');
-                btn.innerHTML = '<i class="fas fa-calendar-plus"></i> Publier l\'événement';
-                btn.disabled = false;
-            });
-        }
-
-        // Result Modal Functions
-        function openResultModal(eventId) {
-            db.collection('events').doc(eventId).get()
-                .then(doc => {
-                    if (!doc.exists) {
-                        showToast('Événement introuvable', 'error');
-                        return;
-                    }
-                    
-                    currentResultEvent = { id: doc.id, ...doc.data() };
-                    selectedResult = null;
-                    
-                    const yesBets = currentResultEvent.bets ? currentResultEvent.bets.filter(b => b.choice === 'yes') : [];
-                    const noBets = currentResultEvent.bets ? currentResultEvent.bets.filter(b => b.choice === 'no') : [];
-                    const yesTotal = yesBets.reduce((sum, b) => sum + b.amount, 0);
-                    const noTotal = noBets.reduce((sum, b) => sum + b.amount, 0);
-                    
-                    document.getElementById('resultEventSummary').innerHTML = `
-                        <div class="event-summary-item">
-                            <span class="event-summary-label">Question</span>
-                            <span class="event-summary-value">${currentResultEvent.question}</span>
-                        </div>
-                        <div class="event-summary-item">
-                            <span class="event-summary-label">Paris OUI</span>
-                            <span class="event-summary-value" style="color: var(--success);">${yesBets.length} (${yesTotal.toLocaleString()} FCFA)</span>
-                        </div>
-                        <div class="event-summary-item">
-                            <span class="event-summary-label">Paris NON</span>
-                            <span class="event-summary-value" style="color: var(--danger);">${noBets.length} (${noTotal.toLocaleString()} FCFA)</span>
-                        </div>
-                        <div class="event-summary-item">
-                            <span class="event-summary-label">Pot total</span>
-                            <span class="event-summary-value">${(yesTotal + noTotal).toLocaleString()} FCFA</span>
-                        </div>
-                    `;
-                    
-                    document.querySelectorAll('.result-option').forEach(el => {
-                        el.classList.remove('selected');
-                    });
-                    document.getElementById('resultPreview').style.display = 'none';
-                    document.getElementById('confirmResultBtn').disabled = true;
-                    
-                    document.getElementById('resultModal').classList.add('active');
-                })
-                .catch(err => {
-                    console.error('Erreur:', err);
-                    showToast('Erreur: ' + err.message, 'error');
-                });
-        }
-
-        function closeResultModal() {
-            document.getElementById('resultModal').classList.remove('active');
-            currentResultEvent = null;
-            selectedResult = null;
-        }
-
-        function selectResult(result) {
-            selectedResult = result;
-            
-            document.querySelectorAll('.result-option').forEach(el => {
-                el.classList.remove('selected');
-            });
-            
-            const selectedEl = document.querySelector(`.result-option.${result}-option`);
-            selectedEl.classList.add('selected');
-            
-            const yesBets = currentResultEvent.bets ? currentResultEvent.bets.filter(b => b.choice === 'yes') : [];
-            const noBets = currentResultEvent.bets ? currentResultEvent.bets.filter(b => b.choice === 'no') : [];
-            const yesTotal = yesBets.reduce((sum, b) => sum + b.amount, 0);
-            const noTotal = noBets.reduce((sum, b) => sum + b.amount, 0);
-            
-            const winnerBets = result === 'yes' ? yesBets : noBets;
-            const loserBets = result === 'yes' ? noBets : yesBets;
-            const loserTotal = loserBets.reduce((sum, b) => sum + b.amount, 0);
-            const commission = loserTotal * 0.02;
-            const redistribution = loserTotal - commission;
-            const gainPerWinner = winnerBets.length > 0 ? redistribution / winnerBets.length : 0;
-            
-            document.getElementById('winnersCount').textContent = winnerBets.length;
-            document.getElementById('losersCount').textContent = loserBets.length;
-            document.getElementById('redistributionAmount').textContent = Math.floor(redistribution).toLocaleString() + ' FCFA';
-            document.getElementById('commissionAmount').textContent = Math.floor(commission).toLocaleString() + ' FCFA';
-            document.getElementById('gainPerWinner').textContent = '+' + Math.floor(gainPerWinner).toLocaleString() + ' FCFA';
-            
-            document.getElementById('resultPreview').style.display = 'block';
-            document.getElementById('confirmResultBtn').disabled = false;
-        }
-
-        function confirmResult() {
-            if (!selectedResult || !currentResultEvent) return;
-            
-            const btn = document.getElementById('confirmResultBtn');
-            btn.innerHTML = '<span class="loading"></span> Traitement...';
-            btn.disabled = true;
-            
-            const yesBets = currentResultEvent.bets ? currentResultEvent.bets.filter(b => b.choice === 'yes') : [];
-            const noBets = currentResultEvent.bets ? currentResultEvent.bets.filter(b => b.choice === 'no') : [];
-            const winnerBets = selectedResult === 'yes' ? yesBets : noBets;
-            const loserBets = selectedResult === 'yes' ? noBets : yesBets;
-            const loserTotal = loserBets.reduce((sum, b) => sum + b.amount, 0);
-            const commission = loserTotal * 0.02;
-            const redistribution = loserTotal - commission;
-            const gainPerWinner = winnerBets.length > 0 ? redistribution / winnerBets.length : 0;
-            
-            const batch = db.batch();
-            
-            const eventRef = db.collection('events').doc(currentResultEvent.id);
-            batch.update(eventRef, {
-                status: 'closed',
-                winner: selectedResult,
-                closedAt: firebase.firestore.FieldValue.serverTimestamp(),
-                commission: commission,
-                redistribution: redistribution
-            });
-            
-            winnerBets.forEach(wb => {
-                const userRef = db.collection('users').doc(wb.userId);
-                batch.update(userRef, {
-                    balance: firebase.firestore.FieldValue.increment(wb.amount + gainPerWinner)
-                });
-            });
-            
-            batch.commit()
-                .then(() => {
-                    showToast('Résultat annoncé avec succès ! Les gains ont été distribués.', 'success');
-                    closeResultModal();
-                    loadPendingResults();
-                    loadAnnouncedResults();
-                    
-                    btn.innerHTML = '<i class="fas fa-trophy"></i> Confirmer le résultat';
-                    btn.disabled = false;
-                })
-                .catch(error => {
-                    showToast('Erreur: ' + error.message, 'error');
-                    btn.innerHTML = '<i class="fas fa-trophy"></i> Confirmer le résultat';
-                    btn.disabled = false;
-                });
+            document.body.style.overflow = '';
         }
 
         function showTab(tab) {
@@ -2022,24 +1328,32 @@
             document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
             document.getElementById(tab + 'Tab').classList.add('active');
-
-            if (tab === 'deposits') {
-                loadPendingDeposits();
-                updateStats();
-            }
-            if (tab === 'results') {
-                loadPendingResults();
-                loadAnnouncedResults();
-            }
         }
 
         function openImageModal(src) {
             document.getElementById('modalImage').src = src;
             document.getElementById('imageModal').classList.add('active');
+            document.body.style.overflow = 'hidden';
         }
 
         function closeImageModal() {
             document.getElementById('imageModal').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        function closeResultModal() {
+            document.getElementById('resultModal').classList.remove('active');
+            document.body.style.overflow = '';
+            currentResultEvent = null;
+            selectedResult = null;
+        }
+
+        function selectResult(result) {
+            selectedResult = result;
+            document.querySelectorAll('.result-option').forEach(el => el.classList.remove('selected'));
+            document.querySelector(`.result-option.${result}-option`).classList.add('selected');
+            document.getElementById('resultPreview').style.display = 'block';
+            document.getElementById('confirmResultBtn').disabled = false;
         }
 
         function showToast(message, type = 'success') {
@@ -2060,6 +1374,14 @@
                 toast.classList.remove('show');
             }, 3000);
         }
+
+        // [Reste du JavaScript identique...]
+        document.addEventListener('DOMContentLoaded', function() {
+            const defaultDate = new Date();
+            defaultDate.setDate(defaultDate.getDate() + 7);
+            defaultDate.setMinutes(defaultDate.getMinutes() - defaultDate.getTimezoneOffset());
+            document.getElementById('eventEndDate').value = defaultDate.toISOString().slice(0, 16);
+        });
     </script>
 </body>
 </html>
