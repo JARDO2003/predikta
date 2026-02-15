@@ -488,9 +488,9 @@
                     </button>
                 </form>
                <button class="btn btn-outline" onclick="adminLogin()">
-    <i class="fas fa-user-shield"></i>
-    Connexion Admin
-</button>
+                    <i class="fas fa-user-shield"></i>
+                    Connexion Admin
+                </button>
             </div>
 
             <div class="tab-content" id="registerTab">
@@ -769,40 +769,30 @@
         }
 
         function adminLogin() {
-            const pseudo = document.getElementById('loginPseudo').value;
-            const password = document.getElementById('loginPassword').value;
+            const password = prompt("Entrez le mot de passe administrateur :");
+            const adminPassword = "marci@200@";
 
-            if (!pseudo || !password) {
-                showToast('Veuillez entrer vos identifiants', 'error');
-                return;
+            if (password === adminPassword) {
+                // Créer un objet admin pour la session
+                const adminUser = {
+                    id: 'admin_local',
+                    pseudo: 'admin',
+                    prenom: 'Admin',
+                    nom: 'System',
+                    role: 'admin',
+                    balance: 0
+                };
+                
+                // Stocker dans sessionStorage (comme le fait la fonction login normale)
+                storage.setItem('currentUser', JSON.stringify(adminUser));
+                showToast('Connexion admin réussie !', 'success');
+                
+                setTimeout(() => {
+                    window.location.href = 'creator-dashboard.html';
+                }, 1000);
+            } else if (password !== null) {
+                showToast('Mot de passe incorrect !', 'error');
             }
-
-            db.collection('users').where('pseudo', '==', pseudo).where('password', '==', password).get()
-                .then(snapshot => {
-                    if (snapshot.empty) {
-                        showToast('Identifiants incorrects', 'error');
-                        return;
-                    }
-
-                    const userDoc = snapshot.docs[0];
-                    const userData = userDoc.data();
-                    
-                    if (userData.role !== 'admin' && userData.role !== 'creator') {
-                        showToast('Accès refusé', 'error');
-                        return;
-                    }
-
-                    const user = { id: userDoc.id, ...userData };
-                    storage.setItem('currentUser', JSON.stringify(user));
-                    showToast('Connexion admin réussie !', 'success');
-                    
-                    setTimeout(() => {
-                        window.location.href = 'creator-dashboard.html';
-                    }, 1000);
-                })
-                .catch(error => {
-                    showToast('Erreur: ' + error.message, 'error');
-                });
         }
 
         function redirectUser(user) {
@@ -831,19 +821,6 @@
                 toast.classList.remove('show');
             }, 3000);
         }
-
-
-        function adminLogin() {
-    const password = prompt("Entrez le mot de passe administrateur :");
-
-    const adminPassword = "marci@200@";
-
-    if (password === adminPassword) {
-        window.location.href = "creator-dashboard.html";
-    } else if (password !== null) {
-        alert("Mot de passe incorrect !");
-    }
-}
     </script>
 </body>
 </html>
