@@ -32,7 +32,7 @@ const carouselSamples = [
         category: 'sport',
         question: 'Le Real Madrid remportera-t-il la Liga cette saison ?',
         date: '15 Juin 2024',
-        image: 'https://pixabay.com/images/search/real%20madrid%20football/?utm_source=chatgpt.com'
+        image: 'https://pixabay.com/fr/photos/fabio-coentrao-joueur-athl%c3%a8te-89568/'
     },
     {
         category: 'music',
