@@ -1,4 +1,4 @@
-  // Firebase Configuration
+ // Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyCPGgtXoDUycykLaTSee0S0yY0tkeJpqKI",
             authDomain: "data-com-a94a8.firebaseapp.com",
@@ -32,7 +32,7 @@
                 category: 'sport',
                 question: 'Le Real Madrid remportera-t-il la Liga cette saison ?',
                 date: '15 Juin 2024',
-                image: 'https://images.unsplash.com/photo-1518546305927-5a555bb7020d?w=400&h=250&fit=crop'
+                image: 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=400&h=250&fit=crop'
             },
             {
                 category: 'music',
