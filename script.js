@@ -32,7 +32,7 @@ const carouselSamples = [
         category: 'sport',
         question: 'Le Real Madrid remportera-t-il la Liga cette saison ?',
         date: '15 Juin 2024',
-        image: 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=400&h=250&fit=crop'
+        image: 'https://pixabay.com/images/search/real%20madrid%20football/?utm_source=chatgpt.com'
     },
     {
         category: 'music',
