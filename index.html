@@ -415,6 +415,40 @@
             padding: 0.25rem;
         }
 
+        /* Install App Button */
+        .install-btn {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--gradient);
+            color: white;
+            border: none;
+            padding: 1rem 1.5rem;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.4);
+            z-index: 1000;
+            transition: all 0.3s;
+            font-size: 0.95rem;
+        }
+
+        .install-btn.show {
+            display: flex;
+        }
+
+        .install-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(99, 102, 241, 0.5);
+        }
+
+        .install-btn i {
+            font-size: 1.2rem;
+        }
+
         @media (max-width: 480px) {
             .features {
                 grid-template-columns: 1fr;
@@ -436,6 +470,13 @@
                 flex-direction: column;
                 text-align: center;
                 gap: 0.75rem;
+            }
+
+            .install-btn {
+                bottom: 1rem;
+                right: 1rem;
+                padding: 0.85rem 1.25rem;
+                font-size: 0.85rem;
             }
         }
     </style>
@@ -544,6 +585,12 @@
         <span id="toastMessage">Message</span>
     </div>
 
+    <!-- Install App Button -->
+    <button class="install-btn" id="installBtn" onclick="installApp()">
+        <i class="fas fa-download"></i>
+        <span>Installer l'app</span>
+    </button>
+
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
@@ -566,6 +613,46 @@
 
         // VAPID Key for Cloud Messaging
         const vapidKey = "BPViQXia_vvFLKMAe2E2q5oTOX48XpRQIdx5P4xAFEPw";
+
+        // PWA Install functionality
+        let deferredPrompt;
+        const installBtn = document.getElementById('installBtn');
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            // Empêcher l'affichage automatique
+            e.preventDefault();
+            // Sauvegarder l'événement
+            deferredPrompt = e;
+            // Afficher le bouton d'installation
+            installBtn.classList.add('show');
+        });
+
+        function installApp() {
+            if (!deferredPrompt) {
+                showToast('L\'installation n\'est pas disponible', 'error');
+                return;
+            }
+
+            // Afficher la boîte de dialogue d'installation
+            deferredPrompt.prompt();
+
+            // Attendre le choix de l'utilisateur
+            deferredPrompt.userChoice.then((choiceResult) => {
+                if (choiceResult.outcome === 'accepted') {
+                    showToast('Application installée avec succès !', 'success');
+                    installBtn.classList.remove('show');
+                } else {
+                    showToast('Installation annulée', 'error');
+                }
+                deferredPrompt = null;
+            });
+        }
+
+        // Cacher le bouton si l'app est déjà installée
+        window.addEventListener('appinstalled', () => {
+            installBtn.classList.remove('show');
+            showToast('Application installée !', 'success');
+        });
 
         // Storage helper functions to handle tracking prevention
         const storage = {
@@ -604,7 +691,16 @@
 
         // Check if user is already logged in
         document.addEventListener('DOMContentLoaded', function() {
-            const userStr = storage.getItem('currentUser');
+            // Vérifier d'abord dans localStorage (connexion persistante)
+            let userStr = storage.getItem('currentUser');
+            if (!userStr) {
+                try {
+                    userStr = localStorage.getItem('currentUser');
+                } catch (e) {
+                    console.warn('LocalStorage blocked');
+                }
+            }
+            
             if (userStr) {
                 try {
                     const user = JSON.parse(userStr);
@@ -612,6 +708,11 @@
                 } catch (e) {
                     console.error('Error parsing user data:', e);
                     storage.removeItem('currentUser');
+                    try {
+                        localStorage.removeItem('currentUser');
+                    } catch (err) {
+                        console.warn('LocalStorage blocked');
+                    }
                 }
             }
             
@@ -717,7 +818,14 @@
                     const userDoc = snapshot.docs[0];
                     const userData = { id: userDoc.id, ...userDoc.data() };
                     
+                    // Sauvegarder dans sessionStorage ET localStorage pour connexion persistante
                     storage.setItem('currentUser', JSON.stringify(userData));
+                    try {
+                        localStorage.setItem('currentUser', JSON.stringify(userData));
+                    } catch (e) {
+                        console.warn('LocalStorage blocked');
+                    }
+                    
                     showToast('Connexion réussie !', 'success');
                     
                     setTimeout(() => {
@@ -750,7 +858,7 @@
                         showToast('Ce pseudo est déjà utilisé', 'error');
                         btn.innerHTML = '<i class="fas fa-user-plus"></i> S\'inscrire';
                         btn.disabled = false;
-                        return;
+                        return Promise.reject('pseudo_exists');
                     }
 
                     return db.collection('users').add({
@@ -764,17 +872,41 @@
                         createdAt: firebase.firestore.FieldValue.serverTimestamp()
                     });
                 })
-                .then(() => {
-                    showToast('Inscription réussie ! Vous pouvez maintenant vous connecter.', 'success');
-                    document.getElementById('registerForm').reset();
-                    showTab('login');
-                    btn.innerHTML = '<i class="fas fa-user-plus"></i> S\'inscrire';
-                    btn.disabled = false;
+                .then((docRef) => {
+                    if (docRef) {
+                        // Créer l'objet utilisateur
+                        const userData = {
+                            id: docRef.id,
+                            nom,
+                            prenom,
+                            pseudo,
+                            contact,
+                            password,
+                            balance: 0,
+                            role: 'user'
+                        };
+                        
+                        // Sauvegarder dans sessionStorage ET localStorage pour connexion persistante
+                        storage.setItem('currentUser', JSON.stringify(userData));
+                        try {
+                            localStorage.setItem('currentUser', JSON.stringify(userData));
+                        } catch (e) {
+                            console.warn('LocalStorage blocked');
+                        }
+                        
+                        showToast('Inscription réussie ! Redirection...', 'success');
+                        
+                        setTimeout(() => {
+                            redirectUser(userData);
+                        }, 1000);
+                    }
                 })
                 .catch(error => {
-                    showToast('Erreur: ' + error.message, 'error');
-                    btn.innerHTML = '<i class="fas fa-user-plus"></i> S\'inscrire';
-                    btn.disabled = false;
+                    if (error !== 'pseudo_exists') {
+                        showToast('Erreur: ' + error.message, 'error');
+                        btn.innerHTML = '<i class="fas fa-user-plus"></i> S\'inscrire';
+                        btn.disabled = false;
+                    }
                 });
         }
 
