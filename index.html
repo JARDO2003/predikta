@@ -677,12 +677,22 @@
             }
         }
 
-        function showTab(tab) {
+        // FONCTION CORRIGÉE - showTab
+        function showTab(tabName) {
+            // Retirer la classe active de tous les onglets et contenus
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
             
-            event.target.classList.add('active');
-            document.getElementById(tab + 'Tab').classList.add('active');
+            // Ajouter la classe active au bon onglet
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach((tab, index) => {
+                if ((tabName === 'login' && index === 0) || (tabName === 'register' && index === 1)) {
+                    tab.classList.add('active');
+                }
+            });
+            
+            // Afficher le bon contenu
+            document.getElementById(tabName + 'Tab').classList.add('active');
         }
 
         function login(e) {
