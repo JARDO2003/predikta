@@ -2,9 +2,10 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#6366f1">
     <title>Predikta - Tableau de Bord Créateur</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -20,14 +21,17 @@
             --success: #10b981;
             --warning: #f59e0b;
             --danger: #ef4444;
+            --info: #3b82f6;
             --dark: #0f172a;
             --dark-light: #1e293b;
+            --dark-lighter: #334155;
             --gray: #64748b;
             --light: #f1f5f9;
             --white: #ffffff;
             --gradient-1: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             --gradient-2: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
             --gradient-3: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --gradient-success: linear-gradient(135deg, #10b981 0%, #059669 100%);
             --shadow: 0 10px 40px rgba(0,0,0,0.3);
             --shadow-sm: 0 4px 6px rgba(0,0,0,0.1);
         }
@@ -38,6 +42,7 @@
             color: var(--white);
             min-height: 100vh;
             overflow-x: hidden;
+            line-height: 1.6;
         }
 
         /* Animated Background */
@@ -60,48 +65,153 @@
             50% { transform: scale(1.1); opacity: 1; }
         }
 
+        /* Mobile Header */
+        .mobile-header {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            z-index: 100;
+            padding: 0 1rem;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .mobile-logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .mobile-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .icon-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            border: none;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            transition: all 0.3s;
+        }
+
+        .icon-btn:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
         /* Layout */
         .dashboard {
-            display: grid;
-            grid-template-columns: 280px 1fr;
+            display: flex;
             min-height: 100vh;
         }
 
         /* Sidebar */
         .sidebar {
+            width: 300px;
             background: rgba(30, 41, 59, 0.8);
             backdrop-filter: blur(20px);
             border-right: 1px solid rgba(255,255,255,0.1);
-            padding: 2rem;
+            padding: 1.5rem;
             position: fixed;
             height: 100vh;
-            width: 280px;
             overflow-y: auto;
-            z-index: 100;
+            z-index: 99;
+            transition: transform 0.3s ease;
         }
 
-        .logo {
+        .sidebar-header {
             display: flex;
             align-items: center;
-            gap: 1rem;
-            margin-bottom: 3rem;
-            padding-bottom: 2rem;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
+            justify-content: space-between;
+            margin-bottom: 2rem;
         }
 
-        .logo-icon {
-            width: 50px;
-            height: 50px;
-            background: var(--gradient-1);
-            border-radius: 15px;
+        .sidebar-logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .sidebar-close {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--gray);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+        }
+
+        .user-info {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(236, 72, 153, 0.2) 100%);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .user-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 1.5rem;
-            box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
+            font-weight: 700;
+            margin-bottom: 1rem;
         }
 
-        .logo h1 {
+        .user-name {
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .user-pseudo {
+            color: var(--gray);
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .balance-card {
+            background: rgba(0,0,0,0.2);
+            border-radius: 12px;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .balance-label {
+            font-size: 0.8rem;
+            color: var(--gray);
+            margin-bottom: 0.5rem;
+        }
+
+        .balance-value {
             font-size: 1.5rem;
             font-weight: 800;
             background: linear-gradient(135deg, #fff 0%, #a5b4fc 100%);
@@ -113,30 +223,39 @@
             margin-bottom: 2rem;
         }
 
-        .nav-title {
+        .nav-section-title {
             font-size: 0.75rem;
             text-transform: uppercase;
             letter-spacing: 0.1em;
             color: var(--gray);
             margin-bottom: 1rem;
             font-weight: 600;
+            padding-left: 1rem;
+        }
+
+        .nav-menu {
+            list-style: none;
         }
 
         .nav-item {
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-link {
             display: flex;
             align-items: center;
             gap: 1rem;
             padding: 1rem;
-            margin-bottom: 0.5rem;
             border-radius: 12px;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.3s;
             color: var(--gray);
+            text-decoration: none;
             position: relative;
             overflow: hidden;
         }
 
-        .nav-item::before {
+        .nav-link::before {
             content: '';
             position: absolute;
             left: 0;
@@ -145,19 +264,19 @@
             width: 3px;
             background: var(--gradient-1);
             transform: scaleY(0);
-            transition: transform 0.3s ease;
+            transition: transform 0.3s;
         }
 
-        .nav-item:hover, .nav-item.active {
+        .nav-link:hover, .nav-link.active {
             background: rgba(99, 102, 241, 0.1);
             color: var(--white);
         }
 
-        .nav-item.active::before {
+        .nav-link.active::before {
             transform: scaleY(1);
         }
 
-        .nav-item i {
+        .nav-link i {
             width: 20px;
             text-align: center;
         }
@@ -172,83 +291,63 @@
             font-weight: 600;
         }
 
-        .user-profile {
-            position: absolute;
-            bottom: 2rem;
-            left: 2rem;
-            right: 2rem;
-            display: flex;
-            align-items: center;
-            gap: 1rem;
+        .btn-logout {
+            width: 100%;
             padding: 1rem;
-            background: rgba(255,255,255,0.05);
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: var(--danger);
             border-radius: 12px;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .user-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: var(--gradient-2);
+            cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: 700;
-        }
-
-        .user-info {
-            flex: 1;
-        }
-
-        .user-name {
+            gap: 0.5rem;
             font-weight: 600;
-            font-size: 0.9rem;
-        }
-
-        .user-role {
-            font-size: 0.75rem;
-            color: var(--gray);
-        }
-
-        .logout-btn {
-            background: none;
-            border: none;
-            color: var(--gray);
-            cursor: pointer;
-            padding: 0.5rem;
-            border-radius: 8px;
             transition: all 0.3s;
+            margin-top: 2rem;
         }
 
-        .logout-btn:hover {
-            color: var(--danger);
-            background: rgba(239, 68, 68, 0.1);
+        .btn-logout:hover {
+            background: rgba(239, 68, 68, 0.2);
         }
 
         /* Main Content */
         .main-content {
-            margin-left: 280px;
+            flex: 1;
+            margin-left: 300px;
             padding: 2rem;
+            min-height: 100vh;
         }
 
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .page-header {
             margin-bottom: 2rem;
         }
 
-        .header h2 {
+        .page-title {
             font-size: 2rem;
-            font-weight: 700;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-title span {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .page-subtitle {
+            color: var(--gray);
+            margin-bottom: 1.5rem;
         }
 
         .header-actions {
             display: flex;
             gap: 1rem;
+            flex-wrap: wrap;
         }
 
+        /* Buttons */
         .btn {
             padding: 0.75rem 1.5rem;
             border: none;
@@ -258,19 +357,21 @@
             transition: all 0.3s;
             display: inline-flex;
             align-items: center;
+            justify-content: center;
             gap: 0.5rem;
             font-size: 0.9rem;
+            font-family: inherit;
         }
 
         .btn-primary {
-            background: var(--gradient-1);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
         }
 
         .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.6);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
         }
 
         .btn-success {
@@ -294,15 +395,23 @@
             border: 1px solid rgba(255,255,255,0.2);
         }
 
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
         .btn-sm {
             padding: 0.5rem 1rem;
             font-size: 0.8rem;
         }
 
+        .btn-full {
+            width: 100%;
+        }
+
         /* Stats Grid */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
             gap: 1.5rem;
             margin-bottom: 2rem;
         }
@@ -334,7 +443,7 @@
 
         .stat-card.pink::before { background: var(--gradient-2); }
         .stat-card.blue::before { background: var(--gradient-3); }
-        .stat-card.green::before { background: var(--success); }
+        .stat-card.green::before { background: var(--gradient-success); }
 
         .stat-header {
             display: flex;
@@ -379,19 +488,9 @@
         .positive { color: var(--success); }
         .negative { color: var(--danger); }
 
-        /* Content Sections */
-        .content-section {
-            display: none;
-            animation: fadeIn 0.5s ease;
-        }
-
-        .content-section.active {
-            display: block;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+        /* Sections */
+        .section {
+            margin-bottom: 2rem;
         }
 
         .section-header {
@@ -399,11 +498,20 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
         }
 
         .section-title {
-            font-size: 1.5rem;
+            font-size: 1.25rem;
             font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .section-title i {
+            color: var(--primary);
         }
 
         /* Cards */
@@ -423,11 +531,202 @@
             margin-bottom: 1.5rem;
             padding-bottom: 1rem;
             border-bottom: 1px solid rgba(255,255,255,0.1);
+            flex-wrap: wrap;
+            gap: 1rem;
         }
 
         .card-title {
-            font-size: 1.2rem;
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+
+        /* Filters */
+        .filters {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 0.5rem 1rem;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 20px;
+            color: var(--gray);
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+            font-family: inherit;
+        }
+
+        .filter-btn:hover, .filter-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        /* Events Grid */
+        .events-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .event-card {
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 20px;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+
+        .event-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+
+        .event-header {
+            padding: 1.5rem;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(236, 72, 153, 0.2) 100%);
+            position: relative;
+        }
+
+        .event-category {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(99, 102, 241, 0.3);
+            color: var(--primary);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
             font-weight: 600;
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+        }
+
+        .event-status {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+        }
+
+        .event-question {
+            font-size: 1.1rem;
+            font-weight: 700;
+            line-height: 1.4;
+            margin-bottom: 0.5rem;
+        }
+
+        .event-date {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .event-body {
+            padding: 1.5rem;
+        }
+
+        .event-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .event-stat {
+            text-align: center;
+            padding: 1rem;
+            background: rgba(15, 23, 42, 0.4);
+            border-radius: 12px;
+        }
+
+        .event-stat.yes {
+            border: 2px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .event-stat.no {
+            border: 2px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .event-stat-label {
+            font-size: 0.75rem;
+            color: var(--gray);
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .event-stat-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .event-stat.yes .event-stat-value { color: var(--success); }
+        .event-stat.no .event-stat-value { color: var(--danger); }
+
+        .event-footer {
+            padding: 1.5rem;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .event-info {
+            display: flex;
+            gap: 1.5rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .event-info-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+
+        .event-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .event-actions .btn {
+            flex: 1;
+        }
+
+        /* Status Badges */
+        .status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .status-pending {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--warning);
+        }
+
+        .status-completed {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+        }
+
+        .status-cancelled {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+        }
+
+        .status-active {
+            background: rgba(99, 102, 241, 0.2);
+            color: var(--primary);
         }
 
         /* Tables */
@@ -458,32 +757,71 @@
             background: rgba(255,255,255,0.02);
         }
 
-        .status {
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.75rem;
+        /* Payment Items */
+        .payment-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .payment-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: rgba(15, 23, 42, 0.4);
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.05);
+            transition: all 0.3s;
+        }
+
+        .payment-item:hover {
+            background: rgba(15, 23, 42, 0.6);
+            transform: translateX(5px);
+        }
+
+        .payment-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .payment-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .payment-user {
             font-weight: 600;
-            display: inline-block;
+            margin-bottom: 0.25rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
-        .status-pending {
-            background: rgba(245, 158, 11, 0.2);
-            color: var(--warning);
+        .payment-details {
+            font-size: 0.85rem;
+            color: var(--gray);
         }
 
-        .status-completed {
-            background: rgba(16, 185, 129, 0.2);
+        .payment-amount {
+            font-size: 1.25rem;
+            font-weight: 700;
             color: var(--success);
+            flex-shrink: 0;
         }
 
-        .status-cancelled {
-            background: rgba(239, 68, 68, 0.2);
-            color: var(--danger);
-        }
-
-        .status-active {
-            background: rgba(99, 102, 241, 0.2);
-            color: var(--primary);
+        .payment-actions {
+            display: flex;
+            gap: 0.5rem;
+            flex-shrink: 0;
         }
 
         /* Forms */
@@ -514,6 +852,7 @@
             color: white;
             font-family: inherit;
             transition: all 0.3s;
+            font-size: 0.95rem;
         }
 
         input:focus, select:focus, textarea:focus {
@@ -527,8 +866,8 @@
             min-height: 100px;
         }
 
-        /* Modal */
-        .modal {
+        /* Modals */
+        .modal-overlay {
             display: none;
             position: fixed;
             top: 0;
@@ -540,14 +879,15 @@
             z-index: 1000;
             align-items: center;
             justify-content: center;
-            padding: 2rem;
+            padding: 1rem;
+            overflow-y: auto;
         }
 
-        .modal.active {
+        .modal-overlay.active {
             display: flex;
         }
 
-        .modal-content {
+        .modal {
             background: var(--dark-light);
             border-radius: 20px;
             width: 100%;
@@ -569,6 +909,10 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            position: sticky;
+            top: 0;
+            background: var(--dark-light);
+            z-index: 10;
         }
 
         .modal-title {
@@ -576,7 +920,7 @@
             font-weight: 700;
         }
 
-        .close-btn {
+        .modal-close {
             background: none;
             border: none;
             color: var(--gray);
@@ -591,7 +935,7 @@
             transition: all 0.3s;
         }
 
-        .close-btn:hover {
+        .modal-close:hover {
             background: rgba(239, 68, 68, 0.1);
             color: var(--danger);
         }
@@ -606,149 +950,22 @@
             display: flex;
             justify-content: flex-end;
             gap: 1rem;
+            position: sticky;
+            bottom: 0;
+            background: var(--dark-light);
         }
 
-        /* Event Cards */
-        .events-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-            gap: 1.5rem;
-        }
-
-        .event-card {
-            background: rgba(30, 41, 59, 0.6);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 16px;
-            overflow: hidden;
-            transition: all 0.3s;
-        }
-
-        .event-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-        }
-
-        .event-header {
-            padding: 1.5rem;
-            background: linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(236, 72, 153, 0.2) 100%);
-            position: relative;
-        }
-
-        .event-status {
-            position: absolute;
-            top: 1rem;
-            right: 1rem;
-        }
-
-        .event-title {
-            font-size: 1.25rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-        }
-
-        .event-date {
-            font-size: 0.9rem;
-            opacity: 0.8;
-        }
-
-        .event-body {
-            padding: 1.5rem;
-        }
-
-        .event-stats {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-            margin-bottom: 1rem;
-        }
-
-        .event-stat {
+        /* Empty State */
+        .empty-state {
             text-align: center;
-            padding: 0.75rem;
-            background: rgba(15, 23, 42, 0.4);
-            border-radius: 10px;
-        }
-
-        .event-stat-value {
-            font-size: 1.25rem;
-            font-weight: 700;
-            color: var(--primary);
-        }
-
-        .event-stat-label {
-            font-size: 0.75rem;
-            color: var(--gray);
-            margin-top: 0.25rem;
-        }
-
-        .event-actions {
-            display: flex;
-            gap: 0.5rem;
-        }
-
-        .event-actions .btn {
-            flex: 1;
-            justify-content: center;
-        }
-
-        /* Payment Cards */
-        .payment-list {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-
-        .payment-item {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            padding: 1rem;
-            background: rgba(15, 23, 42, 0.4);
-            border-radius: 12px;
-            border: 1px solid rgba(255,255,255,0.05);
-            transition: all 0.3s;
-        }
-
-        .payment-item:hover {
-            background: rgba(15, 23, 42, 0.6);
-            transform: translateX(5px);
-        }
-
-        .payment-avatar {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: var(--gradient-1);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 1.2rem;
-        }
-
-        .payment-info {
-            flex: 1;
-        }
-
-        .payment-user {
-            font-weight: 600;
-            margin-bottom: 0.25rem;
-        }
-
-        .payment-details {
-            font-size: 0.85rem;
+            padding: 3rem;
             color: var(--gray);
         }
 
-        .payment-amount {
-            font-size: 1.25rem;
-            font-weight: 700;
-            color: var(--success);
-        }
-
-        .payment-actions {
-            display: flex;
-            gap: 0.5rem;
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
         }
 
         /* Toast */
@@ -776,23 +993,7 @@
 
         .toast.success { border-left: 4px solid var(--success); }
         .toast.error { border-left: 4px solid var(--danger); }
-
-        /* Responsive */
-        @media (max-width: 1024px) {
-            .dashboard {
-                grid-template-columns: 1fr;
-            }
-            .sidebar {
-                transform: translateX(-100%);
-                transition: transform 0.3s;
-            }
-            .sidebar.open {
-                transform: translateX(0);
-            }
-            .main-content {
-                margin-left: 0;
-            }
-        }
+        .toast.info { border-left: 4px solid var(--info); }
 
         /* Loading */
         .loading {
@@ -809,254 +1010,368 @@
             to { transform: rotate(360deg); }
         }
 
-        /* Empty State */
-        .empty-state {
-            text-align: center;
-            padding: 3rem;
-            color: var(--gray);
-        }
-
-        .empty-state i {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-            opacity: 0.5;
-        }
-
-        /* Toggle Switch */
-        .toggle {
-            position: relative;
-            display: inline-block;
-            width: 50px;
-            height: 26px;
-        }
-
-        .toggle input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        .slider {
-            position: absolute;
-            cursor: pointer;
+        /* Sidebar Overlay */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            background-color: rgba(255,255,255,0.1);
-            transition: .4s;
-            border-radius: 34px;
+            background: rgba(0,0,0,0.5);
+            z-index: 98;
+            backdrop-filter: blur(5px);
         }
 
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 18px;
-            width: 18px;
-            left: 4px;
-            bottom: 4px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
+        .sidebar-overlay.active {
+            display: block;
         }
 
-        input:checked + .slider {
-            background-color: var(--primary);
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .mobile-header {
+                display: flex;
+            }
+
+            .sidebar {
+                transform: translateX(-100%);
+                width: 280px;
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .sidebar-close {
+                display: block;
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding-top: 80px;
+            }
+
+            .events-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
         }
 
-        input:checked + .slider:before {
-            transform: translateX(24px);
+        @media (max-width: 640px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .section-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .payment-item {
+                flex-wrap: wrap;
+            }
+
+            .payment-actions {
+                width: 100%;
+                justify-content: flex-end;
+                margin-top: 0.5rem;
+            }
+
+            .event-actions {
+                flex-direction: column;
+            }
         }
 
-        /* Filters */
-        .filters {
-            display: flex;
+        /* Content Sections */
+        .content-section {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 1rem;
-            margin-bottom: 1.5rem;
-            flex-wrap: wrap;
+            margin-bottom: 2rem;
         }
 
-        .filter-btn {
-            padding: 0.5rem 1rem;
-            background: rgba(255,255,255,0.05);
+        .quick-action {
+            background: rgba(30, 41, 59, 0.6);
             border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 20px;
-            color: var(--gray);
+            border-radius: 16px;
+            padding: 1.5rem;
             cursor: pointer;
             transition: all 0.3s;
-            font-size: 0.9rem;
+            text-align: center;
         }
 
-        .filter-btn:hover, .filter-btn.active {
-            background: var(--primary);
-            color: white;
+        .quick-action:hover {
+            transform: translateY(-3px);
+            background: rgba(30, 41, 59, 0.8);
             border-color: var(--primary);
         }
 
-        /* Mobile Menu Button */
-        .menu-toggle {
-            display: none;
-            position: fixed;
-            top: 1rem;
-            left: 1rem;
-            z-index: 101;
-            background: var(--dark-light);
-            border: 1px solid rgba(255,255,255,0.1);
-            color: white;
-            padding: 0.75rem;
-            border-radius: 10px;
-            cursor: pointer;
+        .quick-action-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin: 0 auto 1rem;
+            background: rgba(99, 102, 241, 0.2);
+            color: var(--primary);
         }
 
-        @media (max-width: 1024px) {
-            .menu-toggle {
-                display: block;
-            }
+        .quick-action.pink .quick-action-icon { background: rgba(236, 72, 153, 0.2); color: var(--secondary); }
+        .quick-action.green .quick-action-icon { background: rgba(16, 185, 129, 0.2); color: var(--success); }
+        .quick-action.orange .quick-action-icon { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
+
+        .quick-action-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .quick-action-desc {
+            font-size: 0.85rem;
+            color: var(--gray);
         }
     </style>
 </head>
 <body>
     <div class="bg-animation"></div>
     
-    <button class="menu-toggle" onclick="toggleSidebar()">
-        <i class="fas fa-bars"></i>
-    </button>
+    <!-- Mobile Header -->
+    <div class="mobile-header">
+        <div class="mobile-logo">
+            <i class="fas fa-chart-line"></i>
+            Predikta
+        </div>
+        <div class="mobile-actions">
+            <button class="icon-btn" onclick="openModal('eventModal')">
+                <i class="fas fa-plus"></i>
+            </button>
+            <button class="icon-btn" onclick="toggleSidebar()">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </div>
 
-    <div class="dashboard">
-        <!-- Sidebar -->
-        <aside class="sidebar" id="sidebar">
-            <div class="logo">
-                <div class="logo-icon">
-                    <i class="fas fa-chart-line"></i>
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay" onclick="closeSidebar()"></div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo">
+                <i class="fas fa-chart-line"></i>
+                Predikta
+            </div>
+            <button class="sidebar-close" onclick="closeSidebar()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <div class="user-info">
+            <div class="user-avatar" id="userAvatar">A</div>
+            <div class="user-name" id="userName">Admin</div>
+            <div class="user-pseudo" id="userPseudo">@admin</div>
+            <div class="balance-card">
+                <div class="balance-label">Total Revenus</div>
+                <div class="balance-value" id="totalRevenueDisplay">0 FCFA</div>
+            </div>
+        </div>
+
+        <div class="nav-section">
+            <div class="nav-section-title">Menu Principal</div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a class="nav-link active" onclick="showSection('dashboard'); closeSidebar();">
+                        <i class="fas fa-home"></i>
+                        Tableau de Bord
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" onclick="showSection('events'); closeSidebar();">
+                        <i class="fas fa-calendar-alt"></i>
+                        Événements
+                        <span class="badge" id="eventCountBadge">0</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" onclick="showSection('payments'); closeSidebar();">
+                        <i class="fas fa-money-bill-wave"></i>
+                        Paiements
+                        <span class="badge" id="paymentCountBadge">0</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" onclick="showSection('users'); closeSidebar();">
+                        <i class="fas fa-users"></i>
+                        Utilisateurs
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="nav-section">
+            <div class="nav-section-title">Paramètres</div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a class="nav-link" onclick="showSection('settings'); closeSidebar();">
+                        <i class="fas fa-cog"></i>
+                        Configuration
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <button class="btn-logout" onclick="logout()">
+            <i class="fas fa-sign-out-alt"></i>
+            Déconnexion
+        </button>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Dashboard Section -->
+        <section id="dashboard-section" class="content-section active">
+            <div class="page-header">
+                <h1 class="page-title">Tableau de <span>bord</span></h1>
+                <p class="page-subtitle">Gérez votre plateforme de prédiction</p>
+                <div class="header-actions">
+                    <button class="btn btn-primary" onclick="openModal('eventModal')">
+                        <i class="fas fa-plus"></i>
+                        Nouvel Événement
+                    </button>
                 </div>
-                <h1>Predikta</h1>
             </div>
 
-            <div class="nav-section">
-                <div class="nav-title">Menu Principal</div>
-                <div class="nav-item active" onclick="showSection('dashboard')">
-                    <i class="fas fa-home"></i>
-                    <span>Tableau de Bord</span>
+            <!-- Quick Actions -->
+            <div class="quick-actions">
+                <div class="quick-action" onclick="showSection('events'); openModal('eventModal');">
+                    <div class="quick-action-icon">
+                        <i class="fas fa-calendar-plus"></i>
+                    </div>
+                    <div class="quick-action-title">Créer Événement</div>
+                    <div class="quick-action-desc">Ajouter un nouvel événement</div>
                 </div>
-                <div class="nav-item" onclick="showSection('events')">
-                    <i class="fas fa-calendar-alt"></i>
-                    <span>Événements</span>
-                    <span class="badge" id="eventCount">0</span>
+                <div class="quick-action pink" onclick="showSection('payments')">
+                    <div class="quick-action-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="quick-action-title">Valider Paiements</div>
+                    <div class="quick-action-desc">Approuver les dépôts</div>
                 </div>
-                <div class="nav-item" onclick="showSection('payments')">
-                    <i class="fas fa-money-bill-wave"></i>
-                    <span>Paiements</span>
-                    <span class="badge" id="paymentCount">0</span>
+                <div class="quick-action green" onclick="showSection('users')">
+                    <div class="quick-action-icon">
+                        <i class="fas fa-user-cog"></i>
+                    </div>
+                    <div class="quick-action-title">Gérer Utilisateurs</div>
+                    <div class="quick-action-desc">Voir les utilisateurs</div>
                 </div>
-                <div class="nav-item" onclick="showSection('users')">
-                    <i class="fas fa-users"></i>
-                    <span>Utilisateurs</span>
+                <div class="quick-action orange" onclick="showSection('settings')">
+                    <div class="quick-action-icon">
+                        <i class="fas fa-sliders-h"></i>
+                    </div>
+                    <div class="quick-action-title">Configuration</div>
+                    <div class="quick-action-desc">Paramètres système</div>
                 </div>
             </div>
 
-            <div class="nav-section">
-                <div class="nav-title">Paramètres</div>
-                <div class="nav-item" onclick="showSection('settings')">
-                    <i class="fas fa-cog"></i>
-                    <span>Configuration</span>
+            <!-- Stats -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div>
+                            <div class="stat-value" id="totalEvents">0</div>
+                            <div class="stat-label">Événements Actifs</div>
+                        </div>
+                        <div class="stat-icon">
+                            <i class="fas fa-calendar"></i>
+                        </div>
+                    </div>
+                    <div class="stat-change positive">
+                        <i class="fas fa-arrow-up"></i> En cours
+                    </div>
+                </div>
+
+                <div class="stat-card pink">
+                    <div class="stat-header">
+                        <div>
+                            <div class="stat-value" id="totalRevenue">0 FCFA</div>
+                            <div class="stat-label">Revenus Totaux</div>
+                        </div>
+                        <div class="stat-icon">
+                            <i class="fas fa-wallet"></i>
+                        </div>
+                    </div>
+                    <div class="stat-change positive">
+                        <i class="fas fa-arrow-up"></i> Commission 2%
+                    </div>
+                </div>
+
+                <div class="stat-card blue">
+                    <div class="stat-header">
+                        <div>
+                            <div class="stat-value" id="totalUsers">0</div>
+                            <div class="stat-label">Utilisateurs</div>
+                        </div>
+                        <div class="stat-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                    </div>
+                    <div class="stat-change positive">
+                        <i class="fas fa-arrow-up"></i> Total inscrits
+                    </div>
+                </div>
+
+                <div class="stat-card green">
+                    <div class="stat-header">
+                        <div>
+                            <div class="stat-value" id="pendingPayments">0</div>
+                            <div class="stat-label">Paiements en Attente</div>
+                        </div>
+                        <div class="stat-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                    </div>
+                    <div class="stat-change negative" id="pendingAlert">
+                        <i class="fas fa-exclamation-circle"></i> Action requise
+                    </div>
                 </div>
             </div>
 
-            <div class="user-profile">
-                <div class="user-avatar" id="userAvatar">A</div>
-                <div class="user-info">
-                    <div class="user-name" id="userName">Admin</div>
-                    <div class="user-role">Créateur</div>
+            <!-- Recent Activity -->
+            <div class="section">
+                <div class="section-header">
+                    <h3 class="section-title">
+                        <i class="fas fa-bell"></i>
+                        Activité Récente
+                    </h3>
+                    <button class="btn btn-secondary btn-sm" onclick="showSection('payments')">
+                        Voir tout
+                    </button>
                 </div>
-                <button class="logout-btn" onclick="logout()">
-                    <i class="fas fa-sign-out-alt"></i>
-                </button>
-            </div>
-        </aside>
-
-        <!-- Main Content -->
-        <main class="main-content">
-            <!-- Dashboard Section -->
-            <section id="dashboard-section" class="content-section active">
-                <div class="header">
-                    <h2>Tableau de Bord</h2>
-                    <div class="header-actions">
-                        <button class="btn btn-primary" onclick="openModal('eventModal')">
-                            <i class="fas fa-plus"></i>
-                            Nouvel Événement
-                        </button>
-                    </div>
-                </div>
-
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-header">
-                            <div>
-                                <div class="stat-value" id="totalEvents">0</div>
-                                <div class="stat-label">Événements Actifs</div>
-                            </div>
-                            <div class="stat-icon">
-                                <i class="fas fa-calendar"></i>
-                            </div>
-                        </div>
-                        <div class="stat-change positive">
-                            <i class="fas fa-arrow-up"></i> +12% ce mois
-                        </div>
-                    </div>
-
-                    <div class="stat-card pink">
-                        <div class="stat-header">
-                            <div>
-                                <div class="stat-value" id="totalRevenue">0 FCFA</div>
-                                <div class="stat-label">Revenus Totaux</div>
-                            </div>
-                            <div class="stat-icon">
-                                <i class="fas fa-wallet"></i>
-                            </div>
-                        </div>
-                        <div class="stat-change positive">
-                            <i class="fas fa-arrow-up"></i> +8% ce mois
-                        </div>
-                    </div>
-
-                    <div class="stat-card blue">
-                        <div class="stat-header">
-                            <div>
-                                <div class="stat-value" id="totalUsers">0</div>
-                                <div class="stat-label">Utilisateurs</div>
-                            </div>
-                            <div class="stat-icon">
-                                <i class="fas fa-users"></i>
-                            </div>
-                        </div>
-                        <div class="stat-change positive">
-                            <i class="fas fa-arrow-up"></i> +24 nouveaux
-                        </div>
-                    </div>
-
-                    <div class="stat-card green">
-                        <div class="stat-header">
-                            <div>
-                                <div class="stat-value" id="pendingPayments">0</div>
-                                <div class="stat-label">Paiements en Attente</div>
-                            </div>
-                            <div class="stat-icon">
-                                <i class="fas fa-clock"></i>
-                            </div>
-                        </div>
-                        <div class="stat-change negative">
-                            <i class="fas fa-exclamation-circle"></i> Action requise
-                        </div>
-                    </div>
-                </div>
-
                 <div class="card">
-                    <div class="card-header">
-                        <div class="card-title">Activité Récente</div>
-                        <button class="btn btn-secondary btn-sm" onclick="showSection('payments')">
-                            Voir tout
-                        </button>
-                    </div>
                     <div id="recentActivity">
                         <div class="empty-state">
                             <i class="fas fa-spinner fa-spin"></i>
@@ -1064,198 +1379,215 @@
                         </div>
                     </div>
                 </div>
-            </section>
+            </div>
+        </section>
 
-            <!-- Events Section -->
-            <section id="events-section" class="content-section">
-                <div class="header">
-                    <h2>Gestion des Événements</h2>
-                    <div class="header-actions">
-                        <button class="btn btn-primary" onclick="openModal('eventModal')">
-                            <i class="fas fa-plus"></i>
-                            Créer un Événement
-                        </button>
-                    </div>
-                </div>
-
-                <div class="filters">
-                    <button class="filter-btn active" onclick="filterEvents('all')">Tous</button>
-                    <button class="filter-btn" onclick="filterEvents('active')">Actifs</button>
-                    <button class="filter-btn" onclick="filterEvents('pending')">En attente</button>
-                    <button class="filter-btn" onclick="filterEvents('completed')">Terminés</button>
-                </div>
-
-                <div id="eventsList" class="events-grid">
-                    <div class="empty-state">
-                        <i class="fas fa-spinner fa-spin"></i>
-                        <p>Chargement des événements...</p>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Payments Section -->
-            <section id="payments-section" class="content-section">
-                <div class="header">
-                    <h2>Validation des Paiements</h2>
-                    <div class="header-actions">
-                        <button class="btn btn-secondary" onclick="refreshPayments()">
-                            <i class="fas fa-sync"></i>
-                            Actualiser
-                        </button>
-                    </div>
-                </div>
-
-                <div class="card">
-                    <div class="card-header">
-                        <div class="card-title">Paiements en Attente</div>
-                    </div>
-                    <div id="pendingPaymentsList" class="payment-list">
-                        <div class="empty-state">
-                            <i class="fas fa-check-circle"></i>
-                            <p>Aucun paiement en attente</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card">
-                    <div class="card-header">
-                        <div class="card-title">Historique des Paiements</div>
-                    </div>
-                    <div class="table-container">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Utilisateur</th>
-                                    <th>Montant</th>
-                                    <th>Type</th>
-                                    <th>Date</th>
-                                    <th>Statut</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="paymentsHistoryTable">
-                                <tr>
-                                    <td colspan="6" style="text-align: center; padding: 2rem;">
-                                        Chargement...
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Users Section -->
-            <section id="users-section" class="content-section">
-                <div class="header">
-                    <h2>Gestion des Utilisateurs</h2>
-                </div>
-
-                <div class="card">
-                    <div class="table-container">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Utilisateur</th>
-                                    <th>Contact</th>
-                                    <th>Solde</th>
-                                    <th>Statut</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="usersTable">
-                                <tr>
-                                    <td colspan="5" style="text-align: center; padding: 2rem;">
-                                        Chargement...
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Settings Section -->
-            <section id="settings-section" class="content-section">
-                <div class="header">
-                    <h2>Paramètres</h2>
-                </div>
-
-                <div class="card">
-                    <div class="card-header">
-                        <div class="card-title">Configuration Générale</div>
-                    </div>
-                    <div class="form-group">
-                        <label>Commission sur les paris (%)</label>
-                        <input type="number" id="commissionRate" value="2" min="0" max="100">
-                    </div>
-                    <div class="form-group">
-                        <label>Minimum de retrait (FCFA)</label>
-                        <input type="number" id="minWithdrawal" value="1000" min="0">
-                    </div>
-                    <button class="btn btn-primary" onclick="saveSettings()">
-                        <i class="fas fa-save"></i>
-                        Enregistrer
+        <!-- Events Section -->
+        <section id="events-section" class="content-section">
+            <div class="page-header">
+                <h1 class="page-title">Gestion des <span>Événements</span></h1>
+                <p class="page-subtitle">Créez et gérez les événements de prédiction</p>
+                <div class="header-actions">
+                    <button class="btn btn-primary" onclick="openModal('eventModal')">
+                        <i class="fas fa-plus"></i>
+                        Créer un Événement
                     </button>
                 </div>
-            </section>
-        </main>
-    </div>
+            </div>
+
+            <div class="filters">
+                <button class="filter-btn active" onclick="filterEvents('all', this)">Tous</button>
+                <button class="filter-btn" onclick="filterEvents('active', this)">Actifs</button>
+                <button class="filter-btn" onclick="filterEvents('pending', this)">En attente</button>
+                <button class="filter-btn" onclick="filterEvents('completed', this)">Terminés</button>
+                <button class="filter-btn" onclick="filterEvents('cancelled', this)">Annulés</button>
+            </div>
+
+            <div id="eventsList" class="events-grid">
+                <div class="empty-state" style="grid-column: 1/-1;">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>Chargement des événements...</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Payments Section -->
+        <section id="payments-section" class="content-section">
+            <div class="page-header">
+                <h1 class="page-title">Validation des <span>Paiements</span></h1>
+                <p class="page-subtitle">Approuvez ou rejetez les demandes de dépôt</p>
+                <div class="header-actions">
+                    <button class="btn btn-secondary" onclick="refreshPayments()">
+                        <i class="fas fa-sync"></i>
+                        Actualiser
+                    </button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <i class="fas fa-clock"></i>
+                        Paiements en Attente
+                    </div>
+                </div>
+                <div id="pendingPaymentsList" class="payment-list">
+                    <div class="empty-state">
+                        <i class="fas fa-check-circle"></i>
+                        <p>Aucun paiement en attente</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <i class="fas fa-history"></i>
+                        Historique des Paiements
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Utilisateur</th>
+                                <th>Montant</th>
+                                <th>Type</th>
+                                <th>Date</th>
+                                <th>Statut</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="paymentsHistoryTable">
+                            <tr>
+                                <td colspan="6" style="text-align: center; padding: 2rem;">
+                                    Chargement...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Users Section -->
+        <section id="users-section" class="content-section">
+            <div class="page-header">
+                <h1 class="page-title">Gestion des <span>Utilisateurs</span></h1>
+                <p class="page-subtitle">Vue d'ensemble des utilisateurs de la plateforme</p>
+            </div>
+
+            <div class="card">
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Utilisateur</th>
+                                <th>Contact</th>
+                                <th>Solde</th>
+                                <th>Paris</th>
+                                <th>Statut</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTable">
+                            <tr>
+                                <td colspan="6" style="text-align: center; padding: 2rem;">
+                                    Chargement...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Settings Section -->
+        <section id="settings-section" class="content-section">
+            <div class="page-header">
+                <h1 class="page-title">Paramètres <span>Système</span></h1>
+                <p class="page-subtitle">Configurez les options de la plateforme</p>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Configuration Générale</div>
+                </div>
+                <div class="form-group">
+                    <label>Commission sur les gains (%)</label>
+                    <input type="number" id="commissionRate" value="2" min="0" max="100" step="0.5">
+                </div>
+                <div class="form-group">
+                    <label>Mise minimum (FCFA)</label>
+                    <input type="number" id="minBet" value="100" min="50" step="50">
+                </div>
+                <div class="form-group">
+                    <label>Mise maximum (FCFA)</label>
+                    <input type="number" id="maxBet" value="100000" min="1000" step="1000">
+                </div>
+                <button class="btn btn-primary" onclick="saveSettings()">
+                    <i class="fas fa-save"></i>
+                    Enregistrer
+                </button>
+            </div>
+        </section>
+    </main>
 
     <!-- Event Modal -->
-    <div class="modal" id="eventModal">
-        <div class="modal-content">
+    <div class="modal-overlay" id="eventModal">
+        <div class="modal">
             <div class="modal-header">
-                <div class="modal-title" id="eventModalTitle">Nouvel Événement</div>
-                <button class="close-btn" onclick="closeModal('eventModal')">
+                <h3 class="modal-title" id="eventModalTitle">Nouvel Événement</h3>
+                <button class="modal-close" onclick="closeModal('eventModal')">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
             <div class="modal-body">
                 <form id="eventForm">
                     <input type="hidden" id="eventId">
+                    
                     <div class="form-group">
-                        <label>Titre de l'événement</label>
-                        <input type="text" id="eventTitle" required placeholder="Ex: Finale Coupe du Monde">
+                        <label>Question de prédiction *</label>
+                        <input type="text" id="eventQuestion" required placeholder="Ex: Le Real Madrid remportera-t-il la Liga cette saison ?">
                     </div>
+
                     <div class="form-row">
                         <div class="form-group">
-                            <label>Catégorie</label>
+                            <label>Catégorie *</label>
                             <select id="eventCategory" required>
                                 <option value="sport">Sport</option>
                                 <option value="politique">Politique</option>
                                 <option value="entertainment">Divertissement</option>
                                 <option value="crypto">Crypto</option>
+                                <option value="music">Musique</option>
                                 <option value="autre">Autre</option>
                             </select>
                         </div>
                         <div class="form-group">
-                            <label>Date de l'événement</label>
+                            <label>Date de clôture *</label>
                             <input type="datetime-local" id="eventDate" required>
                         </div>
                     </div>
+
                     <div class="form-group">
-                        <label>Description</label>
-                        <textarea id="eventDescription" placeholder="Description détaillée de l'événement..."></textarea>
+                        <label>Description (optionnel)</label>
+                        <textarea id="eventDescription" placeholder="Contexte et détails de l'événement..."></textarea>
                     </div>
+
                     <div class="form-row">
                         <div class="form-group">
-                            <label>Cote Option A</label>
-                            <input type="number" id="oddsA" step="0.01" required placeholder="1.50">
+                            <label>Mise minimum (FCFA)</label>
+                            <input type="number" id="minBet" value="100" min="50" step="50">
                         </div>
                         <div class="form-group">
-                            <label>Cote Option B</label>
-                            <input type="number" id="oddsB" step="0.01" required placeholder="2.50">
+                            <label>Status</label>
+                            <select id="eventStatus">
+                                <option value="active">Actif</option>
+                                <option value="pending">En attente</option>
+                                <option value="completed">Terminé</option>
+                                <option value="cancelled">Annulé</option>
+                            </select>
                         </div>
-                    </div>
-                    <div class="form-group">
-                        <label>Status</label>
-                        <select id="eventStatus">
-                            <option value="active">Actif</option>
-                            <option value="pending">En attente</option>
-                            <option value="completed">Terminé</option>
-                            <option value="cancelled">Annulé</option>
-                        </select>
                     </div>
                 </form>
             </div>
@@ -1270,34 +1602,44 @@
     </div>
 
     <!-- Payment Validation Modal -->
-    <div class="modal" id="paymentModal">
-        <div class="modal-content">
+    <div class="modal-overlay" id="paymentModal">
+        <div class="modal">
             <div class="modal-header">
-                <div class="modal-title">Valider le Paiement</div>
-                <button class="close-btn" onclick="closeModal('paymentModal')">
+                <h3 class="modal-title">Valider le Paiement</h3>
+                <button class="modal-close" onclick="closeModal('paymentModal')">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
             <div class="modal-body">
                 <input type="hidden" id="paymentId">
-                <div class="payment-item" style="margin-bottom: 1.5rem;">
+                
+                <div class="payment-item" style="margin-bottom: 1.5rem; background: rgba(99, 102, 241, 0.1);">
                     <div class="payment-avatar" id="paymentUserAvatar">U</div>
                     <div class="payment-info">
                         <div class="payment-user" id="paymentUserName">Utilisateur</div>
-                        <div class="payment-details" id="paymentDetails">Détails</div>
+                        <div class="payment-details" id="paymentDetails">Détails du paiement</div>
                     </div>
                     <div class="payment-amount" id="paymentAmount">0 FCFA</div>
                 </div>
+
                 <div class="form-group">
-                    <label>Action</label>
+                    <label>Action *</label>
                     <select id="paymentAction" class="form-control">
-                        <option value="approve">Approuver</option>
-                        <option value="reject">Rejeter</option>
+                        <option value="approve">✅ Approuver le paiement</option>
+                        <option value="reject">❌ Rejeter le paiement</option>
                     </select>
                 </div>
+
                 <div class="form-group">
                     <label>Commentaire (optionnel)</label>
                     <textarea id="paymentComment" placeholder="Raison de la décision..."></textarea>
+                </div>
+
+                <div class="info-box" style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 10px; padding: 1rem; margin-top: 1rem;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem; color: var(--warning); font-size: 0.9rem;">
+                        <i class="fas fa-info-circle"></i>
+                        <span>Le solde de l'utilisateur sera mis à jour automatiquement</span>
+                    </div>
                 </div>
             </div>
             <div class="modal-footer">
@@ -1341,6 +1683,7 @@
         let eventsData = [];
         let paymentsData = [];
         let usersData = [];
+        let currentFilter = 'all';
 
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
@@ -1359,17 +1702,23 @@
                 return;
             }
             
-            currentUser = JSON.parse(userStr);
-            
-            // Vérifier si c'est bien un admin/creator
-            if (currentUser.role !== 'admin' && currentUser.role !== 'creator') {
-                window.location.href = 'user-dashboard.html';
-                return;
-            }
+            try {
+                currentUser = JSON.parse(userStr);
+                
+                // Vérifier si c'est bien un admin/creator
+                if (currentUser.role !== 'admin' && currentUser.role !== 'creator') {
+                    window.location.href = 'user-dashboard.html';
+                    return;
+                }
 
-            // Mettre à jour l'UI
-            document.getElementById('userName').textContent = currentUser.prenom || currentUser.pseudo;
-            document.getElementById('userAvatar').textContent = (currentUser.prenom || currentUser.pseudo || 'A').charAt(0).toUpperCase();
+                // Mettre à jour l'UI
+                document.getElementById('userName').textContent = currentUser.prenom || currentUser.pseudo || 'Admin';
+                document.getElementById('userPseudo').textContent = '@' + (currentUser.pseudo || 'admin');
+                document.getElementById('userAvatar').textContent = (currentUser.prenom || currentUser.pseudo || 'A').charAt(0).toUpperCase();
+            } catch (e) {
+                console.error('Error parsing user data:', e);
+                window.location.href = 'index.html';
+            }
         }
 
         // Navigation
@@ -1380,15 +1729,14 @@
             });
             
             // Désactiver tous les items de nav
-            document.querySelectorAll('.nav-item').forEach(item => {
-                item.classList.remove('active');
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
             });
             
             // Activer la section demandée
             document.getElementById(sectionName + '-section').classList.add('active');
             
             // Activer le nav item correspondant
-            const navItems = document.querySelectorAll('.nav-item');
             const sectionMap = {
                 'dashboard': 0,
                 'events': 1,
@@ -1397,13 +1745,9 @@
                 'settings': 4
             };
             
-            if (sectionMap[sectionName] !== undefined) {
-                navItems[sectionMap[sectionName]].classList.add('active');
-            }
-
-            // Fermer sidebar sur mobile
-            if (window.innerWidth <= 1024) {
-                document.getElementById('sidebar').classList.remove('open');
+            const navLinks = document.querySelectorAll('.nav-link');
+            if (sectionMap[sectionName] !== undefined && navLinks[sectionMap[sectionName]]) {
+                navLinks[sectionMap[sectionName]].classList.add('active');
             }
 
             // Rafraîchir les données si nécessaire
@@ -1413,7 +1757,19 @@
         }
 
         function toggleSidebar() {
-            document.getElementById('sidebar').classList.toggle('open');
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.querySelector('.sidebar-overlay');
+            sidebar.classList.add('open');
+            overlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.querySelector('.sidebar-overlay');
+            sidebar.classList.remove('open');
+            overlay.classList.remove('active');
+            document.body.style.overflow = '';
         }
 
         // Dashboard Data
@@ -1421,25 +1777,38 @@
             try {
                 // Compter les événements actifs
                 const eventsSnapshot = await db.collection('events').where('status', '==', 'active').get();
-                document.getElementById('totalEvents').textContent = eventsSnapshot.size;
-                document.getElementById('eventCount').textContent = eventsSnapshot.size;
+                const totalEvents = eventsSnapshot.size;
+                document.getElementById('totalEvents').textContent = totalEvents;
+                document.getElementById('eventCountBadge').textContent = totalEvents;
 
-                // Calculer les revenus
-                const paymentsSnapshot = await db.collection('payments').where('status', '==', 'completed').get();
+                // Calculer les revenus (commission sur les paris gagnés)
+                const betsSnapshot = await db.collection('bets').where('status', '==', 'won').get();
                 let totalRevenue = 0;
-                paymentsSnapshot.forEach(doc => {
-                    totalRevenue += doc.data().amount || 0;
+                betsSnapshot.forEach(doc => {
+                    const bet = doc.data();
+                    // Commission de 2% sur les gains
+                    totalRevenue += (bet.amount * 0.02);
                 });
                 document.getElementById('totalRevenue').textContent = formatCurrency(totalRevenue);
+                document.getElementById('totalRevenueDisplay').textContent = formatCurrency(totalRevenue);
 
                 // Compter les utilisateurs
                 const usersSnapshot = await db.collection('users').get();
                 document.getElementById('totalUsers').textContent = usersSnapshot.size;
 
                 // Paiements en attente
-                const pendingSnapshot = await db.collection('payments').where('status', '==', 'pending').get();
-                document.getElementById('pendingPayments').textContent = pendingSnapshot.size;
-                document.getElementById('paymentCount').textContent = pendingSnapshot.size;
+                const pendingSnapshot = await db.collection('deposit_requests').where('status', '==', 'pending').get();
+                const pendingCount = pendingSnapshot.size;
+                document.getElementById('pendingPayments').textContent = pendingCount;
+                document.getElementById('paymentCountBadge').textContent = pendingCount;
+                
+                // Alert si paiements en attente
+                const pendingAlert = document.getElementById('pendingAlert');
+                if (pendingCount > 0) {
+                    pendingAlert.style.display = 'block';
+                } else {
+                    pendingAlert.style.display = 'none';
+                }
 
                 // Activité récente
                 loadRecentActivity();
@@ -1451,7 +1820,7 @@
 
         async function loadRecentActivity() {
             try {
-                const snapshot = await db.collection('payments')
+                const snapshot = await db.collection('deposit_requests')
                     .orderBy('createdAt', 'desc')
                     .limit(5)
                     .get();
@@ -1477,13 +1846,26 @@
                 container.innerHTML = html;
             } catch (error) {
                 console.error('Error loading activity:', error);
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <p>Erreur de chargement</p>
+                    </div>
+                `;
             }
         }
 
         // Events Management
         async function loadEvents() {
             try {
-                const snapshot = await db.collection('events').orderBy('createdAt', 'desc').get();
+                let query = db.collection('events').orderBy('createdAt', 'desc');
+                
+                // Si filtre actif autre que 'all', appliquer le filtre
+                if (currentFilter !== 'all') {
+                    query = query.where('status', '==', currentFilter);
+                }
+
+                const snapshot = await query.get();
                 eventsData = [];
                 
                 const container = document.getElementById('eventsList');
@@ -1492,9 +1874,9 @@
                     container.innerHTML = `
                         <div class="empty-state" style="grid-column: 1/-1;">
                             <i class="fas fa-calendar-plus"></i>
-                            <p>Aucun événement créé</p>
+                            <p>Aucun événement trouvé</p>
                             <button class="btn btn-primary" onclick="openModal('eventModal')" style="margin-top: 1rem;">
-                                Créer le premier événement
+                                Créer un événement
                             </button>
                         </div>
                     `;
@@ -1516,7 +1898,16 @@
         }
 
         function createEventCardHTML(event) {
-            const date = event.date ? new Date(event.date.seconds * 1000).toLocaleDateString('fr-FR') : 'Date non définie';
+            // Utilisation de 'question' au lieu de 'title' pour correspondre au user-dashboard
+            const question = event.question || 'Question non définie';
+            const date = event.date ? new Date(event.date.seconds * 1000).toLocaleDateString('fr-FR', {
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            }) : 'Date non définie';
+            
             const statusClass = {
                 'active': 'status-active',
                 'pending': 'status-pending',
@@ -1531,25 +1922,46 @@
                 'cancelled': 'Annulé'
             }[event.status] || 'En attente';
 
+            const categoryIcon = getCategoryIcon(event.category);
+            const yesBets = event.bets ? event.bets.filter(b => b.choice === 'yes').length : 0;
+            const noBets = event.bets ? event.bets.filter(b => b.choice === 'no').length : 0;
+            const totalPot = event.bets ? event.bets.reduce((sum, b) => sum + b.amount, 0) : 0;
+
             return `
                 <div class="event-card" data-id="${event.id}">
                     <div class="event-header">
+                        <span class="event-category">
+                            <i class="fas fa-${categoryIcon}"></i>
+                            ${event.category || 'Sport'}
+                        </span>
                         <span class="status ${statusClass} event-status">${statusText}</span>
-                        <div class="event-title">${event.title}</div>
-                        <div class="event-date"><i class="fas fa-clock"></i> ${date}</div>
+                        <div class="event-question" style="margin-top: 1rem;">${question}</div>
+                        <div class="event-date">
+                            <i class="fas fa-clock"></i> 
+                            Clôture: ${date}
+                        </div>
                     </div>
                     <div class="event-body">
-                        <p style="color: var(--gray); margin-bottom: 1rem; font-size: 0.9rem;">
-                            ${event.description || 'Aucune description'}
-                        </p>
                         <div class="event-stats">
-                            <div class="event-stat">
-                                <div class="event-stat-value">${event.oddsA || '-'}</div>
-                                <div class="event-stat-label">Cote A</div>
+                            <div class="event-stat yes">
+                                <div class="event-stat-label">OUI</div>
+                                <div class="event-stat-value">${yesBets} pers.</div>
                             </div>
-                            <div class="event-stat">
-                                <div class="event-stat-value">${event.oddsB || '-'}</div>
-                                <div class="event-stat-label">Cote B</div>
+                            <div class="event-stat no">
+                                <div class="event-stat-label">NON</div>
+                                <div class="event-stat-value">${noBets} pers.</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="event-footer">
+                        <div class="event-info">
+                            <div class="event-info-item">
+                                <i class="fas fa-coins"></i>
+                                <span>Min: ${event.minBet || 100} FCFA</span>
+                            </div>
+                            <div class="event-info-item">
+                                <i class="fas fa-chart-line"></i>
+                                <span>Pot: ${totalPot.toLocaleString()} FCFA</span>
                             </div>
                         </div>
                         <div class="event-actions">
@@ -1565,59 +1977,74 @@
             `;
         }
 
-        function filterEvents(filter) {
+        function getCategoryIcon(category) {
+            const icons = {
+                'sport': 'futbol',
+                'politique': 'landmark',
+                'entertainment': 'film',
+                'crypto': 'bitcoin',
+                'music': 'music',
+                'autre': 'tag'
+            };
+            return icons[category] || 'tag';
+        }
+
+        function filterEvents(filter, btnElement) {
+            currentFilter = filter;
+            
             // Mettre à jour les boutons
             document.querySelectorAll('.filter-btn').forEach(btn => {
                 btn.classList.remove('active');
             });
-            event.target.classList.add('active');
-
-            // Filtrer les événements
-            const filtered = filter === 'all' 
-                ? eventsData 
-                : eventsData.filter(e => e.status === filter);
-
-            const container = document.getElementById('eventsList');
-            if (filtered.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state" style="grid-column: 1/-1;">
-                        <i class="fas fa-search"></i>
-                        <p>Aucun événement trouvé</p>
-                    </div>
-                `;
-            } else {
-                container.innerHTML = filtered.map(event => createEventCardHTML(event)).join('');
+            if (btnElement) {
+                btnElement.classList.add('active');
             }
+            
+            loadEvents();
         }
 
         function openModal(modalId) {
             document.getElementById(modalId).classList.add('active');
+            document.body.style.overflow = 'hidden';
+            
             if (modalId === 'eventModal') {
                 document.getElementById('eventModalTitle').textContent = 'Nouvel Événement';
                 document.getElementById('eventForm').reset();
                 document.getElementById('eventId').value = '';
+                // Définir la date par défaut à maintenant + 7 jours
+                const defaultDate = new Date();
+                defaultDate.setDate(defaultDate.getDate() + 7);
+                document.getElementById('eventDate').value = defaultDate.toISOString().slice(0, 16);
             }
         }
 
         function closeModal(modalId) {
             document.getElementById(modalId).classList.remove('active');
+            document.body.style.overflow = '';
         }
 
         async function saveEvent() {
             const eventId = document.getElementById('eventId').value;
+            
+            // Récupérer les valeurs du formulaire - UTILISATION DE 'question' AU LIEU DE 'title'
             const eventData = {
-                title: document.getElementById('eventTitle').value,
+                question: document.getElementById('eventQuestion').value.trim(),
                 category: document.getElementById('eventCategory').value,
                 date: new Date(document.getElementById('eventDate').value),
-                description: document.getElementById('eventDescription').value,
-                oddsA: parseFloat(document.getElementById('oddsA').value),
-                oddsB: parseFloat(document.getElementById('oddsB').value),
+                description: document.getElementById('eventDescription').value.trim(),
+                minBet: parseInt(document.getElementById('minBet').value) || 100,
                 status: document.getElementById('eventStatus').value,
                 updatedAt: firebase.firestore.FieldValue.serverTimestamp()
             };
 
-            if (!eventData.title || !eventData.date) {
-                showToast('Veuillez remplir tous les champs obligatoires', 'error');
+            // Validation
+            if (!eventData.question) {
+                showToast('Veuillez entrer la question de prédiction', 'error');
+                return;
+            }
+
+            if (!document.getElementById('eventDate').value) {
+                showToast('Veuillez sélectionner une date', 'error');
                 return;
             }
 
@@ -1630,6 +2057,7 @@
                     // Création
                     eventData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
                     eventData.createdBy = currentUser.id;
+                    eventData.bets = []; // Initialiser le tableau des paris
                     await db.collection('events').add(eventData);
                     showToast('Événement créé avec succès !', 'success');
                 }
@@ -1652,13 +2080,14 @@
                 }
 
                 const event = doc.data();
+                
+                // Remplir le formulaire - UTILISATION DE 'question'
                 document.getElementById('eventId').value = eventId;
-                document.getElementById('eventTitle').value = event.title;
+                document.getElementById('eventQuestion').value = event.question || '';
                 document.getElementById('eventCategory').value = event.category || 'sport';
                 document.getElementById('eventDate').value = event.date ? new Date(event.date.seconds * 1000).toISOString().slice(0, 16) : '';
                 document.getElementById('eventDescription').value = event.description || '';
-                document.getElementById('oddsA').value = event.oddsA || '';
-                document.getElementById('oddsB').value = event.oddsB || '';
+                document.getElementById('minBet').value = event.minBet || 100;
                 document.getElementById('eventStatus').value = event.status || 'active';
 
                 document.getElementById('eventModalTitle').textContent = 'Modifier l\'Événement';
@@ -1670,9 +2099,20 @@
         }
 
         async function deleteEvent(eventId) {
-            if (!confirm('Êtes-vous sûr de vouloir supprimer cet événement ?')) return;
+            if (!confirm('Êtes-vous sûr de vouloir supprimer cet événement ? Cette action est irréversible.')) {
+                return;
+            }
 
             try {
+                // Vérifier s'il y a des paris sur cet événement
+                const betsSnapshot = await db.collection('bets').where('eventId', '==', eventId).limit(1).get();
+                
+                if (!betsSnapshot.empty) {
+                    if (!confirm('Attention: Des paris ont déjà été placés sur cet événement. Êtes-vous vraiment sûr de vouloir le supprimer ?')) {
+                        return;
+                    }
+                }
+
                 await db.collection('events').doc(eventId).delete();
                 showToast('Événement supprimé', 'success');
                 loadEvents();
@@ -1687,7 +2127,7 @@
         async function loadPayments() {
             try {
                 // Paiements en attente
-                const pendingSnapshot = await db.collection('payments')
+                const pendingSnapshot = await db.collection('deposit_requests')
                     .where('status', '==', 'pending')
                     .orderBy('createdAt', 'desc')
                     .get();
@@ -1697,7 +2137,7 @@
                 if (pendingSnapshot.empty) {
                     pendingContainer.innerHTML = `
                         <div class="empty-state">
-                            <i class="fas fa-check-circle"></i>
+                            <i class="fas fa-check-circle" style="color: var(--success);"></i>
                             <p>Aucun paiement en attente</p>
                         </div>
                     `;
@@ -1711,7 +2151,7 @@
                 }
 
                 // Historique
-                const historySnapshot = await db.collection('payments')
+                const historySnapshot = await db.collection('deposit_requests')
                     .orderBy('createdAt', 'desc')
                     .limit(50)
                     .get();
@@ -1721,7 +2161,8 @@
                 if (historySnapshot.empty) {
                     historyTable.innerHTML = `
                         <tr>
-                            <td colspan="6" style="text-align: center; padding: 2rem;">
+                            <td colspan="6" style="text-align: center; padding: 2rem; color: var(--gray);">
+                                <i class="fas fa-inbox" style="font-size: 2rem; margin-bottom: 0.5rem; display: block;"></i>
                                 Aucun historique
                             </td>
                         </tr>
@@ -1740,8 +2181,9 @@
         }
 
         function createPaymentItemHTML(id, payment, compact = false) {
-            const user = payment.userName || 'Utilisateur';
+            const user = payment.userName || payment.userPseudo || 'Utilisateur';
             const initial = user.charAt(0).toUpperCase();
+            const amount = payment.amount || 0;
             
             return `
                 <div class="payment-item">
@@ -1750,10 +2192,10 @@
                         <div class="payment-user">${user}</div>
                         <div class="payment-details">${payment.type || 'Dépôt'} • ${formatDate(payment.createdAt)}</div>
                     </div>
-                    <div class="payment-amount">+${formatCurrency(payment.amount)}</div>
+                    <div class="payment-amount">+${formatCurrency(amount)}</div>
                     ${!compact ? `
                         <div class="payment-actions">
-                            <button class="btn btn-success btn-sm" onclick="openPaymentModal('${id}', '${user}', ${payment.amount}, '${payment.type || 'Dépôt'}')">
+                            <button class="btn btn-success btn-sm" onclick="openPaymentModal('${id}', '${user}', ${amount}, '${payment.type || 'Dépôt'}', '${payment.userId}')">
                                 <i class="fas fa-check"></i>
                             </button>
                             <button class="btn btn-danger btn-sm" onclick="rejectPayment('${id}')">
@@ -1769,41 +2211,45 @@
             const statusClass = {
                 'pending': 'status-pending',
                 'completed': 'status-completed',
+                'approved': 'status-completed',
                 'rejected': 'status-cancelled'
             }[payment.status] || 'status-pending';
 
             const statusText = {
                 'pending': 'En attente',
                 'completed': 'Validé',
+                'approved': 'Validé',
                 'rejected': 'Rejeté'
             }[payment.status] || 'En attente';
+
+            const user = payment.userName || payment.userPseudo || 'Utilisateur';
 
             return `
                 <tr>
                     <td>
                         <div style="display: flex; align-items: center; gap: 0.75rem;">
                             <div class="payment-avatar" style="width: 35px; height: 35px; font-size: 0.9rem;">
-                                ${(payment.userName || 'U').charAt(0).toUpperCase()}
+                                ${user.charAt(0).toUpperCase()}
                             </div>
-                            <span>${payment.userName || 'Utilisateur'}</span>
+                            <span>${user}</span>
                         </div>
                     </td>
-                    <td style="font-weight: 600; color: var(--success);">+${formatCurrency(payment.amount)}</td>
+                    <td style="font-weight: 600; color: var(--success);">+${formatCurrency(payment.amount || 0)}</td>
                     <td>${payment.type || 'Dépôt'}</td>
                     <td>${formatDate(payment.createdAt)}</td>
                     <td><span class="status ${statusClass}">${statusText}</span></td>
                     <td>
                         ${payment.status === 'pending' ? `
-                            <button class="btn btn-success btn-sm" onclick="openPaymentModal('${id}', '${payment.userName}', ${payment.amount}, '${payment.type}')">
+                            <button class="btn btn-success btn-sm" onclick="openPaymentModal('${id}', '${user}', ${payment.amount}, '${payment.type}', '${payment.userId}')">
                                 <i class="fas fa-check"></i>
                             </button>
-                        ` : '-'}
+                        ` : '<span style="color: var(--gray);">-</span>'}
                     </td>
                 </tr>
             `;
         }
 
-        function openPaymentModal(id, userName, amount, type) {
+        function openPaymentModal(id, userName, amount, type, userId) {
             document.getElementById('paymentId').value = id;
             document.getElementById('paymentUserName').textContent = userName;
             document.getElementById('paymentUserAvatar').textContent = userName.charAt(0).toUpperCase();
@@ -1812,6 +2258,9 @@
             document.getElementById('paymentAction').value = 'approve';
             document.getElementById('paymentComment').value = '';
             
+            // Stocker l'userId pour la mise à jour du solde
+            document.getElementById('paymentModal').dataset.userId = userId;
+            
             openModal('paymentModal');
         }
 
@@ -1819,9 +2268,15 @@
             const id = document.getElementById('paymentId').value;
             const action = document.getElementById('paymentAction').value;
             const comment = document.getElementById('paymentComment').value;
+            const userId = document.getElementById('paymentModal').dataset.userId;
+
+            if (!id) {
+                showToast('Erreur: ID de paiement manquant', 'error');
+                return;
+            }
 
             try {
-                const paymentRef = db.collection('payments').doc(id);
+                const paymentRef = db.collection('deposit_requests').doc(id);
                 const paymentDoc = await paymentRef.get();
                 
                 if (!paymentDoc.exists) {
@@ -1841,10 +2296,18 @@
                     });
 
                     // Mettre à jour le solde de l'utilisateur
-                    const userRef = db.collection('users').doc(payment.userId);
-                    await userRef.update({
-                        balance: firebase.firestore.FieldValue.increment(payment.amount)
-                    });
+                    if (userId || payment.userId) {
+                        const targetUserId = userId || payment.userId;
+                        const userRef = db.collection('users').doc(targetUserId);
+                        
+                        // Vérifier si l'utilisateur existe
+                        const userDoc = await userRef.get();
+                        if (userDoc.exists) {
+                            await userRef.update({
+                                balance: firebase.firestore.FieldValue.increment(payment.amount || 0)
+                            });
+                        }
+                    }
 
                     showToast('Paiement approuvé et solde mis à jour', 'success');
                 } else {
@@ -1867,10 +2330,12 @@
         }
 
         async function rejectPayment(id) {
-            if (!confirm('Êtes-vous sûr de vouloir rejeter ce paiement ?')) return;
+            if (!confirm('Êtes-vous sûr de vouloir rejeter ce paiement ?')) {
+                return;
+            }
 
             try {
-                await db.collection('payments').doc(id).update({
+                await db.collection('deposit_requests').doc(id).update({
                     status: 'rejected',
                     validatedAt: firebase.firestore.FieldValue.serverTimestamp(),
                     validatedBy: currentUser.id
@@ -1879,6 +2344,7 @@
                 loadPayments();
                 loadDashboardData();
             } catch (error) {
+                console.error('Error rejecting payment:', error);
                 showToast('Erreur', 'error');
             }
         }
@@ -1897,7 +2363,8 @@
                 if (snapshot.empty) {
                     table.innerHTML = `
                         <tr>
-                            <td colspan="5" style="text-align: center; padding: 2rem;">
+                            <td colspan="6" style="text-align: center; padding: 2rem; color: var(--gray);">
+                                <i class="fas fa-users" style="font-size: 2rem; margin-bottom: 0.5rem; display: block;"></i>
                                 Aucun utilisateur
                             </td>
                         </tr>
@@ -1905,14 +2372,25 @@
                     return;
                 }
 
+                // Compter les paris pour chaque utilisateur
+                const betsSnapshot = await db.collection('bets').get();
+                const userBets = {};
+                betsSnapshot.forEach(doc => {
+                    const bet = doc.data();
+                    userBets[bet.userId] = (userBets[bet.userId] || 0) + 1;
+                });
+
                 let html = '';
                 snapshot.forEach(doc => {
                     const user = doc.data();
+                    const userId = doc.id;
+                    const betsCount = userBets[userId] || 0;
+                    
                     html += `
                         <tr>
                             <td>
                                 <div style="display: flex; align-items: center; gap: 0.75rem;">
-                                    <div class="payment-avatar" style="width: 35px; height: 35px; font-size: 0.9rem; background: var(--gradient-2);">
+                                    <div class="payment-avatar" style="width: 35px; height: 35px; font-size: 0.9rem; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
                                         ${(user.prenom || user.pseudo || 'U').charAt(0).toUpperCase()}
                                     </div>
                                     <div>
@@ -1923,9 +2401,10 @@
                             </td>
                             <td>${user.contact || '-'}</td>
                             <td style="font-weight: 600;">${formatCurrency(user.balance || 0)}</td>
+                            <td>${betsCount}</td>
                             <td><span class="status ${user.role === 'admin' ? 'status-active' : 'status-completed'}">${user.role || 'user'}</span></td>
                             <td>
-                                <button class="btn btn-secondary btn-sm" onclick="viewUser('${doc.id}')">
+                                <button class="btn btn-secondary btn-sm" onclick="viewUser('${userId}')">
                                     <i class="fas fa-eye"></i>
                                 </button>
                             </td>
@@ -1940,32 +2419,46 @@
         }
 
         function viewUser(userId) {
-            // Redirection vers la page de détail utilisateur ou ouverture d'un modal
-            showToast('Fonctionnalité en développement', 'error');
+            showToast('Détails utilisateur - Fonctionnalité en développement', 'info');
         }
 
         // Settings
         function saveSettings() {
-            const commission = document.getElementById('commissionRate').value;
-            const minWithdrawal = document.getElementById('minWithdrawal').value;
+            const commission = parseFloat(document.getElementById('commissionRate').value);
+            const minBet = parseInt(document.getElementById('minBet').value);
+            const maxBet = parseInt(document.getElementById('maxBet').value);
             
-            // Sauvegarder dans Firestore ou localStorage
-            localStorage.setItem('settings', JSON.stringify({
+            // Sauvegarder dans localStorage pour l'instant (pourrait être dans Firestore)
+            const settings = {
                 commission: commission,
-                minWithdrawal: minWithdrawal
-            }));
+                minBet: minBet,
+                maxBet: maxBet,
+                updatedAt: new Date().toISOString()
+            };
             
-            showToast('Paramètres enregistrés', 'success');
+            localStorage.setItem('predikta_settings', JSON.stringify(settings));
+            
+            showToast('Paramètres enregistrés avec succès', 'success');
         }
 
         // Utilities
         function formatCurrency(amount) {
-            return new Intl.NumberFormat('fr-FR').format(amount) + ' FCFA';
+            if (amount === undefined || amount === null) return '0 FCFA';
+            return new Intl.NumberFormat('fr-FR').format(Math.floor(amount)) + ' FCFA';
         }
 
         function formatDate(timestamp) {
             if (!timestamp) return '-';
-            const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+            
+            let date;
+            if (timestamp.toDate) {
+                date = timestamp.toDate();
+            } else if (timestamp.seconds) {
+                date = new Date(timestamp.seconds * 1000);
+            } else {
+                date = new Date(timestamp);
+            }
+            
             return date.toLocaleDateString('fr-FR', {
                 day: '2-digit',
                 month: 'short',
@@ -1986,6 +2479,8 @@
                 icon.className = 'fas fa-check-circle';
             } else if (type === 'error') {
                 icon.className = 'fas fa-exclamation-circle';
+            } else if (type === 'info') {
+                icon.className = 'fas fa-info-circle';
             }
             
             setTimeout(() => {
@@ -1996,15 +2491,37 @@
         function logout() {
             sessionStorage.removeItem('currentUser');
             localStorage.removeItem('currentUser');
-            window.location.href = 'index.html';
+            showToast('Déconnexion réussie', 'success');
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 1000);
         }
 
         // Fermer les modals en cliquant à l'extérieur
         window.onclick = function(event) {
-            if (event.target.classList.contains('modal')) {
+            if (event.target.classList.contains('modal-overlay')) {
                 event.target.classList.remove('active');
+                document.body.style.overflow = '';
             }
         }
+
+        // Charger les paramètres sauvegardés
+        function loadSettings() {
+            const saved = localStorage.getItem('predikta_settings');
+            if (saved) {
+                try {
+                    const settings = JSON.parse(saved);
+                    document.getElementById('commissionRate').value = settings.commission || 2;
+                    document.getElementById('minBet').value = settings.minBet || 100;
+                    document.getElementById('maxBet').value = settings.maxBet || 100000;
+                } catch (e) {
+                    console.error('Error loading settings:', e);
+                }
+            }
+        }
+
+        // Appeler au chargement
+        document.addEventListener('DOMContentLoaded', loadSettings);
     </script>
 </body>
 </html>
