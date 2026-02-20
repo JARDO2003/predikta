@@ -464,6 +464,38 @@
         .event-summary-label { color: var(--text-muted); }
         .event-summary-value { font-weight: 600; }
 
+        /* Delete confirm modal */
+        .delete-confirm {
+            text-align: center; padding: 0.5rem 0 1rem;
+        }
+        .delete-confirm i {
+            font-size: 3rem; color: var(--danger);
+            margin-bottom: 1rem; display: block;
+        }
+        .delete-confirm h3 {
+            font-size: 1.2rem; font-weight: 700; margin-bottom: 0.5rem;
+        }
+        .delete-confirm p {
+            color: var(--text-muted); font-size: 0.9rem;
+            margin-bottom: 1.5rem; line-height: 1.5;
+        }
+        .delete-confirm .btn-row {
+            display: flex; gap: 0.75rem;
+        }
+
+        /* Event actions row */
+        .event-actions-row {
+            display: flex; gap: 0.5rem; margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+        .event-actions-row .btn {
+            min-width: auto;
+        }
+        .btn-sm {
+            padding: 0.5rem 0.875rem !important;
+            font-size: 0.82rem !important;
+        }
+
         /* Responsive */
         @media (min-width: 1441px) {
             .main-content { padding: 2.5rem 4rem; }
@@ -479,17 +511,36 @@
             .deposits-grid { grid-template-columns: 1fr; }
         }
 
+        @media (max-width: 768px) {
+            .info-cards { grid-template-columns: repeat(2, 1fr); }
+            .event-stats { flex-direction: column; gap: 0.5rem; }
+            .section { padding: 1rem; }
+        }
+
         @media (max-width: 640px) {
             .deposit-header { flex-direction: column; align-items: flex-start; }
             .deposit-amount { align-self: flex-start; }
-            .toast { bottom: 1rem; right: 1rem; left: 1rem; max-width: none; }
+            .toast { bottom: 1rem; right: 0.75rem; left: 0.75rem; max-width: none; transform: translateY(120px); }
+            .toast.show { transform: translateY(0); }
             .result-options { grid-template-columns: 1fr; }
             .modal-header { flex-direction: column; align-items: flex-start; gap: 0.75rem; }
+            .modal { border-radius: 16px 16px 0 0; margin-bottom: 0; align-self: flex-end; max-height: 95vh; }
+            .modal-overlay { align-items: flex-end; padding: 0; }
+            .deposit-actions { flex-direction: column; }
+            .deposit-actions .btn { flex: none; width: 100%; }
+            .event-actions-row { flex-direction: column; }
+            .event-actions-row .btn { width: 100%; }
+            .delete-confirm .btn-row { flex-direction: column; }
         }
 
         @media (max-width: 480px) {
-            .tabs { padding: 0.375rem; gap: 0.375rem; }
-            .tab { font-size: 0.8rem; padding: 0.625rem 0.875rem; }
+            .tabs { padding: 0.25rem; gap: 0.25rem; }
+            .tab { font-size: 0.75rem; padding: 0.5rem 0.625rem; }
+            .info-cards { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
+            .info-card { padding: 0.875rem; }
+            .info-card-value { font-size: 1.25rem; }
+            .page-header { margin-bottom: 1rem; }
+            .main-content { padding: 0.875rem; }
         }
     </style>
 </head>
@@ -668,11 +719,31 @@
 
         <!-- TAB: EVENTS -->
         <div class="tab-content" id="eventsTab">
+            <!-- Active events list with delete -->
+            <div class="section" style="margin-bottom:1.5rem;">
+                <div class="section-header">
+                    <h3 class="section-title">
+                        <i class="fas fa-list-alt"></i>
+                        Événements actifs
+                    </h3>
+                    <button class="btn btn-outline btn-sm" style="flex:none;min-width:auto;" onclick="loadActiveEvents()">
+                        <i class="fas fa-sync-alt"></i> Rafraîchir
+                    </button>
+                </div>
+                <div id="activeEventsList">
+                    <div class="empty-state" style="padding:1.5rem;">
+                        <i class="fas fa-spinner fa-spin" style="font-size:1.5rem;"></i>
+                        <p>Chargement...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Create new event -->
             <div class="section">
                 <div class="section-header">
                     <h3 class="section-title">
-                        <i class="fas fa-calendar-alt"></i>
-                        Nouvel événement
+                        <i class="fas fa-calendar-plus"></i>
+                        Créer un événement
                     </h3>
                 </div>
                 <form id="eventForm" onsubmit="publishEvent(event)" style="max-width:600px; margin:0 auto;">
@@ -816,6 +887,27 @@
     </div>
 </div>
 
+
+<!-- Delete Confirm Modal -->
+<div class="modal-overlay" id="deleteModal">
+    <div class="modal" style="max-width:420px;">
+        <div class="delete-confirm">
+            <i class="fas fa-exclamation-triangle"></i>
+            <h3>Supprimer l'événement ?</h3>
+            <p id="deleteEventQuestion" style="font-weight:600; color:#f8fafc; margin-bottom:0.5rem;"></p>
+            <p>Cette action est <strong>irréversible</strong>. Les paris associés seront également supprimés mais les soldes ne seront pas modifiés.</p>
+            <div class="btn-row">
+                <button class="btn btn-outline" onclick="closeDeleteModal()" style="flex:1;">
+                    <i class="fas fa-times"></i> Annuler
+                </button>
+                <button class="btn btn-danger" id="confirmDeleteBtn" onclick="confirmDelete()" style="flex:1;">
+                    <i class="fas fa-trash"></i> Supprimer
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Toast -->
 <div class="toast" id="toast">
     <i class="fas fa-check-circle"></i>
@@ -852,6 +944,7 @@
         loadTransactions();
         loadUserSelect();
         updateStats();
+        loadActiveEvents();
         loadPendingResults();
         loadAnnouncedResults();
 
@@ -1233,6 +1326,7 @@
             d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
             document.getElementById('eventEndDate').value = d.toISOString().slice(0, 16);
 
+            loadActiveEvents();
             loadPendingResults();
 
         } catch (err) {
@@ -1297,9 +1391,12 @@
                             Pot total: ${totalPot.toLocaleString()} FCFA
                         </div>
                     </div>
-                    <div style="margin-top:1rem;">
-                        <button class="btn btn-primary btn-full" onclick="openResultModal('${ev.id}')">
-                            <i class="fas fa-trophy"></i> Annoncer le résultat
+                    <div class="event-actions-row">
+                        <button class="btn btn-primary" onclick="openResultModal('${ev.id}')">
+                            <i class="fas fa-trophy"></i> Résultat
+                        </button>
+                        <button class="btn btn-danger" onclick="openDeleteModal('${ev.id}', this)">
+                            <i class="fas fa-trash"></i> Supprimer
                         </button>
                     </div>
                 </div>`;
@@ -1382,6 +1479,11 @@
                             <span style="color:var(--text-muted);">Date clôture :</span>
                             <span>${closedDate}</span>
                         </div>
+                    </div>
+                    <div class="event-actions-row" style="margin-top:0.75rem;">
+                        <button class="btn btn-danger btn-sm" onclick="openDeleteModal('${ev.id}', this)" style="width:100%;">
+                            <i class="fas fa-trash"></i> Supprimer cet événement
+                        </button>
                     </div>
                 </div>`;
             }).join('');
@@ -1562,6 +1664,112 @@
         }
     }
 
+
+    // ==================== DELETE EVENT ====================
+    let deleteEventId = null;
+    let deleteEventStatus = null;
+
+    function openDeleteModal(eventId, triggerEl) {
+        deleteEventId = eventId;
+        // Try to find question text from the card
+        const card = triggerEl ? triggerEl.closest('.event-card') : null;
+        const question = card ? (card.querySelector('.event-question') || {}).textContent || '' : '';
+        document.getElementById('deleteEventQuestion').textContent = question ? '"' + question.trim().slice(0,80) + (question.length > 80 ? '…' : '') + '"' : '';
+        document.getElementById('deleteModal').classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeDeleteModal() {
+        document.getElementById('deleteModal').classList.remove('active');
+        document.body.style.overflow = '';
+        deleteEventId = null;
+    }
+
+    async function confirmDelete() {
+        if (!deleteEventId) return;
+        const btn = document.getElementById('confirmDeleteBtn');
+        btn.innerHTML = '<span class="loading"></span> Suppression...';
+        btn.disabled = true;
+
+        try {
+            // Delete the event document
+            await db.collection('events').doc(deleteEventId).delete();
+
+            // Delete associated bets
+            const betsSnap = await db.collection('bets').where('eventId', '==', deleteEventId).get();
+            const batch = db.batch();
+            betsSnap.forEach(doc => batch.delete(doc.ref));
+            if (!betsSnap.empty) await batch.commit();
+
+            showToast('Événement supprimé avec succès !', 'success');
+            closeDeleteModal();
+            // Refresh all event lists
+            loadActiveEvents();
+            loadPendingResults();
+            loadAnnouncedResults();
+        } catch (err) {
+            console.error('Delete error:', err);
+            showToast('Erreur de suppression: ' + err.message, 'error');
+        } finally {
+            btn.innerHTML = '<i class="fas fa-trash"></i> Supprimer';
+            btn.disabled = false;
+        }
+    }
+
+    // ==================== ACTIVE EVENTS LIST (in events tab) ====================
+    async function loadActiveEvents() {
+        const container = document.getElementById('activeEventsList');
+        if (!container) return;
+        container.innerHTML = '<div class="empty-state" style="padding:1.5rem;"><i class="fas fa-spinner fa-spin" style="font-size:1.5rem;"></i><p>Chargement...</p></div>';
+        try {
+            const snap = await db.collection('events').get();
+            if (snap.empty) {
+                container.innerHTML = '<div class="empty-state" style="padding:1.5rem;"><i class="fas fa-calendar-times"></i><p>Aucun événement</p></div>';
+                return;
+            }
+            const events = snap.docs
+                .map(doc => ({ id: doc.id, ...doc.data() }))
+                .sort((a, b) => {
+                    const da = a.createdAt ? a.createdAt.toMillis() : 0;
+                    const db2 = b.createdAt ? b.createdAt.toMillis() : 0;
+                    return db2 - da;
+                });
+
+            container.innerHTML = events.map(ev => {
+                const bets = ev.bets || [];
+                const totalBets = bets.length;
+                const pot = bets.reduce((s, b) => s + (b.amount || 0), 0);
+                const isActive = ev.status === 'active';
+                const statusHtml = isActive
+                    ? '<span class="status-badge active"><i class="fas fa-circle" style="font-size:.45rem;"></i> Actif</span>'
+                    : '<span class="status-badge closed"><i class="fas fa-lock"></i> Terminé</span>';
+
+                return `<div class="event-card">
+                    <div class="event-header">
+                        <span class="event-category">
+                            <i class="fas fa-${getCategoryIcon(ev.category)}"></i>
+                            ${ev.category || 'Sport'}
+                        </span>
+                        ${statusHtml}
+                    </div>
+                    <div class="event-question">${ev.question}</div>
+                    <div class="event-stats">
+                        <div class="event-stat"><i class="fas fa-ticket-alt"></i>${totalBets} paris</div>
+                        <div class="event-stat"><i class="fas fa-coins"></i>${pot.toLocaleString()} FCFA</div>
+                    </div>
+                    <div class="event-actions-row">
+                        <button class="btn btn-danger btn-sm" onclick="openDeleteModal('${ev.id}', this)">
+                            <i class="fas fa-trash"></i> Supprimer
+                        </button>
+                    </div>
+                </div>`;
+            }).join('');
+        } catch (err) {
+            console.error('loadActiveEvents error:', err);
+            container.innerHTML = '<div class="empty-state" style="padding:1.5rem;"><i class="fas fa-exclamation-triangle"></i><p>Erreur: ' + err.message + '</p></div>';
+        }
+    }
+
     // ==================== MODALS ====================
     function openImageModal(url) {
         document.getElementById('modalImage').src = url;
@@ -1575,6 +1783,7 @@
     window.addEventListener('click', function(e) {
         if (e.target.id === 'imageModal') closeImageModal();
         if (e.target.id === 'resultModal') closeResultModal();
+        if (e.target.id === 'deleteModal') closeDeleteModal();
     });
 
     // ==================== TOAST ====================
