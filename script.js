@@ -1,4 +1,4 @@
-        // Firebase Configuration
+// Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyCPGgtXoDUycykLaTSee0S0yY0tkeJpqKI",
             authDomain: "data-com-a94a8.firebaseapp.com",
@@ -13,21 +13,47 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
+        // Cloudinary Configuration
+        const cloudinaryConfig = {
+            cloudName: 'djxcqczh1',
+            uploadPreset: 'database'
+        };
+
         // Global Variables
         let currentUser = null;
+        let currentEvent = null;
+        let currentPrediction = null;
+        let currentBetAmount = 100;
         let eventsData = [];
-        let currentFilter = 'all';
+
+        // Carousel Sample Data
+        const carouselSamples = [
+            {
+                category: 'sport',
+                question: 'Le Real Madrid remportera-t-il la Liga cette saison ?',
+                date: '15 Juin 2024',
+                image: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=250&fit=crop'
+            },
+            {
+                category: 'music',
+                question: 'Burna Boy gagnera-t-il un Grammy Award ?',
+                date: '20 Juin 2024',
+                image: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=250&fit=crop'
+            },
+            {
+                category: 'crypto',
+                question: 'Le Bitcoin dépassera-t-il 100 000$ cette année ?',
+                date: '30 Juin 2024',
+                image: 'https://images.unsplash.com/photo-1518546305927-5a555bb7020d?w=400&h=250&fit=crop'
+            }
+        ];
 
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
             checkAuth();
-            loadDashboardData();
-            loadEvents();
-            loadTransactions();
-            loadUsers();
+            renderCarousel();
         });
 
-        // Auth Check
         function checkAuth() {
             const userStr = sessionStorage.getItem('currentUser') || localStorage.getItem('currentUser');
             if (!userStr) {
@@ -37,51 +63,241 @@
             
             try {
                 currentUser = JSON.parse(userStr);
-                
-                if (currentUser.role !== 'admin' && currentUser.role !== 'creator') {
-                    window.location.href = 'user-dashboard.html';
-                    return;
-                }
-
-                document.getElementById('userName').textContent = currentUser.prenom || currentUser.pseudo || 'Admin';
-                document.getElementById('userPseudo').textContent = '@' + (currentUser.pseudo || 'admin');
-                document.getElementById('userAvatar').textContent = (currentUser.prenom || currentUser.pseudo || 'A').charAt(0).toUpperCase();
+                loadUserData();
+                loadEvents();
+                loadHistory();
+                updateStats();
             } catch (e) {
                 console.error('Error parsing user data:', e);
                 window.location.href = 'index.html';
             }
         }
 
-        // Navigation
-        function showSection(sectionName) {
-            document.querySelectorAll('.content-section').forEach(section => {
-                section.classList.remove('active');
-            });
-            
-            document.querySelectorAll('.nav-link').forEach(link => {
-                link.classList.remove('active');
-            });
-            
-            document.getElementById(sectionName + '-section').classList.add('active');
-            
-            const sectionMap = {
-                'dashboard': 0,
-                'events': 1,
-                'transactions': 2,
-                'users': 3,
-                'settings': 4
-            };
-            
-            const navLinks = document.querySelectorAll('.nav-link');
-            if (sectionMap[sectionName] !== undefined && navLinks[sectionMap[sectionName]]) {
-                navLinks[sectionMap[sectionName]].classList.add('active');
-            }
+        function loadUserData() {
+            if (!currentUser) return;
 
-            if (sectionName === 'events') loadEvents();
-            if (sectionName === 'transactions') loadTransactions();
-            if (sectionName === 'users') loadUsers();
+            db.collection('users').doc(currentUser.id).onSnapshot(doc => {
+                if (doc.exists) {
+                    const userData = doc.data();
+                    currentUser = { ...currentUser, ...userData };
+                    
+                    // Update session
+                    const storage = localStorage.getItem('currentUser') ? localStorage : sessionStorage;
+                    storage.setItem('currentUser', JSON.stringify(currentUser));
+
+                    // Update UI
+                    document.getElementById('userAvatar').textContent = (userData.prenom || 'U').charAt(0).toUpperCase();
+                    document.getElementById('userName').textContent = `${userData.prenom || ''} ${userData.nom || ''}`.trim();
+                    document.getElementById('userPseudo').textContent = '@' + (userData.pseudo || 'user');
+                    
+                    const balance = userData.balance || 0;
+                    document.getElementById('userBalance').textContent = balance.toLocaleString() + ' FCFA';
+                    document.getElementById('statBalance').textContent = balance.toLocaleString() + ' FCFA';
+                    document.getElementById('withdrawalBalance').textContent = balance.toLocaleString() + ' FCFA';
+                }
+            }, err => console.error('Error loading user data:', err));
         }
 
+        function updateStats() {
+            if (!currentUser) return;
+
+            db.collection('bets').where('userId', '==', currentUser.id).get()
+                .then(snapshot => {
+                    const wins = snapshot.docs.filter(d => d.data().status === 'won').length;
+                    const activeBets = snapshot.docs.filter(d => d.data().status === 'pending').length;
+                    const totalBet = snapshot.docs.reduce((sum, d) => sum + (d.data().amount || 0), 0);
+
+                    document.getElementById('statWins').textContent = wins;
+                    document.getElementById('statBets').textContent = activeBets;
+                    document.getElementById('statTotal').textContent = totalBet.toLocaleString() + ' FCFA';
+                })
+                .catch(err => console.error('Error loading stats:', err));
+        }
+
+        function loadEvents() {
+            db.collection('events').where('status', '==', 'active').get()
+                .then(snapshot => {
+                    eventsData = [];
+                    snapshot.forEach(doc => {
+                        eventsData.push({ id: doc.id, ...doc.data() });
+                    });
+                    renderEvents();
+                })
+                .catch(err => {
+                    console.error('Error loading events:', err);
+                    renderEvents();
+                });
+        }
+
+        function renderEvents() {
+            const eventsList = document.getElementById('eventsList');
+
+            if (eventsData.length === 0) {
+                eventsList.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-calendar-times"></i>
+                        <h4>Aucun événement disponible</h4>
+                        <p>Revenez plus tard pour de nouveaux événements</p>
+                    </div>
+                `;
+                return;
+            }
+
+            eventsList.innerHTML = eventsData.map(event => {
+                const yesBets = event.bets ? event.bets.filter(b => b.choice === 'yes').length : 0;
+                const noBets = event.bets ? event.bets.filter(b => b.choice === 'no').length : 0;
+                const totalPot = event.bets ? event.bets.reduce((sum, b) => sum + b.amount, 0) : 0;
+
+                return `
+                    <div class="event-card">
+                        <div class="event-header">
+                            <span class="event-category">
+                                <i class="fas fa-${getCategoryIcon(event.category)}"></i>
+                                ${event.category || 'Sport'}
+                            </span>
+                            <span class="event-status active">
+                                <i class="fas fa-circle" style="font-size: 0.5rem;"></i>
+                                En cours
+                            </span>
+                            <div class="event-question">${event.question}</div>
+                        </div>
+                        <div class="event-stats">
+                            <div class="event-stat yes">
+                                <div class="event-stat-label">OUI</div>
+                                <div class="event-stat-value">${yesBets} pers.</div>
+                            </div>
+                            <div class="event-stat no">
+                                <div class="event-stat-label">NON</div>
+                                <div class="event-stat-value">${noBets} pers.</div>
+                            </div>
+                        </div>
+                        <div class="event-footer">
+                            <div class="event-info">
+                                <div class="event-info-item">
+                                    <i class="fas fa-coins"></i>
+                                    <span>Min: ${event.minBet || 100} FCFA</span>
+                                </div>
+                                <div class="event-info-item">
+                                    <i class="fas fa-chart-line"></i>
+                                    <span>Pot: ${totalPot.toLocaleString()} FCFA</span>
+                                </div>
+                            </div>
+                            <div class="event-actions">
+                                <button class="btn-yes" onclick="openBetModal('${event.id}', 'yes')">
+                                    <i class="fas fa-check"></i> OUI
+                                </button>
+                                <button class="btn-no" onclick="openBetModal('${event.id}', 'no')">
+                                    <i class="fas fa-times"></i> NON
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function getCategoryIcon(category) {
+            const icons = {
+                'sport': 'futbol',
+                'politique': 'landmark',
+                'entertainment': 'film',
+                'crypto': 'bitcoin',
+                'music': 'music'
+            };
+            return icons[category] || 'tag';
+        }
+
+        function loadHistory() {
+            if (!currentUser) return;
+
+            db.collection('bets').where('userId', '==', currentUser.id)
+                .orderBy('date', 'desc')
+                .limit(5)
+                .get()
+                .then(snapshot => {
+                    const historyList = document.getElementById('historyList');
+
+                    if (snapshot.empty) {
+                        historyList.innerHTML = `
+                            <div class="empty-state">
+                                <i class="fas fa-history"></i>
+                                <p>Aucun historique</p>
+                            </div>
+                        `;
+                        return;
+                    }
+
+                    Promise.all(snapshot.docs.map(doc => {
+                        const bet = { id: doc.id, ...doc.data() };
+                        return db.collection('events').doc(bet.eventId).get()
+                            .then(eventDoc => ({ bet, event: eventDoc.exists ? eventDoc.data() : null }));
+                    })).then(results => {
+                        historyList.innerHTML = results.map(({ bet, event }) => {
+                            let iconClass = '';
+                            let amountClass = 'negative';
+                            let amountPrefix = '-';
+
+                            if (bet.status === 'won') {
+                                iconClass = 'win';
+                                amountClass = 'positive';
+                                amountPrefix = '+';
+                            } else if (bet.status === 'lost') {
+                                iconClass = 'loss';
+                            }
+
+                            const date = bet.date ? bet.date.toDate().toLocaleDateString('fr-FR') : '-';
+
+                            return `
+                                <div class="history-item">
+                                    <div class="history-icon ${iconClass}">
+                                        <i class="fas fa-${bet.status === 'won' ? 'trophy' : bet.status === 'lost' ? 'times' : 'ticket-alt'}"></i>
+                                    </div>
+                                    <div class="history-details">
+                                        <div class="history-title">${event ? event.question : 'Événement'}</div>
+                                        <div class="history-date">${date}</div>
+                                    </div>
+                                    <div class="history-amount ${amountClass}">
+                                        ${amountPrefix}${bet.amount.toLocaleString()} FCFA
+                                    </div>
+                                </div>
+                            `;
+                        }).join('');
+                    });
+                })
+                .catch(err => {
+                    console.error('Error loading history:', err);
+                    document.getElementById('historyList').innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <p>Erreur de chargement</p>
+                        </div>
+                    `;
+                });
+        }
+
+        function renderCarousel() {
+            const track = document.getElementById('carouselTrack');
+            const items = [...carouselSamples, ...carouselSamples];
+
+            track.innerHTML = items.map(item => `
+                <div class="carousel-item" onclick="showToast('Bientôt disponible!', 'info')">
+                    <img src="${item.image}" alt="${item.category}" class="carousel-image">
+                    <div class="carousel-content">
+                        <span class="carousel-category">
+                            <i class="fas fa-${getCategoryIcon(item.category)}"></i>
+                            ${item.category}
+                        </span>
+                        <div class="carousel-question">${item.question}</div>
+                        <div class="carousel-date">
+                            <i class="fas fa-calendar-alt"></i>
+                            ${item.date}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Navigation
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
             const overlay = document.querySelector('.sidebar-overlay');
@@ -98,774 +314,434 @@
             document.body.style.overflow = '';
         }
 
-        // Dashboard Data
-        async function loadDashboardData() {
-            try {
-                // Events
-                const eventsSnapshot = await db.collection('events').where('status', '==', 'active').get();
-                const totalEvents = eventsSnapshot.size;
-                document.getElementById('totalEvents').textContent = totalEvents;
-                document.getElementById('eventCountBadge').textContent = totalEvents;
-
-                // Revenue
-                const betsSnapshot = await db.collection('bets').where('status', '==', 'won').get();
-                let totalRevenue = 0;
-                betsSnapshot.forEach(doc => {
-                    const bet = doc.data();
-                    totalRevenue += (bet.amount * 0.02);
-                });
-                document.getElementById('totalRevenue').textContent = formatCurrency(totalRevenue);
-                document.getElementById('totalRevenueDisplay').textContent = formatCurrency(totalRevenue);
-
-                // Users
-                const usersSnapshot = await db.collection('users').get();
-                document.getElementById('totalUsers').textContent = usersSnapshot.size;
-
-                // Pending Transactions
-                const pendingSnapshot = await db.collection('transactions').where('status', '==', 'pending').get();
-                const pendingCount = pendingSnapshot.size;
-                document.getElementById('pendingTransactions').textContent = pendingCount;
-                document.getElementById('transactionCountBadge').textContent = pendingCount;
-                
-                const pendingAlert = document.getElementById('pendingAlert');
-                if (pendingCount > 0) {
-                    pendingAlert.style.display = 'block';
-                } else {
-                    pendingAlert.style.display = 'none';
-                }
-
-                loadRecentActivity();
-            } catch (error) {
-                console.error('Error loading dashboard:', error);
-                showToast('Erreur de chargement des données', 'error');
-            }
-        }
-
-        async function loadRecentActivity() {
-            try {
-                const snapshot = await db.collection('transactions')
-                    .orderBy('createdAt', 'desc')
-                    .limit(5)
-                    .get();
-
-                const container = document.getElementById('recentActivity');
-                
-                if (snapshot.empty) {
-                    container.innerHTML = `
-                        <div class="empty-state">
-                            <i class="fas fa-inbox"></i>
-                            <p>Aucune activité récente</p>
-                        </div>
-                    `;
-                    return;
-                }
-
-                let html = '<div class="payment-list">';
-                snapshot.forEach(doc => {
-                    const t = doc.data();
-                    html += createTransactionItemHTML(doc.id, t, true);
-                });
-                html += '</div>';
-                container.innerHTML = html;
-            } catch (error) {
-                console.error('Error loading activity:', error);
-            }
-        }
-
-        // Events Management
-        async function loadEvents() {
-            try {
-                let query = db.collection('events').orderBy('createdAt', 'desc');
-                
-                if (currentFilter !== 'all') {
-                    query = query.where('status', '==', currentFilter);
-                }
-
-                const snapshot = await query.get();
-                eventsData = [];
-                
-                const container = document.getElementById('eventsList');
-                
-                if (snapshot.empty) {
-                    container.innerHTML = `
-                        <div class="empty-state" style="grid-column: 1/-1;">
-                            <i class="fas fa-calendar-plus"></i>
-                            <p>Aucun événement trouvé</p>
-                        </div>
-                    `;
-                    return;
-                }
-
-                let html = '';
-                snapshot.forEach(doc => {
-                    const event = { id: doc.id, ...doc.data() };
-                    eventsData.push(event);
-                    html += createEventCardHTML(event);
-                });
-                
-                container.innerHTML = html;
-            } catch (error) {
-                console.error('Error loading events:', error);
-            }
-        }
-
-        function createEventCardHTML(event) {
-            const question = event.question || 'Question non définie';
-            const date = event.date ? new Date(event.date.seconds * 1000).toLocaleDateString('fr-FR', {
-                day: 'numeric',
-                month: 'short',
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            }) : 'Date non définie';
+        function showSection(section) {
+            // Hide all sections
+            document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
             
-            const statusClass = {
-                'active': 'status-active',
-                'pending': 'status-pending',
-                'completed': 'status-completed',
-                'cancelled': 'status-cancelled'
-            }[event.status] || 'status-pending';
-
-            const statusText = {
-                'active': 'Actif',
-                'pending': 'En attente',
-                'completed': 'Terminé',
-                'cancelled': 'Annulé'
-            }[event.status] || 'En attente';
-
-            const categoryIcon = getCategoryIcon(event.category);
-            const yesBets = event.bets ? event.bets.filter(b => b.choice === 'yes').length : 0;
-            const noBets = event.bets ? event.bets.filter(b => b.choice === 'no').length : 0;
-            const totalPot = event.bets ? event.bets.reduce((sum, b) => sum + b.amount, 0) : 0;
-
-            return `
-                <div class="event-card" data-id="${event.id}">
-                    <div class="event-header">
-                        <span class="event-category">
-                            <i class="fas fa-${categoryIcon}"></i>
-                            ${event.category || 'Sport'}
-                        </span>
-                        <span class="status ${statusClass} event-status">${statusText}</span>
-                        <div class="event-question" style="margin-top: 1rem;">${question}</div>
-                        <div class="event-date">
-                            <i class="fas fa-clock"></i> 
-                            Clôture: ${date}
-                        </div>
-                    </div>
-                    <div class="event-body">
-                        <div class="event-stats">
-                            <div class="event-stat yes">
-                                <div class="event-stat-label">OUI</div>
-                                <div class="event-stat-value">${yesBets} pers.</div>
-                            </div>
-                            <div class="event-stat no">
-                                <div class="event-stat-label">NON</div>
-                                <div class="event-stat-value">${noBets} pers.</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="event-footer">
-                        <div class="event-info">
-                            <div class="event-info-item">
-                                <i class="fas fa-coins"></i>
-                                <span>Min: ${event.minBet || 100} FCFA</span>
-                            </div>
-                            <div class="event-info-item">
-                                <i class="fas fa-chart-line"></i>
-                                <span>Pot: ${totalPot.toLocaleString()} FCFA</span>
-                            </div>
-                        </div>
-                        <div class="event-actions">
-                            <button class="btn btn-secondary btn-sm" onclick="editEvent('${event.id}')">
-                                <i class="fas fa-edit"></i> Modifier
-                            </button>
-                            <button class="btn btn-danger btn-sm" onclick="deleteEvent('${event.id}')">
-                                <i class="fas fa-trash"></i> Supprimer
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
-
-        function getCategoryIcon(category) {
-            const icons = {
-                'sport': 'futbol',
-                'politique': 'landmark',
-                'entertainment': 'film',
-                'crypto': 'bitcoin',
-                'music': 'music',
-                'autre': 'tag'
+            // Show selected section
+            const sectionMap = {
+                'events': 'events-section',
+                'transactions': 'transactions-section',
+                'my-bets': 'my-bets-section',
+                'history': 'events-section'
             };
-            return icons[category] || 'tag';
-        }
-
-        function filterEvents(filter, btnElement) {
-            currentFilter = filter;
             
-            document.querySelectorAll('.filter-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            if (btnElement) {
-                btnElement.classList.add('active');
+            const targetId = sectionMap[section];
+            if (targetId) {
+                document.getElementById(targetId).classList.add('active');
             }
-            
-            loadEvents();
+
+            // Update nav active state
+            document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+            event.target.closest('.nav-link')?.classList.add('active');
+
+            // Load section data
+            if (section === 'transactions') loadTransactions();
+            if (section === 'my-bets') loadMyBets();
         }
 
-        function openModal(modalId) {
-            document.getElementById(modalId).classList.add('active');
+        // Modals
+        function openDepositModal() {
+            document.getElementById('depositModal').classList.add('active');
             document.body.style.overflow = 'hidden';
-            
-            if (modalId === 'eventModal') {
-                document.getElementById('eventModalTitle').textContent = 'Nouvel Événement';
-                document.getElementById('eventForm').reset();
-                document.getElementById('eventId').value = '';
-                const defaultDate = new Date();
-                defaultDate.setDate(defaultDate.getDate() + 7);
-                document.getElementById('eventDate').value = defaultDate.toISOString().slice(0, 16);
-            }
         }
 
-        function closeModal(modalId) {
-            document.getElementById(modalId).classList.remove('active');
+        function closeDepositModal() {
+            document.getElementById('depositModal').classList.remove('active');
             document.body.style.overflow = '';
+            document.getElementById('depositForm').reset();
         }
 
-        async function saveEvent() {
-            const eventId = document.getElementById('eventId').value;
-            
-            const eventData = {
-                question: document.getElementById('eventQuestion').value.trim(),
-                category: document.getElementById('eventCategory').value,
-                date: new Date(document.getElementById('eventDate').value),
-                description: document.getElementById('eventDescription').value.trim(),
-                minBet: parseInt(document.getElementById('eventMinBet').value) || 100,
-                status: document.getElementById('eventStatus').value,
-                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-            };
+        function openWithdrawalModal() {
+            // Update balance display
+            if (currentUser) {
+                document.getElementById('withdrawalBalance').textContent = (currentUser.balance || 0).toLocaleString() + ' FCFA';
+            }
+            document.getElementById('withdrawalModal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
 
-            if (!eventData.question) {
-                showToast('Veuillez entrer la question de prédiction', 'error');
+        function closeWithdrawalModal() {
+            document.getElementById('withdrawalModal').classList.remove('active');
+            document.body.style.overflow = '';
+            document.getElementById('withdrawalForm').reset();
+        }
+
+        async function submitDeposit(e) {
+            e.preventDefault();
+
+            if (!currentUser) {
+                showToast('Erreur: utilisateur non connecté', 'error');
                 return;
             }
 
-            if (!document.getElementById('eventDate').value) {
-                showToast('Veuillez sélectionner une date', 'error');
+            const btn = document.getElementById('submitDepositBtn');
+            btn.innerHTML = '<span class="loading"></span> Envoi...';
+            btn.disabled = true;
+
+            const amount = parseInt(document.getElementById('depositAmount').value);
+            const phone = document.getElementById('depositPhone').value;
+            const transactionId = document.getElementById('depositTransactionId').value;
+            const comment = document.getElementById('depositComment').value;
+            const screenshot = document.getElementById('depositScreenshot').files[0];
+
+            try {
+                let screenshotURL = null;
+
+                // Upload screenshot if provided
+                if (screenshot) {
+                    const formData = new FormData();
+                    formData.append('file', screenshot);
+                    formData.append('upload_preset', cloudinaryConfig.uploadPreset);
+
+                    const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudinaryConfig.cloudName}/image/upload`, {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const data = await response.json();
+                    if (data.error) throw new Error(data.error.message);
+                    screenshotURL = data.secure_url;
+                }
+
+                // Save to Firestore - Collection 'transactions' avec type 'deposit'
+                await db.collection('transactions').add({
+                    userId: currentUser.id,
+                    userName: `${currentUser.prenom || ''} ${currentUser.nom || ''}`.trim(),
+                    userPseudo: currentUser.pseudo,
+                    type: 'deposit',
+                    amount: amount,
+                    phone: phone,
+                    transactionId: transactionId,
+                    screenshotURL: screenshotURL,
+                    comment: comment || '',
+                    status: 'pending',
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                showToast('Demande de dépôt envoyée ! Vous serez notifié une fois validée.', 'success');
+                closeDepositModal();
+            } catch (err) {
+                console.error('Error:', err);
+                showToast('Erreur: ' + err.message, 'error');
+            } finally {
+                btn.innerHTML = '<i class="fas fa-check-circle"></i> Envoyer la confirmation';
+                btn.disabled = false;
+            }
+        }
+
+        async function submitWithdrawal(e) {
+            e.preventDefault();
+
+            if (!currentUser) {
+                showToast('Erreur: utilisateur non connecté', 'error');
                 return;
             }
 
+            const amount = parseInt(document.getElementById('withdrawalAmount').value);
+            const phone = document.getElementById('withdrawalPhone').value;
+            const name = document.getElementById('withdrawalName').value;
+            const reason = document.getElementById('withdrawalReason').value;
+
+            // Vérifier le solde
+            if (amount > (currentUser.balance || 0)) {
+                showToast('Solde insuffisant pour ce retrait', 'error');
+                return;
+            }
+
+            if (amount < 1000) {
+                showToast('Le montant minimum de retrait est de 1 000 FCFA', 'error');
+                return;
+            }
+
+            const btn = document.getElementById('submitWithdrawalBtn');
+            btn.innerHTML = '<span class="loading"></span> Envoi...';
+            btn.disabled = true;
+
             try {
-                if (eventId) {
-                    await db.collection('events').doc(eventId).update(eventData);
-                    showToast('Événement modifié avec succès !', 'success');
-                } else {
-                    eventData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
-                    eventData.createdBy = currentUser.id;
-                    eventData.bets = [];
-                    await db.collection('events').add(eventData);
-                    showToast('Événement créé avec succès !', 'success');
-                }
-                
-                closeModal('eventModal');
-                loadEvents();
-                loadDashboardData();
-            } catch (error) {
-                console.error('Error saving event:', error);
-                showToast('Erreur: ' + error.message, 'error');
+                // Save to Firestore - Collection 'transactions' avec type 'withdrawal'
+                await db.collection('transactions').add({
+                    userId: currentUser.id,
+                    userName: `${currentUser.prenom || ''} ${currentUser.nom || ''}`.trim(),
+                    userPseudo: currentUser.pseudo,
+                    type: 'withdrawal',
+                    amount: amount,
+                    phone: phone,
+                    recipientName: name,
+                    reason: reason || '',
+                    status: 'pending',
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                // Déduire le montant du solde immédiatement (mise en attente)
+                await db.collection('users').doc(currentUser.id).update({
+                    balance: firebase.firestore.FieldValue.increment(-amount),
+                    pendingWithdrawal: firebase.firestore.FieldValue.increment(amount)
+                });
+
+                showToast('Demande de retrait envoyée ! Traitement sous 24-48h.', 'success');
+                closeWithdrawalModal();
+                loadTransactions();
+            } catch (err) {
+                console.error('Error:', err);
+                showToast('Erreur: ' + err.message, 'error');
+            } finally {
+                btn.innerHTML = '<i class="fas fa-paper-plane"></i> Demander le retrait';
+                btn.disabled = false;
             }
         }
 
-        async function editEvent(eventId) {
-            try {
-                const doc = await db.collection('events').doc(eventId).get();
-                if (!doc.exists) {
-                    showToast('Événement non trouvé', 'error');
-                    return;
-                }
+        function loadTransactions() {
+            if (!currentUser) return;
 
-                const event = doc.data();
-                
-                document.getElementById('eventId').value = eventId;
-                document.getElementById('eventQuestion').value = event.question || '';
-                document.getElementById('eventCategory').value = event.category || 'sport';
-                document.getElementById('eventDate').value = event.date ? new Date(event.date.seconds * 1000).toISOString().slice(0, 16) : '';
-                document.getElementById('eventDescription').value = event.description || '';
-                document.getElementById('eventMinBet').value = event.minBet || 100;
-                document.getElementById('eventStatus').value = event.status || 'active';
-
-                document.getElementById('eventModalTitle').textContent = 'Modifier l\'Événement';
-                openModal('eventModal');
-            } catch (error) {
-                console.error('Error loading event:', error);
-                showToast('Erreur de chargement', 'error');
-            }
-        }
-
-        async function deleteEvent(eventId) {
-            if (!confirm('Êtes-vous sûr de vouloir supprimer cet événement ?')) return;
-
-            try {
-                const betsSnapshot = await db.collection('bets').where('eventId', '==', eventId).limit(1).get();
-                
-                if (!betsSnapshot.empty) {
-                    if (!confirm('Attention: Des paris ont été placés. Supprimer quand même ?')) {
+            db.collection('transactions')
+                .where('userId', '==', currentUser.id)
+                .orderBy('createdAt', 'desc')
+                .get()
+                .then(snapshot => {
+                    const container = document.getElementById('transactionsList');
+                    
+                    if (snapshot.empty) {
+                        container.innerHTML = `
+                            <div class="empty-state">
+                                <i class="fas fa-exchange-alt"></i>
+                                <p>Aucune transaction</p>
+                            </div>
+                        `;
                         return;
                     }
-                }
 
-                await db.collection('events').doc(eventId).delete();
-                showToast('Événement supprimé', 'success');
-                loadEvents();
-                loadDashboardData();
-            } catch (error) {
-                console.error('Error deleting event:', error);
-                showToast('Erreur de suppression', 'error');
-            }
-        }
-
-        // Transactions Management
-        async function loadTransactions() {
-            try {
-                // Pending Deposits
-                const depositsSnapshot = await db.collection('transactions')
-                    .where('type', '==', 'deposit')
-                    .where('status', '==', 'pending')
-                    .orderBy('createdAt', 'desc')
-                    .get();
-
-                const depositsContainer = document.getElementById('pendingDepositsList');
-                
-                if (depositsSnapshot.empty) {
-                    depositsContainer.innerHTML = `
-                        <div class="empty-state">
-                            <i class="fas fa-check-circle" style="color: var(--success);"></i>
-                            <p>Aucun dépôt en attente</p>
-                        </div>
-                    `;
-                } else {
-                    let html = '';
-                    depositsSnapshot.forEach(doc => {
+                    let html = '<div class="history-list">';
+                    snapshot.forEach(doc => {
                         const t = doc.data();
-                        html += createTransactionItemHTML(doc.id, t);
-                    });
-                    depositsContainer.innerHTML = html;
-                }
+                        const isDeposit = t.type === 'deposit';
+                        const icon = isDeposit ? 'fa-arrow-down' : 'fa-arrow-up';
+                        const color = isDeposit ? 'var(--success)' : 'var(--danger)';
+                        const sign = isDeposit ? '+' : '-';
+                        const statusText = {
+                            'pending': 'En attente',
+                            'completed': 'Validé',
+                            'approved': 'Validé',
+                            'rejected': 'Rejeté'
+                        }[t.status] || 'En attente';
 
-                // Pending Withdrawals
-                const withdrawalsSnapshot = await db.collection('transactions')
-                    .where('type', '==', 'withdrawal')
-                    .where('status', '==', 'pending')
-                    .orderBy('createdAt', 'desc')
-                    .get();
-
-                const withdrawalsContainer = document.getElementById('pendingWithdrawalsList');
-                
-                if (withdrawalsSnapshot.empty) {
-                    withdrawalsContainer.innerHTML = `
-                        <div class="empty-state">
-                            <i class="fas fa-check-circle" style="color: var(--success);"></i>
-                            <p>Aucun retrait en attente</p>
-                        </div>
-                    `;
-                } else {
-                    let html = '';
-                    withdrawalsSnapshot.forEach(doc => {
-                        const t = doc.data();
-                        html += createTransactionItemHTML(doc.id, t);
-                    });
-                    withdrawalsContainer.innerHTML = html;
-                }
-
-                // History
-                const historySnapshot = await db.collection('transactions')
-                    .orderBy('createdAt', 'desc')
-                    .limit(50)
-                    .get();
-
-                const historyTable = document.getElementById('transactionsHistoryTable');
-                
-                if (historySnapshot.empty) {
-                    historyTable.innerHTML = `
-                        <tr>
-                            <td colspan="7" style="text-align: center; padding: 2rem; color: var(--gray);">
-                                <i class="fas fa-inbox" style="font-size: 2rem; margin-bottom: 0.5rem; display: block;"></i>
-                                Aucun historique
-                            </td>
-                        </tr>
-                    `;
-                } else {
-                    let html = '';
-                    historySnapshot.forEach(doc => {
-                        const t = doc.data();
-                        html += createTransactionRowHTML(doc.id, t);
-                    });
-                    historyTable.innerHTML = html;
-                }
-            } catch (error) {
-                console.error('Error loading transactions:', error);
-            }
-        }
-
-        function createTransactionItemHTML(id, t, compact = false) {
-            const user = t.userName || t.userPseudo || 'Utilisateur';
-            const initial = user.charAt(0).toUpperCase();
-            const amount = t.amount || 0;
-            const isDeposit = t.type === 'deposit';
-            
-            return `
-                <div class="payment-item">
-                    <div class="payment-avatar" style="background: ${isDeposit ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)' : 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)'};">
-                        ${initial}
-                    </div>
-                    <div class="payment-info">
-                        <div class="payment-user">${user}</div>
-                        <div class="payment-details">
-                            <span class="type-badge ${t.type}">${isDeposit ? 'DÉPÔT' : 'RETRAIT'}</span>
-                            • ${formatDate(t.createdAt)}
-                        </div>
-                    </div>
-                    <div class="payment-amount ${t.type}">
-                        ${isDeposit ? '+' : '-'}${formatCurrency(amount)}
-                    </div>
-                    ${!compact ? `
-                        <div class="payment-actions">
-                            <button class="btn btn-success btn-sm" onclick="openTransactionModal('${id}', '${user}', ${amount}, '${t.type}', '${t.userId}', '${t.screenshotURL || ''}')">
-                                <i class="fas fa-check"></i>
-                            </button>
-                            <button class="btn btn-danger btn-sm" onclick="rejectTransaction('${id}', '${t.userId}', ${amount}, '${t.type}')">
-                                <i class="fas fa-times"></i>
-                            </button>
-                        </div>
-                    ` : ''}
-                </div>
-            `;
-        }
-
-        function createTransactionRowHTML(id, t) {
-            const statusClass = {
-                'pending': 'status-pending',
-                'completed': 'status-completed',
-                'approved': 'status-completed',
-                'rejected': 'status-cancelled'
-            }[t.status] || 'status-pending';
-
-            const statusText = {
-                'pending': 'En attente',
-                'completed': 'Validé',
-                'approved': 'Validé',
-                'rejected': 'Rejeté'
-            }[t.status] || 'En attente';
-
-            const user = t.userName || t.userPseudo || 'Utilisateur';
-            const isDeposit = t.type === 'deposit';
-
-            return `
-                <tr>
-                    <td><span class="type-badge ${t.type}">${isDeposit ? 'DÉPÔT' : 'RETRAIT'}</span></td>
-                    <td>
-                        <div style="display: flex; align-items: center; gap: 0.75rem;">
-                            <div class="payment-avatar" style="width: 35px; height: 35px; font-size: 0.9rem;">
-                                ${user.charAt(0).toUpperCase()}
+                        html += `
+                            <div class="history-item">
+                                <div class="history-icon" style="background: ${isDeposit ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)'}; color: ${color};">
+                                    <i class="fas ${icon}"></i>
+                                </div>
+                                <div class="history-details">
+                                    <div class="history-title">${isDeposit ? 'Dépôt' : 'Retrait'} - ${statusText}</div>
+                                    <div class="history-date">${t.createdAt ? t.createdAt.toDate().toLocaleDateString('fr-FR') : '-'}</div>
+                                </div>
+                                <div class="history-amount" style="color: ${color};">
+                                    ${sign}${t.amount.toLocaleString()} FCFA
+                                </div>
                             </div>
-                            <span>${user}</span>
-                        </div>
-                    </td>
-                    <td style="font-weight: 600; color: ${isDeposit ? 'var(--success)' : 'var(--danger)'};">
-                        ${isDeposit ? '+' : '-'}${formatCurrency(t.amount || 0)}
-                    </td>
-                    <td>
-                        ${t.phone ? `<div><i class="fas fa-phone" style="font-size: 0.8rem; color: var(--gray);"></i> ${t.phone}</div>` : ''}
-                        ${t.transactionId ? `<div style="font-size: 0.8rem; color: var(--gray);">ID: ${t.transactionId}</div>` : ''}
-                        ${t.screenshotURL ? `<a href="${t.screenshotURL}" target="_blank" style="font-size: 0.8rem; color: var(--primary);"><i class="fas fa-image"></i> Voir capture</a>` : ''}
-                    </td>
-                    <td>${formatDate(t.createdAt)}</td>
-                    <td><span class="status ${statusClass}">${statusText}</span></td>
-                    <td>
-                        ${t.status === 'pending' ? `
-                            <button class="btn btn-success btn-sm" onclick="openTransactionModal('${id}', '${user}', ${t.amount}, '${t.type}', '${t.userId}', '${t.screenshotURL || ''}')">
-                                <i class="fas fa-check"></i>
-                            </button>
-                        ` : '<span style="color: var(--gray);">-</span>'}
-                    </td>
-                </tr>
-            `;
+                        `;
+                    });
+                    html += '</div>';
+                    container.innerHTML = html;
+                })
+                .catch(err => {
+                    console.error('Error loading transactions:', err);
+                });
         }
 
-        function openTransactionModal(id, userName, amount, type, userId, screenshotURL) {
-            document.getElementById('transactionId').value = id;
-            document.getElementById('transactionType').value = type;
-            document.getElementById('transactionUserId').value = userId;
-            document.getElementById('transactionUserName').textContent = userName;
-            document.getElementById('transactionUserAvatar').textContent = userName.charAt(0).toUpperCase();
-            document.getElementById('transactionDetails').textContent = type === 'deposit' ? 'Demande de dépôt' : 'Demande de retrait';
-            document.getElementById('transactionAmount').textContent = (type === 'deposit' ? '+' : '-') + formatCurrency(amount);
-            document.getElementById('transactionAction').value = 'approve';
-            document.getElementById('transactionComment').value = '';
+        function loadMyBets() {
+            if (!currentUser) return;
             
-            // Show screenshot if available
-            const screenshotContainer = document.getElementById('transactionScreenshotContainer');
-            const screenshotImg = document.getElementById('transactionScreenshot');
-            if (screenshotURL) {
-                screenshotContainer.style.display = 'block';
-                screenshotImg.src = screenshotURL;
-            } else {
-                screenshotContainer.style.display = 'none';
-                screenshotImg.src = '';
-            }
+            db.collection('bets').where('userId', '==', currentUser.id)
+                .orderBy('date', 'desc')
+                .get()
+                .then(snapshot => {
+                    const container = document.getElementById('myBetsList');
+                    
+                    if (snapshot.empty) {
+                        container.innerHTML = `
+                            <div class="empty-state">
+                                <i class="fas fa-ticket-alt"></i>
+                                <p>Aucun pari</p>
+                            </div>
+                        `;
+                        return;
+                    }
 
-            // Update warning text
-            const warningText = document.getElementById('transactionWarningText');
-            if (type === 'deposit') {
-                warningText.textContent = 'Le solde de l\'utilisateur sera crédité du montant du dépôt';
-            } else {
-                warningText.textContent = 'Le retrait sera marqué comme complété (le montant a déjà été déduit du solde)';
-            }
-            
-            openModal('transactionModal');
+                    Promise.all(snapshot.docs.map(doc => {
+                        const bet = { id: doc.id, ...doc.data() };
+                        return db.collection('events').doc(bet.eventId).get()
+                            .then(eventDoc => ({ bet, event: eventDoc.exists ? eventDoc.data() : null }));
+                    })).then(results => {
+                        container.innerHTML = results.map(({ bet, event }) => {
+                            const statusColors = {
+                                'pending': 'var(--warning)',
+                                'won': 'var(--success)',
+                                'lost': 'var(--danger)'
+                            };
+                            const statusText = {
+                                'pending': 'En cours',
+                                'won': 'Gagné',
+                                'lost': 'Perdu'
+                            };
+
+                            return `
+                                <div class="event-card" style="margin-bottom: 1rem;">
+                                    <div class="event-header">
+                                        <span class="event-category">${event ? event.category : 'Sport'}</span>
+                                        <span style="color: ${statusColors[bet.status] || 'var(--gray)'}; font-weight: 600;">
+                                            ${statusText[bet.status] || bet.status}
+                                        </span>
+                                    </div>
+                                    <div style="padding: 1rem;">
+                                        <div style="font-weight: 600; margin-bottom: 0.5rem;">${event ? event.question : 'Événement'}</div>
+                                        <div style="display: flex; justify-content: space-between; color: var(--gray); font-size: 0.9rem;">
+                                            <span>Prédiction: <strong style="color: ${bet.choice === 'yes' ? 'var(--success)' : 'var(--danger)'}">${bet.choice === 'yes' ? 'OUI' : 'NON'}</strong></span>
+                                            <span>Montant: <strong>${bet.amount.toLocaleString()} FCFA</strong></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('');
+                    });
+                });
         }
 
-        async function processTransaction() {
-            const id = document.getElementById('transactionId').value;
-            const type = document.getElementById('transactionType').value;
-            const action = document.getElementById('transactionAction').value;
-            const comment = document.getElementById('transactionComment').value;
-            const userId = document.getElementById('transactionUserId').value;
+        // Bet Modal Functions
+        function openBetModal(eventId, prediction) {
+            currentEvent = eventsData.find(e => e.id === eventId);
+            if (!currentEvent) return;
 
-            if (!id) {
-                showToast('Erreur: ID de transaction manquant', 'error');
+            currentPrediction = prediction;
+            currentBetAmount = 100;
+
+            document.getElementById('betSlider').value = 100;
+            document.getElementById('betAmountDisplay').textContent = '100 FCFA';
+
+            setPrediction(prediction);
+            updatePotentialWin();
+
+            document.getElementById('betModal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeBetModal() {
+            document.getElementById('betModal').classList.remove('active');
+            document.body.style.overflow = '';
+            currentEvent = null;
+            currentPrediction = null;
+        }
+
+        function updateBetAmount(amount) {
+            currentBetAmount = parseInt(amount);
+            document.getElementById('betAmountDisplay').textContent = currentBetAmount.toLocaleString() + ' FCFA';
+            updatePotentialWin();
+        }
+
+        function setBetAmount(amount) {
+            document.getElementById('betSlider').value = amount;
+            updateBetAmount(amount);
+        }
+
+        function setPrediction(prediction) {
+            currentPrediction = prediction;
+            document.getElementById('btnYes').classList.toggle('active', prediction === 'yes');
+            document.getElementById('btnNo').classList.toggle('active', prediction === 'no');
+            updatePotentialWin();
+        }
+
+        function updatePotentialWin() {
+            if (!currentEvent) return;
+
+            const yesBets = currentEvent.bets ? currentEvent.bets.filter(b => b.choice === 'yes') : [];
+            const noBets = currentEvent.bets ? currentEvent.bets.filter(b => b.choice === 'no') : [];
+
+            const yesTotal = yesBets.reduce((sum, b) => sum + b.amount, 0);
+            const noTotal = noBets.reduce((sum, b) => sum + b.amount, 0);
+
+            let potentialWin = 0;
+
+            if (currentPrediction === 'yes') {
+                const totalWinners = yesBets.length + 1;
+                const commission = noTotal * 0.02;
+                const redistribution = noTotal - commission;
+                potentialWin = redistribution / totalWinners;
+            } else {
+                const totalWinners = noBets.length + 1;
+                const commission = yesTotal * 0.02;
+                const redistribution = yesTotal - commission;
+                potentialWin = redistribution / totalWinners;
+            }
+
+            document.getElementById('potentialWin').textContent = '+' + Math.floor(potentialWin).toLocaleString() + ' FCFA';
+        }
+
+        function placeBet() {
+            if (!currentUser || !currentEvent || !currentPrediction) return;
+
+            const btn = document.getElementById('placeBetBtn');
+            btn.innerHTML = '<span class="loading"></span> Traitement...';
+            btn.disabled = true;
+
+            if (currentUser.balance < currentBetAmount) {
+                showToast('Solde insuffisant. Effectuez un dépôt.', 'error');
+                btn.innerHTML = '<i class="fas fa-check-circle"></i> Confirmer le pari';
+                btn.disabled = false;
                 return;
             }
 
-            try {
-                const transactionRef = db.collection('transactions').doc(id);
-                const transactionDoc = await transactionRef.get();
-                
-                if (!transactionDoc.exists) {
-                    showToast('Transaction non trouvée', 'error');
-                    return;
-                }
+            const batch = db.batch();
 
-                const transaction = transactionDoc.data();
+            const userRef = db.collection('users').doc(currentUser.id);
+            batch.update(userRef, {
+                balance: firebase.firestore.FieldValue.increment(-currentBetAmount)
+            });
 
-                if (action === 'approve') {
-                    // Mettre à jour la transaction
-                    await transactionRef.update({
-                        status: 'completed',
-                        validatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-                        validatedBy: currentUser.id,
-                        comment: comment
-                    });
+            const betRef = db.collection('bets').doc();
+            batch.set(betRef, {
+                userId: currentUser.id,
+                eventId: currentEvent.id,
+                choice: currentPrediction,
+                amount: currentBetAmount,
+                status: 'pending',
+                date: firebase.firestore.FieldValue.serverTimestamp()
+            });
 
-                    // Pour un dépôt, créditer le compte
-                    if (type === 'deposit') {
-                        if (userId || transaction.userId) {
-                            const targetUserId = userId || transaction.userId;
-                            const userRef = db.collection('users').doc(targetUserId);
-                            const userDoc = await userRef.get();
-                            
-                            if (userDoc.exists) {
-                                await userRef.update({
-                                    balance: firebase.firestore.FieldValue.increment(transaction.amount || 0)
-                                });
-                            }
-                        }
-                        showToast('Dépôt approuvé et solde crédité', 'success');
-                    } else {
-                        // Pour un retrait, déduire le pendingWithdrawal
-                        if (userId || transaction.userId) {
-                            const targetUserId = userId || transaction.userId;
-                            const userRef = db.collection('users').doc(targetUserId);
-                            await userRef.update({
-                                pendingWithdrawal: firebase.firestore.FieldValue.increment(-(transaction.amount || 0))
-                            });
-                        }
-                        showToast('Retrait approuvé et traité', 'success');
-                    }
-                } else {
-                    // Rejeter la transaction
-                    await transactionRef.update({
-                        status: 'rejected',
-                        validatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-                        validatedBy: currentUser.id,
-                        comment: comment
-                    });
+            const eventRef = db.collection('events').doc(currentEvent.id);
+            batch.update(eventRef, {
+                bets: firebase.firestore.FieldValue.arrayUnion({
+                    userId: currentUser.id,
+                    choice: currentPrediction,
+                    amount: currentBetAmount
+                })
+            });
 
-                    // Si c'était un retrait, rembourser l'utilisateur
-                    if (type === 'withdrawal') {
-                        if (userId || transaction.userId) {
-                            const targetUserId = userId || transaction.userId;
-                            const userRef = db.collection('users').doc(targetUserId);
-                            await userRef.update({
-                                balance: firebase.firestore.FieldValue.increment(transaction.amount || 0),
-                                pendingWithdrawal: firebase.firestore.FieldValue.increment(-(transaction.amount || 0))
-                            });
-                        }
-                        showToast('Retrait rejeté - Montant remboursé', 'error');
-                    } else {
-                        showToast('Dépôt rejeté', 'error');
-                    }
-                }
-
-                closeModal('transactionModal');
-                loadTransactions();
-                loadDashboardData();
-            } catch (error) {
-                console.error('Error processing transaction:', error);
-                showToast('Erreur: ' + error.message, 'error');
-            }
-        }
-
-        async function rejectTransaction(id, userId, amount, type) {
-            if (!confirm('Êtes-vous sûr de vouloir rejeter cette transaction ?')) return;
-
-            try {
-                await db.collection('transactions').doc(id).update({
-                    status: 'rejected',
-                    validatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-                    validatedBy: currentUser.id
+            batch.commit()
+                .then(() => {
+                    showToast('Pari placé avec succès !', 'success');
+                    closeBetModal();
+                    loadUserData();
+                    loadEvents();
+                    loadHistory();
+                    updateStats();
+                })
+                .catch(err => {
+                    console.error('Error placing bet:', err);
+                    showToast('Erreur: ' + err.message, 'error');
+                })
+                .finally(() => {
+                    btn.innerHTML = '<i class="fas fa-check-circle"></i> Confirmer le pari';
+                    btn.disabled = false;
                 });
-
-                // Si c'était un retrait, rembourser
-                if (type === 'withdrawal') {
-                    const userRef = db.collection('users').doc(userId);
-                    await userRef.update({
-                        balance: firebase.firestore.FieldValue.increment(amount),
-                        pendingWithdrawal: firebase.firestore.FieldValue.increment(-amount)
-                    });
-                }
-
-                showToast('Transaction rejetée', 'error');
-                loadTransactions();
-                loadDashboardData();
-            } catch (error) {
-                console.error('Error rejecting transaction:', error);
-                showToast('Erreur', 'error');
-            }
-        }
-
-        function refreshTransactions() {
-            loadTransactions();
-            showToast('Liste actualisée', 'success');
-        }
-
-        // Users Management
-        async function loadUsers() {
-            try {
-                const snapshot = await db.collection('users').orderBy('createdAt', 'desc').get();
-                const table = document.getElementById('usersTable');
-                
-                if (snapshot.empty) {
-                    table.innerHTML = `
-                        <tr>
-                            <td colspan="7" style="text-align: center; padding: 2rem; color: var(--gray);">
-                                <i class="fas fa-users" style="font-size: 2rem; margin-bottom: 0.5rem; display: block;"></i>
-                                Aucun utilisateur
-                            </td>
-                        </tr>
-                    `;
-                    return;
-                }
-
-                // Compter les paris pour chaque utilisateur
-                const betsSnapshot = await db.collection('bets').get();
-                const userBets = {};
-                betsSnapshot.forEach(doc => {
-                    const bet = doc.data();
-                    userBets[bet.userId] = (userBets[bet.userId] || 0) + 1;
-                });
-
-                let html = '';
-                snapshot.forEach(doc => {
-                    const user = doc.data();
-                    const userId = doc.id;
-                    const betsCount = userBets[userId] || 0;
-                    
-                    html += `
-                        <tr>
-                            <td>
-                                <div style="display: flex; align-items: center; gap: 0.75rem;">
-                                    <div class="payment-avatar" style="width: 35px; height: 35px; font-size: 0.9rem; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
-                                        ${(user.prenom || user.pseudo || 'U').charAt(0).toUpperCase()}
-                                    </div>
-                                    <div>
-                                        <div style="font-weight: 600;">${user.prenom || ''} ${user.nom || ''}</div>
-                                        <div style="font-size: 0.8rem; color: var(--gray);">@${user.pseudo}</div>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>${user.contact || '-'}</td>
-                            <td style="font-weight: 600;">${formatCurrency(user.balance || 0)}</td>
-                            <td style="color: var(--warning);">${formatCurrency(user.pendingWithdrawal || 0)}</td>
-                            <td>${betsCount}</td>
-                            <td><span class="status ${user.role === 'admin' ? 'status-active' : 'status-completed'}">${user.role || 'user'}</span></td>
-                            <td>
-                                <button class="btn btn-secondary btn-sm" onclick="viewUser('${userId}')">
-                                    <i class="fas fa-eye"></i>
-                                </button>
-                            </td>
-                        </tr>
-                    `;
-                });
-                
-                table.innerHTML = html;
-            } catch (error) {
-                console.error('Error loading users:', error);
-            }
-        }
-
-        function viewUser(userId) {
-            showToast('Détails utilisateur - Fonctionnalité en développement', 'info');
-        }
-
-        // Settings
-        function saveSettings() {
-            const settings = {
-                commission: parseFloat(document.getElementById('commissionRate').value),
-                minBet: parseInt(document.getElementById('minBet').value),
-                maxBet: parseInt(document.getElementById('maxBet').value),
-                minWithdrawal: parseInt(document.getElementById('minWithdrawal').value),
-                updatedAt: new Date().toISOString()
-            };
-            
-            localStorage.setItem('predikta_settings', JSON.stringify(settings));
-            showToast('Paramètres enregistrés avec succès', 'success');
         }
 
         // Utilities
-        function formatCurrency(amount) {
-            if (amount === undefined || amount === null) return '0 FCFA';
-            return new Intl.NumberFormat('fr-FR').format(Math.floor(amount)) + ' FCFA';
-        }
-
-        function formatDate(timestamp) {
-            if (!timestamp) return '-';
-            
-            let date;
-            if (timestamp.toDate) {
-                date = timestamp.toDate();
-            } else if (timestamp.seconds) {
-                date = new Date(timestamp.seconds * 1000);
-            } else {
-                date = new Date(timestamp);
-            }
-            
-            return date.toLocaleDateString('fr-FR', {
-                day: '2-digit',
-                month: 'short',
-                hour: '2-digit',
-                minute: '2-digit'
-            });
-        }
-
         function showToast(message, type = 'success') {
             const toast = document.getElementById('toast');
             const toastMessage = document.getElementById('toastMessage');
             const icon = toast.querySelector('i');
-            
+
             toastMessage.textContent = message;
             toast.className = 'toast show ' + type;
-            
+
             if (type === 'success') {
                 icon.className = 'fas fa-check-circle';
             } else if (type === 'error') {
@@ -873,7 +749,7 @@
             } else if (type === 'info') {
                 icon.className = 'fas fa-info-circle';
             }
-            
+
             setTimeout(() => {
                 toast.classList.remove('show');
             }, 3000);
@@ -895,21 +771,3 @@
                 document.body.style.overflow = '';
             }
         }
-
-        // Load saved settings
-        function loadSettings() {
-            const saved = localStorage.getItem('predikta_settings');
-            if (saved) {
-                try {
-                    const settings = JSON.parse(saved);
-                    document.getElementById('commissionRate').value = settings.commission || 2;
-                    document.getElementById('minBet').value = settings.minBet || 100;
-                    document.getElementById('maxBet').value = settings.maxBet || 100000;
-                    document.getElementById('minWithdrawal').value = settings.minWithdrawal || 1000;
-                } catch (e) {
-                    console.error('Error loading settings:', e);
-                }
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', loadSettings);
