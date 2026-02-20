@@ -3,446 +3,1330 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#6366f1">
+    <meta name="theme-color" content="#0d0d1a">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Tableau de Bord - Predikta</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <title>Predikta – Tableau de Bord</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" href="style.css">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg: #07071a;
+            --bg2: #0f0f2b;
+            --bg3: #181836;
+            --card: rgba(255,255,255,0.04);
+            --border: rgba(255,255,255,0.08);
+            --accent: #7c6bff;
+            --accent2: #ff6bae;
+            --green: #00e5a0;
+            --red: #ff4d6d;
+            --yellow: #ffb347;
+            --text: #f0f0ff;
+            --muted: #7a7aa0;
+            --font-head: 'Syne', sans-serif;
+            --font-body: 'DM Sans', sans-serif;
+            --radius: 16px;
+            --radius-sm: 10px;
+            --nav-h: 64px;
+            --bottom-nav-h: 70px;
+        }
+
+        html { font-size: 16px; }
+
+        body {
+            font-family: var(--font-body);
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            min-height: -webkit-fill-available;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ─── Background ─── */
+        .bg-mesh {
+            position: fixed; inset: 0; z-index: 0; pointer-events: none;
+            background:
+                radial-gradient(ellipse 80% 60% at 20% 0%, rgba(124,107,255,.18) 0%, transparent 60%),
+                radial-gradient(ellipse 60% 50% at 85% 90%, rgba(255,107,174,.14) 0%, transparent 55%),
+                radial-gradient(ellipse 50% 40% at 60% 40%, rgba(0,229,160,.07) 0%, transparent 55%),
+                var(--bg);
+        }
+
+        /* ─── Top Header ─── */
+        .top-bar {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 90;
+            height: var(--nav-h);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 1rem;
+            background: rgba(7,7,26,.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo {
+            font-family: var(--font-head);
+            font-size: 1.35rem; font-weight: 800;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            display: flex; align-items: center; gap: .4rem;
+        }
+        .logo i { font-size: 1rem; }
+
+        .top-actions { display: flex; gap: .5rem; align-items: center; }
+
+        .balance-chip {
+            background: rgba(124,107,255,.15);
+            border: 1px solid rgba(124,107,255,.3);
+            color: var(--accent);
+            font-family: var(--font-head);
+            font-weight: 700; font-size: .8rem;
+            padding: .35rem .75rem; border-radius: 20px;
+            white-space: nowrap;
+        }
+
+        .icon-btn {
+            width: 38px; height: 38px; border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            background: var(--card);
+            color: var(--text); cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1rem; transition: all .2s;
+        }
+        .icon-btn:active { transform: scale(.93); background: rgba(255,255,255,.1); }
+
+        /* ─── Bottom Nav ─── */
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; right: 0; z-index: 90;
+            height: var(--bottom-nav-h);
+            display: flex; align-items: center;
+            background: rgba(7,7,26,.92);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border-top: 1px solid var(--border);
+            padding: 0 .5rem;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        .nav-item {
+            flex: 1; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; gap: .25rem;
+            padding: .5rem; cursor: pointer;
+            color: var(--muted); font-size: .65rem; font-weight: 600;
+            text-transform: uppercase; letter-spacing: .04em;
+            transition: all .2s; border-radius: var(--radius-sm);
+            border: none; background: none;
+        }
+        .nav-item i { font-size: 1.1rem; transition: all .2s; }
+        .nav-item.active { color: var(--accent); }
+        .nav-item.active i { color: var(--accent); transform: translateY(-2px); }
+        .nav-item:active { transform: scale(.92); }
+
+        .nav-item.nav-deposit {
+            flex: 1.2;
+        }
+        .nav-deposit-inner {
+            width: 48px; height: 48px; border-radius: 14px;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.3rem; color: #fff;
+            box-shadow: 0 4px 20px rgba(124,107,255,.5);
+            transition: all .2s;
+        }
+        .nav-item.nav-deposit:active .nav-deposit-inner { transform: scale(.9); }
+
+        /* ─── Main Content ─── */
+        .main {
+            position: relative; z-index: 1;
+            padding-top: calc(var(--nav-h) + 1rem);
+            padding-bottom: calc(var(--bottom-nav-h) + 1rem);
+            min-height: 100vh;
+        }
+
+        /* ─── Sections ─── */
+        .section { display: none; padding: 0 1rem; animation: fadeIn .3s ease; }
+        .section.active { display: block; }
+        @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+
+        /* ─── Hero Balance Card ─── */
+        .hero-card {
+            background: linear-gradient(135deg, rgba(124,107,255,.2), rgba(255,107,174,.15));
+            border: 1px solid rgba(124,107,255,.25);
+            border-radius: 20px;
+            padding: 1.5rem;
+            margin-bottom: 1.25rem;
+            position: relative; overflow: hidden;
+        }
+        .hero-card::before {
+            content: ''; position: absolute; top: -30px; right: -30px;
+            width: 120px; height: 120px; border-radius: 50%;
+            background: radial-gradient(circle, rgba(124,107,255,.3) 0%, transparent 70%);
+        }
+        .hero-greeting { font-size: .8rem; color: var(--muted); margin-bottom: .25rem; }
+        .hero-name { font-family: var(--font-head); font-size: 1.25rem; font-weight: 700; margin-bottom: 1rem; }
+        .hero-balance-label { font-size: .75rem; color: var(--muted); margin-bottom: .25rem; }
+        .hero-balance {
+            font-family: var(--font-head); font-size: 2rem; font-weight: 800;
+            background: linear-gradient(135deg, #fff, #b8b0ff);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .hero-actions { display: flex; gap: .75rem; margin-top: 1.25rem; }
+        .hero-btn {
+            flex: 1; padding: .7rem .5rem; border-radius: var(--radius-sm);
+            border: none; cursor: pointer; font-family: var(--font-body);
+            font-weight: 600; font-size: .85rem; display: flex;
+            align-items: center; justify-content: center; gap: .4rem;
+            transition: all .2s;
+        }
+        .hero-btn:active { transform: scale(.96); }
+        .hero-btn-deposit { background: linear-gradient(135deg, var(--accent), #9b8cff); color: #fff; }
+        .hero-btn-withdraw { background: rgba(255,179,71,.12); border: 1px solid rgba(255,179,71,.3); color: var(--yellow); }
+
+        /* ─── Stats Row ─── */
+        .stats-row {
+            display: grid; grid-template-columns: 1fr 1fr;
+            gap: .75rem; margin-bottom: 1.25rem;
+        }
+        .stat-card {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 1rem;
+            display: flex; align-items: center; gap: .75rem;
+        }
+        .stat-icon {
+            width: 40px; height: 40px; border-radius: var(--radius-sm);
+            display: flex; align-items: center; justify-content: center;
+            font-size: .95rem; flex-shrink: 0;
+        }
+        .si-blue { background: rgba(59,130,246,.15); color: #60a5fa; }
+        .si-green { background: rgba(0,229,160,.12); color: var(--green); }
+        .si-orange { background: rgba(255,179,71,.12); color: var(--yellow); }
+        .si-pink { background: rgba(255,107,174,.12); color: var(--accent2); }
+        .stat-info {}
+        .stat-value { font-family: var(--font-head); font-size: 1.05rem; font-weight: 700; line-height: 1.2; }
+        .stat-label { font-size: .72rem; color: var(--muted); margin-top: .1rem; }
+
+        /* ─── Section Title ─── */
+        .sec-title {
+            font-family: var(--font-head); font-size: 1rem; font-weight: 700;
+            display: flex; align-items: center; gap: .5rem;
+            margin-bottom: 1rem;
+        }
+        .sec-title i { color: var(--accent); font-size: .9rem; }
+
+        /* ─── Carousel ─── */
+        .carousel-wrap {
+            margin: 0 -1rem 1.25rem; padding: 0 1rem;
+            overflow-x: auto; scroll-snap-type: x mandatory;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+        }
+        .carousel-wrap::-webkit-scrollbar { display: none; }
+        .carousel-track { display: flex; gap: .75rem; width: max-content; }
+
+        .c-card {
+            width: 260px; height: 150px; border-radius: var(--radius);
+            overflow: hidden; position: relative; cursor: pointer;
+            scroll-snap-align: start; flex-shrink: 0;
+            transition: transform .2s;
+        }
+        .c-card:active { transform: scale(.97); }
+        .c-card img { width: 100%; height: 100%; object-fit: cover; }
+        .c-overlay {
+            position: absolute; inset: 0;
+            background: linear-gradient(0deg, rgba(0,0,0,.85) 0%, transparent 55%);
+            padding: .75rem;
+            display: flex; flex-direction: column; justify-content: flex-end;
+        }
+        .c-tag {
+            background: rgba(124,107,255,.85); color: #fff;
+            font-size: .65rem; font-weight: 700; text-transform: uppercase;
+            letter-spacing: .06em; padding: .2rem .55rem; border-radius: 20px;
+            display: inline-block; margin-bottom: .35rem; width: fit-content;
+        }
+        .c-question { font-size: .82rem; font-weight: 600; line-height: 1.3; margin-bottom: .25rem; }
+        .c-date { font-size: .7rem; opacity: .7; display: flex; align-items: center; gap: .3rem; }
+
+        /* ─── Event Cards ─── */
+        .events-list { display: flex; flex-direction: column; gap: .75rem; margin-bottom: 1.5rem; }
+
+        .ev-card {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: var(--radius); overflow: hidden;
+            transition: all .2s;
+        }
+        .ev-card:active { transform: scale(.99); }
+
+        .ev-top {
+            padding: 1rem 1rem .75rem;
+            background: linear-gradient(135deg, rgba(124,107,255,.08), rgba(255,107,174,.06));
+        }
+        .ev-meta { display: flex; align-items: center; justify-content: space-between; margin-bottom: .6rem; }
+        .ev-cat {
+            background: rgba(124,107,255,.18); color: var(--accent);
+            font-size: .7rem; font-weight: 700; text-transform: uppercase;
+            letter-spacing: .06em; padding: .25rem .7rem; border-radius: 20px;
+            display: inline-flex; align-items: center; gap: .3rem;
+        }
+        .ev-live {
+            background: rgba(0,229,160,.12); color: var(--green);
+            font-size: .68rem; font-weight: 600;
+            padding: .2rem .6rem; border-radius: 20px;
+            display: inline-flex; align-items: center; gap: .25rem;
+        }
+        .ev-live i { font-size: .45rem; }
+        .ev-question { font-family: var(--font-head); font-size: .95rem; font-weight: 700; line-height: 1.4; }
+
+        .ev-odds {
+            display: grid; grid-template-columns: 1fr 1fr; gap: .5rem;
+            padding: .75rem 1rem;
+        }
+        .ev-odd {
+            background: rgba(0,0,0,.2); border-radius: var(--radius-sm);
+            padding: .6rem; text-align: center;
+        }
+        .ev-odd.yes { border: 1px solid rgba(0,229,160,.2); }
+        .ev-odd.no { border: 1px solid rgba(255,77,109,.2); }
+        .ev-odd-label { font-size: .68rem; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; margin-bottom: .2rem; }
+        .ev-odd-val { font-family: var(--font-head); font-size: 1rem; font-weight: 700; }
+        .ev-odd.yes .ev-odd-val { color: var(--green); }
+        .ev-odd.no .ev-odd-val { color: var(--red); }
+
+        .ev-footer {
+            padding: .75rem 1rem;
+            border-top: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between; gap: .5rem;
+        }
+        .ev-info { font-size: .75rem; color: var(--muted); display: flex; gap: .75rem; }
+        .ev-info span { display: flex; align-items: center; gap: .3rem; }
+        .ev-btns { display: flex; gap: .5rem; }
+
+        .ev-btn {
+            padding: .55rem 1rem; border-radius: var(--radius-sm);
+            border: none; cursor: pointer; font-family: var(--font-body);
+            font-weight: 700; font-size: .8rem;
+            display: flex; align-items: center; gap: .3rem;
+            transition: all .2s;
+        }
+        .ev-btn:active { transform: scale(.94); }
+        .ev-btn-yes { background: rgba(0,229,160,.12); color: var(--green); border: 1px solid rgba(0,229,160,.25); }
+        .ev-btn-yes:active, .ev-btn-yes:hover { background: var(--green); color: #000; }
+        .ev-btn-no { background: rgba(255,77,109,.1); color: var(--red); border: 1px solid rgba(255,77,109,.2); }
+        .ev-btn-no:active, .ev-btn-no:hover { background: var(--red); color: #fff; }
+
+        /* ─── History Items ─── */
+        .hist-list { display: flex; flex-direction: column; gap: .6rem; }
+        .hist-item {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: .9rem;
+            display: flex; align-items: center; gap: .75rem;
+        }
+        .hist-icon {
+            width: 42px; height: 42px; border-radius: var(--radius-sm);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1rem; flex-shrink: 0;
+        }
+        .hi-default { background: rgba(124,107,255,.12); color: var(--accent); }
+        .hi-win { background: rgba(0,229,160,.12); color: var(--green); }
+        .hi-loss { background: rgba(255,77,109,.12); color: var(--red); }
+        .hist-info { flex: 1; min-width: 0; }
+        .hist-title { font-size: .85rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .hist-date { font-size: .72rem; color: var(--muted); margin-top: .15rem; }
+        .hist-amount { font-family: var(--font-head); font-size: .95rem; font-weight: 700; flex-shrink: 0; }
+        .hist-amount.pos { color: var(--green); }
+        .hist-amount.neg { color: var(--red); }
+
+        /* ─── Empty State ─── */
+        .empty {
+            text-align: center; padding: 2.5rem 1rem;
+            color: var(--muted);
+        }
+        .empty i { font-size: 2.5rem; margin-bottom: .75rem; opacity: .4; display: block; }
+        .empty p { font-size: .9rem; }
+
+        /* ─── Page Titles ─── */
+        .page-hd { margin-bottom: 1.25rem; }
+        .page-hd h1 { font-family: var(--font-head); font-size: 1.5rem; font-weight: 800; line-height: 1.2; }
+        .page-hd h1 span { background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .page-hd p { color: var(--muted); font-size: .85rem; margin-top: .3rem; }
+
+        /* ─── Modal ─── */
+        .modal-overlay {
+            display: none; position: fixed; inset: 0; z-index: 200;
+            background: rgba(0,0,0,.75); backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            align-items: flex-end; justify-content: center; padding: 0;
+        }
+        .modal-overlay.active { display: flex; }
+
+        .modal {
+            background: var(--bg2); width: 100%; max-width: 480px;
+            border-radius: 24px 24px 0 0;
+            border: 1px solid var(--border); border-bottom: none;
+            max-height: 92vh; overflow-y: auto;
+            animation: slideUp .3s cubic-bezier(.16,1,.3,1);
+        }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+        .modal-drag {
+            width: 40px; height: 4px; background: var(--border);
+            border-radius: 2px; margin: .75rem auto .25rem;
+        }
+        .modal-header {
+            padding: .75rem 1.25rem 1rem;
+            display: flex; align-items: center; justify-content: space-between;
+            position: sticky; top: 0; background: var(--bg2); z-index: 5;
+            border-bottom: 1px solid var(--border);
+        }
+        .modal-title { font-family: var(--font-head); font-size: 1.1rem; font-weight: 700; }
+        .modal-close {
+            width: 34px; height: 34px; border-radius: 10px;
+            border: 1px solid var(--border); background: var(--card);
+            color: var(--muted); cursor: pointer; font-size: .95rem;
+            display: flex; align-items: center; justify-content: center;
+            transition: all .2s;
+        }
+        .modal-close:active { background: rgba(255,77,109,.15); color: var(--red); }
+
+        .modal-body { padding: 1.25rem; }
+
+        /* ─── Form Elements ─── */
+        .form-group { margin-bottom: 1.1rem; }
+        .form-label { display: block; font-size: .8rem; font-weight: 600; color: var(--muted); margin-bottom: .4rem; }
+        .form-input {
+            width: 100%; padding: .75rem 1rem;
+            background: rgba(0,0,0,.3); border: 1px solid var(--border);
+            border-radius: var(--radius-sm); color: var(--text);
+            font-family: var(--font-body); font-size: .9rem;
+            transition: all .2s; -webkit-appearance: none;
+        }
+        .form-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(124,107,255,.12); }
+        .form-input::placeholder { color: var(--muted); }
+
+        /* ─── Info Boxes ─── */
+        .info-box {
+            background: rgba(124,107,255,.07); border: 1px solid rgba(124,107,255,.18);
+            border-radius: var(--radius-sm); padding: .9rem; margin-bottom: 1.1rem;
+        }
+        .info-row { display: flex; align-items: center; gap: .6rem; font-size: .82rem; margin-bottom: .35rem; }
+        .info-row:last-child { margin-bottom: 0; }
+        .info-row i { color: var(--accent); font-size: .8rem; width: 14px; }
+
+        .warn-box {
+            background: rgba(255,179,71,.06); border: 1px solid rgba(255,179,71,.2);
+            border-radius: var(--radius-sm); padding: .9rem; margin-bottom: 1.1rem;
+        }
+        .warn-title { font-size: .82rem; font-weight: 700; color: var(--yellow); margin-bottom: .5rem; display: flex; align-items: center; gap: .4rem; }
+        .warn-text { font-size: .8rem; color: var(--muted); line-height: 1.6; }
+
+        /* ─── Balance Display ─── */
+        .bal-display {
+            background: rgba(0,229,160,.07); border: 1px solid rgba(0,229,160,.15);
+            border-radius: var(--radius); padding: 1rem;
+            text-align: center; margin-bottom: 1.1rem;
+        }
+        .bal-disp-label { font-size: .78rem; color: var(--muted); margin-bottom: .25rem; }
+        .bal-disp-val { font-family: var(--font-head); font-size: 1.75rem; font-weight: 800; color: var(--green); }
+
+        /* ─── Steps ─── */
+        .steps { margin-bottom: 1.1rem; display: flex; flex-direction: column; gap: .5rem; }
+        .step { display: flex; align-items: flex-start; gap: .75rem; background: var(--card); border-radius: var(--radius-sm); padding: .75rem; }
+        .step-n {
+            width: 26px; height: 26px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            display: flex; align-items: center; justify-content: center;
+            font-size: .8rem; font-weight: 700; flex-shrink: 0;
+        }
+        .step-t { font-size: .82rem; color: var(--muted); padding-top: .2rem; line-height: 1.5; }
+
+        /* ─── Divider ─── */
+        .divider { display: flex; align-items: center; gap: .75rem; margin: 1rem 0; color: var(--muted); font-size: .78rem; }
+        .divider::before, .divider::after { content: ''; flex: 1; border-bottom: 1px solid var(--border); }
+
+        /* ─── Buttons ─── */
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center;
+            gap: .5rem; padding: .8rem 1.25rem; border-radius: var(--radius-sm);
+            border: none; cursor: pointer; font-family: var(--font-body);
+            font-weight: 600; font-size: .9rem; transition: all .2s;
+            width: 100%;
+        }
+        .btn:active { transform: scale(.97); }
+        .btn-primary { background: linear-gradient(135deg, var(--accent), #9b8cff); color: #fff; }
+        .btn-success { background: rgba(0,229,160,.15); color: var(--green); border: 1px solid rgba(0,229,160,.25); }
+        .btn-success:active { background: var(--green); color: #000; }
+        .btn-warning { background: rgba(255,179,71,.12); color: var(--yellow); border: 1px solid rgba(255,179,71,.25); }
+        .btn-warning:active { background: var(--yellow); color: #000; }
+        .btn-link {
+            display: flex; align-items: center; justify-content: center;
+            gap: .5rem; padding: .8rem; border-radius: var(--radius-sm);
+            background: rgba(124,107,255,.12); border: 1px solid rgba(124,107,255,.2);
+            color: var(--accent); font-family: var(--font-body);
+            font-weight: 600; font-size: .9rem; text-decoration: none;
+            margin-bottom: .5rem; transition: all .2s;
+        }
+        .btn-link:active { background: var(--accent); color: #fff; }
+
+        .mb-1 { margin-bottom: .75rem; }
+
+        /* ─── Bet Modal ─── */
+        .bet-amount-center { text-align: center; margin-bottom: 1rem; }
+        .bet-amount-label { font-size: .78rem; color: var(--muted); margin-bottom: .25rem; }
+        .bet-amount-val {
+            font-family: var(--font-head); font-size: 2.25rem; font-weight: 800;
+            background: linear-gradient(135deg, #fff, #b8b0ff);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none; width: 100%; height: 6px;
+            background: rgba(255,255,255,.1); border-radius: 3px;
+            outline: none; margin-bottom: .9rem;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none; width: 22px; height: 22px;
+            border-radius: 50%; background: var(--accent);
+            cursor: pointer; box-shadow: 0 0 10px rgba(124,107,255,.6);
+        }
+
+        .quick-amounts { display: flex; gap: .5rem; margin-bottom: 1rem; }
+        .qa-btn {
+            flex: 1; padding: .5rem; background: var(--card);
+            border: 1px solid var(--border); border-radius: var(--radius-sm);
+            color: var(--text); cursor: pointer; font-family: var(--font-body);
+            font-weight: 600; font-size: .8rem; transition: all .2s;
+        }
+        .qa-btn:active { background: rgba(124,107,255,.2); border-color: var(--accent); color: var(--accent); }
+
+        .potential-win {
+            background: rgba(0,229,160,.07); border: 1px solid rgba(0,229,160,.18);
+            border-radius: var(--radius-sm); padding: .9rem;
+            text-align: center; margin-bottom: 1rem;
+        }
+        .pw-label { font-size: .78rem; color: var(--muted); margin-bottom: .25rem; }
+        .pw-val { font-family: var(--font-head); font-size: 1.4rem; font-weight: 700; color: var(--green); }
+
+        .pred-btns { display: flex; gap: .75rem; margin-bottom: 1rem; }
+        .pred-btn {
+            flex: 1; padding: .9rem; border-radius: var(--radius-sm);
+            border: 2px solid var(--border); background: var(--card);
+            color: var(--muted); font-family: var(--font-body);
+            font-weight: 700; font-size: .9rem; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: .4rem;
+            transition: all .2s;
+        }
+        .pred-btn:active { transform: scale(.96); }
+        .pred-btn.yes.active { background: rgba(0,229,160,.12); border-color: var(--green); color: var(--green); }
+        .pred-btn.no.active { background: rgba(255,77,109,.1); border-color: var(--red); color: var(--red); }
+
+        /* ─── Toast ─── */
+        .toast {
+            position: fixed; bottom: calc(var(--bottom-nav-h) + .75rem); right: .75rem;
+            z-index: 500; background: var(--bg3); color: var(--text);
+            padding: .85rem 1.1rem; border-radius: var(--radius); max-width: 280px;
+            border: 1px solid var(--border);
+            display: flex; align-items: center; gap: .6rem;
+            font-size: .85rem; font-weight: 500;
+            box-shadow: 0 8px 32px rgba(0,0,0,.4);
+            transform: translateX(140%); transition: transform .3s cubic-bezier(.16,1,.3,1);
+        }
+        .toast.show { transform: translateX(0); }
+        .toast.success { border-left: 3px solid var(--green); }
+        .toast.error { border-left: 3px solid var(--red); }
+        .toast.info { border-left: 3px solid var(--accent); }
+        .toast i { font-size: .9rem; flex-shrink: 0; }
+
+        /* ─── Sidebar (Profile Drawer) ─── */
+        .drawer-overlay {
+            display: none; position: fixed; inset: 0; z-index: 150;
+            background: rgba(0,0,0,.6); backdrop-filter: blur(5px);
+        }
+        .drawer-overlay.active { display: block; }
+        .drawer {
+            position: fixed; top: 0; right: 0; bottom: 0; z-index: 160;
+            width: min(300px, 85vw); background: var(--bg2);
+            border-left: 1px solid var(--border);
+            transform: translateX(100%); transition: transform .3s cubic-bezier(.16,1,.3,1);
+            overflow-y: auto; padding: 1.5rem 1.25rem;
+            padding-top: max(1.5rem, env(safe-area-inset-top));
+        }
+        .drawer.open { transform: translateX(0); }
+        .drawer-close { float: right; margin-bottom: 1.5rem; }
+        .drawer-avatar {
+            width: 60px; height: 60px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            display: flex; align-items: center; justify-content: center;
+            font-family: var(--font-head); font-size: 1.5rem; font-weight: 800;
+            margin-bottom: .75rem;
+        }
+        .drawer-name { font-family: var(--font-head); font-size: 1.1rem; font-weight: 700; margin-bottom: .2rem; }
+        .drawer-pseudo { font-size: .82rem; color: var(--muted); margin-bottom: 1.25rem; }
+        .drawer-bal { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: .9rem; text-align: center; margin-bottom: 1.5rem; }
+        .drawer-bal-label { font-size: .75rem; color: var(--muted); margin-bottom: .2rem; }
+        .drawer-bal-val { font-family: var(--font-head); font-size: 1.4rem; font-weight: 800; color: var(--accent); }
+        .drawer-nav { list-style: none; margin-bottom: 1.5rem; }
+        .drawer-nav li { margin-bottom: .35rem; }
+        .drawer-nav a {
+            display: flex; align-items: center; gap: .8rem;
+            padding: .8rem .9rem; border-radius: var(--radius-sm);
+            color: var(--muted); cursor: pointer; font-size: .9rem; font-weight: 500;
+            transition: all .2s; text-decoration: none;
+        }
+        .drawer-nav a:active, .drawer-nav a:hover { background: rgba(124,107,255,.1); color: var(--text); }
+        .drawer-nav a i { width: 18px; text-align: center; }
+        .drawer-logout {
+            width: 100%; padding: .8rem; border-radius: var(--radius-sm);
+            border: 1px solid rgba(255,77,109,.2); background: rgba(255,77,109,.07);
+            color: var(--red); cursor: pointer; font-family: var(--font-body);
+            font-weight: 600; font-size: .9rem;
+            display: flex; align-items: center; justify-content: center; gap: .5rem;
+            transition: all .2s;
+        }
+        .drawer-logout:active { background: rgba(255,77,109,.2); }
+
+        /* ─── Loading ─── */
+        .spinner {
+            display: inline-block; width: 18px; height: 18px;
+            border: 2px solid rgba(255,255,255,.2);
+            border-top-color: #fff; border-radius: 50%;
+            animation: spin .8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ─── Transactions ─── */
+        .tx-list { display: flex; flex-direction: column; gap: .6rem; }
+
+        /* ─── My Bets ─── */
+        .bet-item {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: var(--radius); overflow: hidden; margin-bottom: .75rem;
+        }
+        .bet-item-hd { padding: .9rem 1rem .6rem; background: linear-gradient(135deg, rgba(124,107,255,.07), rgba(255,107,174,.05)); }
+        .bet-item-meta { display: flex; align-items: center; justify-content: space-between; margin-bottom: .5rem; }
+        .bet-item-bd { padding: .6rem 1rem .9rem; display: flex; justify-content: space-between; font-size: .82rem; color: var(--muted); }
+        .bet-item-q { font-size: .9rem; font-weight: 600; line-height: 1.4; }
+
+        /* Scrollbar hide */
+        .hide-scroll { scrollbar-width: none; }
+        .hide-scroll::-webkit-scrollbar { display: none; }
+    </style>
 </head>
-   <body>
-    <div class="bg-animation"></div>
-    
-    <!-- Mobile Header -->
-    <div class="mobile-header">
-        <div class="mobile-logo">
-            <i class="fas fa-chart-line"></i>
-            Predikta
-        </div>
-        <div class="mobile-actions">
-            <button class="icon-btn" onclick="openDepositModal()">
-                <i class="fas fa-plus"></i>
-            </button>
-            <button class="icon-btn" onclick="toggleSidebar()">
-                <i class="fas fa-bars"></i>
-            </button>
-        </div>
+<body>
+<div class="bg-mesh"></div>
+
+<!-- ─── Top Bar ─── -->
+<header class="top-bar">
+    <div class="logo">
+        <i class="fas fa-chart-line"></i>
+        Predikta
     </div>
-
-    <!-- Sidebar Overlay -->
-    <div class="sidebar-overlay" onclick="closeSidebar()"></div>
-
-    <!-- Sidebar -->
-    <aside class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <div class="sidebar-logo">
-                <i class="fas fa-chart-line"></i>
-                Predikta
-            </div>
-            <button class="sidebar-close" onclick="closeSidebar()">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-
-        <div class="user-info">
-            <div class="user-avatar" id="userAvatar">U</div>
-            <div class="user-name" id="userName">Utilisateur</div>
-            <div class="user-pseudo" id="userPseudo">@pseudo</div>
-            <div class="balance-card">
-                <div class="balance-label">Solde disponible</div>
-                <div class="balance-value" id="userBalance">0 FCFA</div>
-            </div>
-        </div>
-
-        <div class="nav-section">
-            <div class="nav-section-title">Menu</div>
-            <ul class="nav-menu">
-                <li class="nav-item">
-                    <a class="nav-link active" onclick="showSection('events'); closeSidebar();">
-                        <i class="fas fa-calendar-alt"></i>
-                        Événements
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" onclick="showSection('my-bets'); closeSidebar();">
-                        <i class="fas fa-ticket-alt"></i>
-                        Mes Paris
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" onclick="showSection('history'); closeSidebar();">
-                        <i class="fas fa-history"></i>
-                        Historique
-                    </a>
-                </li>
-            </ul>
-        </div>
-
-        <div class="nav-section">
-            <div class="nav-section-title">Finance</div>
-            <ul class="nav-menu">
-                <li class="nav-item">
-                    <a class="nav-link" onclick="openDepositModal(); closeSidebar();">
-                        <i class="fas fa-plus-circle"></i>
-                        Déposer
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" onclick="openWithdrawalModal(); closeSidebar();">
-                        <i class="fas fa-minus-circle"></i>
-                        Retirer
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" onclick="showSection('transactions'); closeSidebar();">
-                        <i class="fas fa-exchange-alt"></i>
-                        Transactions
-                    </a>
-                </li>
-            </ul>
-        </div>
-
-        <button class="btn-logout" onclick="logout()">
-            <i class="fas fa-sign-out-alt"></i>
-            Déconnexion
+    <div class="top-actions">
+        <div class="balance-chip" id="topBalance">0 FCFA</div>
+        <button class="icon-btn" onclick="openDrawer()" title="Menu">
+            <i class="fas fa-user-circle"></i>
         </button>
-    </aside>
+    </div>
+</header>
 
-    <!-- Main Content -->
-    <main class="main-content">
-        <!-- Events Section -->
-        <div id="events-section" class="content-section active">
-            <div class="page-header">
-                <h1 class="page-title">Tableau de <span>bord</span></h1>
-                <p class="page-subtitle">Bienvenue sur Predikta</p>
-                <div class="header-actions">
-                    <button class="btn btn-primary" onclick="openDepositModal()">
-                        <i class="fas fa-plus"></i>
-                        Déposer
-                    </button>
-                    <button class="btn btn-warning" onclick="openWithdrawalModal()">
-                        <i class="fas fa-minus"></i>
-                        Retirer
-                    </button>
-                </div>
+<!-- ─── Drawer Overlay ─── -->
+<div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
+
+<!-- ─── Profile Drawer ─── -->
+<aside class="drawer" id="drawer">
+    <button class="icon-btn drawer-close" onclick="closeDrawer()"><i class="fas fa-times"></i></button>
+    <div style="clear:both"></div>
+    <div class="drawer-avatar" id="drawerAvatar">U</div>
+    <div class="drawer-name" id="drawerName">Utilisateur</div>
+    <div class="drawer-pseudo" id="drawerPseudo">@pseudo</div>
+    <div class="drawer-bal">
+        <div class="drawer-bal-label">Solde disponible</div>
+        <div class="drawer-bal-val" id="drawerBalance">0 FCFA</div>
+    </div>
+    <ul class="drawer-nav">
+        <li><a onclick="showSection('events'); closeDrawer();"><i class="fas fa-calendar-alt"></i> Événements</a></li>
+        <li><a onclick="showSection('my-bets'); closeDrawer();"><i class="fas fa-ticket-alt"></i> Mes Paris</a></li>
+        <li><a onclick="showSection('transactions'); closeDrawer();"><i class="fas fa-exchange-alt"></i> Transactions</a></li>
+        <li><a onclick="openDepositModal(); closeDrawer();"><i class="fas fa-plus-circle"></i> Déposer</a></li>
+        <li><a onclick="openWithdrawalModal(); closeDrawer();"><i class="fas fa-minus-circle"></i> Retirer</a></li>
+    </ul>
+    <button class="drawer-logout" onclick="logout()">
+        <i class="fas fa-sign-out-alt"></i> Déconnexion
+    </button>
+</aside>
+
+<!-- ─── Main ─── -->
+<main class="main">
+
+    <!-- EVENTS SECTION -->
+    <div id="events-section" class="section active">
+        <!-- Hero Card -->
+        <div class="hero-card">
+            <div class="hero-greeting">Bienvenue sur Predikta</div>
+            <div class="hero-name" id="heroName">Utilisateur</div>
+            <div class="hero-balance-label">Solde disponible</div>
+            <div class="hero-balance" id="heroBalance">0 FCFA</div>
+            <div class="hero-actions">
+                <button class="hero-btn hero-btn-deposit" onclick="openDepositModal()">
+                    <i class="fas fa-plus"></i> Déposer
+                </button>
+                <button class="hero-btn hero-btn-withdraw" onclick="openWithdrawalModal()">
+                    <i class="fas fa-minus"></i> Retirer
+                </button>
             </div>
+        </div>
 
-            <!-- Stats -->
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-icon blue">
-                        <i class="fas fa-wallet"></i>
-                    </div>
-                    <div class="stat-value" id="statBalance">0 FCFA</div>
-                    <div class="stat-label">Solde total</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon green">
-                        <i class="fas fa-trophy"></i>
-                    </div>
+        <!-- Stats -->
+        <div class="stats-row">
+            <div class="stat-card">
+                <div class="stat-icon si-green"><i class="fas fa-trophy"></i></div>
+                <div class="stat-info">
                     <div class="stat-value" id="statWins">0</div>
                     <div class="stat-label">Paris gagnés</div>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-icon orange">
-                        <i class="fas fa-ticket-alt"></i>
-                    </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon si-orange"><i class="fas fa-ticket-alt"></i></div>
+                <div class="stat-info">
                     <div class="stat-value" id="statBets">0</div>
-                    <div class="stat-label">Paris en cours</div>
+                    <div class="stat-label">En cours</div>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-icon" style="background: rgba(236, 72, 153, 0.2); color: var(--secondary);">
-                        <i class="fas fa-chart-line"></i>
-                    </div>
-                    <div class="stat-value" id="statTotal">0 FCFA</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon si-pink"><i class="fas fa-chart-line"></i></div>
+                <div class="stat-info">
+                    <div class="stat-value" id="statTotal">0</div>
                     <div class="stat-label">Total parié</div>
                 </div>
             </div>
-
-            <!-- Carousel -->
-            <div class="carousel-section">
-                <div class="carousel-header">
-                    <div class="carousel-title">
-                        <i class="fas fa-fire"></i>
-                        Événements populaires
-                    </div>
-                </div>
-                <div class="carousel-container">
-                    <div class="carousel-track" id="carouselTrack">
-                        <!-- Will be populated by JavaScript -->
-                    </div>
-                </div>
-            </div>
-
-            <!-- Events List -->
-            <div class="section">
-                <div class="section-header">
-                    <h3 class="section-title">
-                        <i class="fas fa-fire"></i>
-                        Événements actifs
-                    </h3>
-                </div>
-                <div id="eventsList">
-                    <div class="empty-state">
-                        <i class="fas fa-spinner fa-spin"></i>
-                        <p>Chargement...</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- History -->
-            <div class="section">
-                <div class="section-header">
-                    <h3 class="section-title">
-                        <i class="fas fa-history"></i>
-                        Historique récent
-                    </h3>
-                </div>
-                <div class="history-list" id="historyList">
-                    <div class="empty-state">
-                        <i class="fas fa-spinner fa-spin"></i>
-                        <p>Chargement...</p>
-                    </div>
+            <div class="stat-card">
+                <div class="stat-icon si-blue"><i class="fas fa-percentage"></i></div>
+                <div class="stat-info">
+                    <div class="stat-value" id="statWinrate">0%</div>
+                    <div class="stat-label">Taux victoire</div>
                 </div>
             </div>
         </div>
 
-        <!-- Transactions Section -->
-        <div id="transactions-section" class="content-section">
-            <div class="page-header">
-                <h1 class="page-title">Mes <span>Transactions</span></h1>
-                <p class="page-subtitle">Historique de vos dépôts et retraits</p>
-            </div>
-
-            <div class="section">
-                <div class="section-header">
-                    <h3 class="section-title">
-                        <i class="fas fa-exchange-alt"></i>
-                        Toutes les transactions
-                    </h3>
-                </div>
-                <div id="transactionsList">
-                    <div class="empty-state">
-                        <i class="fas fa-spinner fa-spin"></i>
-                        <p>Chargement...</p>
-                    </div>
-                </div>
-            </div>
+        <!-- Carousel -->
+        <div class="sec-title"><i class="fas fa-fire"></i> Événements populaires</div>
+        <div class="carousel-wrap">
+            <div class="carousel-track" id="carouselTrack"></div>
         </div>
 
-        <!-- My Bets Section -->
-        <div id="my-bets-section" class="content-section">
-            <div class="page-header">
-                <h1 class="page-title">Mes <span>Paris</span></h1>
-                <p class="page-subtitle">Tous vos paris en cours et terminés</p>
-            </div>
-            <div id="myBetsList">
-                <div class="empty-state">
-                    <i class="fas fa-spinner fa-spin"></i>
-                    <p>Chargement...</p>
-                </div>
-            </div>
+        <!-- Events -->
+        <div class="sec-title"><i class="fas fa-bolt"></i> Événements actifs</div>
+        <div class="events-list" id="eventsList">
+            <div class="empty"><i class="fas fa-spinner fa-spin"></i><p>Chargement…</p></div>
         </div>
-    </main>
 
-    <!-- Deposit Modal -->
-    <div class="modal-overlay" id="depositModal">
-        <div class="modal">
-            <div class="modal-header">
-                <h3 class="modal-title">Effectuer un dépôt</h3>
-                <button class="modal-close" onclick="closeDepositModal()">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div class="info-box">
-                    <div class="info-item">
-                        <i class="fas fa-info-circle"></i>
-                        <span>Minimum : <strong>500 FCFA</strong></span>
-                    </div>
-                    <div class="info-item">
-                        <i class="fas fa-clock"></i>
-                        <span>Validation : <strong>5-15 min</strong></span>
-                    </div>
-                </div>
-
-                <div class="steps">
-                    <div class="step">
-                        <div class="step-number">1</div>
-                        <div class="step-text">Cliquez sur le bouton ci-dessous pour payer via Wave</div>
-                    </div>
-                    <div class="step">
-                        <div class="step-number">2</div>
-                        <div class="step-text">Effectuez votre transfert et gardez la capture</div>
-                    </div>
-                    <div class="step">
-                        <div class="step-number">3</div>
-                        <div class="step-text">Remplissez le formulaire de confirmation</div>
-                    </div>
-                </div>
-
-                <a href="https://pay.wave.com/m/M_ci_iqMcg8KwRE-W/c/ci/" target="_blank" class="btn btn-primary btn-full mb-1">
-                    <i class="fas fa-external-link-alt"></i>
-                    Payer avec Wave
-                </a>
-
-                <div class="divider">
-                    <span>Après le paiement</span>
-                </div>
-
-                <form id="depositForm" onsubmit="submitDeposit(event)">
-                    <div class="form-group">
-                        <label>Montant déposé (FCFA) *</label>
-                        <input type="number" id="depositAmount" min="500" step="100" required placeholder="Ex: 5000">
-                    </div>
-
-                    <div class="form-group">
-                        <label>Numéro Wave utilisé *</label>
-                        <input type="tel" id="depositPhone" required placeholder="+225 XX XX XX XX XX">
-                    </div>
-
-                    <div class="form-group">
-                        <label>ID de transaction Wave *</label>
-                        <input type="text" id="depositTransactionId" required placeholder="Ex: WV123456789">
-                    </div>
-
-                    <div class="form-group">
-                        <label>Capture d'écran (optionnel)</label>
-                        <input type="file" id="depositScreenshot" accept="image/*">
-                    </div>
-
-                    <div class="form-group">
-                        <label>Commentaire (optionnel)</label>
-                        <input type="text" id="depositComment" placeholder="Informations supplémentaires">
-                    </div>
-
-                    <button type="submit" class="btn btn-success btn-full" id="submitDepositBtn">
-                        <i class="fas fa-check-circle"></i>
-                        Envoyer la confirmation
-                    </button>
-                </form>
-            </div>
+        <!-- Recent History -->
+        <div class="sec-title"><i class="fas fa-history"></i> Historique récent</div>
+        <div class="hist-list" id="historyList">
+            <div class="empty"><i class="fas fa-spinner fa-spin"></i><p>Chargement…</p></div>
         </div>
     </div>
 
-    <!-- Withdrawal Modal -->
-    <div class="modal-overlay" id="withdrawalModal">
-        <div class="modal">
-            <div class="modal-header">
-                <h3 class="modal-title">Demander un retrait</h3>
-                <button class="modal-close" onclick="closeWithdrawalModal()">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div class="balance-display">
-                    <div class="balance-display-label">Solde disponible</div>
-                    <div class="balance-display-value" id="withdrawalBalance">0 FCFA</div>
-                </div>
-
-                <div class="withdrawal-info">
-                    <div class="withdrawal-info-title">
-                        <i class="fas fa-info-circle"></i>
-                        Informations importantes
-                    </div>
-                    <div class="withdrawal-info-text">
-                        • Minimum de retrait : <strong>1 000 FCFA</strong><br>
-                        • Délai de traitement : <strong>24-48h</strong><br>
-                        • Vérification requise avant le premier retrait
-                    </div>
-                </div>
-
-                <form id="withdrawalForm" onsubmit="submitWithdrawal(event)">
-                    <div class="form-group">
-                        <label>Montant à retirer (FCFA) *</label>
-                        <input type="number" id="withdrawalAmount" min="1000" step="100" required placeholder="Ex: 5000">
-                    </div>
-
-                    <div class="form-group">
-                        <label>Numéro Wave pour recevoir *</label>
-                        <input type="tel" id="withdrawalPhone" required placeholder="+225 XX XX XX XX XX">
-                    </div>
-
-                    <div class="form-group">
-                        <label>Nom du compte Wave *</label>
-                        <input type="text" id="withdrawalName" required placeholder="Nom affiché sur Wave">
-                    </div>
-
-                    <div class="form-group">
-                        <label>Motif du retrait (optionnel)</label>
-                        <input type="text" id="withdrawalReason" placeholder="Ex: Gains des paris">
-                    </div>
-
-                    <button type="submit" class="btn btn-warning btn-full" id="submitWithdrawalBtn">
-                        <i class="fas fa-paper-plane"></i>
-                        Demander le retrait
-                    </button>
-                </form>
-            </div>
+    <!-- MY BETS SECTION -->
+    <div id="my-bets-section" class="section">
+        <div class="page-hd">
+            <h1>Mes <span>Paris</span></h1>
+            <p>Tous vos paris en cours et terminés</p>
+        </div>
+        <div id="myBetsList">
+            <div class="empty"><i class="fas fa-spinner fa-spin"></i><p>Chargement…</p></div>
         </div>
     </div>
 
-    <!-- Bet Modal -->
-    <div class="modal-overlay" id="betModal">
-        <div class="modal">
-            <div class="modal-header">
-                <h3 class="modal-title">Placer un pari</h3>
-                <button class="modal-close" onclick="closeBetModal()">
-                    <i class="fas fa-times"></i>
-                </button>
+    <!-- TRANSACTIONS SECTION -->
+    <div id="transactions-section" class="section">
+        <div class="page-hd">
+            <h1>Mes <span>Transactions</span></h1>
+            <p>Historique de vos dépôts et retraits</p>
+        </div>
+        <div class="tx-list" id="transactionsList">
+            <div class="empty"><i class="fas fa-spinner fa-spin"></i><p>Chargement…</p></div>
+        </div>
+    </div>
+
+</main>
+
+<!-- ─── Bottom Nav ─── -->
+<nav class="bottom-nav">
+    <button class="nav-item active" id="nav-events" onclick="showSection('events')">
+        <i class="fas fa-home"></i>
+        <span>Accueil</span>
+    </button>
+    <button class="nav-item" id="nav-my-bets" onclick="showSection('my-bets')">
+        <i class="fas fa-ticket-alt"></i>
+        <span>Paris</span>
+    </button>
+    <button class="nav-item nav-deposit" onclick="openDepositModal()">
+        <div class="nav-deposit-inner"><i class="fas fa-plus"></i></div>
+    </button>
+    <button class="nav-item" id="nav-transactions" onclick="showSection('transactions')">
+        <i class="fas fa-exchange-alt"></i>
+        <span>Transactions</span>
+    </button>
+    <button class="nav-item" onclick="openWithdrawalModal()">
+        <i class="fas fa-wallet"></i>
+        <span>Retirer</span>
+    </button>
+</nav>
+
+<!-- ─── DEPOSIT MODAL ─── -->
+<div class="modal-overlay" id="depositModal">
+    <div class="modal">
+        <div class="modal-drag"></div>
+        <div class="modal-header">
+            <span class="modal-title">Effectuer un dépôt</span>
+            <button class="modal-close" onclick="closeDepositModal()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body">
+            <div class="info-box">
+                <div class="info-row"><i class="fas fa-info-circle"></i> Minimum : <strong>500 FCFA</strong></div>
+                <div class="info-row"><i class="fas fa-clock"></i> Validation en <strong>5-15 min</strong></div>
             </div>
-            <div class="modal-body">
-                <div class="bet-amount-display">
-                    <div class="bet-amount-label">Montant du pari</div>
-                    <div class="bet-amount-value" id="betAmountDisplay">100 FCFA</div>
-                </div>
-
-                <input type="range" class="bet-slider" id="betSlider" min="100" max="10000" step="100" value="100" oninput="updateBetAmount(this.value)">
-
-                <div class="bet-quick-amounts">
-                    <button class="bet-quick-amount" onclick="setBetAmount(100)">100</button>
-                    <button class="bet-quick-amount" onclick="setBetAmount(500)">500</button>
-                    <button class="bet-quick-amount" onclick="setBetAmount(1000)">1K</button>
-                    <button class="bet-quick-amount" onclick="setBetAmount(5000)">5K</button>
-                </div>
-
-                <div class="bet-potential-win">
-                    <div class="bet-potential-win-label">Gain potentiel estimé</div>
-                    <div class="bet-potential-win-value" id="potentialWin">+0 FCFA</div>
-                </div>
-
+            <div class="steps">
+                <div class="step"><div class="step-n">1</div><div class="step-t">Cliquez sur le bouton pour payer via Wave</div></div>
+                <div class="step"><div class="step-n">2</div><div class="step-t">Effectuez votre transfert et gardez la capture</div></div>
+                <div class="step"><div class="step-n">3</div><div class="step-t">Remplissez le formulaire de confirmation</div></div>
+            </div>
+            <a href="https://pay.wave.com/m/M_ci_iqMcg8KwRE-W/c/ci/" target="_blank" class="btn-link mb-1">
+                <i class="fas fa-external-link-alt"></i> Payer avec Wave
+            </a>
+            <div class="divider"><span>Après le paiement</span></div>
+            <form id="depositForm" onsubmit="submitDeposit(event)">
                 <div class="form-group">
-                    <label>Votre prédiction</label>
-                    <div class="prediction-buttons">
-                        <button class="prediction-btn yes" id="btnYes" onclick="setPrediction('yes')">
-                            <i class="fas fa-check"></i> OUI
-                        </button>
-                        <button class="prediction-btn no" id="btnNo" onclick="setPrediction('no')">
-                            <i class="fas fa-times"></i> NON
-                        </button>
-                    </div>
+                    <label class="form-label">Montant déposé (FCFA) *</label>
+                    <input class="form-input" type="number" id="depositAmount" min="500" step="100" required placeholder="Ex: 5000">
                 </div>
-
-                <button class="btn btn-primary btn-full" onclick="placeBet()" id="placeBetBtn">
-                    <i class="fas fa-check-circle"></i>
-                    Confirmer le pari
+                <div class="form-group">
+                    <label class="form-label">Numéro Wave utilisé *</label>
+                    <input class="form-input" type="tel" id="depositPhone" required placeholder="+225 XX XX XX XX XX">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">ID de transaction Wave *</label>
+                    <input class="form-input" type="text" id="depositTransactionId" required placeholder="Ex: WV123456789">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Capture d'écran (optionnel)</label>
+                    <input class="form-input" type="file" id="depositScreenshot" accept="image/*">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Commentaire (optionnel)</label>
+                    <input class="form-input" type="text" id="depositComment" placeholder="Informations supplémentaires">
+                </div>
+                <button type="submit" class="btn btn-success" id="submitDepositBtn">
+                    <i class="fas fa-check-circle"></i> Envoyer la confirmation
                 </button>
-            </div>
+            </form>
         </div>
     </div>
+</div>
 
-    <!-- Toast -->
-    <div class="toast" id="toast">
-        <i class="fas fa-check-circle"></i>
-        <span id="toastMessage">Message</span>
+<!-- ─── WITHDRAWAL MODAL ─── -->
+<div class="modal-overlay" id="withdrawalModal">
+    <div class="modal">
+        <div class="modal-drag"></div>
+        <div class="modal-header">
+            <span class="modal-title">Demander un retrait</span>
+            <button class="modal-close" onclick="closeWithdrawalModal()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body">
+            <div class="bal-display">
+                <div class="bal-disp-label">Solde disponible</div>
+                <div class="bal-disp-val" id="withdrawalBalance">0 FCFA</div>
+            </div>
+            <div class="warn-box">
+                <div class="warn-title"><i class="fas fa-info-circle"></i> Informations importantes</div>
+                <div class="warn-text">
+                    • Minimum de retrait : <strong>1 000 FCFA</strong><br>
+                    • Délai de traitement : <strong>24-48h</strong><br>
+                    • Vérification requise avant le premier retrait
+                </div>
+            </div>
+            <form id="withdrawalForm" onsubmit="submitWithdrawal(event)">
+                <div class="form-group">
+                    <label class="form-label">Montant à retirer (FCFA) *</label>
+                    <input class="form-input" type="number" id="withdrawalAmount" min="1000" step="100" required placeholder="Ex: 5000">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Numéro Wave pour recevoir *</label>
+                    <input class="form-input" type="tel" id="withdrawalPhone" required placeholder="+225 XX XX XX XX XX">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Nom du compte Wave *</label>
+                    <input class="form-input" type="text" id="withdrawalName" required placeholder="Nom affiché sur Wave">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Motif du retrait (optionnel)</label>
+                    <input class="form-input" type="text" id="withdrawalReason" placeholder="Ex: Gains des paris">
+                </div>
+                <button type="submit" class="btn btn-warning" id="submitWithdrawalBtn">
+                    <i class="fas fa-paper-plane"></i> Demander le retrait
+                </button>
+            </form>
+        </div>
     </div>
+</div>
 
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+<!-- ─── BET MODAL ─── -->
+<div class="modal-overlay" id="betModal">
+    <div class="modal">
+        <div class="modal-drag"></div>
+        <div class="modal-header">
+            <span class="modal-title">Placer un pari</span>
+            <button class="modal-close" onclick="closeBetModal()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body">
+            <div class="bet-amount-center">
+                <div class="bet-amount-label">Montant du pari</div>
+                <div class="bet-amount-val" id="betAmountDisplay">100 FCFA</div>
+            </div>
+            <input type="range" id="betSlider" min="100" max="10000" step="100" value="100" oninput="updateBetAmount(this.value)">
+            <div class="quick-amounts">
+                <button class="qa-btn" onclick="setBetAmount(100)">100</button>
+                <button class="qa-btn" onclick="setBetAmount(500)">500</button>
+                <button class="qa-btn" onclick="setBetAmount(1000)">1K</button>
+                <button class="qa-btn" onclick="setBetAmount(5000)">5K</button>
+            </div>
+            <div class="potential-win">
+                <div class="pw-label">Gain potentiel estimé</div>
+                <div class="pw-val" id="potentialWin">+0 FCFA</div>
+            </div>
+            <div style="margin-bottom:.6rem; font-size:.8rem; color:var(--muted); font-weight:600;">Votre prédiction</div>
+            <div class="pred-btns">
+                <button class="pred-btn yes" id="btnYes" onclick="setPrediction('yes')">
+                    <i class="fas fa-check"></i> OUI
+                </button>
+                <button class="pred-btn no" id="btnNo" onclick="setPrediction('no')">
+                    <i class="fas fa-times"></i> NON
+                </button>
+            </div>
+            <button class="btn btn-primary" onclick="placeBet()" id="placeBetBtn">
+                <i class="fas fa-check-circle"></i> Confirmer le pari
+            </button>
+        </div>
+    </div>
+</div>
 
-    <script src="script.js"></script>
+<!-- ─── Toast ─── -->
+<div class="toast" id="toast">
+    <i class="fas fa-check-circle"></i>
+    <span id="toastMsg">Message</span>
+</div>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+<script>
+    // ─── Firebase ───
+    firebase.initializeApp({
+        apiKey: "AIzaSyCPGgtXoDUycykLaTSee0S0yY0tkeJpqKI",
+        authDomain: "data-com-a94a8.firebaseapp.com",
+        databaseURL: "https://data-com-a94a8-default-rtdb.firebaseio.com",
+        projectId: "data-com-a94a8",
+        storageBucket: "data-com-a94a8.firebasestorage.app",
+        messagingSenderId: "276904640935",
+        appId: "1:276904640935:web:9cd805aeba6c34c767f682",
+        measurementId: "G-FYQCWY5G4S"
+    });
+    const db = firebase.firestore();
+
+    const cloudinary = { cloudName: 'djxcqczh1', uploadPreset: 'database' };
+
+    // ─── State ───
+    let currentUser = null, currentEvent = null, currentPrediction = null, currentBetAmount = 100, eventsData = [];
+
+    const carouselSamples = [
+        { category: 'sport', question: 'Le Real Madrid remportera-t-il la Liga cette saison ?', date: '15 Juin 2024', image: 'https://images.unsplash.com/photo-1551958219-acbc595e59e3?w=400&h=250&fit=crop' },
+        { category: 'music', question: 'Burna Boy gagnera-t-il un Grammy Award ?', date: '20 Juin 2024', image: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=250&fit=crop' },
+        { category: 'crypto', question: 'Le Bitcoin dépassera-t-il 100 000$ cette année ?', date: '30 Juin 2024', image: 'https://images.unsplash.com/photo-1518546305927-5a555bb7020d?w=400&h=250&fit=crop' },
+        { category: 'politique', question: 'L\'opposition remportera-t-elle les prochaines élections ?', date: '10 Juil 2024', image: 'https://images.unsplash.com/photo-1529107386315-e1a2ed48a620?w=400&h=250&fit=crop' }
+    ];
+
+    // ─── Init ───
+    document.addEventListener('DOMContentLoaded', () => { checkAuth(); renderCarousel(); });
+
+    function checkAuth() {
+        const s = sessionStorage.getItem('currentUser') || localStorage.getItem('currentUser');
+        if (!s) { window.location.href = 'index.html'; return; }
+        try {
+            currentUser = JSON.parse(s);
+            loadUserData(); loadEvents(); loadHistory(); updateStats();
+        } catch { window.location.href = 'index.html'; }
+    }
+
+    function loadUserData() {
+        if (!currentUser) return;
+        db.collection('users').doc(currentUser.id).onSnapshot(doc => {
+            if (!doc.exists) return;
+            const d = doc.data();
+            currentUser = { ...currentUser, ...d };
+            const store = localStorage.getItem('currentUser') ? localStorage : sessionStorage;
+            store.setItem('currentUser', JSON.stringify(currentUser));
+
+            const name = `${d.prenom || ''} ${d.nom || ''}`.trim() || 'Utilisateur';
+            const bal = (d.balance || 0).toLocaleString() + ' FCFA';
+
+            document.getElementById('drawerAvatar').textContent = (d.prenom || 'U').charAt(0).toUpperCase();
+            document.getElementById('drawerName').textContent = name;
+            document.getElementById('drawerPseudo').textContent = '@' + (d.pseudo || 'user');
+            document.getElementById('drawerBalance').textContent = bal;
+            document.getElementById('topBalance').textContent = bal;
+            document.getElementById('heroName').textContent = name;
+            document.getElementById('heroBalance').textContent = bal;
+            document.getElementById('withdrawalBalance').textContent = bal;
+        });
+    }
+
+    function updateStats() {
+        if (!currentUser) return;
+        db.collection('bets').where('userId', '==', currentUser.id).get().then(snap => {
+            const all = snap.docs.map(d => d.data());
+            const wins = all.filter(b => b.status === 'won').length;
+            const active = all.filter(b => b.status === 'pending').length;
+            const total = all.reduce((s, b) => s + (b.amount || 0), 0);
+            const winrate = all.length ? Math.round((wins / all.length) * 100) : 0;
+            document.getElementById('statWins').textContent = wins;
+            document.getElementById('statBets').textContent = active;
+            document.getElementById('statTotal').textContent = total >= 1000 ? (total/1000).toFixed(1)+'K' : total;
+            document.getElementById('statWinrate').textContent = winrate + '%';
+        });
+    }
+
+    function loadEvents() {
+        db.collection('events').where('status', '==', 'active').get().then(snap => {
+            eventsData = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            renderEvents();
+        }).catch(() => renderEvents());
+    }
+
+    function renderEvents() {
+        const el = document.getElementById('eventsList');
+        if (!eventsData.length) {
+            el.innerHTML = `<div class="empty"><i class="fas fa-calendar-times"></i><p>Aucun événement disponible</p></div>`;
+            return;
+        }
+        el.innerHTML = eventsData.map(ev => {
+            const yB = ev.bets ? ev.bets.filter(b => b.choice==='yes').length : 0;
+            const nB = ev.bets ? ev.bets.filter(b => b.choice==='no').length : 0;
+            const pot = ev.bets ? ev.bets.reduce((s,b)=>s+b.amount,0) : 0;
+            return `<div class="ev-card">
+                <div class="ev-top">
+                    <div class="ev-meta">
+                        <span class="ev-cat"><i class="fas fa-${catIcon(ev.category)}"></i> ${ev.category||'Sport'}</span>
+                        <span class="ev-live"><i class="fas fa-circle"></i> En cours</span>
+                    </div>
+                    <div class="ev-question">${ev.question}</div>
+                </div>
+                <div class="ev-odds">
+                    <div class="ev-odd yes"><div class="ev-odd-label">OUI</div><div class="ev-odd-val">${yB} pers.</div></div>
+                    <div class="ev-odd no"><div class="ev-odd-label">NON</div><div class="ev-odd-val">${nB} pers.</div></div>
+                </div>
+                <div class="ev-footer">
+                    <div class="ev-info">
+                        <span><i class="fas fa-coins"></i>${ev.minBet||100} FCFA</span>
+                        <span><i class="fas fa-chart-bar"></i>${(pot/1000).toFixed(1)}K</span>
+                    </div>
+                    <div class="ev-btns">
+                        <button class="ev-btn ev-btn-yes" onclick="openBetModal('${ev.id}','yes')"><i class="fas fa-check"></i> OUI</button>
+                        <button class="ev-btn ev-btn-no" onclick="openBetModal('${ev.id}','no')"><i class="fas fa-times"></i> NON</button>
+                    </div>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    function catIcon(c) {
+        return { sport:'futbol', politique:'landmark', entertainment:'film', crypto:'bitcoin', music:'music' }[c] || 'tag';
+    }
+
+    function loadHistory() {
+        if (!currentUser) return;
+        db.collection('bets').where('userId','==',currentUser.id).orderBy('date','desc').limit(5).get().then(snap => {
+            const el = document.getElementById('historyList');
+            if (snap.empty) { el.innerHTML=`<div class="empty"><i class="fas fa-history"></i><p>Aucun historique</p></div>`; return; }
+            Promise.all(snap.docs.map(doc => {
+                const bet = { id:doc.id, ...doc.data() };
+                return db.collection('events').doc(bet.eventId).get().then(ed => ({ bet, ev: ed.exists ? ed.data() : null }));
+            })).then(res => {
+                el.innerHTML = res.map(({bet,ev}) => {
+                    const cls = bet.status==='won' ? 'hi-win' : bet.status==='lost' ? 'hi-loss' : 'hi-default';
+                    const ic = bet.status==='won' ? 'trophy' : bet.status==='lost' ? 'times-circle' : 'ticket-alt';
+                    const amtCls = bet.status==='won' ? 'pos' : 'neg';
+                    const pre = bet.status==='won' ? '+' : '-';
+                    const dt = bet.date ? bet.date.toDate().toLocaleDateString('fr-FR') : '-';
+                    return `<div class="hist-item">
+                        <div class="hist-icon ${cls}"><i class="fas fa-${ic}"></i></div>
+                        <div class="hist-info">
+                            <div class="hist-title">${ev ? ev.question : 'Événement'}</div>
+                            <div class="hist-date">${dt}</div>
+                        </div>
+                        <div class="hist-amount ${amtCls}">${pre}${bet.amount.toLocaleString()} FCFA</div>
+                    </div>`;
+                }).join('');
+            });
+        }).catch(() => {
+            document.getElementById('historyList').innerHTML = `<div class="empty"><i class="fas fa-exclamation-triangle"></i><p>Erreur de chargement</p></div>`;
+        });
+    }
+
+    function renderCarousel() {
+        const track = document.getElementById('carouselTrack');
+        track.innerHTML = [...carouselSamples, ...carouselSamples].map(it => `
+            <div class="c-card" onclick="showToast('Bientôt disponible!', 'info')">
+                <img src="${it.image}" alt="">
+                <div class="c-overlay">
+                    <span class="c-tag">${it.category}</span>
+                    <div class="c-question">${it.question}</div>
+                    <div class="c-date"><i class="fas fa-calendar-alt"></i>${it.date}</div>
+                </div>
+            </div>`).join('');
+    }
+
+    // ─── Navigation ───
+    function showSection(sec) {
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        const map = { 'events':'events-section', 'my-bets':'my-bets-section', 'transactions':'transactions-section' };
+        if (map[sec]) document.getElementById(map[sec]).classList.add('active');
+        const navEl = document.getElementById('nav-'+sec);
+        if (navEl) navEl.classList.add('active');
+        if (sec === 'transactions') loadTransactions();
+        if (sec === 'my-bets') loadMyBets();
+    }
+
+    // ─── Drawer ───
+    function openDrawer() {
+        document.getElementById('drawer').classList.add('open');
+        document.getElementById('drawerOverlay').classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+    function closeDrawer() {
+        document.getElementById('drawer').classList.remove('open');
+        document.getElementById('drawerOverlay').classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    // ─── Modals ───
+    function openDepositModal() {
+        document.getElementById('depositModal').classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+    function closeDepositModal() {
+        document.getElementById('depositModal').classList.remove('active');
+        document.body.style.overflow = '';
+        document.getElementById('depositForm').reset();
+    }
+    function openWithdrawalModal() {
+        if (currentUser) document.getElementById('withdrawalBalance').textContent = (currentUser.balance||0).toLocaleString()+' FCFA';
+        document.getElementById('withdrawalModal').classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+    function closeWithdrawalModal() {
+        document.getElementById('withdrawalModal').classList.remove('active');
+        document.body.style.overflow = '';
+        document.getElementById('withdrawalForm').reset();
+    }
+
+    // ─── Deposit Submit ───
+    async function submitDeposit(e) {
+        e.preventDefault();
+        if (!currentUser) { showToast('Erreur: non connecté', 'error'); return; }
+        const btn = document.getElementById('submitDepositBtn');
+        btn.innerHTML = '<span class="spinner"></span> Envoi…'; btn.disabled = true;
+        const amount = parseInt(document.getElementById('depositAmount').value);
+        const phone = document.getElementById('depositPhone').value;
+        const tid = document.getElementById('depositTransactionId').value;
+        const comment = document.getElementById('depositComment').value;
+        const file = document.getElementById('depositScreenshot').files[0];
+        try {
+            let screenshotURL = null;
+            if (file) {
+                const fd = new FormData(); fd.append('file', file); fd.append('upload_preset', cloudinary.uploadPreset);
+                const r = await fetch(`https://api.cloudinary.com/v1_1/${cloudinary.cloudName}/image/upload`, { method:'POST', body:fd });
+                const d = await r.json(); if (d.error) throw new Error(d.error.message);
+                screenshotURL = d.secure_url;
+            }
+            await db.collection('transactions').add({
+                userId: currentUser.id, userName: `${currentUser.prenom||''} ${currentUser.nom||''}`.trim(),
+                userPseudo: currentUser.pseudo, type:'deposit', amount, phone, transactionId:tid,
+                screenshotURL, comment:comment||'', status:'pending',
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            showToast('Demande envoyée ! Validation sous 5-15 min.', 'success');
+            closeDepositModal();
+        } catch(err) { showToast('Erreur: '+err.message, 'error'); }
+        finally { btn.innerHTML='<i class="fas fa-check-circle"></i> Envoyer la confirmation'; btn.disabled=false; }
+    }
+
+    // ─── Withdrawal Submit ───
+    async function submitWithdrawal(e) {
+        e.preventDefault();
+        if (!currentUser) { showToast('Erreur: non connecté', 'error'); return; }
+        const amount = parseInt(document.getElementById('withdrawalAmount').value);
+        if (amount > (currentUser.balance||0)) { showToast('Solde insuffisant', 'error'); return; }
+        if (amount < 1000) { showToast('Minimum 1 000 FCFA', 'error'); return; }
+        const btn = document.getElementById('submitWithdrawalBtn');
+        btn.innerHTML = '<span class="spinner"></span> Envoi…'; btn.disabled = true;
+        try {
+            await db.collection('transactions').add({
+                userId: currentUser.id, userName: `${currentUser.prenom||''} ${currentUser.nom||''}`.trim(),
+                userPseudo: currentUser.pseudo, type:'withdrawal', amount,
+                phone: document.getElementById('withdrawalPhone').value,
+                recipientName: document.getElementById('withdrawalName').value,
+                reason: document.getElementById('withdrawalReason').value||'',
+                status:'pending', createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            await db.collection('users').doc(currentUser.id).update({
+                balance: firebase.firestore.FieldValue.increment(-amount),
+                pendingWithdrawal: firebase.firestore.FieldValue.increment(amount)
+            });
+            showToast('Demande de retrait envoyée ! 24-48h.', 'success');
+            closeWithdrawalModal();
+        } catch(err) { showToast('Erreur: '+err.message, 'error'); }
+        finally { btn.innerHTML='<i class="fas fa-paper-plane"></i> Demander le retrait'; btn.disabled=false; }
+    }
+
+    // ─── Transactions ───
+    function loadTransactions() {
+        if (!currentUser) return;
+        db.collection('transactions').where('userId','==',currentUser.id).orderBy('createdAt','desc').get().then(snap => {
+            const el = document.getElementById('transactionsList');
+            if (snap.empty) { el.innerHTML=`<div class="empty"><i class="fas fa-exchange-alt"></i><p>Aucune transaction</p></div>`; return; }
+            el.innerHTML = snap.docs.map(doc => {
+                const t = doc.data();
+                const dep = t.type==='deposit';
+                const statMap = { pending:'En attente', completed:'Validé', approved:'Validé', rejected:'Rejeté' };
+                const dt = t.createdAt ? t.createdAt.toDate().toLocaleDateString('fr-FR') : '-';
+                return `<div class="hist-item">
+                    <div class="hist-icon ${dep?'hi-win':'hi-loss'}"><i class="fas fa-${dep?'arrow-down':'arrow-up'}"></i></div>
+                    <div class="hist-info">
+                        <div class="hist-title">${dep?'Dépôt':'Retrait'} – ${statMap[t.status]||'En attente'}</div>
+                        <div class="hist-date">${dt}</div>
+                    </div>
+                    <div class="hist-amount ${dep?'pos':'neg'}">${dep?'+':'-'}${t.amount.toLocaleString()} FCFA</div>
+                </div>`;
+            }).join('');
+        });
+    }
+
+    // ─── My Bets ───
+    function loadMyBets() {
+        if (!currentUser) return;
+        db.collection('bets').where('userId','==',currentUser.id).orderBy('date','desc').get().then(snap => {
+            const el = document.getElementById('myBetsList');
+            if (snap.empty) { el.innerHTML=`<div class="empty"><i class="fas fa-ticket-alt"></i><p>Aucun pari</p></div>`; return; }
+            Promise.all(snap.docs.map(doc => {
+                const bet = {id:doc.id,...doc.data()};
+                return db.collection('events').doc(bet.eventId).get().then(ed => ({bet, ev:ed.exists?ed.data():null}));
+            })).then(res => {
+                el.innerHTML = res.map(({bet,ev}) => {
+                    const sColor = {pending:'var(--yellow)',won:'var(--green)',lost:'var(--red)'}[bet.status]||'var(--muted)';
+                    const sText = {pending:'En cours',won:'Gagné',lost:'Perdu'}[bet.status]||bet.status;
+                    const cColor = bet.choice==='yes'?'var(--green)':'var(--red)';
+                    return `<div class="bet-item">
+                        <div class="bet-item-hd">
+                            <div class="bet-item-meta">
+                                <span class="ev-cat"><i class="fas fa-${catIcon(ev?.category)}"></i> ${ev?.category||'Sport'}</span>
+                                <span style="color:${sColor};font-size:.8rem;font-weight:700;">${sText}</span>
+                            </div>
+                            <div class="bet-item-q">${ev?ev.question:'Événement'}</div>
+                        </div>
+                        <div class="bet-item-bd">
+                            <span>Prédiction: <strong style="color:${cColor}">${bet.choice==='yes'?'OUI':'NON'}</strong></span>
+                            <span>Mise: <strong>${bet.amount.toLocaleString()} FCFA</strong></span>
+                        </div>
+                    </div>`;
+                }).join('');
+            });
+        });
+    }
+
+    // ─── Bet Modal ───
+    function openBetModal(eventId, prediction) {
+        currentEvent = eventsData.find(e => e.id === eventId);
+        if (!currentEvent) return;
+        currentPrediction = prediction; currentBetAmount = 100;
+        document.getElementById('betSlider').value = 100;
+        document.getElementById('betAmountDisplay').textContent = '100 FCFA';
+        setPrediction(prediction); updatePotentialWin();
+        document.getElementById('betModal').classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+    function closeBetModal() {
+        document.getElementById('betModal').classList.remove('active');
+        document.body.style.overflow = ''; currentEvent=null; currentPrediction=null;
+    }
+    function updateBetAmount(v) {
+        currentBetAmount = parseInt(v);
+        document.getElementById('betAmountDisplay').textContent = currentBetAmount.toLocaleString()+' FCFA';
+        updatePotentialWin();
+    }
+    function setBetAmount(v) { document.getElementById('betSlider').value=v; updateBetAmount(v); }
+    function setPrediction(p) {
+        currentPrediction = p;
+        document.getElementById('btnYes').classList.toggle('active', p==='yes');
+        document.getElementById('btnNo').classList.toggle('active', p==='no');
+        updatePotentialWin();
+    }
+    function updatePotentialWin() {
+        if (!currentEvent) return;
+        const bets = currentEvent.bets || [];
+        const yT = bets.filter(b=>b.choice==='yes').reduce((s,b)=>s+b.amount,0);
+        const nT = bets.filter(b=>b.choice==='no').reduce((s,b)=>s+b.amount,0);
+        const losingPool = currentPrediction==='yes' ? nT : yT;
+        const winners = bets.filter(b=>b.choice===currentPrediction).length + 1;
+        const win = winners > 0 ? Math.floor((losingPool*.98) / winners) : 0;
+        document.getElementById('potentialWin').textContent = '+'+win.toLocaleString()+' FCFA';
+    }
+
+    function placeBet() {
+        if (!currentUser || !currentEvent || !currentPrediction) return;
+        const btn = document.getElementById('placeBetBtn');
+        btn.innerHTML='<span class="spinner"></span> Traitement…'; btn.disabled=true;
+        if ((currentUser.balance||0) < currentBetAmount) {
+            showToast('Solde insuffisant. Effectuez un dépôt.','error');
+            btn.innerHTML='<i class="fas fa-check-circle"></i> Confirmer le pari'; btn.disabled=false; return;
+        }
+        const batch = db.batch();
+        batch.update(db.collection('users').doc(currentUser.id), { balance: firebase.firestore.FieldValue.increment(-currentBetAmount) });
+        batch.set(db.collection('bets').doc(), { userId:currentUser.id, eventId:currentEvent.id, choice:currentPrediction, amount:currentBetAmount, status:'pending', date:firebase.firestore.FieldValue.serverTimestamp() });
+        batch.update(db.collection('events').doc(currentEvent.id), { bets: firebase.firestore.FieldValue.arrayUnion({ userId:currentUser.id, choice:currentPrediction, amount:currentBetAmount }) });
+        batch.commit().then(() => {
+            showToast('Pari placé avec succès !','success');
+            closeBetModal(); loadUserData(); loadEvents(); loadHistory(); updateStats();
+        }).catch(err => showToast('Erreur: '+err.message,'error'))
+        .finally(() => { btn.innerHTML='<i class="fas fa-check-circle"></i> Confirmer le pari'; btn.disabled=false; });
+    }
+
+    // ─── Toast ───
+    function showToast(msg, type='success') {
+        const t = document.getElementById('toast');
+        const icons = {success:'fa-check-circle',error:'fa-exclamation-circle',info:'fa-info-circle'};
+        t.querySelector('i').className = 'fas ' + (icons[type]||icons.success);
+        document.getElementById('toastMsg').textContent = msg;
+        t.className = 'toast show ' + type;
+        setTimeout(() => t.classList.remove('show'), 3000);
+    }
+
+    // ─── Logout ───
+    function logout() {
+        sessionStorage.removeItem('currentUser'); localStorage.removeItem('currentUser');
+        showToast('Déconnexion réussie','success');
+        setTimeout(() => window.location.href='index.html', 1000);
+    }
+
+    // Close modals on outside tap
+    window.addEventListener('click', e => {
+        if (e.target.classList.contains('modal-overlay')) {
+            e.target.classList.remove('active');
+            document.body.style.overflow='';
+        }
+    });
+</script>
 </body>
 </html>
