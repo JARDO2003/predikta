@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#6366f1">
-    <title>Predikta - Tableau de Bord Créateur</title>
+    <title>Predikta - Admin Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -31,9 +31,7 @@
             --gradient-1: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             --gradient-2: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
             --gradient-3: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-            --gradient-success: linear-gradient(135deg, #10b981 0%, #059669 100%);
             --shadow: 0 10px 40px rgba(0,0,0,0.3);
-            --shadow-sm: 0 4px 6px rgba(0,0,0,0.1);
         }
 
         body {
@@ -45,7 +43,6 @@
             line-height: 1.6;
         }
 
-        /* Animated Background */
         .bg-animation {
             position: fixed;
             top: 0;
@@ -251,29 +248,11 @@
             transition: all 0.3s;
             color: var(--gray);
             text-decoration: none;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .nav-link::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 0;
-            height: 100%;
-            width: 3px;
-            background: var(--gradient-1);
-            transform: scaleY(0);
-            transition: transform 0.3s;
         }
 
         .nav-link:hover, .nav-link.active {
             background: rgba(99, 102, 241, 0.1);
             color: var(--white);
-        }
-
-        .nav-link.active::before {
-            transform: scaleY(1);
         }
 
         .nav-link i {
@@ -347,7 +326,6 @@
             flex-wrap: wrap;
         }
 
-        /* Buttons */
         .btn {
             padding: 0.75rem 1.5rem;
             border: none;
@@ -386,6 +364,11 @@
 
         .btn-warning {
             background: var(--warning);
+            color: white;
+        }
+
+        .btn-info {
+            background: var(--info);
             color: white;
         }
 
@@ -443,7 +426,8 @@
 
         .stat-card.pink::before { background: var(--gradient-2); }
         .stat-card.blue::before { background: var(--gradient-3); }
-        .stat-card.green::before { background: var(--gradient-success); }
+        .stat-card.green::before { background: var(--success); }
+        .stat-card.orange::before { background: var(--warning); }
 
         .stat-header {
             display: flex;
@@ -467,6 +451,7 @@
         .stat-card.pink .stat-icon { background: rgba(236, 72, 153, 0.2); color: var(--secondary); }
         .stat-card.blue .stat-icon { background: rgba(79, 172, 254, 0.2); color: #4facfe; }
         .stat-card.green .stat-icon { background: rgba(16, 185, 129, 0.2); color: var(--success); }
+        .stat-card.orange .stat-icon { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
 
         .stat-value {
             font-size: 2rem;
@@ -488,7 +473,7 @@
         .positive { color: var(--success); }
         .negative { color: var(--danger); }
 
-        /* Sections */
+        /* Section */
         .section {
             margin-bottom: 2rem;
         }
@@ -645,13 +630,8 @@
             border-radius: 12px;
         }
 
-        .event-stat.yes {
-            border: 2px solid rgba(16, 185, 129, 0.3);
-        }
-
-        .event-stat.no {
-            border: 2px solid rgba(239, 68, 68, 0.3);
-        }
+        .event-stat.yes { border: 2px solid rgba(16, 185, 129, 0.3); }
+        .event-stat.no { border: 2px solid rgba(239, 68, 68, 0.3); }
 
         .event-stat-label {
             font-size: 0.75rem;
@@ -814,9 +794,11 @@
         .payment-amount {
             font-size: 1.25rem;
             font-weight: 700;
-            color: var(--success);
             flex-shrink: 0;
         }
+
+        .payment-amount.deposit { color: var(--success); }
+        .payment-amount.withdrawal { color: var(--danger); }
 
         .payment-actions {
             display: flex;
@@ -866,7 +848,7 @@
             min-height: 100px;
         }
 
-        /* Modals */
+        /* Modal */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -1027,68 +1009,6 @@
             display: block;
         }
 
-        /* Responsive */
-        @media (max-width: 1024px) {
-            .mobile-header {
-                display: flex;
-            }
-
-            .sidebar {
-                transform: translateX(-100%);
-                width: 280px;
-            }
-
-            .sidebar.open {
-                transform: translateX(0);
-            }
-
-            .sidebar-close {
-                display: block;
-            }
-
-            .main-content {
-                margin-left: 0;
-                padding-top: 80px;
-            }
-
-            .events-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .form-row {
-                grid-template-columns: 1fr;
-            }
-
-            .stats-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-
-        @media (max-width: 640px) {
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .section-header {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-
-            .payment-item {
-                flex-wrap: wrap;
-            }
-
-            .payment-actions {
-                width: 100%;
-                justify-content: flex-end;
-                margin-top: 0.5rem;
-            }
-
-            .event-actions {
-                flex-direction: column;
-            }
-        }
-
         /* Content Sections */
         .content-section {
             display: none;
@@ -1154,6 +1074,105 @@
             font-size: 0.85rem;
             color: var(--gray);
         }
+
+        /* Transaction Type Badge */
+        .type-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .type-badge.deposit {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+        }
+
+        .type-badge.withdrawal {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+        }
+
+        /* Screenshot thumbnail */
+        .screenshot-thumb {
+            width: 50px;
+            height: 50px;
+            border-radius: 8px;
+            object-fit: cover;
+            cursor: pointer;
+            border: 2px solid rgba(255,255,255,0.1);
+            transition: all 0.3s;
+        }
+
+        .screenshot-thumb:hover {
+            border-color: var(--primary);
+            transform: scale(1.1);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .mobile-header {
+                display: flex;
+            }
+
+            .sidebar {
+                transform: translateX(-100%);
+                width: 280px;
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .sidebar-close {
+                display: block;
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding-top: 80px;
+            }
+
+            .events-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 640px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .section-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .payment-item {
+                flex-wrap: wrap;
+            }
+
+            .payment-actions {
+                width: 100%;
+                justify-content: flex-end;
+                margin-top: 0.5rem;
+            }
+
+            .event-actions {
+                flex-direction: column;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1217,10 +1236,10 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" onclick="showSection('payments'); closeSidebar();">
-                        <i class="fas fa-money-bill-wave"></i>
-                        Paiements
-                        <span class="badge" id="paymentCountBadge">0</span>
+                    <a class="nav-link" onclick="showSection('transactions'); closeSidebar();">
+                        <i class="fas fa-exchange-alt"></i>
+                        Transactions
+                        <span class="badge" id="transactionCountBadge">0</span>
                     </a>
                 </li>
                 <li class="nav-item">
@@ -1274,12 +1293,12 @@
                     <div class="quick-action-title">Créer Événement</div>
                     <div class="quick-action-desc">Ajouter un nouvel événement</div>
                 </div>
-                <div class="quick-action pink" onclick="showSection('payments')">
+                <div class="quick-action pink" onclick="showSection('transactions')">
                     <div class="quick-action-icon">
                         <i class="fas fa-check-circle"></i>
                     </div>
-                    <div class="quick-action-title">Valider Paiements</div>
-                    <div class="quick-action-desc">Approuver les dépôts</div>
+                    <div class="quick-action-title">Valider Transactions</div>
+                    <div class="quick-action-desc">Approuver dépôts/retraits</div>
                 </div>
                 <div class="quick-action green" onclick="showSection('users')">
                     <div class="quick-action-icon">
@@ -1344,11 +1363,11 @@
                     </div>
                 </div>
 
-                <div class="stat-card green">
+                <div class="stat-card orange">
                     <div class="stat-header">
                         <div>
-                            <div class="stat-value" id="pendingPayments">0</div>
-                            <div class="stat-label">Paiements en Attente</div>
+                            <div class="stat-value" id="pendingTransactions">0</div>
+                            <div class="stat-label">Transactions en Attente</div>
                         </div>
                         <div class="stat-icon">
                             <i class="fas fa-clock"></i>
@@ -1367,7 +1386,7 @@
                         <i class="fas fa-bell"></i>
                         Activité Récente
                     </h3>
-                    <button class="btn btn-secondary btn-sm" onclick="showSection('payments')">
+                    <button class="btn btn-secondary btn-sm" onclick="showSection('transactions')">
                         Voir tout
                     </button>
                 </div>
@@ -1411,56 +1430,75 @@
             </div>
         </section>
 
-        <!-- Payments Section -->
-        <section id="payments-section" class="content-section">
+        <!-- Transactions Section -->
+        <section id="transactions-section" class="content-section">
             <div class="page-header">
-                <h1 class="page-title">Validation des <span>Paiements</span></h1>
-                <p class="page-subtitle">Approuvez ou rejetez les demandes de dépôt</p>
+                <h1 class="page-title">Validation des <span>Transactions</span></h1>
+                <p class="page-subtitle">Approuvez ou rejetez les demandes de dépôt et retrait</p>
                 <div class="header-actions">
-                    <button class="btn btn-secondary" onclick="refreshPayments()">
+                    <button class="btn btn-secondary" onclick="refreshTransactions()">
                         <i class="fas fa-sync"></i>
                         Actualiser
                     </button>
                 </div>
             </div>
 
+            <!-- Pending Deposits -->
             <div class="card">
                 <div class="card-header">
                     <div class="card-title">
-                        <i class="fas fa-clock"></i>
-                        Paiements en Attente
+                        <i class="fas fa-arrow-down" style="color: var(--success);"></i>
+                        Dépôts en Attente
                     </div>
                 </div>
-                <div id="pendingPaymentsList" class="payment-list">
+                <div id="pendingDepositsList" class="payment-list">
                     <div class="empty-state">
                         <i class="fas fa-check-circle"></i>
-                        <p>Aucun paiement en attente</p>
+                        <p>Aucun dépôt en attente</p>
                     </div>
                 </div>
             </div>
 
+            <!-- Pending Withdrawals -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <i class="fas fa-arrow-up" style="color: var(--danger);"></i>
+                        Retraits en Attente
+                    </div>
+                </div>
+                <div id="pendingWithdrawalsList" class="payment-list">
+                    <div class="empty-state">
+                        <i class="fas fa-check-circle"></i>
+                        <p>Aucun retrait en attente</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- History -->
             <div class="card">
                 <div class="card-header">
                     <div class="card-title">
                         <i class="fas fa-history"></i>
-                        Historique des Paiements
+                        Historique des Transactions
                     </div>
                 </div>
                 <div class="table-container">
                     <table>
                         <thead>
                             <tr>
+                                <th>Type</th>
                                 <th>Utilisateur</th>
                                 <th>Montant</th>
-                                <th>Type</th>
+                                <th>Infos</th>
                                 <th>Date</th>
                                 <th>Statut</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
-                        <tbody id="paymentsHistoryTable">
+                        <tbody id="transactionsHistoryTable">
                             <tr>
-                                <td colspan="6" style="text-align: center; padding: 2rem;">
+                                <td colspan="7" style="text-align: center; padding: 2rem;">
                                     Chargement...
                                 </td>
                             </tr>
@@ -1485,6 +1523,7 @@
                                 <th>Utilisateur</th>
                                 <th>Contact</th>
                                 <th>Solde</th>
+                                <th>En attente</th>
                                 <th>Paris</th>
                                 <th>Statut</th>
                                 <th>Actions</th>
@@ -1492,7 +1531,7 @@
                         </thead>
                         <tbody id="usersTable">
                             <tr>
-                                <td colspan="6" style="text-align: center; padding: 2rem;">
+                                <td colspan="7" style="text-align: center; padding: 2rem;">
                                     Chargement...
                                 </td>
                             </tr>
@@ -1524,6 +1563,10 @@
                 <div class="form-group">
                     <label>Mise maximum (FCFA)</label>
                     <input type="number" id="maxBet" value="100000" min="1000" step="1000">
+                </div>
+                <div class="form-group">
+                    <label>Minimum de retrait (FCFA)</label>
+                    <input type="number" id="minWithdrawal" value="1000" min="100" step="100">
                 </div>
                 <button class="btn btn-primary" onclick="saveSettings()">
                     <i class="fas fa-save"></i>
@@ -1577,7 +1620,7 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label>Mise minimum (FCFA)</label>
-                            <input type="number" id="minBet" value="100" min="50" step="50">
+                            <input type="number" id="eventMinBet" value="100" min="50" step="50">
                         </div>
                         <div class="form-group">
                             <label>Status</label>
@@ -1601,50 +1644,57 @@
         </div>
     </div>
 
-    <!-- Payment Validation Modal -->
-    <div class="modal-overlay" id="paymentModal">
+    <!-- Transaction Validation Modal -->
+    <div class="modal-overlay" id="transactionModal">
         <div class="modal">
             <div class="modal-header">
-                <h3 class="modal-title">Valider le Paiement</h3>
-                <button class="modal-close" onclick="closeModal('paymentModal')">
+                <h3 class="modal-title" id="transactionModalTitle">Valider la Transaction</h3>
+                <button class="modal-close" onclick="closeModal('transactionModal')">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
             <div class="modal-body">
-                <input type="hidden" id="paymentId">
+                <input type="hidden" id="transactionId">
+                <input type="hidden" id="transactionType">
+                <input type="hidden" id="transactionUserId">
                 
                 <div class="payment-item" style="margin-bottom: 1.5rem; background: rgba(99, 102, 241, 0.1);">
-                    <div class="payment-avatar" id="paymentUserAvatar">U</div>
+                    <div class="payment-avatar" id="transactionUserAvatar">U</div>
                     <div class="payment-info">
-                        <div class="payment-user" id="paymentUserName">Utilisateur</div>
-                        <div class="payment-details" id="paymentDetails">Détails du paiement</div>
+                        <div class="payment-user" id="transactionUserName">Utilisateur</div>
+                        <div class="payment-details" id="transactionDetails">Détails</div>
                     </div>
-                    <div class="payment-amount" id="paymentAmount">0 FCFA</div>
+                    <div class="payment-amount" id="transactionAmount">0 FCFA</div>
+                </div>
+
+                <div id="transactionScreenshotContainer" class="form-group" style="display: none;">
+                    <label>Capture d'écran</label>
+                    <img id="transactionScreenshot" src="" alt="Screenshot" style="max-width: 100%; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1);">
                 </div>
 
                 <div class="form-group">
                     <label>Action *</label>
-                    <select id="paymentAction" class="form-control">
-                        <option value="approve">✅ Approuver le paiement</option>
-                        <option value="reject">❌ Rejeter le paiement</option>
+                    <select id="transactionAction">
+                        <option value="approve">✅ Approuver</option>
+                        <option value="reject">❌ Rejeter</option>
                     </select>
                 </div>
 
                 <div class="form-group">
                     <label>Commentaire (optionnel)</label>
-                    <textarea id="paymentComment" placeholder="Raison de la décision..."></textarea>
+                    <textarea id="transactionComment" placeholder="Raison de la décision..."></textarea>
                 </div>
 
-                <div class="info-box" style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 10px; padding: 1rem; margin-top: 1rem;">
+                <div class="info-box" style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 10px; padding: 1rem;">
                     <div style="display: flex; align-items: center; gap: 0.5rem; color: var(--warning); font-size: 0.9rem;">
                         <i class="fas fa-info-circle"></i>
-                        <span>Le solde de l'utilisateur sera mis à jour automatiquement</span>
+                        <span id="transactionWarningText">Le solde de l'utilisateur sera mis à jour automatiquement</span>
                     </div>
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="closeModal('paymentModal')">Annuler</button>
-                <button class="btn btn-primary" onclick="processPayment()">
+                <button class="btn btn-secondary" onclick="closeModal('transactionModal')">Annuler</button>
+                <button class="btn btn-primary" onclick="processTransaction()">
                     <i class="fas fa-check"></i>
                     Confirmer
                 </button>
@@ -1681,8 +1731,6 @@
         // Global Variables
         let currentUser = null;
         let eventsData = [];
-        let paymentsData = [];
-        let usersData = [];
         let currentFilter = 'all';
 
         // Initialize
@@ -1690,7 +1738,7 @@
             checkAuth();
             loadDashboardData();
             loadEvents();
-            loadPayments();
+            loadTransactions();
             loadUsers();
         });
 
@@ -1705,13 +1753,11 @@
             try {
                 currentUser = JSON.parse(userStr);
                 
-                // Vérifier si c'est bien un admin/creator
                 if (currentUser.role !== 'admin' && currentUser.role !== 'creator') {
                     window.location.href = 'user-dashboard.html';
                     return;
                 }
 
-                // Mettre à jour l'UI
                 document.getElementById('userName').textContent = currentUser.prenom || currentUser.pseudo || 'Admin';
                 document.getElementById('userPseudo').textContent = '@' + (currentUser.pseudo || 'admin');
                 document.getElementById('userAvatar').textContent = (currentUser.prenom || currentUser.pseudo || 'A').charAt(0).toUpperCase();
@@ -1723,24 +1769,20 @@
 
         // Navigation
         function showSection(sectionName) {
-            // Cacher toutes les sections
             document.querySelectorAll('.content-section').forEach(section => {
                 section.classList.remove('active');
             });
             
-            // Désactiver tous les items de nav
             document.querySelectorAll('.nav-link').forEach(link => {
                 link.classList.remove('active');
             });
             
-            // Activer la section demandée
             document.getElementById(sectionName + '-section').classList.add('active');
             
-            // Activer le nav item correspondant
             const sectionMap = {
                 'dashboard': 0,
                 'events': 1,
-                'payments': 2,
+                'transactions': 2,
                 'users': 3,
                 'settings': 4
             };
@@ -1750,9 +1792,8 @@
                 navLinks[sectionMap[sectionName]].classList.add('active');
             }
 
-            // Rafraîchir les données si nécessaire
             if (sectionName === 'events') loadEvents();
-            if (sectionName === 'payments') loadPayments();
+            if (sectionName === 'transactions') loadTransactions();
             if (sectionName === 'users') loadUsers();
         }
 
@@ -1775,34 +1816,32 @@
         // Dashboard Data
         async function loadDashboardData() {
             try {
-                // Compter les événements actifs
+                // Events
                 const eventsSnapshot = await db.collection('events').where('status', '==', 'active').get();
                 const totalEvents = eventsSnapshot.size;
                 document.getElementById('totalEvents').textContent = totalEvents;
                 document.getElementById('eventCountBadge').textContent = totalEvents;
 
-                // Calculer les revenus (commission sur les paris gagnés)
+                // Revenue
                 const betsSnapshot = await db.collection('bets').where('status', '==', 'won').get();
                 let totalRevenue = 0;
                 betsSnapshot.forEach(doc => {
                     const bet = doc.data();
-                    // Commission de 2% sur les gains
                     totalRevenue += (bet.amount * 0.02);
                 });
                 document.getElementById('totalRevenue').textContent = formatCurrency(totalRevenue);
                 document.getElementById('totalRevenueDisplay').textContent = formatCurrency(totalRevenue);
 
-                // Compter les utilisateurs
+                // Users
                 const usersSnapshot = await db.collection('users').get();
                 document.getElementById('totalUsers').textContent = usersSnapshot.size;
 
-                // Paiements en attente
-                const pendingSnapshot = await db.collection('deposit_requests').where('status', '==', 'pending').get();
+                // Pending Transactions
+                const pendingSnapshot = await db.collection('transactions').where('status', '==', 'pending').get();
                 const pendingCount = pendingSnapshot.size;
-                document.getElementById('pendingPayments').textContent = pendingCount;
-                document.getElementById('paymentCountBadge').textContent = pendingCount;
+                document.getElementById('pendingTransactions').textContent = pendingCount;
+                document.getElementById('transactionCountBadge').textContent = pendingCount;
                 
-                // Alert si paiements en attente
                 const pendingAlert = document.getElementById('pendingAlert');
                 if (pendingCount > 0) {
                     pendingAlert.style.display = 'block';
@@ -1810,7 +1849,6 @@
                     pendingAlert.style.display = 'none';
                 }
 
-                // Activité récente
                 loadRecentActivity();
             } catch (error) {
                 console.error('Error loading dashboard:', error);
@@ -1820,7 +1858,7 @@
 
         async function loadRecentActivity() {
             try {
-                const snapshot = await db.collection('deposit_requests')
+                const snapshot = await db.collection('transactions')
                     .orderBy('createdAt', 'desc')
                     .limit(5)
                     .get();
@@ -1839,19 +1877,13 @@
 
                 let html = '<div class="payment-list">';
                 snapshot.forEach(doc => {
-                    const payment = doc.data();
-                    html += createPaymentItemHTML(doc.id, payment, true);
+                    const t = doc.data();
+                    html += createTransactionItemHTML(doc.id, t, true);
                 });
                 html += '</div>';
                 container.innerHTML = html;
             } catch (error) {
                 console.error('Error loading activity:', error);
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <i class="fas fa-exclamation-triangle"></i>
-                        <p>Erreur de chargement</p>
-                    </div>
-                `;
             }
         }
 
@@ -1860,7 +1892,6 @@
             try {
                 let query = db.collection('events').orderBy('createdAt', 'desc');
                 
-                // Si filtre actif autre que 'all', appliquer le filtre
                 if (currentFilter !== 'all') {
                     query = query.where('status', '==', currentFilter);
                 }
@@ -1875,9 +1906,6 @@
                         <div class="empty-state" style="grid-column: 1/-1;">
                             <i class="fas fa-calendar-plus"></i>
                             <p>Aucun événement trouvé</p>
-                            <button class="btn btn-primary" onclick="openModal('eventModal')" style="margin-top: 1rem;">
-                                Créer un événement
-                            </button>
                         </div>
                     `;
                     return;
@@ -1893,12 +1921,10 @@
                 container.innerHTML = html;
             } catch (error) {
                 console.error('Error loading events:', error);
-                showToast('Erreur de chargement des événements', 'error');
             }
         }
 
         function createEventCardHTML(event) {
-            // Utilisation de 'question' au lieu de 'title' pour correspondre au user-dashboard
             const question = event.question || 'Question non définie';
             const date = event.date ? new Date(event.date.seconds * 1000).toLocaleDateString('fr-FR', {
                 day: 'numeric',
@@ -1992,7 +2018,6 @@
         function filterEvents(filter, btnElement) {
             currentFilter = filter;
             
-            // Mettre à jour les boutons
             document.querySelectorAll('.filter-btn').forEach(btn => {
                 btn.classList.remove('active');
             });
@@ -2011,7 +2036,6 @@
                 document.getElementById('eventModalTitle').textContent = 'Nouvel Événement';
                 document.getElementById('eventForm').reset();
                 document.getElementById('eventId').value = '';
-                // Définir la date par défaut à maintenant + 7 jours
                 const defaultDate = new Date();
                 defaultDate.setDate(defaultDate.getDate() + 7);
                 document.getElementById('eventDate').value = defaultDate.toISOString().slice(0, 16);
@@ -2026,18 +2050,16 @@
         async function saveEvent() {
             const eventId = document.getElementById('eventId').value;
             
-            // Récupérer les valeurs du formulaire - UTILISATION DE 'question' AU LIEU DE 'title'
             const eventData = {
                 question: document.getElementById('eventQuestion').value.trim(),
                 category: document.getElementById('eventCategory').value,
                 date: new Date(document.getElementById('eventDate').value),
                 description: document.getElementById('eventDescription').value.trim(),
-                minBet: parseInt(document.getElementById('minBet').value) || 100,
+                minBet: parseInt(document.getElementById('eventMinBet').value) || 100,
                 status: document.getElementById('eventStatus').value,
                 updatedAt: firebase.firestore.FieldValue.serverTimestamp()
             };
 
-            // Validation
             if (!eventData.question) {
                 showToast('Veuillez entrer la question de prédiction', 'error');
                 return;
@@ -2050,14 +2072,12 @@
 
             try {
                 if (eventId) {
-                    // Modification
                     await db.collection('events').doc(eventId).update(eventData);
                     showToast('Événement modifié avec succès !', 'success');
                 } else {
-                    // Création
                     eventData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
                     eventData.createdBy = currentUser.id;
-                    eventData.bets = []; // Initialiser le tableau des paris
+                    eventData.bets = [];
                     await db.collection('events').add(eventData);
                     showToast('Événement créé avec succès !', 'success');
                 }
@@ -2081,13 +2101,12 @@
 
                 const event = doc.data();
                 
-                // Remplir le formulaire - UTILISATION DE 'question'
                 document.getElementById('eventId').value = eventId;
                 document.getElementById('eventQuestion').value = event.question || '';
                 document.getElementById('eventCategory').value = event.category || 'sport';
                 document.getElementById('eventDate').value = event.date ? new Date(event.date.seconds * 1000).toISOString().slice(0, 16) : '';
                 document.getElementById('eventDescription').value = event.description || '';
-                document.getElementById('minBet').value = event.minBet || 100;
+                document.getElementById('eventMinBet').value = event.minBet || 100;
                 document.getElementById('eventStatus').value = event.status || 'active';
 
                 document.getElementById('eventModalTitle').textContent = 'Modifier l\'Événement';
@@ -2099,16 +2118,13 @@
         }
 
         async function deleteEvent(eventId) {
-            if (!confirm('Êtes-vous sûr de vouloir supprimer cet événement ? Cette action est irréversible.')) {
-                return;
-            }
+            if (!confirm('Êtes-vous sûr de vouloir supprimer cet événement ?')) return;
 
             try {
-                // Vérifier s'il y a des paris sur cet événement
                 const betsSnapshot = await db.collection('bets').where('eventId', '==', eventId).limit(1).get();
                 
                 if (!betsSnapshot.empty) {
-                    if (!confirm('Attention: Des paris ont déjà été placés sur cet événement. Êtes-vous vraiment sûr de vouloir le supprimer ?')) {
+                    if (!confirm('Attention: Des paris ont été placés. Supprimer quand même ?')) {
                         return;
                     }
                 }
@@ -2123,45 +2139,71 @@
             }
         }
 
-        // Payments Management
-        async function loadPayments() {
+        // Transactions Management
+        async function loadTransactions() {
             try {
-                // Paiements en attente
-                const pendingSnapshot = await db.collection('deposit_requests')
+                // Pending Deposits
+                const depositsSnapshot = await db.collection('transactions')
+                    .where('type', '==', 'deposit')
                     .where('status', '==', 'pending')
                     .orderBy('createdAt', 'desc')
                     .get();
 
-                const pendingContainer = document.getElementById('pendingPaymentsList');
+                const depositsContainer = document.getElementById('pendingDepositsList');
                 
-                if (pendingSnapshot.empty) {
-                    pendingContainer.innerHTML = `
+                if (depositsSnapshot.empty) {
+                    depositsContainer.innerHTML = `
                         <div class="empty-state">
                             <i class="fas fa-check-circle" style="color: var(--success);"></i>
-                            <p>Aucun paiement en attente</p>
+                            <p>Aucun dépôt en attente</p>
                         </div>
                     `;
                 } else {
                     let html = '';
-                    pendingSnapshot.forEach(doc => {
-                        const payment = doc.data();
-                        html += createPaymentItemHTML(doc.id, payment);
+                    depositsSnapshot.forEach(doc => {
+                        const t = doc.data();
+                        html += createTransactionItemHTML(doc.id, t);
                     });
-                    pendingContainer.innerHTML = html;
+                    depositsContainer.innerHTML = html;
                 }
 
-                // Historique
-                const historySnapshot = await db.collection('deposit_requests')
+                // Pending Withdrawals
+                const withdrawalsSnapshot = await db.collection('transactions')
+                    .where('type', '==', 'withdrawal')
+                    .where('status', '==', 'pending')
+                    .orderBy('createdAt', 'desc')
+                    .get();
+
+                const withdrawalsContainer = document.getElementById('pendingWithdrawalsList');
+                
+                if (withdrawalsSnapshot.empty) {
+                    withdrawalsContainer.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-check-circle" style="color: var(--success);"></i>
+                            <p>Aucun retrait en attente</p>
+                        </div>
+                    `;
+                } else {
+                    let html = '';
+                    withdrawalsSnapshot.forEach(doc => {
+                        const t = doc.data();
+                        html += createTransactionItemHTML(doc.id, t);
+                    });
+                    withdrawalsContainer.innerHTML = html;
+                }
+
+                // History
+                const historySnapshot = await db.collection('transactions')
                     .orderBy('createdAt', 'desc')
                     .limit(50)
                     .get();
 
-                const historyTable = document.getElementById('paymentsHistoryTable');
+                const historyTable = document.getElementById('transactionsHistoryTable');
                 
                 if (historySnapshot.empty) {
                     historyTable.innerHTML = `
                         <tr>
-                            <td colspan="6" style="text-align: center; padding: 2rem; color: var(--gray);">
+                            <td colspan="7" style="text-align: center; padding: 2rem; color: var(--gray);">
                                 <i class="fas fa-inbox" style="font-size: 2rem; margin-bottom: 0.5rem; display: block;"></i>
                                 Aucun historique
                             </td>
@@ -2170,35 +2212,43 @@
                 } else {
                     let html = '';
                     historySnapshot.forEach(doc => {
-                        const payment = doc.data();
-                        html += createPaymentRowHTML(doc.id, payment);
+                        const t = doc.data();
+                        html += createTransactionRowHTML(doc.id, t);
                     });
                     historyTable.innerHTML = html;
                 }
             } catch (error) {
-                console.error('Error loading payments:', error);
+                console.error('Error loading transactions:', error);
             }
         }
 
-        function createPaymentItemHTML(id, payment, compact = false) {
-            const user = payment.userName || payment.userPseudo || 'Utilisateur';
+        function createTransactionItemHTML(id, t, compact = false) {
+            const user = t.userName || t.userPseudo || 'Utilisateur';
             const initial = user.charAt(0).toUpperCase();
-            const amount = payment.amount || 0;
+            const amount = t.amount || 0;
+            const isDeposit = t.type === 'deposit';
             
             return `
                 <div class="payment-item">
-                    <div class="payment-avatar">${initial}</div>
+                    <div class="payment-avatar" style="background: ${isDeposit ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)' : 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)'};">
+                        ${initial}
+                    </div>
                     <div class="payment-info">
                         <div class="payment-user">${user}</div>
-                        <div class="payment-details">${payment.type || 'Dépôt'} • ${formatDate(payment.createdAt)}</div>
+                        <div class="payment-details">
+                            <span class="type-badge ${t.type}">${isDeposit ? 'DÉPÔT' : 'RETRAIT'}</span>
+                            • ${formatDate(t.createdAt)}
+                        </div>
                     </div>
-                    <div class="payment-amount">+${formatCurrency(amount)}</div>
+                    <div class="payment-amount ${t.type}">
+                        ${isDeposit ? '+' : '-'}${formatCurrency(amount)}
+                    </div>
                     ${!compact ? `
                         <div class="payment-actions">
-                            <button class="btn btn-success btn-sm" onclick="openPaymentModal('${id}', '${user}', ${amount}, '${payment.type || 'Dépôt'}', '${payment.userId}')">
+                            <button class="btn btn-success btn-sm" onclick="openTransactionModal('${id}', '${user}', ${amount}, '${t.type}', '${t.userId}', '${t.screenshotURL || ''}')">
                                 <i class="fas fa-check"></i>
                             </button>
-                            <button class="btn btn-danger btn-sm" onclick="rejectPayment('${id}')">
+                            <button class="btn btn-danger btn-sm" onclick="rejectTransaction('${id}', '${t.userId}', ${amount}, '${t.type}')">
                                 <i class="fas fa-times"></i>
                             </button>
                         </div>
@@ -2207,25 +2257,27 @@
             `;
         }
 
-        function createPaymentRowHTML(id, payment) {
+        function createTransactionRowHTML(id, t) {
             const statusClass = {
                 'pending': 'status-pending',
                 'completed': 'status-completed',
                 'approved': 'status-completed',
                 'rejected': 'status-cancelled'
-            }[payment.status] || 'status-pending';
+            }[t.status] || 'status-pending';
 
             const statusText = {
                 'pending': 'En attente',
                 'completed': 'Validé',
                 'approved': 'Validé',
                 'rejected': 'Rejeté'
-            }[payment.status] || 'En attente';
+            }[t.status] || 'En attente';
 
-            const user = payment.userName || payment.userPseudo || 'Utilisateur';
+            const user = t.userName || t.userPseudo || 'Utilisateur';
+            const isDeposit = t.type === 'deposit';
 
             return `
                 <tr>
+                    <td><span class="type-badge ${t.type}">${isDeposit ? 'DÉPÔT' : 'RETRAIT'}</span></td>
                     <td>
                         <div style="display: flex; align-items: center; gap: 0.75rem;">
                             <div class="payment-avatar" style="width: 35px; height: 35px; font-size: 0.9rem;">
@@ -2234,13 +2286,19 @@
                             <span>${user}</span>
                         </div>
                     </td>
-                    <td style="font-weight: 600; color: var(--success);">+${formatCurrency(payment.amount || 0)}</td>
-                    <td>${payment.type || 'Dépôt'}</td>
-                    <td>${formatDate(payment.createdAt)}</td>
+                    <td style="font-weight: 600; color: ${isDeposit ? 'var(--success)' : 'var(--danger)'};">
+                        ${isDeposit ? '+' : '-'}${formatCurrency(t.amount || 0)}
+                    </td>
+                    <td>
+                        ${t.phone ? `<div><i class="fas fa-phone" style="font-size: 0.8rem; color: var(--gray);"></i> ${t.phone}</div>` : ''}
+                        ${t.transactionId ? `<div style="font-size: 0.8rem; color: var(--gray);">ID: ${t.transactionId}</div>` : ''}
+                        ${t.screenshotURL ? `<a href="${t.screenshotURL}" target="_blank" style="font-size: 0.8rem; color: var(--primary);"><i class="fas fa-image"></i> Voir capture</a>` : ''}
+                    </td>
+                    <td>${formatDate(t.createdAt)}</td>
                     <td><span class="status ${statusClass}">${statusText}</span></td>
                     <td>
-                        ${payment.status === 'pending' ? `
-                            <button class="btn btn-success btn-sm" onclick="openPaymentModal('${id}', '${user}', ${payment.amount}, '${payment.type}', '${payment.userId}')">
+                        ${t.status === 'pending' ? `
+                            <button class="btn btn-success btn-sm" onclick="openTransactionModal('${id}', '${user}', ${t.amount}, '${t.type}', '${t.userId}', '${t.screenshotURL || ''}')">
                                 <i class="fas fa-check"></i>
                             </button>
                         ` : '<span style="color: var(--gray);">-</span>'}
@@ -2249,108 +2307,160 @@
             `;
         }
 
-        function openPaymentModal(id, userName, amount, type, userId) {
-            document.getElementById('paymentId').value = id;
-            document.getElementById('paymentUserName').textContent = userName;
-            document.getElementById('paymentUserAvatar').textContent = userName.charAt(0).toUpperCase();
-            document.getElementById('paymentDetails').textContent = type + ' • En attente de validation';
-            document.getElementById('paymentAmount').textContent = '+' + formatCurrency(amount);
-            document.getElementById('paymentAction').value = 'approve';
-            document.getElementById('paymentComment').value = '';
+        function openTransactionModal(id, userName, amount, type, userId, screenshotURL) {
+            document.getElementById('transactionId').value = id;
+            document.getElementById('transactionType').value = type;
+            document.getElementById('transactionUserId').value = userId;
+            document.getElementById('transactionUserName').textContent = userName;
+            document.getElementById('transactionUserAvatar').textContent = userName.charAt(0).toUpperCase();
+            document.getElementById('transactionDetails').textContent = type === 'deposit' ? 'Demande de dépôt' : 'Demande de retrait';
+            document.getElementById('transactionAmount').textContent = (type === 'deposit' ? '+' : '-') + formatCurrency(amount);
+            document.getElementById('transactionAction').value = 'approve';
+            document.getElementById('transactionComment').value = '';
             
-            // Stocker l'userId pour la mise à jour du solde
-            document.getElementById('paymentModal').dataset.userId = userId;
+            // Show screenshot if available
+            const screenshotContainer = document.getElementById('transactionScreenshotContainer');
+            const screenshotImg = document.getElementById('transactionScreenshot');
+            if (screenshotURL) {
+                screenshotContainer.style.display = 'block';
+                screenshotImg.src = screenshotURL;
+            } else {
+                screenshotContainer.style.display = 'none';
+                screenshotImg.src = '';
+            }
+
+            // Update warning text
+            const warningText = document.getElementById('transactionWarningText');
+            if (type === 'deposit') {
+                warningText.textContent = 'Le solde de l\'utilisateur sera crédité du montant du dépôt';
+            } else {
+                warningText.textContent = 'Le retrait sera marqué comme complété (le montant a déjà été déduit du solde)';
+            }
             
-            openModal('paymentModal');
+            openModal('transactionModal');
         }
 
-        async function processPayment() {
-            const id = document.getElementById('paymentId').value;
-            const action = document.getElementById('paymentAction').value;
-            const comment = document.getElementById('paymentComment').value;
-            const userId = document.getElementById('paymentModal').dataset.userId;
+        async function processTransaction() {
+            const id = document.getElementById('transactionId').value;
+            const type = document.getElementById('transactionType').value;
+            const action = document.getElementById('transactionAction').value;
+            const comment = document.getElementById('transactionComment').value;
+            const userId = document.getElementById('transactionUserId').value;
 
             if (!id) {
-                showToast('Erreur: ID de paiement manquant', 'error');
+                showToast('Erreur: ID de transaction manquant', 'error');
                 return;
             }
 
             try {
-                const paymentRef = db.collection('deposit_requests').doc(id);
-                const paymentDoc = await paymentRef.get();
+                const transactionRef = db.collection('transactions').doc(id);
+                const transactionDoc = await transactionRef.get();
                 
-                if (!paymentDoc.exists) {
-                    showToast('Paiement non trouvé', 'error');
+                if (!transactionDoc.exists) {
+                    showToast('Transaction non trouvée', 'error');
                     return;
                 }
 
-                const payment = paymentDoc.data();
+                const transaction = transactionDoc.data();
 
                 if (action === 'approve') {
-                    // Mettre à jour le statut du paiement
-                    await paymentRef.update({
+                    // Mettre à jour la transaction
+                    await transactionRef.update({
                         status: 'completed',
                         validatedAt: firebase.firestore.FieldValue.serverTimestamp(),
                         validatedBy: currentUser.id,
                         comment: comment
                     });
 
-                    // Mettre à jour le solde de l'utilisateur
-                    if (userId || payment.userId) {
-                        const targetUserId = userId || payment.userId;
-                        const userRef = db.collection('users').doc(targetUserId);
-                        
-                        // Vérifier si l'utilisateur existe
-                        const userDoc = await userRef.get();
-                        if (userDoc.exists) {
+                    // Pour un dépôt, créditer le compte
+                    if (type === 'deposit') {
+                        if (userId || transaction.userId) {
+                            const targetUserId = userId || transaction.userId;
+                            const userRef = db.collection('users').doc(targetUserId);
+                            const userDoc = await userRef.get();
+                            
+                            if (userDoc.exists) {
+                                await userRef.update({
+                                    balance: firebase.firestore.FieldValue.increment(transaction.amount || 0)
+                                });
+                            }
+                        }
+                        showToast('Dépôt approuvé et solde crédité', 'success');
+                    } else {
+                        // Pour un retrait, déduire le pendingWithdrawal
+                        if (userId || transaction.userId) {
+                            const targetUserId = userId || transaction.userId;
+                            const userRef = db.collection('users').doc(targetUserId);
                             await userRef.update({
-                                balance: firebase.firestore.FieldValue.increment(payment.amount || 0)
+                                pendingWithdrawal: firebase.firestore.FieldValue.increment(-(transaction.amount || 0))
                             });
                         }
+                        showToast('Retrait approuvé et traité', 'success');
                     }
-
-                    showToast('Paiement approuvé et solde mis à jour', 'success');
                 } else {
-                    await paymentRef.update({
+                    // Rejeter la transaction
+                    await transactionRef.update({
                         status: 'rejected',
                         validatedAt: firebase.firestore.FieldValue.serverTimestamp(),
                         validatedBy: currentUser.id,
                         comment: comment
                     });
-                    showToast('Paiement rejeté', 'error');
+
+                    // Si c'était un retrait, rembourser l'utilisateur
+                    if (type === 'withdrawal') {
+                        if (userId || transaction.userId) {
+                            const targetUserId = userId || transaction.userId;
+                            const userRef = db.collection('users').doc(targetUserId);
+                            await userRef.update({
+                                balance: firebase.firestore.FieldValue.increment(transaction.amount || 0),
+                                pendingWithdrawal: firebase.firestore.FieldValue.increment(-(transaction.amount || 0))
+                            });
+                        }
+                        showToast('Retrait rejeté - Montant remboursé', 'error');
+                    } else {
+                        showToast('Dépôt rejeté', 'error');
+                    }
                 }
 
-                closeModal('paymentModal');
-                loadPayments();
+                closeModal('transactionModal');
+                loadTransactions();
                 loadDashboardData();
             } catch (error) {
-                console.error('Error processing payment:', error);
+                console.error('Error processing transaction:', error);
                 showToast('Erreur: ' + error.message, 'error');
             }
         }
 
-        async function rejectPayment(id) {
-            if (!confirm('Êtes-vous sûr de vouloir rejeter ce paiement ?')) {
-                return;
-            }
+        async function rejectTransaction(id, userId, amount, type) {
+            if (!confirm('Êtes-vous sûr de vouloir rejeter cette transaction ?')) return;
 
             try {
-                await db.collection('deposit_requests').doc(id).update({
+                await db.collection('transactions').doc(id).update({
                     status: 'rejected',
                     validatedAt: firebase.firestore.FieldValue.serverTimestamp(),
                     validatedBy: currentUser.id
                 });
-                showToast('Paiement rejeté', 'error');
-                loadPayments();
+
+                // Si c'était un retrait, rembourser
+                if (type === 'withdrawal') {
+                    const userRef = db.collection('users').doc(userId);
+                    await userRef.update({
+                        balance: firebase.firestore.FieldValue.increment(amount),
+                        pendingWithdrawal: firebase.firestore.FieldValue.increment(-amount)
+                    });
+                }
+
+                showToast('Transaction rejetée', 'error');
+                loadTransactions();
                 loadDashboardData();
             } catch (error) {
-                console.error('Error rejecting payment:', error);
+                console.error('Error rejecting transaction:', error);
                 showToast('Erreur', 'error');
             }
         }
 
-        function refreshPayments() {
-            loadPayments();
+        function refreshTransactions() {
+            loadTransactions();
             showToast('Liste actualisée', 'success');
         }
 
@@ -2363,7 +2473,7 @@
                 if (snapshot.empty) {
                     table.innerHTML = `
                         <tr>
-                            <td colspan="6" style="text-align: center; padding: 2rem; color: var(--gray);">
+                            <td colspan="7" style="text-align: center; padding: 2rem; color: var(--gray);">
                                 <i class="fas fa-users" style="font-size: 2rem; margin-bottom: 0.5rem; display: block;"></i>
                                 Aucun utilisateur
                             </td>
@@ -2401,6 +2511,7 @@
                             </td>
                             <td>${user.contact || '-'}</td>
                             <td style="font-weight: 600;">${formatCurrency(user.balance || 0)}</td>
+                            <td style="color: var(--warning);">${formatCurrency(user.pendingWithdrawal || 0)}</td>
                             <td>${betsCount}</td>
                             <td><span class="status ${user.role === 'admin' ? 'status-active' : 'status-completed'}">${user.role || 'user'}</span></td>
                             <td>
@@ -2424,20 +2535,15 @@
 
         // Settings
         function saveSettings() {
-            const commission = parseFloat(document.getElementById('commissionRate').value);
-            const minBet = parseInt(document.getElementById('minBet').value);
-            const maxBet = parseInt(document.getElementById('maxBet').value);
-            
-            // Sauvegarder dans localStorage pour l'instant (pourrait être dans Firestore)
             const settings = {
-                commission: commission,
-                minBet: minBet,
-                maxBet: maxBet,
+                commission: parseFloat(document.getElementById('commissionRate').value),
+                minBet: parseInt(document.getElementById('minBet').value),
+                maxBet: parseInt(document.getElementById('maxBet').value),
+                minWithdrawal: parseInt(document.getElementById('minWithdrawal').value),
                 updatedAt: new Date().toISOString()
             };
             
             localStorage.setItem('predikta_settings', JSON.stringify(settings));
-            
             showToast('Paramètres enregistrés avec succès', 'success');
         }
 
@@ -2497,7 +2603,7 @@
             }, 1000);
         }
 
-        // Fermer les modals en cliquant à l'extérieur
+        // Close modals on outside click
         window.onclick = function(event) {
             if (event.target.classList.contains('modal-overlay')) {
                 event.target.classList.remove('active');
@@ -2505,7 +2611,7 @@
             }
         }
 
-        // Charger les paramètres sauvegardés
+        // Load saved settings
         function loadSettings() {
             const saved = localStorage.getItem('predikta_settings');
             if (saved) {
@@ -2514,13 +2620,13 @@
                     document.getElementById('commissionRate').value = settings.commission || 2;
                     document.getElementById('minBet').value = settings.minBet || 100;
                     document.getElementById('maxBet').value = settings.maxBet || 100000;
+                    document.getElementById('minWithdrawal').value = settings.minWithdrawal || 1000;
                 } catch (e) {
                     console.error('Error loading settings:', e);
                 }
             }
         }
 
-        // Appeler au chargement
         document.addEventListener('DOMContentLoaded', loadSettings);
     </script>
 </body>
