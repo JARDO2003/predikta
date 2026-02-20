@@ -17,7 +17,7 @@
     let currentUser = null, currentEvent = null, currentPrediction = null, currentBetAmount = 100, eventsData = [];
 
     const carouselSamples = [
-        { category: 'sport', question: 'Le Real Madrid remportera-t-il la Liga cette saison ?', date: '15 Juin 2024', image: 'https://images.unsplash.com/photo-1551958219-acbc595e59e3?w=400&h=250&fit=crop' },
+        { category: 'sport', question: 'Le Real Madrid remportera-t-il la Liga cette saison ?', date: '15 Juin 2024', image: 'image/WhatsApp Image 2026-02-21 at 00.09.11.jpg' },
         { category: 'music', question: 'Burna Boy gagnera-t-il un Grammy Award ?', date: '20 Juin 2024', image: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=250&fit=crop' },
         { category: 'crypto', question: 'Le Bitcoin dépassera-t-il 100 000$ cette année ?', date: '30 Juin 2024', image: 'https://images.unsplash.com/photo-1518546305927-5a555bb7020d?w=400&h=250&fit=crop' },
         { category: 'politique', question: 'L\'opposition remportera-t-elle les prochaines élections ?', date: '10 Juil 2024', image: 'https://images.unsplash.com/photo-1529107386315-e1a2ed48a620?w=400&h=250&fit=crop' }
