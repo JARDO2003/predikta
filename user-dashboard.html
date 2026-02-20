@@ -12,7 +12,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
-    <body>
+   <body>
     <div class="bg-animation"></div>
     
     <!-- Mobile Header -->
@@ -22,7 +22,7 @@
             Predikta
         </div>
         <div class="mobile-actions">
-            <button class="icon-btn" onclick="openModal('eventModal')">
+            <button class="icon-btn" onclick="openDepositModal()">
                 <i class="fas fa-plus"></i>
             </button>
             <button class="icon-btn" onclick="toggleSidebar()">
@@ -47,54 +47,58 @@
         </div>
 
         <div class="user-info">
-            <div class="user-avatar" id="userAvatar">A</div>
-            <div class="user-name" id="userName">Admin</div>
-            <div class="user-pseudo" id="userPseudo">@admin</div>
+            <div class="user-avatar" id="userAvatar">U</div>
+            <div class="user-name" id="userName">Utilisateur</div>
+            <div class="user-pseudo" id="userPseudo">@pseudo</div>
             <div class="balance-card">
-                <div class="balance-label">Total Revenus</div>
-                <div class="balance-value" id="totalRevenueDisplay">0 FCFA</div>
+                <div class="balance-label">Solde disponible</div>
+                <div class="balance-value" id="userBalance">0 FCFA</div>
             </div>
         </div>
 
         <div class="nav-section">
-            <div class="nav-section-title">Menu Principal</div>
+            <div class="nav-section-title">Menu</div>
             <ul class="nav-menu">
                 <li class="nav-item">
-                    <a class="nav-link active" onclick="showSection('dashboard'); closeSidebar();">
-                        <i class="fas fa-home"></i>
-                        Tableau de Bord
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" onclick="showSection('events'); closeSidebar();">
+                    <a class="nav-link active" onclick="showSection('events'); closeSidebar();">
                         <i class="fas fa-calendar-alt"></i>
                         Événements
-                        <span class="badge" id="eventCountBadge">0</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" onclick="showSection('transactions'); closeSidebar();">
-                        <i class="fas fa-exchange-alt"></i>
-                        Transactions
-                        <span class="badge" id="transactionCountBadge">0</span>
+                    <a class="nav-link" onclick="showSection('my-bets'); closeSidebar();">
+                        <i class="fas fa-ticket-alt"></i>
+                        Mes Paris
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" onclick="showSection('users'); closeSidebar();">
-                        <i class="fas fa-users"></i>
-                        Utilisateurs
+                    <a class="nav-link" onclick="showSection('history'); closeSidebar();">
+                        <i class="fas fa-history"></i>
+                        Historique
                     </a>
                 </li>
             </ul>
         </div>
 
         <div class="nav-section">
-            <div class="nav-section-title">Paramètres</div>
+            <div class="nav-section-title">Finance</div>
             <ul class="nav-menu">
                 <li class="nav-item">
-                    <a class="nav-link" onclick="showSection('settings'); closeSidebar();">
-                        <i class="fas fa-cog"></i>
-                        Configuration
+                    <a class="nav-link" onclick="openDepositModal(); closeSidebar();">
+                        <i class="fas fa-plus-circle"></i>
+                        Déposer
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" onclick="openWithdrawalModal(); closeSidebar();">
+                        <i class="fas fa-minus-circle"></i>
+                        Retirer
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" onclick="showSection('transactions'); closeSidebar();">
+                        <i class="fas fa-exchange-alt"></i>
+                        Transactions
                     </a>
                 </li>
             </ul>
@@ -108,432 +112,322 @@
 
     <!-- Main Content -->
     <main class="main-content">
-        <!-- Dashboard Section -->
-        <section id="dashboard-section" class="content-section active">
+        <!-- Events Section -->
+        <div id="events-section" class="content-section active">
             <div class="page-header">
                 <h1 class="page-title">Tableau de <span>bord</span></h1>
-                <p class="page-subtitle">Gérez votre plateforme de prédiction</p>
+                <p class="page-subtitle">Bienvenue sur Predikta</p>
                 <div class="header-actions">
-                    <button class="btn btn-primary" onclick="openModal('eventModal')">
+                    <button class="btn btn-primary" onclick="openDepositModal()">
                         <i class="fas fa-plus"></i>
-                        Nouvel Événement
+                        Déposer
                     </button>
-                </div>
-            </div>
-
-            <!-- Quick Actions -->
-            <div class="quick-actions">
-                <div class="quick-action" onclick="showSection('events'); openModal('eventModal');">
-                    <div class="quick-action-icon">
-                        <i class="fas fa-calendar-plus"></i>
-                    </div>
-                    <div class="quick-action-title">Créer Événement</div>
-                    <div class="quick-action-desc">Ajouter un nouvel événement</div>
-                </div>
-                <div class="quick-action pink" onclick="showSection('transactions')">
-                    <div class="quick-action-icon">
-                        <i class="fas fa-check-circle"></i>
-                    </div>
-                    <div class="quick-action-title">Valider Transactions</div>
-                    <div class="quick-action-desc">Approuver dépôts/retraits</div>
-                </div>
-                <div class="quick-action green" onclick="showSection('users')">
-                    <div class="quick-action-icon">
-                        <i class="fas fa-user-cog"></i>
-                    </div>
-                    <div class="quick-action-title">Gérer Utilisateurs</div>
-                    <div class="quick-action-desc">Voir les utilisateurs</div>
-                </div>
-                <div class="quick-action orange" onclick="showSection('settings')">
-                    <div class="quick-action-icon">
-                        <i class="fas fa-sliders-h"></i>
-                    </div>
-                    <div class="quick-action-title">Configuration</div>
-                    <div class="quick-action-desc">Paramètres système</div>
+                    <button class="btn btn-warning" onclick="openWithdrawalModal()">
+                        <i class="fas fa-minus"></i>
+                        Retirer
+                    </button>
                 </div>
             </div>
 
             <!-- Stats -->
             <div class="stats-grid">
                 <div class="stat-card">
-                    <div class="stat-header">
-                        <div>
-                            <div class="stat-value" id="totalEvents">0</div>
-                            <div class="stat-label">Événements Actifs</div>
-                        </div>
-                        <div class="stat-icon">
-                            <i class="fas fa-calendar"></i>
-                        </div>
+                    <div class="stat-icon blue">
+                        <i class="fas fa-wallet"></i>
                     </div>
-                    <div class="stat-change positive">
-                        <i class="fas fa-arrow-up"></i> En cours
+                    <div class="stat-value" id="statBalance">0 FCFA</div>
+                    <div class="stat-label">Solde total</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon green">
+                        <i class="fas fa-trophy"></i>
+                    </div>
+                    <div class="stat-value" id="statWins">0</div>
+                    <div class="stat-label">Paris gagnés</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon orange">
+                        <i class="fas fa-ticket-alt"></i>
+                    </div>
+                    <div class="stat-value" id="statBets">0</div>
+                    <div class="stat-label">Paris en cours</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: rgba(236, 72, 153, 0.2); color: var(--secondary);">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="stat-value" id="statTotal">0 FCFA</div>
+                    <div class="stat-label">Total parié</div>
+                </div>
+            </div>
+
+            <!-- Carousel -->
+            <div class="carousel-section">
+                <div class="carousel-header">
+                    <div class="carousel-title">
+                        <i class="fas fa-fire"></i>
+                        Événements populaires
                     </div>
                 </div>
-
-                <div class="stat-card pink">
-                    <div class="stat-header">
-                        <div>
-                            <div class="stat-value" id="totalRevenue">0 FCFA</div>
-                            <div class="stat-label">Revenus Totaux</div>
-                        </div>
-                        <div class="stat-icon">
-                            <i class="fas fa-wallet"></i>
-                        </div>
-                    </div>
-                    <div class="stat-change positive">
-                        <i class="fas fa-arrow-up"></i> Commission 2%
-                    </div>
-                </div>
-
-                <div class="stat-card blue">
-                    <div class="stat-header">
-                        <div>
-                            <div class="stat-value" id="totalUsers">0</div>
-                            <div class="stat-label">Utilisateurs</div>
-                        </div>
-                        <div class="stat-icon">
-                            <i class="fas fa-users"></i>
-                        </div>
-                    </div>
-                    <div class="stat-change positive">
-                        <i class="fas fa-arrow-up"></i> Total inscrits
-                    </div>
-                </div>
-
-                <div class="stat-card orange">
-                    <div class="stat-header">
-                        <div>
-                            <div class="stat-value" id="pendingTransactions">0</div>
-                            <div class="stat-label">Transactions en Attente</div>
-                        </div>
-                        <div class="stat-icon">
-                            <i class="fas fa-clock"></i>
-                        </div>
-                    </div>
-                    <div class="stat-change negative" id="pendingAlert">
-                        <i class="fas fa-exclamation-circle"></i> Action requise
+                <div class="carousel-container">
+                    <div class="carousel-track" id="carouselTrack">
+                        <!-- Will be populated by JavaScript -->
                     </div>
                 </div>
             </div>
 
-            <!-- Recent Activity -->
+            <!-- Events List -->
             <div class="section">
                 <div class="section-header">
                     <h3 class="section-title">
-                        <i class="fas fa-bell"></i>
-                        Activité Récente
+                        <i class="fas fa-fire"></i>
+                        Événements actifs
                     </h3>
-                    <button class="btn btn-secondary btn-sm" onclick="showSection('transactions')">
-                        Voir tout
-                    </button>
                 </div>
-                <div class="card">
-                    <div id="recentActivity">
-                        <div class="empty-state">
-                            <i class="fas fa-spinner fa-spin"></i>
-                            <p>Chargement...</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Events Section -->
-        <section id="events-section" class="content-section">
-            <div class="page-header">
-                <h1 class="page-title">Gestion des <span>Événements</span></h1>
-                <p class="page-subtitle">Créez et gérez les événements de prédiction</p>
-                <div class="header-actions">
-                    <button class="btn btn-primary" onclick="openModal('eventModal')">
-                        <i class="fas fa-plus"></i>
-                        Créer un Événement
-                    </button>
-                </div>
-            </div>
-
-            <div class="filters">
-                <button class="filter-btn active" onclick="filterEvents('all', this)">Tous</button>
-                <button class="filter-btn" onclick="filterEvents('active', this)">Actifs</button>
-                <button class="filter-btn" onclick="filterEvents('pending', this)">En attente</button>
-                <button class="filter-btn" onclick="filterEvents('completed', this)">Terminés</button>
-                <button class="filter-btn" onclick="filterEvents('cancelled', this)">Annulés</button>
-            </div>
-
-            <div id="eventsList" class="events-grid">
-                <div class="empty-state" style="grid-column: 1/-1;">
-                    <i class="fas fa-spinner fa-spin"></i>
-                    <p>Chargement des événements...</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- Transactions Section -->
-        <section id="transactions-section" class="content-section">
-            <div class="page-header">
-                <h1 class="page-title">Validation des <span>Transactions</span></h1>
-                <p class="page-subtitle">Approuvez ou rejetez les demandes de dépôt et retrait</p>
-                <div class="header-actions">
-                    <button class="btn btn-secondary" onclick="refreshTransactions()">
-                        <i class="fas fa-sync"></i>
-                        Actualiser
-                    </button>
-                </div>
-            </div>
-
-            <!-- Pending Deposits -->
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-title">
-                        <i class="fas fa-arrow-down" style="color: var(--success);"></i>
-                        Dépôts en Attente
-                    </div>
-                </div>
-                <div id="pendingDepositsList" class="payment-list">
+                <div id="eventsList">
                     <div class="empty-state">
-                        <i class="fas fa-check-circle"></i>
-                        <p>Aucun dépôt en attente</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Pending Withdrawals -->
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-title">
-                        <i class="fas fa-arrow-up" style="color: var(--danger);"></i>
-                        Retraits en Attente
-                    </div>
-                </div>
-                <div id="pendingWithdrawalsList" class="payment-list">
-                    <div class="empty-state">
-                        <i class="fas fa-check-circle"></i>
-                        <p>Aucun retrait en attente</p>
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <p>Chargement...</p>
                     </div>
                 </div>
             </div>
 
             <!-- History -->
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-title">
+            <div class="section">
+                <div class="section-header">
+                    <h3 class="section-title">
                         <i class="fas fa-history"></i>
-                        Historique des Transactions
+                        Historique récent
+                    </h3>
+                </div>
+                <div class="history-list" id="historyList">
+                    <div class="empty-state">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <p>Chargement...</p>
                     </div>
                 </div>
-                <div class="table-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Type</th>
-                                <th>Utilisateur</th>
-                                <th>Montant</th>
-                                <th>Infos</th>
-                                <th>Date</th>
-                                <th>Statut</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="transactionsHistoryTable">
-                            <tr>
-                                <td colspan="7" style="text-align: center; padding: 2rem;">
-                                    Chargement...
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
             </div>
-        </section>
+        </div>
 
-        <!-- Users Section -->
-        <section id="users-section" class="content-section">
+        <!-- Transactions Section -->
+        <div id="transactions-section" class="content-section">
             <div class="page-header">
-                <h1 class="page-title">Gestion des <span>Utilisateurs</span></h1>
-                <p class="page-subtitle">Vue d'ensemble des utilisateurs de la plateforme</p>
+                <h1 class="page-title">Mes <span>Transactions</span></h1>
+                <p class="page-subtitle">Historique de vos dépôts et retraits</p>
             </div>
 
-            <div class="card">
-                <div class="table-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Utilisateur</th>
-                                <th>Contact</th>
-                                <th>Solde</th>
-                                <th>En attente</th>
-                                <th>Paris</th>
-                                <th>Statut</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="usersTable">
-                            <tr>
-                                <td colspan="7" style="text-align: center; padding: 2rem;">
-                                    Chargement...
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+            <div class="section">
+                <div class="section-header">
+                    <h3 class="section-title">
+                        <i class="fas fa-exchange-alt"></i>
+                        Toutes les transactions
+                    </h3>
+                </div>
+                <div id="transactionsList">
+                    <div class="empty-state">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <p>Chargement...</p>
+                    </div>
                 </div>
             </div>
-        </section>
+        </div>
 
-        <!-- Settings Section -->
-        <section id="settings-section" class="content-section">
+        <!-- My Bets Section -->
+        <div id="my-bets-section" class="content-section">
             <div class="page-header">
-                <h1 class="page-title">Paramètres <span>Système</span></h1>
-                <p class="page-subtitle">Configurez les options de la plateforme</p>
+                <h1 class="page-title">Mes <span>Paris</span></h1>
+                <p class="page-subtitle">Tous vos paris en cours et terminés</p>
             </div>
-
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-title">Configuration Générale</div>
+            <div id="myBetsList">
+                <div class="empty-state">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>Chargement...</p>
                 </div>
-                <div class="form-group">
-                    <label>Commission sur les gains (%)</label>
-                    <input type="number" id="commissionRate" value="2" min="0" max="100" step="0.5">
-                </div>
-                <div class="form-group">
-                    <label>Mise minimum (FCFA)</label>
-                    <input type="number" id="minBet" value="100" min="50" step="50">
-                </div>
-                <div class="form-group">
-                    <label>Mise maximum (FCFA)</label>
-                    <input type="number" id="maxBet" value="100000" min="1000" step="1000">
-                </div>
-                <div class="form-group">
-                    <label>Minimum de retrait (FCFA)</label>
-                    <input type="number" id="minWithdrawal" value="1000" min="100" step="100">
-                </div>
-                <button class="btn btn-primary" onclick="saveSettings()">
-                    <i class="fas fa-save"></i>
-                    Enregistrer
-                </button>
             </div>
-        </section>
+        </div>
     </main>
 
-    <!-- Event Modal -->
-    <div class="modal-overlay" id="eventModal">
+    <!-- Deposit Modal -->
+    <div class="modal-overlay" id="depositModal">
         <div class="modal">
             <div class="modal-header">
-                <h3 class="modal-title" id="eventModalTitle">Nouvel Événement</h3>
-                <button class="modal-close" onclick="closeModal('eventModal')">
+                <h3 class="modal-title">Effectuer un dépôt</h3>
+                <button class="modal-close" onclick="closeDepositModal()">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
             <div class="modal-body">
-                <form id="eventForm">
-                    <input type="hidden" id="eventId">
-                    
+                <div class="info-box">
+                    <div class="info-item">
+                        <i class="fas fa-info-circle"></i>
+                        <span>Minimum : <strong>500 FCFA</strong></span>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-clock"></i>
+                        <span>Validation : <strong>5-15 min</strong></span>
+                    </div>
+                </div>
+
+                <div class="steps">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <div class="step-text">Cliquez sur le bouton ci-dessous pour payer via Wave</div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-text">Effectuez votre transfert et gardez la capture</div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div class="step-text">Remplissez le formulaire de confirmation</div>
+                    </div>
+                </div>
+
+                <a href="https://pay.wave.com/m/M_ci_iqMcg8KwRE-W/c/ci/" target="_blank" class="btn btn-primary btn-full mb-1">
+                    <i class="fas fa-external-link-alt"></i>
+                    Payer avec Wave
+                </a>
+
+                <div class="divider">
+                    <span>Après le paiement</span>
+                </div>
+
+                <form id="depositForm" onsubmit="submitDeposit(event)">
                     <div class="form-group">
-                        <label>Question de prédiction *</label>
-                        <input type="text" id="eventQuestion" required placeholder="Ex: Le Real Madrid remportera-t-il la Liga cette saison ?">
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Catégorie *</label>
-                            <select id="eventCategory" required>
-                                <option value="sport">Sport</option>
-                                <option value="politique">Politique</option>
-                                <option value="entertainment">Divertissement</option>
-                                <option value="crypto">Crypto</option>
-                                <option value="music">Musique</option>
-                                <option value="autre">Autre</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Date de clôture *</label>
-                            <input type="datetime-local" id="eventDate" required>
-                        </div>
+                        <label>Montant déposé (FCFA) *</label>
+                        <input type="number" id="depositAmount" min="500" step="100" required placeholder="Ex: 5000">
                     </div>
 
                     <div class="form-group">
-                        <label>Description (optionnel)</label>
-                        <textarea id="eventDescription" placeholder="Contexte et détails de l'événement..."></textarea>
+                        <label>Numéro Wave utilisé *</label>
+                        <input type="tel" id="depositPhone" required placeholder="+225 XX XX XX XX XX">
                     </div>
 
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Mise minimum (FCFA)</label>
-                            <input type="number" id="eventMinBet" value="100" min="50" step="50">
-                        </div>
-                        <div class="form-group">
-                            <label>Status</label>
-                            <select id="eventStatus">
-                                <option value="active">Actif</option>
-                                <option value="pending">En attente</option>
-                                <option value="completed">Terminé</option>
-                                <option value="cancelled">Annulé</option>
-                            </select>
-                        </div>
+                    <div class="form-group">
+                        <label>ID de transaction Wave *</label>
+                        <input type="text" id="depositTransactionId" required placeholder="Ex: WV123456789">
                     </div>
+
+                    <div class="form-group">
+                        <label>Capture d'écran (optionnel)</label>
+                        <input type="file" id="depositScreenshot" accept="image/*">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Commentaire (optionnel)</label>
+                        <input type="text" id="depositComment" placeholder="Informations supplémentaires">
+                    </div>
+
+                    <button type="submit" class="btn btn-success btn-full" id="submitDepositBtn">
+                        <i class="fas fa-check-circle"></i>
+                        Envoyer la confirmation
+                    </button>
                 </form>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="closeModal('eventModal')">Annuler</button>
-                <button class="btn btn-primary" onclick="saveEvent()">
-                    <i class="fas fa-save"></i>
-                    Enregistrer
-                </button>
             </div>
         </div>
     </div>
 
-    <!-- Transaction Validation Modal -->
-    <div class="modal-overlay" id="transactionModal">
+    <!-- Withdrawal Modal -->
+    <div class="modal-overlay" id="withdrawalModal">
         <div class="modal">
             <div class="modal-header">
-                <h3 class="modal-title" id="transactionModalTitle">Valider la Transaction</h3>
-                <button class="modal-close" onclick="closeModal('transactionModal')">
+                <h3 class="modal-title">Demander un retrait</h3>
+                <button class="modal-close" onclick="closeWithdrawalModal()">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
             <div class="modal-body">
-                <input type="hidden" id="transactionId">
-                <input type="hidden" id="transactionType">
-                <input type="hidden" id="transactionUserId">
-                
-                <div class="payment-item" style="margin-bottom: 1.5rem; background: rgba(99, 102, 241, 0.1);">
-                    <div class="payment-avatar" id="transactionUserAvatar">U</div>
-                    <div class="payment-info">
-                        <div class="payment-user" id="transactionUserName">Utilisateur</div>
-                        <div class="payment-details" id="transactionDetails">Détails</div>
-                    </div>
-                    <div class="payment-amount" id="transactionAmount">0 FCFA</div>
+                <div class="balance-display">
+                    <div class="balance-display-label">Solde disponible</div>
+                    <div class="balance-display-value" id="withdrawalBalance">0 FCFA</div>
                 </div>
 
-                <div id="transactionScreenshotContainer" class="form-group" style="display: none;">
-                    <label>Capture d'écran</label>
-                    <img id="transactionScreenshot" src="" alt="Screenshot" style="max-width: 100%; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1);">
-                </div>
-
-                <div class="form-group">
-                    <label>Action *</label>
-                    <select id="transactionAction">
-                        <option value="approve">✅ Approuver</option>
-                        <option value="reject">❌ Rejeter</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label>Commentaire (optionnel)</label>
-                    <textarea id="transactionComment" placeholder="Raison de la décision..."></textarea>
-                </div>
-
-                <div class="info-box" style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 10px; padding: 1rem;">
-                    <div style="display: flex; align-items: center; gap: 0.5rem; color: var(--warning); font-size: 0.9rem;">
+                <div class="withdrawal-info">
+                    <div class="withdrawal-info-title">
                         <i class="fas fa-info-circle"></i>
-                        <span id="transactionWarningText">Le solde de l'utilisateur sera mis à jour automatiquement</span>
+                        Informations importantes
+                    </div>
+                    <div class="withdrawal-info-text">
+                        • Minimum de retrait : <strong>1 000 FCFA</strong><br>
+                        • Délai de traitement : <strong>24-48h</strong><br>
+                        • Vérification requise avant le premier retrait
                     </div>
                 </div>
+
+                <form id="withdrawalForm" onsubmit="submitWithdrawal(event)">
+                    <div class="form-group">
+                        <label>Montant à retirer (FCFA) *</label>
+                        <input type="number" id="withdrawalAmount" min="1000" step="100" required placeholder="Ex: 5000">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Numéro Wave pour recevoir *</label>
+                        <input type="tel" id="withdrawalPhone" required placeholder="+225 XX XX XX XX XX">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Nom du compte Wave *</label>
+                        <input type="text" id="withdrawalName" required placeholder="Nom affiché sur Wave">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Motif du retrait (optionnel)</label>
+                        <input type="text" id="withdrawalReason" placeholder="Ex: Gains des paris">
+                    </div>
+
+                    <button type="submit" class="btn btn-warning btn-full" id="submitWithdrawalBtn">
+                        <i class="fas fa-paper-plane"></i>
+                        Demander le retrait
+                    </button>
+                </form>
             </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="closeModal('transactionModal')">Annuler</button>
-                <button class="btn btn-primary" onclick="processTransaction()">
-                    <i class="fas fa-check"></i>
-                    Confirmer
+        </div>
+    </div>
+
+    <!-- Bet Modal -->
+    <div class="modal-overlay" id="betModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Placer un pari</h3>
+                <button class="modal-close" onclick="closeBetModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="bet-amount-display">
+                    <div class="bet-amount-label">Montant du pari</div>
+                    <div class="bet-amount-value" id="betAmountDisplay">100 FCFA</div>
+                </div>
+
+                <input type="range" class="bet-slider" id="betSlider" min="100" max="10000" step="100" value="100" oninput="updateBetAmount(this.value)">
+
+                <div class="bet-quick-amounts">
+                    <button class="bet-quick-amount" onclick="setBetAmount(100)">100</button>
+                    <button class="bet-quick-amount" onclick="setBetAmount(500)">500</button>
+                    <button class="bet-quick-amount" onclick="setBetAmount(1000)">1K</button>
+                    <button class="bet-quick-amount" onclick="setBetAmount(5000)">5K</button>
+                </div>
+
+                <div class="bet-potential-win">
+                    <div class="bet-potential-win-label">Gain potentiel estimé</div>
+                    <div class="bet-potential-win-value" id="potentialWin">+0 FCFA</div>
+                </div>
+
+                <div class="form-group">
+                    <label>Votre prédiction</label>
+                    <div class="prediction-buttons">
+                        <button class="prediction-btn yes" id="btnYes" onclick="setPrediction('yes')">
+                            <i class="fas fa-check"></i> OUI
+                        </button>
+                        <button class="prediction-btn no" id="btnNo" onclick="setPrediction('no')">
+                            <i class="fas fa-times"></i> NON
+                        </button>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary btn-full" onclick="placeBet()" id="placeBetBtn">
+                    <i class="fas fa-check-circle"></i>
+                    Confirmer le pari
                 </button>
             </div>
         </div>
@@ -546,8 +440,9 @@
     </div>
 
     <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js">
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+
     <script src="script.js"></script>
 </body>
 </html>
