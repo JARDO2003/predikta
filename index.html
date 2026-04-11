@@ -75,9 +75,7 @@
       background: linear-gradient(90deg, transparent, var(--gold), transparent);
     }
 
-    .auth-logo {
-      text-align: center; margin-bottom: 32px;
-    }
+    .auth-logo { text-align: center; margin-bottom: 32px; }
 
     .auth-logo .icon-wrap {
       width: 72px; height: 72px; margin: 0 auto 16px;
@@ -91,14 +89,10 @@
     .auth-logo h1 {
       font-family: 'Playfair Display', serif;
       font-size: 22px; font-weight: 700;
-      color: var(--cream);
-      line-height: 1.3;
+      color: var(--cream); line-height: 1.3;
     }
 
-    .auth-logo p {
-      font-size: 13px; color: var(--text2); margin-top: 6px;
-      letter-spacing: 0.5px;
-    }
+    .auth-logo p { font-size: 13px; color: var(--text2); margin-top: 6px; letter-spacing: 0.5px; }
 
     .auth-tabs {
       display: flex; gap: 4px;
@@ -116,17 +110,12 @@
       transition: all 0.25s;
     }
 
-    .auth-tab.active {
-      background: var(--gold);
-      color: var(--navy);
-      font-weight: 600;
-    }
+    .auth-tab.active { background: var(--gold); color: var(--navy); font-weight: 600; }
 
     .auth-form { display: none; }
     .auth-form.active { display: block; }
 
     .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-
     .form-group { margin-bottom: 16px; }
 
     .form-group label {
@@ -145,19 +134,14 @@
       outline: none;
     }
 
-    .form-group input:focus {
-      border-color: var(--gold);
-      box-shadow: 0 0 0 3px rgba(201,168,76,0.12);
-    }
-
+    .form-group input:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(201,168,76,0.12); }
     .form-group input::placeholder { color: var(--text2); }
 
     .avatar-upload-area {
       border: 2px dashed rgba(201,168,76,0.3);
       border-radius: 12px; padding: 20px;
       text-align: center; cursor: pointer;
-      transition: all 0.25s;
-      position: relative;
+      transition: all 0.25s; position: relative;
     }
 
     .avatar-upload-area:hover { border-color: var(--gold); background: rgba(201,168,76,0.05); }
@@ -177,7 +161,6 @@
 
     .avatar-preview img { width: 100%; height: 100%; object-fit: cover; }
     .avatar-preview i { font-size: 28px; color: var(--text2); }
-
     .avatar-upload-area p { font-size: 13px; color: var(--text2); }
     .avatar-upload-area span { font-size: 11px; color: var(--text2); opacity: 0.7; }
 
@@ -188,16 +171,12 @@
       color: var(--navy); font-family: 'DM Sans', sans-serif;
       font-size: 15px; font-weight: 700;
       cursor: pointer; margin-top: 8px;
-      transition: all 0.25s;
-      letter-spacing: 0.3px;
+      transition: all 0.25s; letter-spacing: 0.3px;
     }
 
     .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(201,168,76,0.35); }
     .btn-primary:active { transform: translateY(0); }
-
-    .btn-primary:disabled {
-      opacity: 0.6; cursor: not-allowed; transform: none;
-    }
+    .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 
     .auth-error {
       background: rgba(224,82,82,0.15); border: 1px solid rgba(224,82,82,0.3);
@@ -211,8 +190,7 @@
       position: fixed; inset: 0; z-index: 999;
       background: rgba(6,14,28,0.92);
       display: none; align-items: center; justify-content: center;
-      padding: 20px;
-      backdrop-filter: blur(10px);
+      padding: 20px; backdrop-filter: blur(10px);
     }
 
     #welcome-overlay.show { display: flex; }
@@ -247,17 +225,10 @@
       50% { box-shadow: 0 0 60px rgba(201,168,76,0.6); }
     }
 
-    .welcome-card h2 {
-      font-family: 'Playfair Display', serif;
-      font-size: 26px; color: var(--cream); margin-bottom: 16px;
-    }
-
+    .welcome-card h2 { font-family: 'Playfair Display', serif; font-size: 26px; color: var(--cream); margin-bottom: 16px; }
     .welcome-card h2 span { color: var(--gold); }
 
-    #welcome-text {
-      font-size: 15px; color: var(--text2); line-height: 1.8;
-      min-height: 80px; margin-bottom: 24px;
-    }
+    #welcome-text { font-size: 15px; color: var(--text2); line-height: 1.8; min-height: 80px; margin-bottom: 24px; }
 
     .typing-cursor {
       display: inline-block; width: 2px; height: 16px;
@@ -286,10 +257,7 @@
       height: 64px;
     }
 
-    .logo {
-      display: flex; align-items: center; gap: 12px;
-      text-decoration: none; flex-shrink: 0;
-    }
+    .logo { display: flex; align-items: center; gap: 12px; text-decoration: none; flex-shrink: 0; }
 
     .logo .icon {
       width: 38px; height: 38px;
@@ -300,23 +268,14 @@
     }
 
     .logo-text { display: flex; flex-direction: column; }
-    .logo-text strong {
-      font-family: 'Playfair Display', serif;
-      font-size: 14px; font-weight: 700; color: var(--cream);
-      line-height: 1.2;
-    }
-
+    .logo-text strong { font-family: 'Playfair Display', serif; font-size: 14px; font-weight: 700; color: var(--cream); line-height: 1.2; }
     .logo-text small { font-size: 10px; color: var(--gold); letter-spacing: 1px; text-transform: uppercase; }
 
-    .header-search {
-      flex: 1; max-width: 360px;
-      position: relative;
-    }
+    .header-search { flex: 1; max-width: 360px; position: relative; }
 
     .header-search input {
       width: 100%; padding: 9px 16px 9px 40px;
-      background: var(--glass);
-      border: 1px solid var(--border);
+      background: var(--glass); border: 1px solid var(--border);
       border-radius: 24px; color: var(--text);
       font-family: 'DM Sans', sans-serif; font-size: 14px;
       outline: none; transition: all 0.2s;
@@ -324,10 +283,7 @@
 
     .header-search input:focus { border-color: var(--gold); background: var(--glass2); }
     .header-search input::placeholder { color: var(--text2); }
-    .header-search i {
-      position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
-      color: var(--text2); font-size: 14px;
-    }
+    .header-search i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text2); font-size: 14px; }
 
     .header-actions { margin-left: auto; display: flex; align-items: center; gap: 14px; }
 
@@ -352,16 +308,12 @@
       display: flex; align-items: center; gap: 10px;
       padding: 6px 14px 6px 6px;
       background: var(--glass); border: 1px solid var(--border);
-      border-radius: 24px; cursor: pointer;
-      transition: all 0.2s;
+      border-radius: 24px; cursor: pointer; transition: all 0.2s;
     }
 
     .user-chip:hover { background: var(--glass2); border-color: var(--gold); }
 
-    .user-chip img {
-      width: 28px; height: 28px; border-radius: 50%;
-      object-fit: cover; border: 1px solid var(--gold);
-    }
+    .user-chip img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; border: 1px solid var(--gold); }
 
     .user-chip .chip-avatar-placeholder {
       width: 28px; height: 28px; border-radius: 50%;
@@ -376,8 +328,7 @@
       padding: 8px 16px;
       background: transparent; border: 1px solid rgba(224,82,82,0.4);
       border-radius: 8px; color: #ff8a8a; font-size: 13px;
-      cursor: pointer; transition: all 0.2s;
-      font-family: 'DM Sans', sans-serif;
+      cursor: pointer; transition: all 0.2s; font-family: 'DM Sans', sans-serif;
     }
 
     #logout-btn:hover { background: rgba(224,82,82,0.1); }
@@ -393,19 +344,15 @@
     .sidebar-left { position: sticky; top: 88px; align-self: start; }
 
     .user-profile-card {
-      background: var(--glass);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 24px;
+      background: var(--glass); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 24px;
       text-align: center; margin-bottom: 16px;
     }
 
     .profile-avatar-wrap {
       width: 80px; height: 80px; margin: 0 auto 14px;
-      border-radius: 50%;
-      border: 3px solid var(--gold);
-      overflow: hidden;
-      box-shadow: 0 0 20px rgba(201,168,76,0.25);
+      border-radius: 50%; border: 3px solid var(--gold);
+      overflow: hidden; box-shadow: 0 0 20px rgba(201,168,76,0.25);
     }
 
     .profile-avatar-wrap img { width: 100%; height: 100%; object-fit: cover; }
@@ -417,11 +364,7 @@
       font-size: 28px; font-weight: 700; color: var(--navy);
     }
 
-    .profile-name {
-      font-family: 'Playfair Display', serif;
-      font-size: 18px; font-weight: 700; color: var(--cream);
-    }
-
+    .profile-name { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700; color: var(--cream); }
     .profile-contact { font-size: 12px; color: var(--text2); margin-top: 4px; }
 
     .profile-stats {
@@ -429,10 +372,7 @@
       border-top: 1px solid var(--border); padding-top: 16px;
     }
 
-    .stat-item {
-      flex: 1; text-align: center;
-      border-right: 1px solid var(--border);
-    }
+    .stat-item { flex: 1; text-align: center; border-right: 1px solid var(--border); }
     .stat-item:last-child { border-right: none; }
     .stat-item strong { display: block; font-size: 18px; font-weight: 700; color: var(--gold); }
     .stat-item span { font-size: 11px; color: var(--text2); }
@@ -451,19 +391,13 @@
     .nav-item:hover, .nav-item.active { color: var(--gold); background: rgba(201,168,76,0.07); }
     .nav-item i { width: 18px; text-align: center; font-size: 15px; }
 
-    /* ====== FEED ====== */
-    .feed-area {}
-
+    /* ====== COMPOSER ====== */
     .post-composer {
-      background: var(--glass);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 20px; margin-bottom: 20px;
+      background: var(--glass); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 20px; margin-bottom: 20px;
     }
 
-    .composer-top {
-      display: flex; gap: 12px; align-items: flex-start;
-    }
+    .composer-top { display: flex; gap: 12px; align-items: flex-start; }
 
     .composer-avatar {
       width: 44px; height: 44px; border-radius: 50%;
@@ -479,9 +413,7 @@
       font-size: 18px; font-weight: 700; color: var(--navy);
     }
 
-    .composer-input {
-      flex: 1;
-    }
+    .composer-input { flex: 1; }
 
     .composer-input textarea {
       width: 100%; background: rgba(255,255,255,0.04);
@@ -489,16 +421,13 @@
       border-radius: 12px; padding: 14px 16px;
       color: var(--text); font-family: 'DM Sans', sans-serif;
       font-size: 14px; resize: none; outline: none;
-      transition: border-color 0.2s;
-      min-height: 80px;
+      transition: border-color 0.2s; min-height: 80px;
     }
 
     .composer-input textarea:focus { border-color: var(--gold); }
     .composer-input textarea::placeholder { color: var(--text2); }
 
-    .composer-media-preview {
-      margin-top: 12px; display: flex; flex-wrap: wrap; gap: 8px;
-    }
+    .composer-media-preview { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 8px; }
 
     .media-thumb {
       width: 90px; height: 70px; border-radius: 10px;
@@ -515,25 +444,19 @@
       display: flex; align-items: center; justify-content: center;
     }
 
-    .composer-actions {
-      display: flex; align-items: center; gap: 10px; margin-top: 14px;
-    }
+    .composer-actions { display: flex; align-items: center; gap: 10px; margin-top: 14px; }
 
     .media-btn {
       display: flex; align-items: center; gap: 7px;
       padding: 8px 14px;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.05); border: 1px solid var(--border);
       border-radius: 8px; color: var(--text2);
       cursor: pointer; font-size: 13px; font-weight: 500;
       transition: all 0.2s; position: relative;
       font-family: 'DM Sans', sans-serif;
     }
 
-    .media-btn input[type="file"] {
-      position: absolute; inset: 0; opacity: 0; cursor: pointer;
-    }
-
+    .media-btn input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
     .media-btn:hover { color: var(--gold); border-color: var(--gold); }
 
     .post-btn {
@@ -541,8 +464,7 @@
       background: linear-gradient(135deg, var(--gold), var(--gold2));
       border: none; border-radius: 10px;
       color: var(--navy); font-weight: 700; font-size: 14px;
-      cursor: pointer; font-family: 'DM Sans', sans-serif;
-      transition: all 0.25s;
+      cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.25s;
     }
 
     .post-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(201,168,76,0.3); }
@@ -550,27 +472,18 @@
 
     /* ====== POST CARD ====== */
     .post-card {
-      background: var(--glass);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 22px; margin-bottom: 16px;
-      transition: border-color 0.2s;
-      animation: fadeIn 0.4s ease;
+      background: var(--glass); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 22px; margin-bottom: 16px;
+      transition: border-color 0.2s; animation: fadeIn 0.4s ease;
     }
 
     @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
 
     .post-card:hover { border-color: rgba(201,168,76,0.4); }
 
-    .post-header {
-      display: flex; align-items: center; gap: 12px; margin-bottom: 14px;
-    }
+    .post-header { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
 
-    .post-avatar {
-      width: 46px; height: 46px; border-radius: 50%;
-      overflow: hidden; border: 2px solid var(--border); flex-shrink: 0;
-    }
-
+    .post-avatar { width: 46px; height: 46px; border-radius: 50%; overflow: hidden; border: 2px solid var(--border); flex-shrink: 0; }
     .post-avatar img { width: 100%; height: 100%; object-fit: cover; }
 
     .post-avatar .placeholder {
@@ -605,8 +518,7 @@
 
     .post-media-grid img, .post-media-grid video {
       width: 100%; height: 220px; object-fit: cover;
-      cursor: pointer; display: block;
-      transition: opacity 0.2s;
+      cursor: pointer; display: block; transition: opacity 0.2s;
     }
 
     .post-media-grid img:hover { opacity: 0.9; }
@@ -624,19 +536,14 @@
       padding: 8px 14px; border-radius: 10px;
       background: transparent; border: none;
       color: var(--text2); font-size: 13px; font-weight: 500;
-      cursor: pointer; transition: all 0.2s;
-      font-family: 'DM Sans', sans-serif;
+      cursor: pointer; transition: all 0.2s; font-family: 'DM Sans', sans-serif;
     }
 
     .action-btn:hover { background: rgba(201,168,76,0.08); color: var(--gold); }
     .action-btn.liked { color: var(--red); }
     .action-btn.liked i { animation: likePop 0.3s ease; }
 
-    @keyframes likePop {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.5); }
-      100% { transform: scale(1); }
-    }
+    @keyframes likePop { 0% { transform: scale(1); } 50% { transform: scale(1.5); } 100% { transform: scale(1); } }
 
     /* ====== COMMENTS ====== */
     .comments-section {
@@ -647,17 +554,11 @@
 
     .comments-section.open { display: block; }
 
-    .comment-item {
-      display: flex; gap: 10px; margin-bottom: 12px;
-      animation: fadeIn 0.3s ease;
-    }
+    .comment-item { display: flex; gap: 10px; margin-bottom: 12px; animation: fadeIn 0.3s ease; }
 
-    .comment-avatar {
-      width: 32px; height: 32px; border-radius: 50%;
-      overflow: hidden; flex-shrink: 0; border: 1px solid var(--border);
-    }
-
+    .comment-avatar { width: 32px; height: 32px; border-radius: 50%; overflow: hidden; flex-shrink: 0; border: 1px solid var(--border); }
     .comment-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
     .comment-avatar .placeholder {
       width: 100%; height: 100%;
       background: linear-gradient(135deg, var(--gold), var(--gold2));
@@ -665,18 +566,11 @@
       font-size: 12px; font-weight: 700; color: var(--navy);
     }
 
-    .comment-content {
-      flex: 1; background: rgba(255,255,255,0.04);
-      border-radius: 12px; padding: 10px 14px;
-    }
-
+    .comment-content { flex: 1; background: rgba(255,255,255,0.04); border-radius: 12px; padding: 10px 14px; }
     .comment-author { font-size: 13px; font-weight: 600; color: var(--cream); }
     .comment-text { font-size: 13px; color: var(--text2); margin-top: 3px; }
 
-    .comment-input-area {
-      display: flex; gap: 10px; margin-top: 12px;
-      align-items: center;
-    }
+    .comment-input-area { display: flex; gap: 10px; margin-top: 12px; align-items: center; }
 
     .comment-input-area input {
       flex: 1; padding: 10px 14px;
@@ -704,16 +598,13 @@
     .sidebar-right { position: sticky; top: 88px; align-self: start; }
 
     .widget {
-      background: var(--glass);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 20px; margin-bottom: 16px;
+      background: var(--glass); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 20px; margin-bottom: 16px;
     }
 
     .widget-title {
       font-size: 13px; font-weight: 700; color: var(--gold);
-      letter-spacing: 1px; text-transform: uppercase;
-      margin-bottom: 16px;
+      letter-spacing: 1px; text-transform: uppercase; margin-bottom: 16px;
     }
 
     .trend-item {
@@ -736,12 +627,9 @@
 
     .member-item:last-child { border-bottom: none; }
 
-    .member-avatar {
-      width: 38px; height: 38px; border-radius: 50%;
-      overflow: hidden; border: 2px solid var(--border);
-    }
-
+    .member-avatar { width: 38px; height: 38px; border-radius: 50%; overflow: hidden; border: 2px solid var(--border); }
     .member-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
     .member-avatar .placeholder {
       width: 100%; height: 100%;
       background: linear-gradient(135deg, var(--gold), var(--gold2));
@@ -757,47 +645,39 @@
       padding: 5px 12px; border-radius: 20px;
       border: 1px solid var(--gold); background: transparent;
       color: var(--gold); font-size: 12px; font-weight: 600;
-      cursor: pointer; transition: all 0.2s;
-      font-family: 'DM Sans', sans-serif;
+      cursor: pointer; transition: all 0.2s; font-family: 'DM Sans', sans-serif;
     }
 
     .member-follow:hover { background: var(--gold); color: var(--navy); }
 
     /* ====== LOADING ====== */
-    .loading-spinner {
-      display: flex; justify-content: center; padding: 30px;
-    }
+    .loading-spinner { display: flex; justify-content: center; padding: 30px; }
 
     .spinner {
       width: 32px; height: 32px; border-radius: 50%;
-      border: 3px solid rgba(201,168,76,0.2);
-      border-top-color: var(--gold);
+      border: 3px solid rgba(201,168,76,0.2); border-top-color: var(--gold);
       animation: spin 0.8s linear infinite;
     }
 
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* ====== IMAGE LIGHTBOX ====== */
+    /* ====== LIGHTBOX ====== */
     #lightbox {
       position: fixed; inset: 0; z-index: 2000;
       background: rgba(0,0,0,0.9);
-      display: none; align-items: center; justify-content: center;
-      cursor: pointer;
+      display: none; align-items: center; justify-content: center; cursor: pointer;
     }
 
     #lightbox.show { display: flex; }
 
-    #lightbox img {
-      max-width: 90vw; max-height: 90vh;
-      border-radius: 12px; object-fit: contain;
-    }
+    #lightbox img { max-width: 90vw; max-height: 90vh; border-radius: 12px; object-fit: contain; }
 
     #lightbox-close {
       position: absolute; top: 20px; right: 20px;
       width: 40px; height: 40px; border-radius: 50%;
-      background: rgba(255,255,255,0.1);
-      border: none; color: white; font-size: 20px;
-      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      background: rgba(255,255,255,0.1); border: none;
+      color: white; font-size: 20px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
     }
 
     /* ====== TOAST ====== */
@@ -811,23 +691,18 @@
       font-size: 14px; font-weight: 500;
       background: var(--navy2); border: 1px solid var(--border);
       color: var(--text); box-shadow: var(--shadow);
-      animation: slideInRight 0.3s ease;
-      max-width: 320px;
+      animation: slideInRight 0.3s ease; max-width: 320px;
     }
 
     .toast.success { border-color: var(--green); color: var(--green); }
     .toast.error { border-color: var(--red); color: #ff8a8a; }
 
-    @keyframes slideInRight {
-      from { transform: translateX(100%); opacity: 0; }
-      to { transform: translateX(0); opacity: 1; }
-    }
+    @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 
     /* ====== EMPTY STATE ====== */
     .empty-state {
       text-align: center; padding: 48px 24px;
-      background: var(--glass); border: 1px solid var(--border);
-      border-radius: var(--radius);
+      background: var(--glass); border: 1px solid var(--border); border-radius: var(--radius);
     }
 
     .empty-state i { font-size: 42px; color: var(--border); margin-bottom: 16px; }
@@ -860,8 +735,8 @@
       </div>
 
       <div class="auth-tabs">
-        <button class="auth-tab active" id="tab-login" onclick="switchTab('login')">Connexion</button>
-        <button class="auth-tab" id="tab-register" onclick="switchTab('register')">Inscription</button>
+        <button class="auth-tab active" id="tab-login">Connexion</button>
+        <button class="auth-tab" id="tab-register">Inscription</button>
       </div>
 
       <!-- LOGIN FORM -->
@@ -875,7 +750,7 @@
           <label>Mot de passe</label>
           <input type="password" id="login-password" placeholder="••••••••"/>
         </div>
-        <button class="btn-primary" id="login-btn" onclick="handleLogin()">
+        <button class="btn-primary" id="login-btn">
           <i class="fas fa-sign-in-alt"></i> Se connecter
         </button>
       </div>
@@ -904,7 +779,7 @@
         <div class="form-group">
           <label>Photo de profil</label>
           <div class="avatar-upload-area" id="avatar-area">
-            <input type="file" id="reg-avatar" accept="image/*" onchange="previewAvatar(this)"/>
+            <input type="file" id="reg-avatar" accept="image/*"/>
             <div class="avatar-preview" id="avatar-preview">
               <i class="fas fa-user"></i>
             </div>
@@ -912,7 +787,7 @@
             <span>JPG, PNG — max 5MB</span>
           </div>
         </div>
-        <button class="btn-primary" id="register-btn" onclick="handleRegister()">
+        <button class="btn-primary" id="register-btn">
           <i class="fas fa-user-plus"></i> Créer mon compte
         </button>
       </div>
@@ -925,14 +800,14 @@
       <div class="ai-avatar"><i class="fas fa-robot"></i></div>
       <h2>Bienvenue, <span id="welcome-name"></span> !</h2>
       <p id="welcome-text"></p>
-      <button class="btn-primary" onclick="closeWelcome()" style="max-width:220px;margin:0 auto;display:block">
+      <button class="btn-primary" id="welcome-close-btn" style="max-width:220px;margin:0 auto;display:block">
         Découvrir le forum <i class="fas fa-arrow-right"></i>
       </button>
     </div>
   </div>
 
   <!-- LIGHTBOX -->
-  <div id="lightbox" onclick="closeLightbox()">
+  <div id="lightbox">
     <button id="lightbox-close"><i class="fas fa-times"></i></button>
     <img id="lightbox-img" src="" alt=""/>
   </div>
@@ -953,16 +828,19 @@
         </a>
         <div class="header-search">
           <i class="fas fa-search"></i>
-          <input type="text" placeholder="Rechercher des publications..." id="search-input" oninput="filterPosts(this.value)"/>
+          <input type="text" placeholder="Rechercher des publications..." id="search-input"/>
         </div>
         <div class="header-actions">
-          <div class="notif-btn"><i class="fas fa-bell"></i><span class="notif-badge" id="notif-count">0</span></div>
+          <div class="notif-btn">
+            <i class="fas fa-bell"></i>
+            <span class="notif-badge" id="notif-count">0</span>
+          </div>
           <div class="user-chip" id="user-chip">
             <div class="chip-avatar-placeholder" id="chip-avatar-placeholder"></div>
             <img id="chip-avatar-img" src="" alt="" style="display:none"/>
             <span id="chip-name">Utilisateur</span>
           </div>
-          <button id="logout-btn" onclick="handleLogout()"><i class="fas fa-sign-out-alt"></i></button>
+          <button id="logout-btn"><i class="fas fa-sign-out-alt"></i></button>
         </div>
       </div>
     </header>
@@ -984,18 +862,17 @@
           </div>
         </div>
         <nav class="nav-menu">
-          <div class="nav-item active" onclick="setFilter('all')"><i class="fas fa-home"></i> Fil d'actualité</div>
-          <div class="nav-item" onclick="setFilter('mine')"><i class="fas fa-user"></i> Mes publications</div>
-          <div class="nav-item" onclick="setFilter('photo')"><i class="fas fa-image"></i> Photos & Vidéos</div>
-          <div class="nav-item" onclick="setFilter('liked')"><i class="fas fa-heart"></i> J'aime</div>
-          <div class="nav-item" onclick="showTrends()"><i class="fas fa-fire"></i> Tendances</div>
-          <div class="nav-item" onclick="showMembers()"><i class="fas fa-users"></i> Membres</div>
+          <div class="nav-item active" data-filter="all"><i class="fas fa-home"></i> Fil d'actualité</div>
+          <div class="nav-item" data-filter="mine"><i class="fas fa-user"></i> Mes publications</div>
+          <div class="nav-item" data-filter="photo"><i class="fas fa-image"></i> Photos & Vidéos</div>
+          <div class="nav-item" data-filter="liked"><i class="fas fa-heart"></i> J'aime</div>
+          <div class="nav-item" data-filter="trends"><i class="fas fa-fire"></i> Tendances</div>
+          <div class="nav-item" data-filter="members"><i class="fas fa-users"></i> Membres</div>
         </nav>
       </aside>
 
       <!-- FEED -->
       <main class="feed-area">
-        <!-- COMPOSER -->
         <div class="post-composer">
           <div class="composer-top">
             <div class="composer-avatar">
@@ -1009,16 +886,15 @@
           </div>
           <div class="composer-actions">
             <label class="media-btn">
-              <input type="file" id="media-input" accept="image/*,video/*" multiple onchange="handleMediaSelect(this)"/>
+              <input type="file" id="media-input" accept="image/*,video/*" multiple/>
               <i class="fas fa-image"></i> Photo/Vidéo
             </label>
-            <button class="post-btn" id="submit-post" onclick="submitPost()">
+            <button class="post-btn" id="submit-post">
               <i class="fas fa-paper-plane"></i> Publier
             </button>
           </div>
         </div>
 
-        <!-- POSTS FEED -->
         <div id="posts-container">
           <div class="loading-spinner"><div class="spinner"></div></div>
         </div>
@@ -1048,6 +924,8 @@
     </div>
   </div>
 
+  <!-- bcryptjs (global window.dcodeIO.bcrypt) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bcryptjs/2.4.3/bcrypt.min.js"></script>
   <!-- Firebase + App JS -->
   <script type="module" src="app.js"></script>
 </body>
