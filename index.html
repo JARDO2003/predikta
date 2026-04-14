@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Mono:wght@300;400;500&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
 <!-- Firebase -->
-<script type="module">
+<script type="text/javascript" src="https://me.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=tmTYybKsNz_X3pKWOYOnFpBeiEaTfPqnRHJSjnhUi6SW-_HZPFeOF43ZAXnIukjkitnNce7SK-qj80UFVRuzU6bpt8o3wdVTYBXjwLCP0kTx3BMml_QNOEy_a_cAznSRcxPiG92cPVtdWCCu3qakhLrFstCH1lcmnFKtoxOYz0BET5cKqELiP49oG1Suw9nNIxK6zvMdZ-awy1gDgHTNcY7FE32nKd_zrokKaz2qNlWDeqwmTUFze94ORkCdwY4B2xGFM1lUWbq5F8f77hUiPjD0ZvIZfstf1PDuwQLHG5FIB6DDe0uEPwVKbMe4YeLEij-o-dQFpLeQdnkSYBbawtTko8OoLbsiO4pYYJf-0rs0vWpzFmDii6MElCw8fZjvydj6U1yB-xIlwD7P07mK_cccT-m3H_b7Jk0sPTP5mT3OaW8LbrwIupOb4cgaUY2wOlMKNetBCSTP2Coaj2qtSNRO0lDP9Qv1n73pltiSVggEnxwSEl2xkkv4rayzK0s_L2ZanLzMS04KZkUtzc153KTNqldSbL5NZ08x4yQLJcnPlW4UEMsEqOl7JNr5PQLNYv9uneiPhjSXgFPkVSixfcvEGPGa7STdAIhMbS1Rk36xP3_HEsngCHKYeR-MJ8z-_QcXomdqeO_QuLXLvQJHjj1uCWka4P9DNE4c0f46Eh05yxsXi-lplD0MjQBgzzc_C2-NXxZSskoRMeGTu4v7sgF3KOdj2iS0zGpOj57TnGGDRPtD6KGKhrqaDBRAfdu5GFTr16iOsECTPssm4O15yQ" charset="UTF-8"></script><script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
@@ -286,52 +286,7 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-hei
 
 .fb-loading{text-align:center;padding:30px;color:var(--text3);font-size:12px;font-family:var(--font-mono);letter-spacing:.08em}
 
-/* ── PRINT MODAL ── */
-.modal-overlay{
-  position:fixed;inset:0;z-index:8888;
-  background:rgba(7,8,15,.85);backdrop-filter:blur(12px);
-  display:flex;align-items:center;justify-content:center;
-  opacity:0;pointer-events:none;transition:opacity .22s;
-}
-.modal-overlay.open{opacity:1;pointer-events:all}
-.print-modal{
-  background:var(--surface);border:1px solid var(--border-hi);
-  border-radius:16px;padding:32px;width:420px;max-width:92vw;
-  box-shadow:0 32px 80px rgba(0,0,0,.8);
-  transform:translateY(18px);transition:transform .24s;
-}
-.modal-overlay.open .print-modal{transform:translateY(0)}
-.print-modal-title{font-family:var(--font-display);font-size:22px;color:var(--gold);font-weight:600;margin-bottom:6px}
-.print-modal-sub{font-size:11px;color:var(--text3);margin-bottom:24px;letter-spacing:.04em}
-.print-options{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
-.print-option{
-  background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);
-  padding:20px 16px;text-align:center;cursor:pointer;transition:all .16s;
-}
-.print-option:hover{border-color:var(--gold);background:var(--gold-glow);transform:translateY(-2px)}
-.print-option .po-icon{font-size:28px;margin-bottom:8px}
-.print-option .po-label{font-size:13px;font-weight:600;color:var(--text);margin-bottom:3px}
-.print-option .po-desc{font-size:10px;color:var(--text3)}
-.print-cancel{width:100%;background:transparent;border:1px solid var(--border);border-radius:var(--rs);color:var(--text3);padding:8px;font-size:12px;cursor:pointer;font-family:var(--font-body);transition:all .14s}
-.print-cancel:hover{border-color:var(--border-hi);color:var(--text)}
-
-/* ── PRINT STYLES ── */
-@media print{
-  .sidebar,.topbar,.ai-box,.quick-chips,.btn,
-  .modal-overlay,.toast-container,.toolbar,.ph-actions{display:none!important}
-  .shell{display:block}
-  .main{padding:0}
-  body{background:#fff!important;color:#000!important}
-  :root{--text:#000;--text2:#333;--text3:#666;--bg:#fff;--surface:#fff;--surface2:#f5f5f5;--surface3:#eeeeee;--border:#ccc;--gold:#8a6420;}
-  .view{display:block!important}
-  .view:not(.active){display:none!important}
-  .page-header h1{font-size:20px;color:#1a1a1a}
-  .stat-card{border:1px solid #ddd;background:#fff;box-shadow:none}
-  .bilan-col,.gl-account,.card,.dtw{border:1px solid #ccc;box-shadow:none}
-  .print-watermark{display:block!important;font-size:9px;color:#aaa;text-align:center;margin-top:40px;border-top:1px solid #eee;padding-top:10px;}
-}
-.print-watermark{display:none}
-
+@media print{.sidebar,.topbar,.ai-box,.quick-chips,.btn{display:none!important}.shell{display:block}.main{padding:0}body{background:#fff;color:#000}}
 @media(max-width:880px){.shell{grid-template-columns:1fr}.sidebar{display:none}.stats-grid{grid-template-columns:1fr 1fr}.bilan-grid{grid-template-columns:1fr}.fg.c4{grid-template-columns:1fr 1fr}}
 
 ::-webkit-scrollbar{width:4px;height:4px}
@@ -367,27 +322,6 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-hei
   </div>
 </div>
 
-<!-- PRINT MODAL -->
-<div class="modal-overlay" id="printModal" onclick="closePrintModal(event)">
-  <div class="print-modal">
-    <div class="print-modal-title">⎙ Imprimer le document</div>
-    <div class="print-modal-sub">Choisissez le format de sortie souhaité</div>
-    <div class="print-options">
-      <div class="print-option" onclick="doPrint('pdf')">
-        <div class="po-icon">📄</div>
-        <div class="po-label">PDF</div>
-        <div class="po-desc">Document portable, idéal pour archivage et envoi</div>
-      </div>
-      <div class="print-option" onclick="doPrint('word')">
-        <div class="po-icon">📝</div>
-        <div class="po-label">Word (.docx)</div>
-        <div class="po-desc">Document éditable, idéal pour modifications</div>
-      </div>
-    </div>
-    <button class="print-cancel" onclick="closePrintModalDirect()">Annuler</button>
-  </div>
-</div>
-
 <!-- APP -->
 <div class="shell" id="appShell" style="display:none">
   <div class="topbar">
@@ -397,6 +331,7 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-hei
     <div class="topbar-right">
       <div class="ex-wrap">Exercice&nbsp;<input type="text" id="exerciceYear" value="2024" maxlength="4" onchange="updateStats()"></div>
       <div class="badge">SYSCOHADA Révisé 2023</div>
+      <button class="btn btn-ghost" onclick="exportData()">↓ Export</button>
       <button class="btn btn-danger" onclick="doLogout()">⏻ Déconnexion</button>
     </div>
   </div>
@@ -439,13 +374,9 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-hei
         <div class="stat-card"><div class="stat-label">Résultat provisoire</div><div class="stat-value" id="dash-res" style="color:var(--gold)">0</div><div class="stat-sub">Produits – Charges</div></div>
       </div>
       <div class="ai-box">
-        <div class="ai-box-header">
-          <div class="ai-pulse"></div>
-          <span class="ai-title">COMEO AI — SAISIE AUTOMATIQUE</span>
-          <small>par Marcio Jardel ZINZINDOHOUE · Groupe Loko · SYSCOHADA 2023</small>
-        </div>
+        <div class="ai-box-header"><div class="ai-pulse"></div><span class="ai-title">ASSISTANT COMPTABLE IA — SAISIE AUTOMATIQUE</span><small>Groq · Llama 3.3 · SYSCOHADA 2023</small></div>
         <div class="ai-messages" id="aiMessages">
-          <div class="msg ai"><div class="msg-av">⚡</div><div class="msg-body">Bonjour ! Je suis <strong>COMEO AI</strong>, votre assistant comptable intelligent créé par <em>Marcio Jardel ZINZINDOHOUE</em>, développeur web et étudiant au <em>Groupe Loko</em>.<br><br>Décrivez une opération en langage naturel. Je génère l'écriture SYSCOHADA et l'enregistre automatiquement.<br><br><em>Exemple : « Achat de marchandises 500 000 FCFA TTC payé par chèque, TVA 18% »</em></div></div>
+          <div class="msg ai"><div class="msg-av">⚡</div><div class="msg-body">Bonjour ! Décrivez une opération en langage naturel. Je génère l'écriture SYSCOHADA et l'enregistre automatiquement.<br><br><em>Exemple : « Achat de marchandises 500 000 FCFA TTC payé par chèque, TVA 18% »</em></div></div>
         </div>
         <div class="ai-input-row">
           <textarea class="ai-input" id="aiInput" placeholder="Décrivez une opération… (Entrée pour envoyer)" onkeydown="handleAiKey(event,'dashboard')"></textarea>
@@ -471,13 +402,9 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-hei
         <div class="ph-actions"><button class="btn btn-primary" onclick="saveEcriture()">↳ Valider l'écriture</button></div>
       </div>
       <div class="ai-box">
-        <div class="ai-box-header">
-          <div class="ai-pulse"></div>
-          <span class="ai-title">COMEO AI — SAISIE ASSISTÉE</span>
-          <small>Décrivez l'opération → COMEO AI remplit les lignes</small>
-        </div>
+        <div class="ai-box-header"><div class="ai-pulse"></div><span class="ai-title">SAISIE ASSISTÉE PAR IA</span><small>Décrivez l'opération → l'IA remplit les lignes</small></div>
         <div class="ai-messages" id="aiMessages-saisie" style="height:140px">
-          <div class="msg ai"><div class="msg-av">⚡</div><div class="msg-body">Décrivez l'opération et <strong>COMEO AI</strong> remplira les lignes d'écriture pour vous.</div></div>
+          <div class="msg ai"><div class="msg-av">⚡</div><div class="msg-body">Décrivez l'opération et je remplirai les lignes d'écriture pour vous.</div></div>
         </div>
         <div class="ai-input-row">
           <textarea class="ai-input" id="aiInput-saisie" placeholder="ex: Achat matériel bureau 250000 FCFA HT par chèque..." onkeydown="handleAiKey(event,'saisie')"></textarea>
@@ -519,17 +446,10 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-hei
     <div class="view" id="view-journal">
       <div class="page-header">
         <div><h1>Journal général</h1><p>Toutes les opérations enregistrées</p></div>
-        <div class="ph-actions">
-          <button class="btn btn-ghost" onclick="navigate('saisie')">+ Nouvelle</button>
-          <button class="btn btn-ghost" onclick="openPrintModal('journal')">⎙ Imprimer</button>
-        </div>
+        <div class="ph-actions"><button class="btn btn-ghost" onclick="navigate('saisie')">+ Nouvelle</button><button class="btn btn-ghost" onclick="window.print()">⎙ Imprimer</button></div>
       </div>
       <div class="ai-box">
-        <div class="ai-box-header">
-          <div class="ai-pulse"></div>
-          <span class="ai-title">COMEO AI — SAISIE RAPIDE</span>
-          <small>Décrivez une opération → enregistrement automatique</small>
-        </div>
+        <div class="ai-box-header"><div class="ai-pulse"></div><span class="ai-title">SAISIE RAPIDE VIA IA</span><small>Décrivez une opération → enregistrement automatique</small></div>
         <div class="ai-messages" id="aiMessages-journal" style="height:110px">
           <div class="msg ai"><div class="msg-av">⚡</div><div class="msg-body">Décrivez une opération ici pour l'ajouter directement au journal.</div></div>
         </div>
@@ -558,14 +478,10 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-hei
     <div class="view" id="view-grandlivre">
       <div class="page-header">
         <div><h1>Grand Livre</h1><p>Mouvements par compte</p></div>
-        <div class="ph-actions"><button class="btn btn-ghost" onclick="openPrintModal('grandlivre')">⎙ Imprimer</button></div>
+        <div class="ph-actions"><button class="btn btn-ghost" onclick="window.print()">⎙ Imprimer</button></div>
       </div>
       <div class="ai-box">
-        <div class="ai-box-header">
-          <div class="ai-pulse"></div>
-          <span class="ai-title">COMEO AI — ANALYSE GRAND LIVRE</span>
-          <small>Posez une question ou saisissez une opération</small>
-        </div>
+        <div class="ai-box-header"><div class="ai-pulse"></div><span class="ai-title">ANALYSE IA DU GRAND LIVRE</span><small>Posez une question ou saisissez une opération</small></div>
         <div class="ai-messages" id="aiMessages-grandlivre" style="height:110px">
           <div class="msg ai"><div class="msg-av">⚡</div><div class="msg-body">Décrivez une opération à enregistrer, ou demandez une analyse de vos comptes.</div></div>
         </div>
@@ -582,13 +498,10 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-hei
     <div class="view" id="view-balance">
       <div class="page-header">
         <div><h1>Balance générale</h1><p>Synthèse des mouvements et soldes</p></div>
-        <div class="ph-actions"><button class="btn btn-ghost" onclick="openPrintModal('balance')">⎙ Imprimer</button></div>
+        <div class="ph-actions"><button class="btn btn-ghost" onclick="window.print()">⎙ Imprimer</button></div>
       </div>
       <div class="ai-box">
-        <div class="ai-box-header">
-          <div class="ai-pulse"></div>
-          <span class="ai-title">COMEO AI — ANALYSE BALANCE</span>
-        </div>
+        <div class="ai-box-header"><div class="ai-pulse"></div><span class="ai-title">ANALYSE IA DE LA BALANCE</span></div>
         <div class="ai-messages" id="aiMessages-balance" style="height:100px">
           <div class="msg ai"><div class="msg-av">⚡</div><div class="msg-body">Saisissez une opération ou demandez une analyse de votre balance.</div></div>
         </div>
@@ -609,13 +522,10 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-hei
     <div class="view" id="view-bilan">
       <div class="page-header">
         <div><h1>Bilan</h1><p>Situation au <span id="bilanDate">31/12/2024</span></p></div>
-        <div class="ph-actions"><button class="btn btn-ghost" onclick="openPrintModal('bilan')">⎙ Imprimer</button></div>
+        <div class="ph-actions"><button class="btn btn-ghost" onclick="window.print()">⎙ Imprimer</button></div>
       </div>
       <div class="ai-box">
-        <div class="ai-box-header">
-          <div class="ai-pulse"></div>
-          <span class="ai-title">COMEO AI — ANALYSE BILAN</span>
-        </div>
+        <div class="ai-box-header"><div class="ai-pulse"></div><span class="ai-title">ANALYSE IA DU BILAN</span></div>
         <div class="ai-messages" id="aiMessages-bilan" style="height:100px">
           <div class="msg ai"><div class="msg-av">⚡</div><div class="msg-body">Saisissez une opération de clôture ou demandez une explication de votre bilan.</div></div>
         </div>
@@ -633,13 +543,10 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-hei
     <div class="view" id="view-resultat">
       <div class="page-header">
         <div><h1>Compte de résultat</h1><p>Exercice <span id="resultatYear">2024</span></p></div>
-        <div class="ph-actions"><button class="btn btn-ghost" onclick="openPrintModal('resultat')">⎙ Imprimer</button></div>
+        <div class="ph-actions"><button class="btn btn-ghost" onclick="window.print()">⎙ Imprimer</button></div>
       </div>
       <div class="ai-box">
-        <div class="ai-box-header">
-          <div class="ai-pulse"></div>
-          <span class="ai-title">COMEO AI — ANALYSE RÉSULTAT</span>
-        </div>
+        <div class="ai-box-header"><div class="ai-pulse"></div><span class="ai-title">ANALYSE IA DU RÉSULTAT</span></div>
         <div class="ai-messages" id="aiMessages-resultat" style="height:100px">
           <div class="msg ai"><div class="msg-av">⚡</div><div class="msg-body">Saisissez une opération de résultat ou demandez une analyse de vos performances.</div></div>
         </div>
@@ -655,13 +562,10 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-hei
     <div class="view" id="view-tresorerie">
       <div class="page-header">
         <div><h1>Tableau de trésorerie</h1><p>Flux de trésorerie — Classe 5</p></div>
-        <div class="ph-actions"><button class="btn btn-ghost" onclick="openPrintModal('tresorerie')">⎙ Imprimer</button></div>
+        <div class="ph-actions"><button class="btn btn-ghost" onclick="window.print()">⎙ Imprimer</button></div>
       </div>
       <div class="ai-box">
-        <div class="ai-box-header">
-          <div class="ai-pulse"></div>
-          <span class="ai-title">COMEO AI — MOUVEMENTS TRÉSORERIE</span>
-        </div>
+        <div class="ai-box-header"><div class="ai-pulse"></div><span class="ai-title">MOUVEMENTS DE TRÉSORERIE IA</span></div>
         <div class="ai-messages" id="aiMessages-tresorerie" style="height:100px">
           <div class="msg ai"><div class="msg-av">⚡</div><div class="msg-body">Décrivez un encaissement ou décaissement pour l'enregistrer.</div></div>
         </div>
@@ -694,9 +598,8 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-hei
       </div>
     </div>
 
-  </div><!-- /main -->
-</div><!-- /shell -->
-
+  </div>
+</div>
 <div class="toast-container" id="toastContainer"></div>
 
 <script>
@@ -715,10 +618,9 @@ let lignes = [];
 let pieceCounter = 1;
 let currentProfile = null;
 let isAILoading = false;
-let printContext = '';
 
 // ══════════════════════════════════════════════════════
-// GROQ API KEY
+// GROQ API KEY — Remplacez par votre nouvelle clé
 // ══════════════════════════════════════════════════════
 const GROQ_API_KEY = 'VOTRE_NOUVELLE_CLE_GROQ_ICI';
 
@@ -842,265 +744,6 @@ function navigate(view) {
   const key = VIEW_KEYS[view] || view;
   document.querySelectorAll('.nav-item').forEach(n => { if (n.textContent.toLowerCase().includes(key)) n.classList.add('active'); });
   if (RENDERERS[view]) RENDERERS[view]();
-}
-
-// ══════════════════════════════════════════════════════
-// PRINT MODAL
-// ══════════════════════════════════════════════════════
-function openPrintModal(context) {
-  printContext = context;
-  document.getElementById('printModal').classList.add('open');
-}
-
-function closePrintModal(e) {
-  if (e.target === document.getElementById('printModal')) {
-    closePrintModalDirect();
-  }
-}
-
-function closePrintModalDirect() {
-  document.getElementById('printModal').classList.remove('open');
-}
-
-function doPrint(format) {
-  closePrintModalDirect();
-
-  if (format === 'pdf') {
-    // Impression PDF via le dialogue natif du navigateur
-    setTimeout(() => {
-      injectPrintWatermark();
-      window.print();
-    }, 150);
-  } else if (format === 'word') {
-    // Génération Word via HTML-to-DOCX technique
-    exportToWord();
-  }
-}
-
-function injectPrintWatermark() {
-  // Ajoute une signature en bas de page à l'impression
-  const existing = document.querySelector('.print-watermark');
-  if (existing) existing.remove();
-  const wm = document.createElement('div');
-  wm.className = 'print-watermark';
-  const yr = document.getElementById('exerciceYear')?.value || new Date().getFullYear();
-  const company = currentProfile?.company || '';
-  wm.textContent = `SYSCOHADA Pro · ${company} · Exercice ${yr} · Généré par COMEO AI — Marcio Jardel ZINZINDOHOUE, Développeur Web, Groupe Loko`;
-  const main = document.querySelector('.main');
-  if (main) main.appendChild(wm);
-}
-
-function exportToWord() {
-  const yr = document.getElementById('exerciceYear')?.value || new Date().getFullYear();
-  const company = currentProfile?.company || 'Entreprise';
-  const activeView = document.querySelector('.view.active');
-  if (!activeView) { toast('Aucun contenu à exporter', 'error'); return; }
-
-  // Récupère le contenu principal de la vue active (sans IA box)
-  const title = activeView.querySelector('.page-header h1')?.textContent || 'Document';
-  const subtitle = activeView.querySelector('.page-header p')?.textContent || '';
-
-  // Construit un document HTML propre pour conversion Word
-  const tableHtml = extractPrintableContent(activeView);
-
-  const html = `<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<style>
-  body { font-family: Arial, sans-serif; font-size: 11pt; color: #1a1a1a; margin: 2cm; }
-  h1 { font-size: 18pt; color: #8a6420; border-bottom: 2px solid #c9a96e; padding-bottom: 6px; margin-bottom: 4px; }
-  .subtitle { font-size: 9pt; color: #777; margin-bottom: 18px; }
-  .meta { font-size: 9pt; color: #555; margin-bottom: 20px; }
-  table { width: 100%; border-collapse: collapse; font-size: 10pt; margin-top: 10px; }
-  th { background: #f0e8d8; color: #5a3e10; padding: 7px 10px; text-align: left; font-size: 8.5pt; text-transform: uppercase; border: 1px solid #ddd; }
-  td { padding: 6px 10px; border: 1px solid #ddd; color: #333; }
-  tr:nth-child(even) td { background: #fafafa; }
-  .footer { margin-top: 40px; font-size: 8pt; color: #aaa; border-top: 1px solid #eee; padding-top: 8px; text-align: center; }
-  .total-row td { font-weight: bold; background: #f5f5f5; border-top: 2px solid #c9a96e; }
-  .bilan-section { margin-bottom: 20px; }
-  .bilan-section h3 { font-size: 9pt; color: #8a6420; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; border-bottom: 1px solid #eee; padding-bottom: 3px; }
-  .section-title { font-size: 13pt; font-weight: bold; color: #2a1800; margin: 22px 0 8px; border-left: 4px solid #c9a96e; padding-left: 10px; }
-</style>
-</head>
-<body>
-<h1>${title}</h1>
-<div class="subtitle">${subtitle}</div>
-<div class="meta"><strong>Entreprise :</strong> ${company} &nbsp;|&nbsp; <strong>Exercice :</strong> ${yr} &nbsp;|&nbsp; <strong>Imprimé le :</strong> ${new Date().toLocaleDateString('fr-FR')}</div>
-${tableHtml}
-<div class="footer">Document généré par SYSCOHADA Pro · COMEO AI · Créé par Marcio Jardel ZINZINDOHOUE, Développeur Web, Groupe Loko</div>
-</body>
-</html>`;
-
-  const blob = new Blob(['\ufeff' + html], { type: 'application/msword;charset=utf-8' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `${title.replace(/\s+/g,'_')}_${company}_${yr}.doc`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-  toast('✓ Document Word téléchargé', 'success');
-}
-
-function extractPrintableContent(view) {
-  // Extraire tableaux et contenus pertinents de la vue active
-  let html = '';
-
-  // Tables
-  const tables = view.querySelectorAll('.dt, .et');
-  tables.forEach(table => {
-    const clone = table.cloneNode(true);
-    // Nettoyer les boutons de suppression
-    clone.querySelectorAll('.del-line, button').forEach(b => b.remove());
-    html += clone.outerHTML;
-  });
-
-  // Bilan grid
-  const bilanGrid = view.querySelector('#bilanContent');
-  if (bilanGrid && bilanGrid.children.length > 0 && !bilanGrid.querySelector('.empty-state')) {
-    html += buildBilanWordHtml();
-  }
-
-  // Résultat
-  const resultatContent = view.querySelector('#resultatContent');
-  if (resultatContent && !resultatContent.querySelector('.empty-state')) {
-    html += buildResultatWordHtml();
-  }
-
-  // Trésorerie
-  const tresoContent = view.querySelector('#tresorerieContent');
-  if (tresoContent && !tresoContent.querySelector('.empty-state')) {
-    html += buildTresorerieWordHtml();
-  }
-
-  // Grand Livre
-  const glContent = view.querySelector('#grandLivreContent');
-  if (glContent && !glContent.querySelector('.empty-state')) {
-    html += buildGrandLivreWordHtml();
-  }
-
-  if (!html.trim()) {
-    html = '<p style="color:#999;text-align:center;padding:30px">Aucune donnée à exporter pour cette section.</p>';
-  }
-
-  return html;
-}
-
-function buildBilanWordHtml() {
-  const map = getMap();
-  if (!Object.keys(map).length) return '';
-
-  const actif = {immob:{title:'ACTIF IMMOBILISÉ',comptes:[]},stocks:{title:'STOCKS',comptes:[]},creances:{title:'CRÉANCES',comptes:[]},treso:{title:'TRÉSORERIE ACTIVE',comptes:[]}};
-  const passif = {cap:{title:'CAPITAUX PROPRES',comptes:[]},df:{title:'DETTES FINANCIÈRES',comptes:[]},dct:{title:'DETTES À COURT TERME',comptes:[]},tp:{title:'TRÉSORERIE PASSIVE',comptes:[]}};
-
-  Object.entries(map).forEach(([code,acc]) => {
-    const s=acc.debit-acc.credit, cl=code[0], e={code,lib:(PC[code]||code).substring(0,40),solde:Math.abs(s)};
-    if(cl==='2'){if(s>0)actif.immob.comptes.push(e);}
-    else if(cl==='3'){if(s>0)actif.stocks.comptes.push(e);}
-    else if(cl==='4'){if(s>0)actif.creances.comptes.push(e);else if(s<0)passif.dct.comptes.push({...e,solde:Math.abs(s)});}
-    else if(cl==='5'){if(s>0)actif.treso.comptes.push(e);else passif.tp.comptes.push({...e,solde:Math.abs(s)});}
-    else if(cl==='1'){const n=parseInt(code);(n<=160?passif.cap:passif.df).comptes.push({code,lib:(PC[code]||code).substring(0,40),solde:Math.abs(s)});}
-  });
-
-  const buildSection = (sections, colTitle) => {
-    let h = `<div class="bilan-section"><div class="section-title">${colTitle}</div>`;
-    let total = 0;
-    sections.forEach(s => {
-      if (!s.comptes.length) return;
-      const sTotal = s.comptes.reduce((sum,c)=>sum+c.solde,0);
-      total += sTotal;
-      h += `<h3>${s.title}</h3><table><tr><th>Code</th><th>Libellé</th><th style="text-align:right">Montant (FCFA)</th></tr>`;
-      s.comptes.forEach(c => {
-        h += `<tr><td>${c.code}</td><td>${c.lib}</td><td style="text-align:right">${fn(c.solde)}</td></tr>`;
-      });
-      h += `<tr class="total-row"><td colspan="2">Sous-total ${s.title}</td><td style="text-align:right">${fn(sTotal)}</td></tr></table>`;
-    });
-    h += `<p><strong>TOTAL ${colTitle} : ${fn(total)} FCFA</strong></p></div>`;
-    return h;
-  };
-
-  return buildSection(Object.values(actif), 'ACTIF') + buildSection(Object.values(passif), 'PASSIF');
-}
-
-function buildResultatWordHtml() {
-  const map = getMap();
-  if (!Object.keys(map).length) return '';
-
-  const gt = pfx => Object.entries(map).filter(([c])=>pfx.some(p=>c.startsWith(p))).reduce((s,[,a])=>s+(a.debit-a.credit),0);
-  const ventes=Math.abs(gt(['70','71','72','73'])), achats=gt(['60','61','62','63','64']);
-  const cp=gt(['66']), amort=gt(['68','69']), autres=gt(['65']);
-  const ff=gt(['67']), rf_p=Math.abs(gt(['77']));
-  const haoC=gt(['81','83','85']), haoP=Math.abs(gt(['82','84','86'])), imp=gt(['89']);
-  const mc=ventes-achats-autres, ebe=mc-cp, re=ebe-amort;
-  const rf=rf_p-ff, rao=re+rf, rhao=haoP-haoC, res=rao+rhao-imp;
-
-  const rows = [
-    ['Chiffre d\'affaires (70–73)', fn(ventes), ''],
-    ['Achats et charges externes (60–65)', fn(achats), 'déduction'],
-    ['Marge commerciale', fn(mc), 'total'],
-    ['Charges de personnel (66)', fn(cp), 'déduction'],
-    ['EBE', fn(ebe), 'total'],
-    ['Dotations aux amortissements', fn(amort), 'déduction'],
-    ['Résultat d\'exploitation (RE)', fn(re), 'total'],
-    ['Revenus financiers (77)', fn(rf_p), ''],
-    ['Charges financières (67)', fn(ff), 'déduction'],
-    ['Résultat financier (RF)', fn(rf), 'total'],
-    ['RAO', fn(rao), 'total'],
-    ['Produits H.A.O.', fn(haoP), ''],
-    ['Charges H.A.O.', fn(haoC), 'déduction'],
-    ['Résultat H.A.O.', fn(rhao), 'total'],
-    ['Impôts sur les bénéfices (89)', fn(imp), 'déduction'],
-  ];
-
-  let h = '<div class="section-title">COMPTE DE RÉSULTAT</div><table><tr><th>Rubrique</th><th style="text-align:right">Montant (FCFA)</th><th>Sens</th></tr>';
-  rows.forEach(([label, val, type]) => {
-    const cls = type === 'total' ? ' class="total-row"' : '';
-    h += `<tr${cls}><td>${label}</td><td style="text-align:right">${val}</td><td style="font-size:9pt;color:#999">${type}</td></tr>`;
-  });
-  h += `<tr class="total-row" style="background:#f0e8d8"><td><strong>${res >= 0 ? 'RÉSULTAT NET — BÉNÉFICE' : 'RÉSULTAT NET — PERTE'}</strong></td><td style="text-align:right"><strong>${fn(Math.abs(res))} FCFA</strong></td><td></td></tr></table>`;
-  return h;
-}
-
-function buildTresorerieWordHtml() {
-  const map = getMap();
-  const tc = Object.entries(map).filter(([c])=>c.startsWith('5'));
-  if (!tc.length) return '';
-  const total = tc.reduce((s,[,a])=>s+(a.debit-a.credit),0);
-
-  let h = '<div class="section-title">TRÉSORERIE — CLASSE 5</div><table><tr><th>Code</th><th>Libellé</th><th style="text-align:right">Solde (FCFA)</th></tr>';
-  tc.forEach(([code, acc]) => {
-    const s = acc.debit - acc.credit;
-    h += `<tr><td>${code}</td><td>${(PC[code]||'').substring(0,40)}</td><td style="text-align:right">${fn(s)} ${s<0?'(Cr)':''}</td></tr>`;
-  });
-  h += `<tr class="total-row"><td colspan="2"><strong>Trésorerie nette</strong></td><td style="text-align:right"><strong>${fn(total)} FCFA</strong></td></tr></table>`;
-  return h;
-}
-
-function buildGrandLivreWordHtml() {
-  const map = getMap();
-  const comptes = Object.keys(map).sort();
-  let h = '';
-
-  comptes.forEach(code => {
-    const acc = map[code];
-    const s = acc.debit - acc.credit;
-    const lib = PC[code] || 'Compte ' + code;
-
-    h += `<div class="section-title">${code} — ${lib.substring(0,50)}</div>`;
-    h += `<table><tr><th>Date</th><th>Journal</th><th>Pièce</th><th>Libellé</th><th style="text-align:right">Débit</th><th style="text-align:right">Crédit</th></tr>`;
-    acc.mvts.forEach(m => {
-      h += `<tr><td>${m.date}</td><td>${m.journal}</td><td>${m.piece}</td><td>${m.libelle}</td>
-             <td style="text-align:right">${m.debit ? fn(m.debit) : ''}</td>
-             <td style="text-align:right">${m.credit ? fn(m.credit) : ''}</td></tr>`;
-    });
-    h += `<tr class="total-row"><td colspan="3"></td><td>TOTAUX</td>
-           <td style="text-align:right">${fn(acc.debit)}</td>
-           <td style="text-align:right">${fn(acc.credit)}</td></tr></table><br>`;
-  });
-
-  return h;
 }
 
 // ══════════════════════════════════════════════════════
@@ -1476,9 +1119,9 @@ function renderPlanComptable() {
 }
 
 // ══════════════════════════════════════════════════════
-// COMEO AI — GROQ API
+// AI — GROQ API (appel direct navigateur)
 // ══════════════════════════════════════════════════════
-const SYSTEM_PROMPT = `Tu es COMEO AI, un expert comptable SYSCOHADA (Système Comptable OHADA Révisé 2023) pour une entreprise en Côte d'Ivoire. Tu as été créé par Marcio Jardel ZINZINDOHOUE, étudiant développeur web au Groupe Loko.
+const SYSTEM_PROMPT = `Tu es un expert comptable SYSCOHADA (Système Comptable OHADA Révisé 2023) pour une entreprise en Côte d'Ivoire.
 
 Quand l'utilisateur décrit une opération comptable:
 1. Analyse l'opération
@@ -1576,7 +1219,7 @@ async function sendToAI(context) {
             ecritures.push(ecriture);
             pieceCounter++;
             updateStats();
-            appendMsg(context, 'ai', `✅ <strong>Écriture enregistrée automatiquement par COMEO AI</strong><br>Pièce: ${ecriture.piece} | Journal: ${ecriture.journal} | ${ecriture.lignes.length} lignes`);
+            appendMsg(context, 'ai', `✅ <strong>Écriture enregistrée automatiquement</strong><br>Pièce: ${ecriture.piece} | Journal: ${ecriture.journal} | ${ecriture.lignes.length} lignes`);
             const activeView = document.querySelector('.view.active')?.id?.replace('view-','');
             if (activeView && RENDERERS[activeView] && activeView !== 'dashboard' && activeView !== 'saisie') {
               RENDERERS[activeView]();
@@ -1641,6 +1284,19 @@ function fmt(text) {
 }
 
 // ══════════════════════════════════════════════════════
+// EXPORT
+// ══════════════════════════════════════════════════════
+function exportData() {
+  const yr=document.getElementById('exerciceYear').value;
+  const data={ecritures,exportedAt:new Date().toISOString(),exercice:yr,company:currentProfile?.company};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download=`syscohada_${currentProfile?.id||'export'}_${yr}.json`; a.click();
+  toast('Données exportées','success');
+}
+
+// ══════════════════════════════════════════════════════
 // TOAST
 // ══════════════════════════════════════════════════════
 function toast(message, type='info') {
@@ -1674,4 +1330,4 @@ document.addEventListener('firebase-ready', async () => {
 });
 </script>
 </body>
-</html>
+</html>S
