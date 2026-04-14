@@ -64,49 +64,27 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-hei
   border-radius:16px;padding:40px 38px;width:420px;max-width:92vw;
   box-shadow:0 24px 64px rgba(0,0,0,.7),0 0 0 1px rgba(201,169,110,.06);
 }
-.auth-logo{
-  font-family:var(--font-display);font-size:28px;font-weight:600;
-  color:var(--gold);text-align:center;margin-bottom:4px;letter-spacing:.04em;
-}
+.auth-logo{font-family:var(--font-display);font-size:28px;font-weight:600;color:var(--gold);text-align:center;margin-bottom:4px;letter-spacing:.04em}
 .auth-sub{text-align:center;font-size:11px;color:var(--text3);letter-spacing:.14em;text-transform:uppercase;margin-bottom:28px}
 .auth-tabs{display:flex;gap:0;background:var(--surface2);border-radius:8px;padding:3px;margin-bottom:22px}
-.auth-tab{
-  flex:1;text-align:center;padding:7px;border-radius:6px;
-  font-size:12px;cursor:pointer;color:var(--text3);transition:all .15s;
-}
+.auth-tab{flex:1;text-align:center;padding:7px;border-radius:6px;font-size:12px;cursor:pointer;color:var(--text3);transition:all .15s}
 .auth-tab.active{background:var(--gold-dim);color:var(--gold);border:1px solid rgba(201,169,110,.2)}
 .auth-form{display:flex;flex-direction:column;gap:12px}
 .af-field{display:flex;flex-direction:column;gap:4px}
 .af-label{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.14em;color:var(--text3)}
-.af-input{
-  background:var(--surface2);border:1px solid var(--border);border-radius:8px;
-  color:var(--text);padding:9px 12px;font-size:13px;font-family:var(--font-body);
-  outline:none;transition:border-color .18s;
-}
+.af-input{background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:9px 12px;font-size:13px;font-family:var(--font-body);outline:none;transition:border-color .18s}
 .af-input:focus{border-color:var(--gold)}
 .af-input::placeholder{color:var(--text3)}
-.auth-btn{
-  background:var(--gold);color:#07080f;border:none;border-radius:8px;
-  padding:11px;font-size:13px;font-weight:600;cursor:pointer;
-  transition:all .15s;margin-top:6px;font-family:var(--font-body);
-}
+.auth-btn{background:var(--gold);color:#07080f;border:none;border-radius:8px;padding:11px;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;margin-top:6px;font-family:var(--font-body)}
 .auth-btn:hover{background:var(--gold2);transform:translateY(-1px)}
-.auth-err{
-  background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.2);
-  border-radius:6px;padding:8px 12px;font-size:11.5px;color:var(--red);
-  display:none;
-}
+.auth-err{background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.2);border-radius:6px;padding:8px 12px;font-size:11.5px;color:var(--red);display:none}
 .auth-err.show{display:block}
 
 /* ── GRID ── */
 .shell{display:grid;grid-template-columns:240px 1fr;grid-template-rows:52px 1fr;min-height:100vh}
 
 /* ── TOPBAR ── */
-.topbar{
-  grid-column:1/-1;background:rgba(10,11,20,.97);border-bottom:1px solid var(--border);
-  display:flex;align-items:center;padding:0 16px;gap:10px;
-  position:sticky;top:0;z-index:100;backdrop-filter:blur(16px);
-}
+.topbar{grid-column:1/-1;background:rgba(10,11,20,.97);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 16px;gap:10px;position:sticky;top:0;z-index:100;backdrop-filter:blur(16px)}
 .logo{font-family:var(--font-display);font-size:20px;font-weight:600;color:var(--gold);letter-spacing:.04em;white-space:nowrap;line-height:1}
 .logo sub{font-family:var(--font-body);font-size:9px;font-weight:400;color:var(--text3);letter-spacing:.16em;text-transform:uppercase;display:block;margin-top:1px}
 .tb-sep{width:1px;height:22px;background:var(--border);margin:0 4px}
@@ -157,15 +135,8 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-hei
 .stat-sub{font-size:10px;color:var(--text3);margin-top:4px}
 
 /* ── AI BOX ── */
-.ai-box{
-  background:var(--surface);border:1px solid var(--border);
-  border-radius:var(--r);overflow:hidden;margin-bottom:18px;box-shadow:var(--sh);
-}
-.ai-box-header{
-  display:flex;align-items:center;gap:8px;
-  padding:10px 14px;border-bottom:1px solid var(--border);
-  background:var(--surface2);
-}
+.ai-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:18px;box-shadow:var(--sh)}
+.ai-box-header{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--border);background:var(--surface2)}
 .ai-pulse{width:6px;height:6px;border-radius:50%;background:var(--gold);box-shadow:0 0 6px var(--gold);animation:pulse 2.4s infinite;flex-shrink:0}
 @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.25;transform:scale(.8)}}
 .ai-title{font-family:var(--font-mono);font-size:11px;font-weight:500;color:var(--gold);letter-spacing:.06em}
@@ -313,13 +284,54 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-hei
 .toast.success{border-color:rgba(74,222,128,.28)}.toast.error{border-color:rgba(248,113,113,.28)}.toast.info{border-color:rgba(201,169,110,.28)}
 @keyframes slideIn{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}
 
-/* ── LOADING ── */
 .fb-loading{text-align:center;padding:30px;color:var(--text3);font-size:12px;font-family:var(--font-mono);letter-spacing:.08em}
 
-/* ── PRINT ── */
-@media print{.sidebar,.topbar,.ai-box,.quick-chips,.btn{display:none!important}.shell{display:block}.main{padding:0}body{background:#fff;color:#000}}
+/* ── PRINT MODAL ── */
+.modal-overlay{
+  position:fixed;inset:0;z-index:8888;
+  background:rgba(7,8,15,.85);backdrop-filter:blur(12px);
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity .22s;
+}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.print-modal{
+  background:var(--surface);border:1px solid var(--border-hi);
+  border-radius:16px;padding:32px;width:420px;max-width:92vw;
+  box-shadow:0 32px 80px rgba(0,0,0,.8);
+  transform:translateY(18px);transition:transform .24s;
+}
+.modal-overlay.open .print-modal{transform:translateY(0)}
+.print-modal-title{font-family:var(--font-display);font-size:22px;color:var(--gold);font-weight:600;margin-bottom:6px}
+.print-modal-sub{font-size:11px;color:var(--text3);margin-bottom:24px;letter-spacing:.04em}
+.print-options{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
+.print-option{
+  background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);
+  padding:20px 16px;text-align:center;cursor:pointer;transition:all .16s;
+}
+.print-option:hover{border-color:var(--gold);background:var(--gold-glow);transform:translateY(-2px)}
+.print-option .po-icon{font-size:28px;margin-bottom:8px}
+.print-option .po-label{font-size:13px;font-weight:600;color:var(--text);margin-bottom:3px}
+.print-option .po-desc{font-size:10px;color:var(--text3)}
+.print-cancel{width:100%;background:transparent;border:1px solid var(--border);border-radius:var(--rs);color:var(--text3);padding:8px;font-size:12px;cursor:pointer;font-family:var(--font-body);transition:all .14s}
+.print-cancel:hover{border-color:var(--border-hi);color:var(--text)}
 
-/* ── RESPONSIVE ── */
+/* ── PRINT STYLES ── */
+@media print{
+  .sidebar,.topbar,.ai-box,.quick-chips,.btn,
+  .modal-overlay,.toast-container,.toolbar,.ph-actions{display:none!important}
+  .shell{display:block}
+  .main{padding:0}
+  body{background:#fff!important;color:#000!important}
+  :root{--text:#000;--text2:#333;--text3:#666;--bg:#fff;--surface:#fff;--surface2:#f5f5f5;--surface3:#eeeeee;--border:#ccc;--gold:#8a6420;}
+  .view{display:block!important}
+  .view:not(.active){display:none!important}
+  .page-header h1{font-size:20px;color:#1a1a1a}
+  .stat-card{border:1px solid #ddd;background:#fff;box-shadow:none}
+  .bilan-col,.gl-account,.card,.dtw{border:1px solid #ccc;box-shadow:none}
+  .print-watermark{display:block!important;font-size:9px;color:#aaa;text-align:center;margin-top:40px;border-top:1px solid #eee;padding-top:10px;}
+}
+.print-watermark{display:none}
+
 @media(max-width:880px){.shell{grid-template-columns:1fr}.sidebar{display:none}.stats-grid{grid-template-columns:1fr 1fr}.bilan-grid{grid-template-columns:1fr}.fg.c4{grid-template-columns:1fr 1fr}}
 
 ::-webkit-scrollbar{width:4px;height:4px}
@@ -329,7 +341,7 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-hei
 </head>
 <body>
 
-<!-- ═══ AUTH OVERLAY ═══ -->
+<!-- AUTH OVERLAY -->
 <div id="authOverlay">
   <div class="auth-box">
     <div class="auth-logo">SYSCOHADA Pro</div>
@@ -338,61 +350,57 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-hei
       <div class="auth-tab active" id="tab-login" onclick="switchTab('login')">Connexion</div>
       <div class="auth-tab" id="tab-register" onclick="switchTab('register')">Créer un profil</div>
     </div>
-    <!-- LOGIN -->
     <div id="form-login" class="auth-form">
-      <div class="af-field">
-        <label class="af-label">Nom d'entreprise</label>
-        <input class="af-input" type="text" id="l-company" placeholder="ex: SOTRA SARL">
-      </div>
-      <div class="af-field">
-        <label class="af-label">Mot de passe</label>
-        <input class="af-input" type="password" id="l-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
-      </div>
+      <div class="af-field"><label class="af-label">Nom d'entreprise</label><input class="af-input" type="text" id="l-company" placeholder="ex: SOTRA SARL"></div>
+      <div class="af-field"><label class="af-label">Mot de passe</label><input class="af-input" type="password" id="l-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
       <div class="auth-err" id="l-err"></div>
       <button class="auth-btn" onclick="doLogin()">⚡ Connexion</button>
     </div>
-    <!-- REGISTER -->
     <div id="form-register" class="auth-form" style="display:none">
-      <div class="af-field">
-        <label class="af-label">Nom de l'entreprise</label>
-        <input class="af-input" type="text" id="r-company" placeholder="ex: SOTRA SARL">
-      </div>
-      <div class="af-field">
-        <label class="af-label">N° Compte de vente de marchandises (701)</label>
-        <input class="af-input" type="text" id="r-compte701" placeholder="ex: 701 ou 7011" value="701">
-      </div>
-      <div class="af-field">
-        <label class="af-label">Exercice comptable</label>
-        <input class="af-input" type="text" id="r-exercice" placeholder="ex: 2024" value="2024" maxlength="4">
-      </div>
-      <div class="af-field">
-        <label class="af-label">Mot de passe (à retenir)</label>
-        <input class="af-input" type="password" id="r-pass" placeholder="Minimum 4 caractères">
-      </div>
+      <div class="af-field"><label class="af-label">Nom de l'entreprise</label><input class="af-input" type="text" id="r-company" placeholder="ex: SOTRA SARL"></div>
+      <div class="af-field"><label class="af-label">N° Compte ventes (701)</label><input class="af-input" type="text" id="r-compte701" placeholder="ex: 701" value="701"></div>
+      <div class="af-field"><label class="af-label">Exercice comptable</label><input class="af-input" type="text" id="r-exercice" placeholder="ex: 2024" value="2024" maxlength="4"></div>
+      <div class="af-field"><label class="af-label">Mot de passe (min 4 car.)</label><input class="af-input" type="password" id="r-pass" placeholder="Minimum 4 caractères"></div>
       <div class="auth-err" id="r-err"></div>
       <button class="auth-btn" onclick="doRegister()">✓ Créer mon profil comptable</button>
     </div>
   </div>
 </div>
 
-<!-- ═══ APP ═══ -->
+<!-- PRINT MODAL -->
+<div class="modal-overlay" id="printModal" onclick="closePrintModal(event)">
+  <div class="print-modal">
+    <div class="print-modal-title">⎙ Imprimer le document</div>
+    <div class="print-modal-sub">Choisissez le format de sortie souhaité</div>
+    <div class="print-options">
+      <div class="print-option" onclick="doPrint('pdf')">
+        <div class="po-icon">📄</div>
+        <div class="po-label">PDF</div>
+        <div class="po-desc">Document portable, idéal pour archivage et envoi</div>
+      </div>
+      <div class="print-option" onclick="doPrint('word')">
+        <div class="po-icon">📝</div>
+        <div class="po-label">Word (.docx)</div>
+        <div class="po-desc">Document éditable, idéal pour modifications</div>
+      </div>
+    </div>
+    <button class="print-cancel" onclick="closePrintModalDirect()">Annuler</button>
+  </div>
+</div>
+
+<!-- APP -->
 <div class="shell" id="appShell" style="display:none">
-  <!-- TOPBAR -->
   <div class="topbar">
     <div class="logo">SYSCOHADA<sub>Intelligence Comptable</sub></div>
     <div class="tb-sep"></div>
-    <div class="company-badge">
-      <span>🏢</span><strong id="topCompanyName">—</strong>
-    </div>
+    <div class="company-badge"><span>🏢</span><strong id="topCompanyName">—</strong></div>
     <div class="topbar-right">
       <div class="ex-wrap">Exercice&nbsp;<input type="text" id="exerciceYear" value="2024" maxlength="4" onchange="updateStats()"></div>
       <div class="badge">SYSCOHADA Révisé 2023</div>
-      <button class="btn btn-ghost" onclick="exportData()">↓ Export</button>
       <button class="btn btn-danger" onclick="doLogout()">⏻ Déconnexion</button>
     </div>
   </div>
 
-  <!-- SIDEBAR -->
   <div class="sidebar">
     <div style="padding:0 8px">
       <div class="sb-title">Navigation</div>
@@ -416,7 +424,6 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-hei
     </div>
   </div>
 
-  <!-- MAIN -->
   <div class="main">
 
     <!-- DASHBOARD -->
@@ -434,17 +441,11 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-hei
       <div class="ai-box">
         <div class="ai-box-header">
           <div class="ai-pulse"></div>
-          <span class="ai-title">ASSISTANT COMPTABLE IA — SAISIE AUTOMATIQUE</span>
-          <small>Groq · Llama 3.3 · SYSCOHADA 2023</small>
+          <span class="ai-title">COMEO AI — SAISIE AUTOMATIQUE</span>
+          <small>par Marcio Jardel ZINZINDOHOUE · Groupe Loko · SYSCOHADA 2023</small>
         </div>
         <div class="ai-messages" id="aiMessages">
-          <div class="msg ai">
-            <div class="msg-av">⚡</div>
-            <div class="msg-body">
-              Bonjour ! Décrivez une opération en langage naturel. Je génère l'écriture SYSCOHADA et l'enregistre automatiquement dans votre base de données.<br><br>
-              <em>Exemple : « Achat de marchandises 500 000 FCFA TTC payé par chèque, TVA 18% »</em>
-            </div>
-          </div>
+          <div class="msg ai"><div class="msg-av">⚡</div><div class="msg-body">Bonjour ! Je suis <strong>COMEO AI</strong>, votre assistant comptable intelligent créé par <em>Marcio Jardel ZINZINDOHOUE</em>, développeur web et étudiant au <em>Groupe Loko</em>.<br><br>Décrivez une opération en langage naturel. Je génère l'écriture SYSCOHADA et l'enregistre automatiquement.<br><br><em>Exemple : « Achat de marchandises 500 000 FCFA TTC payé par chèque, TVA 18% »</em></div></div>
         </div>
         <div class="ai-input-row">
           <textarea class="ai-input" id="aiInput" placeholder="Décrivez une opération… (Entrée pour envoyer)" onkeydown="handleAiKey(event,'dashboard')"></textarea>
@@ -472,13 +473,11 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-hei
       <div class="ai-box">
         <div class="ai-box-header">
           <div class="ai-pulse"></div>
-          <span class="ai-title">SAISIE ASSISTÉE PAR IA</span>
-          <small>Décrivez l'opération → l'IA remplit les lignes automatiquement</small>
+          <span class="ai-title">COMEO AI — SAISIE ASSISTÉE</span>
+          <small>Décrivez l'opération → COMEO AI remplit les lignes</small>
         </div>
         <div class="ai-messages" id="aiMessages-saisie" style="height:140px">
-          <div class="msg ai"><div class="msg-av">⚡</div>
-            <div class="msg-body">Décrivez l'opération et je remplirai les lignes d'écriture pour vous.</div>
-          </div>
+          <div class="msg ai"><div class="msg-av">⚡</div><div class="msg-body">Décrivez l'opération et <strong>COMEO AI</strong> remplira les lignes d'écriture pour vous.</div></div>
         </div>
         <div class="ai-input-row">
           <textarea class="ai-input" id="aiInput-saisie" placeholder="ex: Achat matériel bureau 250000 FCFA HT par chèque..." onkeydown="handleAiKey(event,'saisie')"></textarea>
@@ -504,12 +503,7 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-hei
       <div class="card">
         <div class="card-title"><span class="icon">≡</span> Lignes d'écriture</div>
         <table class="et">
-          <thead><tr>
-            <th style="width:130px">Compte</th><th>Libellé</th>
-            <th style="width:145px;text-align:right">Débit (FCFA)</th>
-            <th style="width:145px;text-align:right">Crédit (FCFA)</th>
-            <th style="width:34px"></th>
-          </tr></thead>
+          <thead><tr><th style="width:130px">Compte</th><th>Libellé</th><th style="width:145px;text-align:right">Débit (FCFA)</th><th style="width:145px;text-align:right">Crédit (FCFA)</th><th style="width:34px"></th></tr></thead>
           <tbody id="lignesBody"></tbody>
         </table>
         <button class="add-line-btn" onclick="addLigne()">＋ Ajouter une ligne</button>
@@ -527,19 +521,17 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-hei
         <div><h1>Journal général</h1><p>Toutes les opérations enregistrées</p></div>
         <div class="ph-actions">
           <button class="btn btn-ghost" onclick="navigate('saisie')">+ Nouvelle</button>
-          <button class="btn btn-ghost" onclick="window.print()">⎙ Imprimer</button>
+          <button class="btn btn-ghost" onclick="openPrintModal('journal')">⎙ Imprimer</button>
         </div>
       </div>
       <div class="ai-box">
         <div class="ai-box-header">
           <div class="ai-pulse"></div>
-          <span class="ai-title">SAISIE RAPIDE VIA IA</span>
+          <span class="ai-title">COMEO AI — SAISIE RAPIDE</span>
           <small>Décrivez une opération → enregistrement automatique</small>
         </div>
         <div class="ai-messages" id="aiMessages-journal" style="height:110px">
-          <div class="msg ai"><div class="msg-av">⚡</div>
-            <div class="msg-body">Décrivez une opération ici pour l'ajouter directement au journal.</div>
-          </div>
+          <div class="msg ai"><div class="msg-av">⚡</div><div class="msg-body">Décrivez une opération ici pour l'ajouter directement au journal.</div></div>
         </div>
         <div class="ai-input-row">
           <textarea class="ai-input" id="aiInput-journal" placeholder="ex: Vente 200000 FCFA HT au client Koné par espèces..." onkeydown="handleAiKey(event,'journal')"></textarea>
@@ -556,13 +548,7 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-hei
       </div>
       <div class="dtw">
         <table class="dt">
-          <thead><tr>
-            <th>Date</th><th>Jnl</th><th>N° Pièce</th>
-            <th>Compte</th><th>Libellé</th>
-            <th style="text-align:right">Débit</th>
-            <th style="text-align:right">Crédit</th>
-            <th style="width:32px"></th>
-          </tr></thead>
+          <thead><tr><th>Date</th><th>Jnl</th><th>N° Pièce</th><th>Compte</th><th>Libellé</th><th style="text-align:right">Débit</th><th style="text-align:right">Crédit</th><th style="width:32px"></th></tr></thead>
           <tbody id="journalBody"><tr><td colspan="8"><div class="fb-loading">Chargement…</div></td></tr></tbody>
         </table>
       </div>
@@ -572,27 +558,23 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-hei
     <div class="view" id="view-grandlivre">
       <div class="page-header">
         <div><h1>Grand Livre</h1><p>Mouvements par compte</p></div>
-        <div class="ph-actions"><button class="btn btn-ghost" onclick="window.print()">⎙ Imprimer</button></div>
+        <div class="ph-actions"><button class="btn btn-ghost" onclick="openPrintModal('grandlivre')">⎙ Imprimer</button></div>
       </div>
       <div class="ai-box">
         <div class="ai-box-header">
           <div class="ai-pulse"></div>
-          <span class="ai-title">ANALYSE IA DU GRAND LIVRE</span>
+          <span class="ai-title">COMEO AI — ANALYSE GRAND LIVRE</span>
           <small>Posez une question ou saisissez une opération</small>
         </div>
         <div class="ai-messages" id="aiMessages-grandlivre" style="height:110px">
-          <div class="msg ai"><div class="msg-av">⚡</div>
-            <div class="msg-body">Décrivez une opération à enregistrer, ou demandez une analyse de vos comptes.</div>
-          </div>
+          <div class="msg ai"><div class="msg-av">⚡</div><div class="msg-body">Décrivez une opération à enregistrer, ou demandez une analyse de vos comptes.</div></div>
         </div>
         <div class="ai-input-row">
           <textarea class="ai-input" id="aiInput-grandlivre" placeholder="ex: Achats fournitures bureau 80000 FCFA TTC espèces..." onkeydown="handleAiKey(event,'grandlivre')"></textarea>
           <button class="btn btn-primary" onclick="sendToAI('grandlivre')">⚡ Traiter</button>
         </div>
       </div>
-      <div class="toolbar">
-        <input type="text" class="search-input" placeholder="Compte ou libellé…" id="glSearch" oninput="renderGrandLivre()">
-      </div>
+      <div class="toolbar"><input type="text" class="search-input" placeholder="Compte ou libellé…" id="glSearch" oninput="renderGrandLivre()"></div>
       <div id="grandLivreContent"><div class="empty-state"><div class="icon">⊞</div><p>Aucun mouvement</p></div></div>
     </div>
 
@@ -600,17 +582,15 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-hei
     <div class="view" id="view-balance">
       <div class="page-header">
         <div><h1>Balance générale</h1><p>Synthèse des mouvements et soldes</p></div>
-        <div class="ph-actions"><button class="btn btn-ghost" onclick="window.print()">⎙ Imprimer</button></div>
+        <div class="ph-actions"><button class="btn btn-ghost" onclick="openPrintModal('balance')">⎙ Imprimer</button></div>
       </div>
       <div class="ai-box">
         <div class="ai-box-header">
           <div class="ai-pulse"></div>
-          <span class="ai-title">ANALYSE IA DE LA BALANCE</span>
+          <span class="ai-title">COMEO AI — ANALYSE BALANCE</span>
         </div>
         <div class="ai-messages" id="aiMessages-balance" style="height:100px">
-          <div class="msg ai"><div class="msg-av">⚡</div>
-            <div class="msg-body">Saisissez une opération ou demandez une analyse de votre balance.</div>
-          </div>
+          <div class="msg ai"><div class="msg-av">⚡</div><div class="msg-body">Saisissez une opération ou demandez une analyse de votre balance.</div></div>
         </div>
         <div class="ai-input-row">
           <textarea class="ai-input" id="aiInput-balance" placeholder="ex: Régularisation stock fin d'exercice…" onkeydown="handleAiKey(event,'balance')"></textarea>
@@ -619,11 +599,7 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-hei
       </div>
       <div class="dtw">
         <table class="dt">
-          <thead><tr>
-            <th>Compte</th><th>Libellé</th>
-            <th style="text-align:right">Mvt Débit</th><th style="text-align:right">Mvt Crédit</th>
-            <th style="text-align:right">Solde Débiteur</th><th style="text-align:right">Solde Créditeur</th>
-          </tr></thead>
+          <thead><tr><th>Compte</th><th>Libellé</th><th style="text-align:right">Mvt Débit</th><th style="text-align:right">Mvt Crédit</th><th style="text-align:right">Solde Débiteur</th><th style="text-align:right">Solde Créditeur</th></tr></thead>
           <tbody id="balanceBody"><tr><td colspan="6"><div class="fb-loading">Chargement…</div></td></tr></tbody>
         </table>
       </div>
@@ -633,17 +609,15 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-hei
     <div class="view" id="view-bilan">
       <div class="page-header">
         <div><h1>Bilan</h1><p>Situation au <span id="bilanDate">31/12/2024</span></p></div>
-        <div class="ph-actions"><button class="btn btn-ghost" onclick="window.print()">⎙ Imprimer</button></div>
+        <div class="ph-actions"><button class="btn btn-ghost" onclick="openPrintModal('bilan')">⎙ Imprimer</button></div>
       </div>
       <div class="ai-box">
         <div class="ai-box-header">
           <div class="ai-pulse"></div>
-          <span class="ai-title">ANALYSE IA DU BILAN</span>
+          <span class="ai-title">COMEO AI — ANALYSE BILAN</span>
         </div>
         <div class="ai-messages" id="aiMessages-bilan" style="height:100px">
-          <div class="msg ai"><div class="msg-av">⚡</div>
-            <div class="msg-body">Saisissez une opération de clôture ou demandez une explication de votre bilan.</div>
-          </div>
+          <div class="msg ai"><div class="msg-av">⚡</div><div class="msg-body">Saisissez une opération de clôture ou demandez une explication de votre bilan.</div></div>
         </div>
         <div class="ai-input-row">
           <textarea class="ai-input" id="aiInput-bilan" placeholder="ex: Analyse mon bilan ou saisie opération…" onkeydown="handleAiKey(event,'bilan')"></textarea>
@@ -659,43 +633,37 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-hei
     <div class="view" id="view-resultat">
       <div class="page-header">
         <div><h1>Compte de résultat</h1><p>Exercice <span id="resultatYear">2024</span></p></div>
-        <div class="ph-actions"><button class="btn btn-ghost" onclick="window.print()">⎙ Imprimer</button></div>
+        <div class="ph-actions"><button class="btn btn-ghost" onclick="openPrintModal('resultat')">⎙ Imprimer</button></div>
       </div>
       <div class="ai-box">
         <div class="ai-box-header">
           <div class="ai-pulse"></div>
-          <span class="ai-title">ANALYSE IA DU RÉSULTAT</span>
+          <span class="ai-title">COMEO AI — ANALYSE RÉSULTAT</span>
         </div>
         <div class="ai-messages" id="aiMessages-resultat" style="height:100px">
-          <div class="msg ai"><div class="msg-av">⚡</div>
-            <div class="msg-body">Saisissez une opération de résultat ou demandez une analyse de vos performances.</div>
-          </div>
+          <div class="msg ai"><div class="msg-av">⚡</div><div class="msg-body">Saisissez une opération de résultat ou demandez une analyse de vos performances.</div></div>
         </div>
         <div class="ai-input-row">
           <textarea class="ai-input" id="aiInput-resultat" placeholder="ex: Analyse mes charges et produits…" onkeydown="handleAiKey(event,'resultat')"></textarea>
           <button class="btn btn-primary" onclick="sendToAI('resultat')">⚡ Analyser</button>
         </div>
       </div>
-      <div class="card">
-        <div id="resultatContent"><div class="empty-state"><div class="icon">↗</div><p>Aucune donnée</p></div></div>
-      </div>
+      <div class="card"><div id="resultatContent"><div class="empty-state"><div class="icon">↗</div><p>Aucune donnée</p></div></div></div>
     </div>
 
     <!-- TRESORERIE -->
     <div class="view" id="view-tresorerie">
       <div class="page-header">
         <div><h1>Tableau de trésorerie</h1><p>Flux de trésorerie — Classe 5</p></div>
-        <div class="ph-actions"><button class="btn btn-ghost" onclick="window.print()">⎙ Imprimer</button></div>
+        <div class="ph-actions"><button class="btn btn-ghost" onclick="openPrintModal('tresorerie')">⎙ Imprimer</button></div>
       </div>
       <div class="ai-box">
         <div class="ai-box-header">
           <div class="ai-pulse"></div>
-          <span class="ai-title">MOUVEMENTS DE TRÉSORERIE IA</span>
+          <span class="ai-title">COMEO AI — MOUVEMENTS TRÉSORERIE</span>
         </div>
         <div class="ai-messages" id="aiMessages-tresorerie" style="height:100px">
-          <div class="msg ai"><div class="msg-av">⚡</div>
-            <div class="msg-body">Décrivez un encaissement ou décaissement pour l'enregistrer.</div>
-          </div>
+          <div class="msg ai"><div class="msg-av">⚡</div><div class="msg-body">Décrivez un encaissement ou décaissement pour l'enregistrer.</div></div>
         </div>
         <div class="ai-input-row">
           <textarea class="ai-input" id="aiInput-tresorerie" placeholder="ex: Encaissement chèque client 450000 FCFA…" onkeydown="handleAiKey(event,'tresorerie')"></textarea>
@@ -720,10 +688,7 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-hei
       </div>
       <div class="dtw">
         <table class="dt">
-          <thead><tr>
-            <th style="width:88px">Code</th><th>Libellé</th>
-            <th style="width:100px">Classe</th><th style="width:82px">Nature</th>
-          </tr></thead>
+          <thead><tr><th style="width:88px">Code</th><th>Libellé</th><th style="width:100px">Classe</th><th style="width:82px">Nature</th></tr></thead>
           <tbody id="pcBody"></tbody>
         </table>
       </div>
@@ -731,6 +696,7 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-hei
 
   </div><!-- /main -->
 </div><!-- /shell -->
+
 <div class="toast-container" id="toastContainer"></div>
 
 <script>
@@ -742,13 +708,6 @@ const CLASS_NAMES={'1':'Capitaux','2':'Immobilisations','3':'Stocks','4':'Tiers'
 const NATURE_MAP={'1':'Passif','2':'Actif','3':'Actif','4':'Mixte','5':'Actif','6':'Charge','7':'Produit','8':'Spécial'};
 
 // ══════════════════════════════════════════════════════
-// GROQ CONFIG
-// ══════════════════════════════════════════════════════
-const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
-const GROQ_API_KEY = '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';
-const GROQ_MODEL   = 'llama-3.3-70b-versatile';
-
-// ══════════════════════════════════════════════════════
 // STATE
 // ══════════════════════════════════════════════════════
 let ecritures = [];
@@ -756,9 +715,15 @@ let lignes = [];
 let pieceCounter = 1;
 let currentProfile = null;
 let isAILoading = false;
+let printContext = '';
 
 // ══════════════════════════════════════════════════════
-// AUTH — Firebase Firestore
+// GROQ API KEY
+// ══════════════════════════════════════════════════════
+const GROQ_API_KEY = 'VOTRE_NOUVELLE_CLE_GROQ_ICI';
+
+// ══════════════════════════════════════════════════════
+// AUTH
 // ══════════════════════════════════════════════════════
 function switchTab(t) {
   document.getElementById('tab-login').classList.toggle('active', t==='login');
@@ -768,11 +733,11 @@ function switchTab(t) {
 }
 
 async function doRegister() {
-  const company    = document.getElementById('r-company').value.trim();
-  const compte701  = document.getElementById('r-compte701').value.trim() || '701';
-  const exercice   = document.getElementById('r-exercice').value.trim() || '2024';
-  const pass       = document.getElementById('r-pass').value;
-  const err        = document.getElementById('r-err');
+  const company = document.getElementById('r-company').value.trim();
+  const compte701 = document.getElementById('r-compte701').value.trim() || '701';
+  const exercice = document.getElementById('r-exercice').value.trim() || '2024';
+  const pass = document.getElementById('r-pass').value;
+  const err = document.getElementById('r-err');
   err.classList.remove('show');
   if (!company) { err.textContent="Nom d'entreprise requis"; err.classList.add('show'); return; }
   if (pass.length < 4) { err.textContent='Mot de passe trop court (min 4 caractères)'; err.classList.add('show'); return; }
@@ -780,7 +745,7 @@ async function doRegister() {
   try {
     await waitForFirebase();
     const docRef = window._fbDoc(window._db, 'profiles', profileId);
-    const snap   = await window._fbGetDoc(docRef);
+    const snap = await window._fbGetDoc(docRef);
     if (snap.exists()) { err.textContent='Ce nom existe déjà. Connectez-vous.'; err.classList.add('show'); return; }
     await window._fbSetDoc(docRef, { company, compte701, exercice, password: btoa(pass), createdAt: new Date().toISOString() });
     toast('Profil créé ! Connectez-vous maintenant.', 'success');
@@ -791,16 +756,16 @@ async function doRegister() {
 
 async function doLogin() {
   const company = document.getElementById('l-company').value.trim();
-  const pass    = document.getElementById('l-pass').value;
-  const err     = document.getElementById('l-err');
+  const pass = document.getElementById('l-pass').value;
+  const err = document.getElementById('l-err');
   err.classList.remove('show');
   if (!company || !pass) { err.textContent='Remplissez tous les champs'; err.classList.add('show'); return; }
   const profileId = company.toLowerCase().replace(/[^a-z0-9]/g,'_');
   try {
     await waitForFirebase();
     const docRef = window._fbDoc(window._db, 'profiles', profileId);
-    const snap   = await window._fbGetDoc(docRef);
-    if (!snap.exists()) { err.textContent='Entreprise introuvable. Créez un profil.'; err.classList.add('show'); return; }
+    const snap = await window._fbGetDoc(docRef);
+    if (!snap.exists()) { err.textContent="Entreprise introuvable. Créez d'abord un profil."; err.classList.add('show'); return; }
     const profile = snap.data();
     if (atob(profile.password) !== pass) { err.textContent='Mot de passe incorrect'; err.classList.add('show'); return; }
     currentProfile = { ...profile, id: profileId };
@@ -818,7 +783,7 @@ function doLogout() {
 }
 
 function waitForFirebase() {
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     if (window._fbReady) { resolve(); return; }
     document.addEventListener('firebase-ready', resolve, { once: true });
   });
@@ -836,14 +801,14 @@ async function loadApp() {
 }
 
 // ══════════════════════════════════════════════════════
-// FIRESTORE — Écritures
+// FIRESTORE
 // ══════════════════════════════════════════════════════
 async function loadEcrituresFromFirestore() {
   try {
-    const col  = window._fbCollection(window._db, 'profiles', currentProfile.id, 'ecritures');
-    const q    = window._fbQuery(col, window._fbOrderBy('date', 'asc'));
+    const col = window._fbCollection(window._db, 'profiles', currentProfile.id, 'ecritures');
+    const q = window._fbQuery(col, window._fbOrderBy('date', 'asc'));
     const snap = await window._fbGetDocs(q);
-    ecritures  = [];
+    ecritures = [];
     snap.forEach(d => ecritures.push({ ...d.data(), _docId: d.id }));
     pieceCounter = ecritures.length + 1;
   } catch(e) { toast('Erreur chargement: '+e.message, 'error'); }
@@ -851,7 +816,7 @@ async function loadEcrituresFromFirestore() {
 
 async function saveEcritureToFirestore(ecriture) {
   try {
-    const col    = window._fbCollection(window._db, 'profiles', currentProfile.id, 'ecritures');
+    const col = window._fbCollection(window._db, 'profiles', currentProfile.id, 'ecritures');
     const docRef = await window._fbAddDoc(col, ecriture);
     ecriture._docId = docRef.id;
     return docRef.id;
@@ -867,26 +832,275 @@ async function deleteEcritureFromFirestore(docId) {
 // ══════════════════════════════════════════════════════
 // NAVIGATION
 // ══════════════════════════════════════════════════════
-const VIEW_KEYS = {
-  dashboard:'tableau de bord', saisie:'saisie', journal:'journal',
-  grandlivre:'grand livre', balance:'balance', bilan:'bilan',
-  resultat:'résultat', tresorerie:'trésorerie', plancomptable:'plan'
-};
-const RENDERERS = {
-  journal:renderJournal, grandlivre:renderGrandLivre, balance:renderBalance,
-  bilan:renderBilan, resultat:renderResultat, tresorerie:renderTresorerie,
-  plancomptable:renderPlanComptable, saisie:initSaisie
-};
+const VIEW_KEYS = { dashboard:'tableau de bord', saisie:'saisie', journal:'journal', grandlivre:'grand livre', balance:'balance', bilan:'bilan', resultat:'résultat', tresorerie:'trésorerie', plancomptable:'plan' };
+const RENDERERS = { journal:renderJournal, grandlivre:renderGrandLivre, balance:renderBalance, bilan:renderBilan, resultat:renderResultat, tresorerie:renderTresorerie, plancomptable:renderPlanComptable, saisie:initSaisie };
 
 function navigate(view) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('view-' + view).classList.add('active');
   const key = VIEW_KEYS[view] || view;
-  document.querySelectorAll('.nav-item').forEach(n => {
-    if (n.textContent.toLowerCase().includes(key)) n.classList.add('active');
-  });
+  document.querySelectorAll('.nav-item').forEach(n => { if (n.textContent.toLowerCase().includes(key)) n.classList.add('active'); });
   if (RENDERERS[view]) RENDERERS[view]();
+}
+
+// ══════════════════════════════════════════════════════
+// PRINT MODAL
+// ══════════════════════════════════════════════════════
+function openPrintModal(context) {
+  printContext = context;
+  document.getElementById('printModal').classList.add('open');
+}
+
+function closePrintModal(e) {
+  if (e.target === document.getElementById('printModal')) {
+    closePrintModalDirect();
+  }
+}
+
+function closePrintModalDirect() {
+  document.getElementById('printModal').classList.remove('open');
+}
+
+function doPrint(format) {
+  closePrintModalDirect();
+
+  if (format === 'pdf') {
+    // Impression PDF via le dialogue natif du navigateur
+    setTimeout(() => {
+      injectPrintWatermark();
+      window.print();
+    }, 150);
+  } else if (format === 'word') {
+    // Génération Word via HTML-to-DOCX technique
+    exportToWord();
+  }
+}
+
+function injectPrintWatermark() {
+  // Ajoute une signature en bas de page à l'impression
+  const existing = document.querySelector('.print-watermark');
+  if (existing) existing.remove();
+  const wm = document.createElement('div');
+  wm.className = 'print-watermark';
+  const yr = document.getElementById('exerciceYear')?.value || new Date().getFullYear();
+  const company = currentProfile?.company || '';
+  wm.textContent = `SYSCOHADA Pro · ${company} · Exercice ${yr} · Généré par COMEO AI — Marcio Jardel ZINZINDOHOUE, Développeur Web, Groupe Loko`;
+  const main = document.querySelector('.main');
+  if (main) main.appendChild(wm);
+}
+
+function exportToWord() {
+  const yr = document.getElementById('exerciceYear')?.value || new Date().getFullYear();
+  const company = currentProfile?.company || 'Entreprise';
+  const activeView = document.querySelector('.view.active');
+  if (!activeView) { toast('Aucun contenu à exporter', 'error'); return; }
+
+  // Récupère le contenu principal de la vue active (sans IA box)
+  const title = activeView.querySelector('.page-header h1')?.textContent || 'Document';
+  const subtitle = activeView.querySelector('.page-header p')?.textContent || '';
+
+  // Construit un document HTML propre pour conversion Word
+  const tableHtml = extractPrintableContent(activeView);
+
+  const html = `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+  body { font-family: Arial, sans-serif; font-size: 11pt; color: #1a1a1a; margin: 2cm; }
+  h1 { font-size: 18pt; color: #8a6420; border-bottom: 2px solid #c9a96e; padding-bottom: 6px; margin-bottom: 4px; }
+  .subtitle { font-size: 9pt; color: #777; margin-bottom: 18px; }
+  .meta { font-size: 9pt; color: #555; margin-bottom: 20px; }
+  table { width: 100%; border-collapse: collapse; font-size: 10pt; margin-top: 10px; }
+  th { background: #f0e8d8; color: #5a3e10; padding: 7px 10px; text-align: left; font-size: 8.5pt; text-transform: uppercase; border: 1px solid #ddd; }
+  td { padding: 6px 10px; border: 1px solid #ddd; color: #333; }
+  tr:nth-child(even) td { background: #fafafa; }
+  .footer { margin-top: 40px; font-size: 8pt; color: #aaa; border-top: 1px solid #eee; padding-top: 8px; text-align: center; }
+  .total-row td { font-weight: bold; background: #f5f5f5; border-top: 2px solid #c9a96e; }
+  .bilan-section { margin-bottom: 20px; }
+  .bilan-section h3 { font-size: 9pt; color: #8a6420; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; border-bottom: 1px solid #eee; padding-bottom: 3px; }
+  .section-title { font-size: 13pt; font-weight: bold; color: #2a1800; margin: 22px 0 8px; border-left: 4px solid #c9a96e; padding-left: 10px; }
+</style>
+</head>
+<body>
+<h1>${title}</h1>
+<div class="subtitle">${subtitle}</div>
+<div class="meta"><strong>Entreprise :</strong> ${company} &nbsp;|&nbsp; <strong>Exercice :</strong> ${yr} &nbsp;|&nbsp; <strong>Imprimé le :</strong> ${new Date().toLocaleDateString('fr-FR')}</div>
+${tableHtml}
+<div class="footer">Document généré par SYSCOHADA Pro · COMEO AI · Créé par Marcio Jardel ZINZINDOHOUE, Développeur Web, Groupe Loko</div>
+</body>
+</html>`;
+
+  const blob = new Blob(['\ufeff' + html], { type: 'application/msword;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${title.replace(/\s+/g,'_')}_${company}_${yr}.doc`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  toast('✓ Document Word téléchargé', 'success');
+}
+
+function extractPrintableContent(view) {
+  // Extraire tableaux et contenus pertinents de la vue active
+  let html = '';
+
+  // Tables
+  const tables = view.querySelectorAll('.dt, .et');
+  tables.forEach(table => {
+    const clone = table.cloneNode(true);
+    // Nettoyer les boutons de suppression
+    clone.querySelectorAll('.del-line, button').forEach(b => b.remove());
+    html += clone.outerHTML;
+  });
+
+  // Bilan grid
+  const bilanGrid = view.querySelector('#bilanContent');
+  if (bilanGrid && bilanGrid.children.length > 0 && !bilanGrid.querySelector('.empty-state')) {
+    html += buildBilanWordHtml();
+  }
+
+  // Résultat
+  const resultatContent = view.querySelector('#resultatContent');
+  if (resultatContent && !resultatContent.querySelector('.empty-state')) {
+    html += buildResultatWordHtml();
+  }
+
+  // Trésorerie
+  const tresoContent = view.querySelector('#tresorerieContent');
+  if (tresoContent && !tresoContent.querySelector('.empty-state')) {
+    html += buildTresorerieWordHtml();
+  }
+
+  // Grand Livre
+  const glContent = view.querySelector('#grandLivreContent');
+  if (glContent && !glContent.querySelector('.empty-state')) {
+    html += buildGrandLivreWordHtml();
+  }
+
+  if (!html.trim()) {
+    html = '<p style="color:#999;text-align:center;padding:30px">Aucune donnée à exporter pour cette section.</p>';
+  }
+
+  return html;
+}
+
+function buildBilanWordHtml() {
+  const map = getMap();
+  if (!Object.keys(map).length) return '';
+
+  const actif = {immob:{title:'ACTIF IMMOBILISÉ',comptes:[]},stocks:{title:'STOCKS',comptes:[]},creances:{title:'CRÉANCES',comptes:[]},treso:{title:'TRÉSORERIE ACTIVE',comptes:[]}};
+  const passif = {cap:{title:'CAPITAUX PROPRES',comptes:[]},df:{title:'DETTES FINANCIÈRES',comptes:[]},dct:{title:'DETTES À COURT TERME',comptes:[]},tp:{title:'TRÉSORERIE PASSIVE',comptes:[]}};
+
+  Object.entries(map).forEach(([code,acc]) => {
+    const s=acc.debit-acc.credit, cl=code[0], e={code,lib:(PC[code]||code).substring(0,40),solde:Math.abs(s)};
+    if(cl==='2'){if(s>0)actif.immob.comptes.push(e);}
+    else if(cl==='3'){if(s>0)actif.stocks.comptes.push(e);}
+    else if(cl==='4'){if(s>0)actif.creances.comptes.push(e);else if(s<0)passif.dct.comptes.push({...e,solde:Math.abs(s)});}
+    else if(cl==='5'){if(s>0)actif.treso.comptes.push(e);else passif.tp.comptes.push({...e,solde:Math.abs(s)});}
+    else if(cl==='1'){const n=parseInt(code);(n<=160?passif.cap:passif.df).comptes.push({code,lib:(PC[code]||code).substring(0,40),solde:Math.abs(s)});}
+  });
+
+  const buildSection = (sections, colTitle) => {
+    let h = `<div class="bilan-section"><div class="section-title">${colTitle}</div>`;
+    let total = 0;
+    sections.forEach(s => {
+      if (!s.comptes.length) return;
+      const sTotal = s.comptes.reduce((sum,c)=>sum+c.solde,0);
+      total += sTotal;
+      h += `<h3>${s.title}</h3><table><tr><th>Code</th><th>Libellé</th><th style="text-align:right">Montant (FCFA)</th></tr>`;
+      s.comptes.forEach(c => {
+        h += `<tr><td>${c.code}</td><td>${c.lib}</td><td style="text-align:right">${fn(c.solde)}</td></tr>`;
+      });
+      h += `<tr class="total-row"><td colspan="2">Sous-total ${s.title}</td><td style="text-align:right">${fn(sTotal)}</td></tr></table>`;
+    });
+    h += `<p><strong>TOTAL ${colTitle} : ${fn(total)} FCFA</strong></p></div>`;
+    return h;
+  };
+
+  return buildSection(Object.values(actif), 'ACTIF') + buildSection(Object.values(passif), 'PASSIF');
+}
+
+function buildResultatWordHtml() {
+  const map = getMap();
+  if (!Object.keys(map).length) return '';
+
+  const gt = pfx => Object.entries(map).filter(([c])=>pfx.some(p=>c.startsWith(p))).reduce((s,[,a])=>s+(a.debit-a.credit),0);
+  const ventes=Math.abs(gt(['70','71','72','73'])), achats=gt(['60','61','62','63','64']);
+  const cp=gt(['66']), amort=gt(['68','69']), autres=gt(['65']);
+  const ff=gt(['67']), rf_p=Math.abs(gt(['77']));
+  const haoC=gt(['81','83','85']), haoP=Math.abs(gt(['82','84','86'])), imp=gt(['89']);
+  const mc=ventes-achats-autres, ebe=mc-cp, re=ebe-amort;
+  const rf=rf_p-ff, rao=re+rf, rhao=haoP-haoC, res=rao+rhao-imp;
+
+  const rows = [
+    ['Chiffre d\'affaires (70–73)', fn(ventes), ''],
+    ['Achats et charges externes (60–65)', fn(achats), 'déduction'],
+    ['Marge commerciale', fn(mc), 'total'],
+    ['Charges de personnel (66)', fn(cp), 'déduction'],
+    ['EBE', fn(ebe), 'total'],
+    ['Dotations aux amortissements', fn(amort), 'déduction'],
+    ['Résultat d\'exploitation (RE)', fn(re), 'total'],
+    ['Revenus financiers (77)', fn(rf_p), ''],
+    ['Charges financières (67)', fn(ff), 'déduction'],
+    ['Résultat financier (RF)', fn(rf), 'total'],
+    ['RAO', fn(rao), 'total'],
+    ['Produits H.A.O.', fn(haoP), ''],
+    ['Charges H.A.O.', fn(haoC), 'déduction'],
+    ['Résultat H.A.O.', fn(rhao), 'total'],
+    ['Impôts sur les bénéfices (89)', fn(imp), 'déduction'],
+  ];
+
+  let h = '<div class="section-title">COMPTE DE RÉSULTAT</div><table><tr><th>Rubrique</th><th style="text-align:right">Montant (FCFA)</th><th>Sens</th></tr>';
+  rows.forEach(([label, val, type]) => {
+    const cls = type === 'total' ? ' class="total-row"' : '';
+    h += `<tr${cls}><td>${label}</td><td style="text-align:right">${val}</td><td style="font-size:9pt;color:#999">${type}</td></tr>`;
+  });
+  h += `<tr class="total-row" style="background:#f0e8d8"><td><strong>${res >= 0 ? 'RÉSULTAT NET — BÉNÉFICE' : 'RÉSULTAT NET — PERTE'}</strong></td><td style="text-align:right"><strong>${fn(Math.abs(res))} FCFA</strong></td><td></td></tr></table>`;
+  return h;
+}
+
+function buildTresorerieWordHtml() {
+  const map = getMap();
+  const tc = Object.entries(map).filter(([c])=>c.startsWith('5'));
+  if (!tc.length) return '';
+  const total = tc.reduce((s,[,a])=>s+(a.debit-a.credit),0);
+
+  let h = '<div class="section-title">TRÉSORERIE — CLASSE 5</div><table><tr><th>Code</th><th>Libellé</th><th style="text-align:right">Solde (FCFA)</th></tr>';
+  tc.forEach(([code, acc]) => {
+    const s = acc.debit - acc.credit;
+    h += `<tr><td>${code}</td><td>${(PC[code]||'').substring(0,40)}</td><td style="text-align:right">${fn(s)} ${s<0?'(Cr)':''}</td></tr>`;
+  });
+  h += `<tr class="total-row"><td colspan="2"><strong>Trésorerie nette</strong></td><td style="text-align:right"><strong>${fn(total)} FCFA</strong></td></tr></table>`;
+  return h;
+}
+
+function buildGrandLivreWordHtml() {
+  const map = getMap();
+  const comptes = Object.keys(map).sort();
+  let h = '';
+
+  comptes.forEach(code => {
+    const acc = map[code];
+    const s = acc.debit - acc.credit;
+    const lib = PC[code] || 'Compte ' + code;
+
+    h += `<div class="section-title">${code} — ${lib.substring(0,50)}</div>`;
+    h += `<table><tr><th>Date</th><th>Journal</th><th>Pièce</th><th>Libellé</th><th style="text-align:right">Débit</th><th style="text-align:right">Crédit</th></tr>`;
+    acc.mvts.forEach(m => {
+      h += `<tr><td>${m.date}</td><td>${m.journal}</td><td>${m.piece}</td><td>${m.libelle}</td>
+             <td style="text-align:right">${m.debit ? fn(m.debit) : ''}</td>
+             <td style="text-align:right">${m.credit ? fn(m.credit) : ''}</td></tr>`;
+    });
+    h += `<tr class="total-row"><td colspan="3"></td><td>TOTAUX</td>
+           <td style="text-align:right">${fn(acc.debit)}</td>
+           <td style="text-align:right">${fn(acc.credit)}</td></tr></table><br>`;
+  });
+
+  return h;
 }
 
 // ══════════════════════════════════════════════════════
@@ -895,7 +1109,7 @@ function navigate(view) {
 function updateStats() {
   let tD=0, tC=0;
   ecritures.forEach(e => e.lignes.forEach(l => { tD+=l.debit||0; tC+=l.credit||0; }));
-  const all  = ecritures.flatMap(e => e.lignes);
+  const all = ecritures.flatMap(e => e.lignes);
   const prod = all.filter(l=>l.compte?.[0]==='7').reduce((s,l)=>s+(l.credit||0),0);
   const chg  = all.filter(l=>l.compte?.[0]==='6').reduce((s,l)=>s+(l.debit||0),0);
   const res  = prod - chg;
@@ -957,12 +1171,9 @@ function renderLignes() {
           onblur="hideDropdown(${i})">
         <div class="adrop" id="drop-${i}"></div>
       </div></td>
-      <td><input type="text" value="${l.libelle}" placeholder="Libellé…" style="width:100%"
-        oninput="lignes[${i}].libelle=this.value"></td>
-      <td><input type="text" value="${l.debit||''}" placeholder="0" class="mono" style="text-align:right;width:100%"
-        oninput="lignes[${i}].debit=parseFloat(this.value.replace(/[^0-9.]/g,''))||0;updateBalance()"></td>
-      <td><input type="text" value="${l.credit||''}" placeholder="0" class="mono" style="text-align:right;width:100%"
-        oninput="lignes[${i}].credit=parseFloat(this.value.replace(/[^0-9.]/g,''))||0;updateBalance()"></td>
+      <td><input type="text" value="${l.libelle}" placeholder="Libellé…" style="width:100%" oninput="lignes[${i}].libelle=this.value"></td>
+      <td><input type="text" value="${l.debit||''}" placeholder="0" class="mono" style="text-align:right;width:100%" oninput="lignes[${i}].debit=parseFloat(this.value.replace(/[^0-9.]/g,''))||0;updateBalance()"></td>
+      <td><input type="text" value="${l.credit||''}" placeholder="0" class="mono" style="text-align:right;width:100%" oninput="lignes[${i}].credit=parseFloat(this.value.replace(/[^0-9.]/g,''))||0;updateBalance()"></td>
       <td><button class="del-line" onclick="removeLigne(${i})">✕</button></td>`;
     tbody.appendChild(tr);
   });
@@ -970,7 +1181,7 @@ function renderLignes() {
 }
 
 function updateAccountSuggest(idx, input) {
-  const q    = input.value.toLowerCase().trim();
+  const q = input.value.toLowerCase().trim();
   const drop = document.getElementById('drop-'+idx);
   if (!q || q.length < 2) { drop.classList.remove('open'); return; }
   const matches = Object.entries(PC).filter(([code,lib])=>code.startsWith(q)||lib.toLowerCase().includes(q)).slice(0,12);
@@ -992,9 +1203,7 @@ function selectAccount(idx, code, lib) {
   }, 50);
 }
 
-function hideDropdown(idx) {
-  setTimeout(()=>{ const d=document.getElementById('drop-'+idx); if(d) d.classList.remove('open'); },200);
-}
+function hideDropdown(idx) { setTimeout(()=>{ const d=document.getElementById('drop-'+idx); if(d) d.classList.remove('open'); },200); }
 
 function updateBalance() {
   let d=0, c=0;
@@ -1021,17 +1230,14 @@ async function saveEcriture() {
   const ecriture = {
     id: Date.now(), date, journal, piece, libelle,
     createdAt: new Date().toISOString(),
-    lignes: valid.map(l => ({
-      compte: l.compte, libelle: l.libelle || PC[l.compte] || '',
-      debit: parseFloat(l.debit)||0, credit: parseFloat(l.credit)||0
-    }))
+    lignes: valid.map(l => ({ compte: l.compte, libelle: l.libelle || PC[l.compte] || '', debit: parseFloat(l.debit)||0, credit: parseFloat(l.credit)||0 }))
   };
   await saveEcritureToFirestore(ecriture);
   ecritures.push(ecriture);
   pieceCounter++;
   lignes = [];
   updateStats();
-  toast('✓ Écriture enregistrée dans Firestore','success');
+  toast('✓ Écriture enregistrée','success');
   initSaisie();
 }
 
@@ -1051,19 +1257,13 @@ function renderJournal() {
       rows.push({e,l});
     });
   });
-  if (!rows.length) {
-    tbody.innerHTML = '<tr><td colspan="8"><div class="empty-state"><div class="icon">≡</div><p>Aucune écriture</p></div></td></tr>';
-    return;
-  }
+  if (!rows.length) { tbody.innerHTML='<tr><td colspan="8"><div class="empty-state"><div class="icon">≡</div><p>Aucune écriture</p></div></td></tr>'; return; }
   tbody.innerHTML = rows.map(({e,l}) => `
     <tr>
       <td class="mono" style="font-size:11px">${e.date}</td>
       <td><span class="ct">${e.journal}</span></td>
       <td class="mono" style="color:var(--text3);font-size:10px">${e.piece}</td>
-      <td>
-        <span class="ct">${l.compte}</span>
-        <span style="color:var(--text3);font-size:10px;margin-left:4px">${(PC[l.compte]||'').substring(0,22)}</span>
-      </td>
+      <td><span class="ct">${l.compte}</span><span style="color:var(--text3);font-size:10px;margin-left:4px">${(PC[l.compte]||'').substring(0,22)}</span></td>
       <td style="color:var(--text2)">${l.libelle||e.libelle}</td>
       <td class="debit">${l.debit?fn(l.debit):''}</td>
       <td class="credit">${l.credit?fn(l.credit):''}</td>
@@ -1102,14 +1302,10 @@ function renderGrandLivre() {
   if (!comptes.length) { content.innerHTML='<div class="empty-state"><div class="icon">⊞</div><p>Aucun mouvement</p></div>'; return; }
   const filtered = comptes.filter(c=>!search||c.includes(search)||(PC[c]||'').toLowerCase().includes(search));
   content.innerHTML = filtered.map(code => {
-    const acc = map[code];
-    const s   = acc.debit-acc.credit;
-    const lib = PC[code]||'Compte '+code;
-    const isD = s>=0;
+    const acc = map[code], s = acc.debit-acc.credit, lib = PC[code]||'Compte '+code, isD = s>=0;
     return `<div class="gl-account">
       <div class="gl-account-header" onclick="toggleGL('gl-${code}')">
-        <span class="gl-code">${code}</span>
-        <span class="gl-name">${lib.substring(0,50)}</span>
+        <span class="gl-code">${code}</span><span class="gl-name">${lib.substring(0,50)}</span>
         <span style="color:var(--text3);font-size:10px;font-family:var(--font-mono);margin-right:8px">${acc.mvts.length} mvt${acc.mvts.length>1?'s':''}</span>
         <span class="gl-balance ${isD?'debit':'credit'}">${isD?'Sd':'Sc'} ${fn(Math.abs(s))} FCFA</span>
       </div>
@@ -1128,17 +1324,14 @@ function renderGrandLivre() {
               <td class="debit">${m.debit?fn(m.debit):''}</td>
               <td class="credit">${m.credit?fn(m.credit):''}</td>
               <td style="text-align:right;font-family:var(--font-mono);font-size:11px;color:${rs>=0?'var(--blue)':'var(--green)'}">
-                ${rs>=0?'Sd ':'Sc '}${fn(Math.abs(rs))}
-              </td>
+                ${rs>=0?'Sd ':'Sc '}${fn(Math.abs(rs))}</td>
             </tr>`;
           }).join('')}
           <tr class="total-row"><td colspan="4" style="text-align:right">TOTAUX</td>
             <td class="debit">${fn(acc.debit)}</td><td class="credit">${fn(acc.credit)}</td>
             <td style="text-align:right;font-family:var(--font-mono);color:${isD?'var(--blue)':'var(--green)'}">
-              ${isD?'Sd ':'Sc '}${fn(Math.abs(s))}
-            </td>
-          </tr>
-          </tbody>
+              ${isD?'Sd ':'Sc '}${fn(Math.abs(s))}</td>
+          </tr></tbody>
         </table>
       </div>
     </div>`;
@@ -1202,16 +1395,8 @@ function renderBilan() {
   const tA=[...actif.immob.comptes,...actif.stocks.comptes,...actif.creances.comptes,...actif.treso.comptes].reduce((s,c)=>s+c.solde,0);
   const tP=[...passif.cap.comptes,...passif.df.comptes,...passif.dct.comptes,...passif.tp.comptes].reduce((s,c)=>s+c.solde,0);
   content.innerHTML = `
-    <div class="bilan-col">
-      <div class="bilan-col-header actif">ACTIF</div>
-      ${rc(Object.values(actif))}
-      <div class="bilan-total"><span>TOTAL ACTIF</span><span>${fn(tA)} FCFA</span></div>
-    </div>
-    <div class="bilan-col">
-      <div class="bilan-col-header passif">PASSIF</div>
-      ${rc(Object.values(passif))}
-      <div class="bilan-total"><span>TOTAL PASSIF</span><span>${fn(tP)} FCFA</span></div>
-    </div>`;
+    <div class="bilan-col"><div class="bilan-col-header actif">ACTIF</div>${rc(Object.values(actif))}<div class="bilan-total"><span>TOTAL ACTIF</span><span>${fn(tA)} FCFA</span></div></div>
+    <div class="bilan-col"><div class="bilan-col-header passif">PASSIF</div>${rc(Object.values(passif))}<div class="bilan-total"><span>TOTAL PASSIF</span><span>${fn(tP)} FCFA</span></div></div>`;
 }
 
 // ══════════════════════════════════════════════════════
@@ -1291,9 +1476,9 @@ function renderPlanComptable() {
 }
 
 // ══════════════════════════════════════════════════════
-// AI — GROQ API (appel direct, pas de proxy nécessaire)
+// COMEO AI — GROQ API
 // ══════════════════════════════════════════════════════
-const SYSTEM_PROMPT = `Tu es un expert comptable SYSCOHADA (Système Comptable OHADA Révisé 2023) pour une entreprise en Côte d'Ivoire.
+const SYSTEM_PROMPT = `Tu es COMEO AI, un expert comptable SYSCOHADA (Système Comptable OHADA Révisé 2023) pour une entreprise en Côte d'Ivoire. Tu as été créé par Marcio Jardel ZINZINDOHOUE, étudiant développeur web au Groupe Loko.
 
 Quand l'utilisateur décrit une opération comptable:
 1. Analyse l'opération
@@ -1318,9 +1503,9 @@ function quickAI(text) { document.getElementById('aiInput').value=text; navigate
 
 async function sendToAI(context) {
   if (isAILoading) return;
-  const inputId  = context==='dashboard' ? 'aiInput' : `aiInput-${context}`;
-  const input    = document.getElementById(inputId);
-  const msg      = input.value.trim();
+  const inputId = context==='dashboard' ? 'aiInput' : `aiInput-${context}`;
+  const input = document.getElementById(inputId);
+  const msg = input.value.trim();
   if (!msg) return;
 
   isAILoading = true;
@@ -1333,14 +1518,14 @@ async function sendToAI(context) {
   const tid = appendTyping(context);
 
   try {
-    const response = await fetch(GROQ_API_URL, {
+    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${GROQ_API_KEY}`
       },
       body: JSON.stringify({
-        model: GROQ_MODEL,
+        model: 'llama-3.3-70b-versatile',
         max_tokens: 1500,
         messages: [
           { role: 'system', content: SYSTEM_PROMPT },
@@ -1353,29 +1538,26 @@ async function sendToAI(context) {
 
     if (!response.ok) {
       const errData = await response.json().catch(()=>({}));
-      throw new Error(errData?.error?.message || 'Erreur API Groq: ' + response.status);
+      throw new Error(errData.error?.message || 'Erreur API Groq ' + response.status);
     }
 
-    const data     = await response.json();
+    const data = await response.json();
     const fullText = data.choices?.[0]?.message?.content || 'Pas de réponse.';
 
-    // Séparer explication et JSON
     const markerIdx = fullText.indexOf('###ECRITURE###');
     let displayText = fullText;
-    let jsonStr     = null;
+    let jsonStr = null;
 
     if (markerIdx !== -1) {
       displayText = fullText.substring(0, markerIdx).trim();
-      jsonStr     = fullText.substring(markerIdx + 14).trim();
+      jsonStr = fullText.substring(markerIdx + 14).trim();
     }
 
     appendMsg(context, 'ai', displayText);
 
-    // Auto-save si écriture détectée
     if (jsonStr) {
       try {
-        // Nettoyer les backticks éventuels
-        const cleanJson = jsonStr.replace(/```json|```/g,'').trim();
+        const cleanJson = jsonStr.replace(/```json|```/g, '').trim();
         const ecr = JSON.parse(cleanJson);
         if (ecr.lignes && ecr.lignes.length >= 2) {
           let d=0, c=0;
@@ -1394,7 +1576,7 @@ async function sendToAI(context) {
             ecritures.push(ecriture);
             pieceCounter++;
             updateStats();
-            appendMsg(context, 'ai', `✅ <strong>Écriture enregistrée automatiquement</strong><br>Pièce: ${ecriture.piece} | Journal: ${ecriture.journal} | ${ecriture.lignes.length} lignes`);
+            appendMsg(context, 'ai', `✅ <strong>Écriture enregistrée automatiquement par COMEO AI</strong><br>Pièce: ${ecriture.piece} | Journal: ${ecriture.journal} | ${ecriture.lignes.length} lignes`);
             const activeView = document.querySelector('.view.active')?.id?.replace('view-','');
             if (activeView && RENDERERS[activeView] && activeView !== 'dashboard' && activeView !== 'saisie') {
               RENDERERS[activeView]();
@@ -1403,9 +1585,7 @@ async function sendToAI(context) {
             appendMsg(context, 'ai', '⚠️ Écriture non équilibrée — vérifiez les montants.');
           }
         }
-      } catch(pe) {
-        // JSON invalide, pas grave
-      }
+      } catch(pe) { /* JSON invalide, on ignore */ }
     }
 
   } catch(err) {
@@ -1429,9 +1609,9 @@ function appendMsg(context, role, text) {
 }
 
 function appendTyping(context) {
-  const id    = 't'+Date.now();
+  const id = 't'+Date.now();
   const msgId = context==='dashboard' ? 'aiMessages' : `aiMessages-${context}`;
-  const c     = document.getElementById(msgId);
+  const c = document.getElementById(msgId);
   if (!c) return id;
   const d = document.createElement('div');
   d.className='msg ai'; d.id=id;
@@ -1461,25 +1641,12 @@ function fmt(text) {
 }
 
 // ══════════════════════════════════════════════════════
-// EXPORT
-// ══════════════════════════════════════════════════════
-function exportData() {
-  const yr   = document.getElementById('exerciceYear').value;
-  const data = { ecritures, exportedAt: new Date().toISOString(), exercice: yr, company: currentProfile?.company };
-  const blob = new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement('a');
-  a.href=url; a.download=`syscohada_${currentProfile?.id||'export'}_${yr}.json`; a.click();
-  toast('Données exportées','success');
-}
-
-// ══════════════════════════════════════════════════════
 // TOAST
 // ══════════════════════════════════════════════════════
 function toast(message, type='info') {
-  const c = document.getElementById('toastContainer');
-  const d = document.createElement('div');
-  d.className = 'toast '+type;
+  const c=document.getElementById('toastContainer');
+  const d=document.createElement('div');
+  d.className='toast '+type;
   const icons={success:'✓',error:'✕',info:'i'};
   d.innerHTML=`<span style="font-weight:600;color:${type==='success'?'var(--green)':type==='error'?'var(--red)':'var(--gold)'}">${icons[type]||'i'}</span><span>${message}</span>`;
   c.appendChild(d);
@@ -1488,7 +1655,7 @@ function toast(message, type='info') {
 }
 
 // ══════════════════════════════════════════════════════
-// INIT — Vérifier session existante
+// INIT — Session existante
 // ══════════════════════════════════════════════════════
 document.addEventListener('firebase-ready', async () => {
   const session = localStorage.getItem('syscohada_session');
@@ -1496,7 +1663,7 @@ document.addEventListener('firebase-ready', async () => {
     try {
       const { profileId } = JSON.parse(session);
       const docRef = window._fbDoc(window._db, 'profiles', profileId);
-      const snap   = await window._fbGetDoc(docRef);
+      const snap = await window._fbGetDoc(docRef);
       if (snap.exists()) {
         currentProfile = { ...snap.data(), id: profileId };
         await loadApp();
@@ -1504,7 +1671,6 @@ document.addEventListener('firebase-ready', async () => {
       }
     } catch(e) { localStorage.removeItem('syscohada_session'); }
   }
-  // Sinon rester sur l'overlay d'authentification
 });
 </script>
 </body>
