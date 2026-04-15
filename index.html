@@ -372,6 +372,20 @@ body { font-family:var(--font-body); background:var(--paper); color:var(--ink); 
 }
 .analyse-card .analyse-title { font-family: var(--font-display); font-size: 14px; font-weight: 700; color: var(--warm); margin-bottom: 8px; }
 
+/* NOTIFICATION SAISIE IA */
+.saisie-notification {
+  display:none; position:fixed; bottom:80px; right:24px; z-index:900;
+  background:var(--ink); border:2px solid var(--warm); border-radius:10px;
+  padding:14px 18px; max-width:320px; box-shadow:0 12px 40px rgba(0,0,0,.4);
+  animation: slideIn .3s ease;
+}
+.saisie-notification.show { display:block; }
+.sn-title { font-family:var(--font-display); font-size:13px; color:var(--warm); font-weight:700; margin-bottom:6px; }
+.sn-body { font-size:12px; color:rgba(255,255,255,.7); line-height:1.5; margin-bottom:12px; }
+.sn-actions { display:flex; gap:8px; }
+.sn-btn-go { background:var(--warm); color:var(--ink); border:none; border-radius:var(--rs); padding:7px 14px; font-size:12px; font-weight:700; cursor:pointer; font-family:var(--font-body); }
+.sn-btn-dismiss { background:transparent; color:rgba(255,255,255,.4); border:1px solid rgba(255,255,255,.1); border-radius:var(--rs); padding:7px 12px; font-size:11px; cursor:pointer; font-family:var(--font-body); }
+
 @media print { .sidebar, .topbar, .comeo-box, .chips, .btn { display:none!important; } .shell { display:block; } .main { padding:0; } body { background:#fff; color:#000; } }
 @media (max-width:900px) { .shell { grid-template-columns:1fr; } .sidebar { display:none; } .kpi-grid { grid-template-columns:1fr 1fr; } .bilan-grid { grid-template-columns:1fr; } .fg.c4 { grid-template-columns:1fr 1fr; } }
 ::-webkit-scrollbar { width:4px; height:4px; }
@@ -430,6 +444,16 @@ body { font-family:var(--font-body); background:var(--paper); color:var(--ink); 
       <button class="btn-modal-cancel" onclick="closeExportModal()">Annuler</button>
       <button class="btn-modal-ok" onclick="doExport()">↓ Télécharger</button>
     </div>
+  </div>
+</div>
+
+<!-- NOTIFICATION SAISIE IA -->
+<div id="saisieNotif" class="saisie-notification">
+  <div class="sn-title">✨ COMEO AI a préparé une écriture</div>
+  <div class="sn-body" id="saisieNotifBody">Les lignes sont prêtes dans la vue Saisie. Vérifiez et validez.</div>
+  <div class="sn-actions">
+    <button class="sn-btn-go" onclick="goToSaisie()">→ Aller à Saisie</button>
+    <button class="sn-btn-dismiss" onclick="hideSaisieNotif()">Ignorer</button>
   </div>
 </div>
 
@@ -498,7 +522,7 @@ body { font-family:var(--font-body); background:var(--paper); color:var(--ink); 
         <div class="comeo-header"><div class="comeo-dot"></div><span class="comeo-title">COMEO AI v3 — Expert Comptable SYSCOHADA</span><span class="comeo-sub">Journal · Balance · Grand Livre · États financiers</span></div>
         <div class="comeo-messages" id="aiMessages">
           <div class="msg ai"><div class="msg-av">C</div><div class="msg-body">Bonjour ! Je suis <strong>COMEO AI v3</strong>, votre expert-comptable SYSCOHADA dédié.<br><br>
-          Je suis là pour vous accompagner au quotidien dans la gestion comptable de votre entreprise. Chaque opération que vous me décrivez est <strong>enregistrée automatiquement dans votre journal</strong>.<br><br>
+          Je suis là pour vous accompagner au quotidien dans la gestion comptable de votre entreprise. Chaque opération que vous me décrivez est <strong>préparée automatiquement dans les lignes d'écriture</strong>, que vous pouvez vérifier avant de valider.<br><br>
           Vous pouvez aussi me demander des états à tout moment :<br>
           — <em>« Montre-moi le journal du 1er janvier au 31 mars »</em><br>
           — <em>« Donne-moi la balance du mois de février »</em><br>
@@ -738,15 +762,16 @@ const JOURNAL_NAMES={'AC':'Achats','VE':'Ventes','BQ':'Banque','CA':'Caisse','OD
 
 let ecritures=[], lignes=[], pieceCounter=1, currentProfile=null, isAILoading=false;
 let exportFormat='pdf';
+// Stockage temporaire pour l'écriture préparée par l'IA (depuis le dashboard)
+let pendingAIEcriture = null;
 
 const GROQ_API_KEY = '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';
 
 // ══════════════════════════════════════════════════════════════════════════════
-// SYSTEM PROMPT V3 — EXPERT COMPTABLE HUMAIN ET ANALYTIQUE
+// SYSTEM PROMPT V3
 // ══════════════════════════════════════════════════════════════════════════════
 function buildSystemPrompt(contextData) {
   const { nbEcritures, companyName, exercice, ecrituresResume, totalDebit, totalCredit, comptesSoldes } = contextData;
-
   return `Tu es COMEO AI v3, expert-comptable SYSCOHADA senior dédié à l'entreprise "${companyName}" pour l'exercice ${exercice}.
 
 Tu t'appelles COMEO AI v3. Tu as été conçu par Marcio Jardel ZINZINDOHOUE pour accompagner les équipes comptables dans leur travail quotidien.
@@ -793,7 +818,7 @@ Types disponibles : "journal", "balance", "grandlivre", "bilan"
 
 Exemples de détection :
 - "journal de janvier" → dateDebut: "YYYY-01-01", dateFin: "YYYY-01-31"
-- "journal du 15 au 28 février" → dateDebut: "YYYY-02-15", dateFin: "YYYY-02-28"  
+- "journal du 15 au 28 février" → dateDebut: "YYYY-02-15", dateFin: "YYYY-02-28"
 - "journal des achats de mars" → journal: "AC", dateDebut: "YYYY-03-01", dateFin: "YYYY-03-31"
 - "balance de l'exercice" → type balance, pas de dates
 - "grand livre du compte 601" → type grandlivre, compte: "601"
@@ -1008,36 +1033,73 @@ function fs(n){const a=Math.abs(n);if(a>=1e9)return(n/1e9).toFixed(1)+' Md';if(a
 function initSaisie() {
   document.getElementById('ecr-date').value=new Date().toISOString().split('T')[0];
   document.getElementById('ecr-piece').placeholder='N°'+String(pieceCounter).padStart(5,'0');
+  // Si des lignes en attente (depuis IA dashboard), ne pas réinitialiser
   if(lignes.length===0){addLigne();addLigne();}
   renderLignes();
 }
+
 function addLigne(compte='',libelle='',debit='',credit=''){lignes.push({compte,libelle,debit,credit});renderLignes();}
 function removeLigne(i){lignes.splice(i,1);renderLignes();}
 
+/**
+ * ★ FONCTION CLÉ — remplit les lignes d'écriture depuis l'IA
+ * Appelée depuis saisie OU depuis dashboard (via pendingAIEcriture)
+ */
 function fillLignesFromAI(ecr) {
   lignes = [];
   ecr.lignes.forEach(l => {
     lignes.push({
-      compte: l.compte || '',
-      libelle: l.libelle || (PC[l.compte] || ''),
+      compte: String(l.compte || ''),
+      libelle: l.libelle || PC[String(l.compte)] || '',
       debit: l.debit || 0,
       credit: l.credit || 0
     });
   });
+  // Remplir l'en-tête
   const jSelect = document.getElementById('ecr-journal');
   if(jSelect && ecr.journal) jSelect.value = ecr.journal;
   const libInput = document.getElementById('ecr-libelle');
   if(libInput && ecr.libelle) libInput.value = ecr.libelle;
+  // Mettre à jour la date si pas déjà remplie
+  const dateInput = document.getElementById('ecr-date');
+  if(dateInput && !dateInput.value) dateInput.value = new Date().toISOString().split('T')[0];
+
   renderLignes();
+
+  // Afficher la bannière de confirmation
   const banner = document.getElementById('aiFillBanner');
   const desc = document.getElementById('aiFillDesc');
   if(banner && desc) {
     desc.textContent = ecr.libelle || 'Écriture préparée par COMEO AI';
     banner.classList.add('show');
   }
-  toast('✨ COMEO AI a préparé les lignes — vérifiez et validez !','info');
 }
-function dismissFillBanner() { document.getElementById('aiFillBanner').classList.remove('show'); }
+
+function dismissFillBanner() {
+  document.getElementById('aiFillBanner').classList.remove('show');
+}
+
+// Notification flottante quand IA prépare une écriture depuis le dashboard
+function showSaisieNotif(libelle) {
+  const notif = document.getElementById('saisieNotif');
+  const body = document.getElementById('saisieNotifBody');
+  body.textContent = `"${libelle || 'Écriture'}" — Vérifiez les lignes et validez.`;
+  notif.classList.add('show');
+  // Auto-disparaît après 10s
+  setTimeout(()=>notif.classList.remove('show'), 10000);
+}
+function hideSaisieNotif() {
+  document.getElementById('saisieNotif').classList.remove('show');
+}
+function goToSaisie() {
+  hideSaisieNotif();
+  navigate('saisie');
+  // Scroll vers les lignes
+  setTimeout(()=>{
+    const lignesCard = document.querySelector('#view-saisie .card:last-of-type');
+    if(lignesCard) lignesCard.scrollIntoView({behavior:'smooth'});
+  }, 200);
+}
 
 function renderLignes() {
   const tbody=document.getElementById('lignesBody'); tbody.innerHTML='';
@@ -1080,6 +1142,11 @@ function updateBalance() {
   const el=document.getElementById('soldeDisplay');
   el.textContent=fn(Math.abs(s)); el.className='val '+(Math.abs(s)<0.01?'bok':'bbad');
 }
+
+/**
+ * ★ VALIDATION ET ENREGISTREMENT DE L'ÉCRITURE
+ * Sauvegarde dans Firestore ET dans le tableau local `ecritures`
+ */
 async function saveEcriture() {
   const date=document.getElementById('ecr-date').value;
   const journal=document.getElementById('ecr-journal').value;
@@ -1089,13 +1156,39 @@ async function saveEcriture() {
   const valid=lignes.filter(l=>l.compte&&(l.debit||l.credit));
   if(valid.length<2){toast('Au moins 2 lignes requises','error');return;}
   let d=0,c=0; valid.forEach(l=>{d+=parseFloat(l.debit)||0;c+=parseFloat(l.credit)||0;});
-  if(Math.abs(d-c)>0.01){toast("Écriture non équilibrée",'error');return;}
-  const ecriture={id:Date.now(),date,journal,piece,libelle,createdAt:new Date().toISOString(),
-    lignes:valid.map(l=>({compte:l.compte,libelle:l.libelle||PC[l.compte]||'',debit:parseFloat(l.debit)||0,credit:parseFloat(l.credit)||0}))};
-  await saveEcritureToFirestore(ecriture);
-  ecritures.push(ecriture); pieceCounter++;
-  lignes=[]; updateStats(); dismissFillBanner();
-  toast('✓ Écriture enregistrée','success'); initSaisie();
+  if(Math.abs(d-c)>0.01){toast("Écriture non équilibrée — Débit: "+fn(d)+" / Crédit: "+fn(c),'error');return;}
+
+  const ecriture={
+    id:Date.now(),date,journal,piece,libelle,
+    createdAt:new Date().toISOString(),
+    lignes:valid.map(l=>({
+      compte:String(l.compte),
+      libelle:l.libelle||PC[String(l.compte)]||'',
+      debit:Math.round(parseFloat(l.debit)||0),
+      credit:Math.round(parseFloat(l.credit)||0)
+    }))
+  };
+
+  const docId = await saveEcritureToFirestore(ecriture);
+  if(!docId) return; // Erreur Firestore déjà signalée
+
+  // ★ Ajout dans le tableau local pour affichage immédiat dans le journal
+  ecritures.push(ecriture);
+  pieceCounter++;
+
+  // Nettoyage
+  lignes=[];
+  pendingAIEcriture=null;
+  updateStats();
+  dismissFillBanner();
+  hideSaisieNotif();
+
+  toast('✓ Écriture enregistrée dans le journal — Pièce '+piece,'success');
+
+  // Réinitialiser le formulaire
+  document.getElementById('ecr-libelle').value='';
+  document.getElementById('ecr-piece').value='';
+  initSaisie();
 }
 
 // ══════════════════════════════════════════
@@ -1107,9 +1200,7 @@ function getEcrituresFiltrees(opts={}) {
     if(dateDebut && e.date < dateDebut) return false;
     if(dateFin && e.date > dateFin) return false;
     if(journal && e.journal !== journal) return false;
-    if(compte) {
-      return e.lignes.some(l => l.compte && l.compte.startsWith(compte));
-    }
+    if(compte) return e.lignes.some(l => l.compte && l.compte.startsWith(compte));
     return true;
   });
 }
@@ -1501,12 +1592,11 @@ function exportWord() {
 }
 
 // ══════════════════════════════════════════
-// COMEO AI v3 — MOTEUR IA HUMAIN ET ANALYTIQUE
+// COMEO AI v3 — MOTEUR IA
 // ══════════════════════════════════════════
 function handleAiKey(e,ctx){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendToAI(ctx);}}
 function quickAI(text){document.getElementById('aiInput').value=text;navigate('dashboard');sendToAI('dashboard');}
 
-// Construction du contexte comptable pour l'IA
 function buildAIContext() {
   let tD=0,tC=0;
   ecritures.forEach(e=>e.lignes.forEach(l=>{tD+=l.debit||0;tC+=l.credit||0;}));
@@ -1515,7 +1605,7 @@ function buildAIContext() {
     const s=a.debit-a.credit;
     return `${c}:${s>=0?'Sd':'Sc'}${fn(Math.abs(s))}`;
   }).join(' | ');
-  const dernières = ecritures.slice(-5).map(e=>
+  const dernieres = ecritures.slice(-5).map(e=>
     `${e.date} [${e.journal}] ${e.libelle||'—'}`
   ).join(' ; ');
   return {
@@ -1525,12 +1615,12 @@ function buildAIContext() {
     totalDebit: fn(tD),
     totalCredit: fn(tC),
     comptesSoldes,
-    ecrituresResume: dernières
+    ecrituresResume: dernieres
   };
 }
 
 async function sendToAI(context) {
-  if(isAILoading)return;
+  if(isAILoading) return;
   const inputId = context==='dashboard' ? 'aiInput' : `aiInput-${context}`;
   const input = document.getElementById(inputId);
   const msg = input.value.trim(); if(!msg) return;
@@ -1565,9 +1655,7 @@ async function sendToAI(context) {
     const data = await response.json();
     const fullText = data.choices?.[0]?.message?.content || 'Pas de réponse.';
 
-    // Détection marqueur écriture
     const ecrMarker = fullText.indexOf('###ECRITURE###');
-    // Détection marqueur filtre
     const filtreMarker = fullText.indexOf('###FILTRE###');
 
     if(filtreMarker !== -1) {
@@ -1583,50 +1671,47 @@ async function sendToAI(context) {
           applyFiltreAndNavigate(filtre, context);
         }
       } catch(pe) { console.warn('Filtre parse error:', pe); }
+
     } else if(ecrMarker !== -1) {
-      // Mode écriture comptable
+      // ★ Mode écriture comptable — TOUJOURS remplir les lignes de saisie
       const displayText = fullText.substring(0, ecrMarker).trim();
       const jsonStr = fullText.substring(ecrMarker + 14).trim();
       appendMsg(context, 'ai', displayText);
+
       try {
         const clean = jsonStr.replace(/```json|```/g,'').trim();
         const jsonMatch = clean.match(/(\{[\s\S]*\})/);
         if(!jsonMatch) throw new Error('No JSON found');
         const ecr = JSON.parse(jsonMatch[1]);
+
         if(ecr.lignes && ecr.lignes.length >= 2) {
           let d=0, c=0;
-          ecr.lignes.forEach(l=>{d+=parseFloat(l.debit)||0; c+=parseFloat(l.credit)||0;});
+          ecr.lignes.forEach(l=>{d+=Math.round(parseFloat(l.debit)||0); c+=Math.round(parseFloat(l.credit)||0);});
+
           if(Math.abs(d-c) < 2) {
+            // ★ Remplir les lignes dans la vue Saisie (dans tous les cas)
+            pendingAIEcriture = ecr;
+            fillLignesFromAI(ecr);
+
             if(context === 'saisie') {
-              fillLignesFromAI(ecr);
+              // Déjà sur la vue saisie — juste confirmer visuellement
+              toast('✨ Lignes préparées — vérifiez et cliquez "Valider l\'écriture"','info');
+              // Scroll vers les lignes
+              setTimeout(()=>{
+                const lignesCard = document.querySelector('#view-saisie .card:last-of-type');
+                if(lignesCard) lignesCard.scrollIntoView({behavior:'smooth'});
+              }, 200);
             } else {
-              // Enregistrement automatique dans le journal Firestore
-              const ecriture = {
-                id: Date.now(),
-                date: new Date().toISOString().split('T')[0],
-                journal: ecr.journal || 'OD',
-                piece: 'N°'+String(pieceCounter).padStart(5,'0'),
-                libelle: ecr.libelle || msg.substring(0,60),
-                createdAt: new Date().toISOString(),
-                lignes: ecr.lignes.map(l=>({
-                  compte: String(l.compte),
-                  libelle: l.libelle || PC[String(l.compte)] || '',
-                  debit: Math.round(parseFloat(l.debit) || 0),
-                  credit: Math.round(parseFloat(l.credit) || 0)
-                }))
-              };
-              await saveEcritureToFirestore(ecriture);
-              ecritures.push(ecriture); pieceCounter++;
-              updateStats();
-              // Mise à jour du rendu si une vue comptable est active
-              const av = document.querySelector('.view.active')?.id?.replace('view-','');
-              if(av && RENDERERS[av] && av!=='dashboard' && av!=='saisie') RENDERERS[av]();
-              appendMsg(context,'ai',
-                `✅ L'écriture a bien été enregistrée dans votre journal — Pièce <strong>${ecriture.piece}</strong> | Journal <strong>${JOURNAL_NAMES[ecriture.journal]||ecriture.journal}</strong> | ${ecriture.lignes.length} lignes | Montant équilibré : <strong>${fn(d)} FCFA</strong>`
+              // Depuis le dashboard — notifier et proposer d'aller à Saisie
+              appendMsg(context, 'ai',
+                `✅ Les lignes d'écriture sont prêtes dans la vue <strong>Saisie</strong>. Cliquez sur <strong>"→ Aller à Saisie"</strong> pour vérifier et valider — l'écriture sera enregistrée dans votre journal après confirmation.`
               );
+              showSaisieNotif(ecr.libelle || msg.substring(0,50));
             }
           } else {
-            appendMsg(context,'ai',`⚠️ Je remarque un déséquilibre dans l'écriture générée (Débit : ${fn(d)} FCFA / Crédit : ${fn(c)} FCFA). Cela ne peut pas être enregistré en l'état. Voulez-vous que je corrige l'écriture ?`);
+            appendMsg(context,'ai',
+              `⚠️ Je remarque un déséquilibre dans l'écriture générée (Débit : ${fn(d)} FCFA / Crédit : ${fn(c)} FCFA). Cela ne peut pas être enregistré en l'état. Voulez-vous que je corrige l'écriture ?`
+            );
           }
         }
       } catch(pe) {
@@ -1645,7 +1730,7 @@ async function sendToAI(context) {
   if(sendBtnId) document.getElementById(sendBtnId).disabled = false;
 }
 
-// Application d'un filtre et navigation vers la vue correspondante
+// Application filtre et navigation
 function applyFiltreAndNavigate(filtre, context) {
   const { type, dateDebut, dateFin, journal, compte } = filtre;
   if(type === 'journal') {
@@ -1654,7 +1739,6 @@ function applyFiltreAndNavigate(filtre, context) {
     if(dateFin) document.getElementById('jnl-date-fin').value = dateFin;
     if(journal) document.getElementById('journalFilter').value = journal;
     renderJournal();
-    // Afficher analyse contextuelle dans le journal
     const analyseEl = document.getElementById('journal-analyse');
     if(analyseEl) {
       const label = buildPeriodeLabel(dateDebut, dateFin, journal);
@@ -1673,13 +1757,11 @@ function applyFiltreAndNavigate(filtre, context) {
     if(dateFin) document.getElementById('gl-date-fin').value = dateFin;
     if(compte) document.getElementById('glSearch').value = compte;
     renderGrandLivre();
-    // Auto-ouvrir le compte si spécifié
     if(compte) {
       setTimeout(()=>{
         const el = document.getElementById('gl-'+compte);
         if(el) el.style.display = 'block';
         else {
-          // Essayer avec les comptes qui commencent par ce code
           const map = getMap();
           Object.keys(map).filter(c=>c.startsWith(compte)).forEach(c=>{
             const el2 = document.getElementById('gl-'+c);
