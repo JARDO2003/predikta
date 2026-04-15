@@ -8,7 +8,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
-<!-- Firebase -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
@@ -63,7 +62,7 @@
 html { scroll-behavior:smooth; }
 body { font-family:var(--font-body); background:var(--paper); color:var(--ink); min-height:100vh; font-size:14px; line-height:1.5; }
 
-/* ── AUTH ── */
+/* AUTH */
 #authOverlay {
   position:fixed; inset:0; z-index:9999;
   background: linear-gradient(135deg, #0a0b10 0%, #1a1208 50%, #0a0b10 100%);
@@ -97,10 +96,10 @@ body { font-family:var(--font-body); background:var(--paper); color:var(--ink); 
 .auth-err { background:rgba(220,38,38,.08); border:1px solid rgba(220,38,38,.2); border-radius:4px; padding:8px 12px; font-size:11.5px; color:#fca5a5; display:none; }
 .auth-err.show { display:block; }
 
-/* ── SHELL ── */
+/* SHELL */
 .shell { display:grid; grid-template-columns:220px 1fr; grid-template-rows:56px 1fr; min-height:100vh; }
 
-/* ── TOPBAR ── */
+/* TOPBAR */
 .topbar {
   grid-column:1/-1; background:var(--ink);
   border-bottom:2px solid var(--warm); display:flex; align-items:center;
@@ -125,7 +124,7 @@ body { font-family:var(--font-body); background:var(--paper); color:var(--ink); 
 .btn-danger-outline { background:transparent; color:#fca5a5; border:1px solid rgba(220,38,38,.25); }
 .btn-danger-outline:hover { background:rgba(220,38,38,.08); }
 
-/* ── SIDEBAR ── */
+/* SIDEBAR */
 .sidebar {
   background:var(--ink); border-right:1px solid rgba(255,255,255,.06);
   padding:16px 0 28px; overflow-y:auto; position:sticky; top:56px; height:calc(100vh - 56px);
@@ -144,11 +143,11 @@ body { font-family:var(--font-body); background:var(--paper); color:var(--ink); 
 .stat-row .val { font-family:var(--font-mono); color:rgba(255,255,255,.45); font-size:10px; }
 .stat-row .val.g { color:#4ade80; } .stat-row .val.r { color:#f87171; }
 
-/* ── MAIN ── */
+/* MAIN */
 .main { overflow-y:auto; padding:28px 32px; background:var(--paper); }
 .view { display:none; } .view.active { display:block; }
 
-/* ── PAGE HEADER ── */
+/* PAGE HEADER */
 .ph { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:24px; flex-wrap:wrap; gap:12px; }
 .ph h1 { font-family:var(--font-display); font-size:30px; font-weight:700; color:var(--ink); letter-spacing:.01em; line-height:1.1; }
 .ph p { font-size:11.5px; color:var(--muted); margin-top:5px; }
@@ -160,7 +159,7 @@ body { font-family:var(--font-body); background:var(--paper); color:var(--ink); 
 .btn-sm-wire { background:transparent; color:var(--muted); border:1px solid var(--line2); font-size:11px; padding:5px 11px; }
 .btn-sm-wire:hover { background:var(--surface3); color:var(--ink); border-color:var(--ink); }
 
-/* ── STATS GRID ── */
+/* STATS GRID */
 .kpi-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:24px; }
 .kpi { background:var(--surface); border:1px solid var(--line); border-radius:var(--r); padding:18px 16px; position:relative; box-shadow:var(--sh); }
 .kpi::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; background:var(--warm); border-radius:var(--r) var(--r) 0 0; }
@@ -168,14 +167,14 @@ body { font-family:var(--font-body); background:var(--paper); color:var(--ink); 
 .kpi-value { font-family:var(--font-mono); font-size:22px; color:var(--ink); font-weight:400; line-height:1; }
 .kpi-sub { font-size:10px; color:var(--faint); margin-top:5px; }
 
-/* ── COMEO AI BOX ── */
+/* COMEO AI BOX */
 .comeo-box { background:var(--surface); border:1px solid var(--line); border-radius:var(--r); overflow:hidden; margin-bottom:20px; box-shadow:var(--sh); }
 .comeo-header { display:flex; align-items:center; gap:10px; padding:11px 16px; border-bottom:1px solid var(--line); background:var(--ink); }
 .comeo-dot { width:7px; height:7px; border-radius:50%; background:var(--warm); box-shadow:0 0 8px var(--warm); animation:comeo-pulse 2.4s infinite; flex-shrink:0; }
 @keyframes comeo-pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.2;transform:scale(.75)} }
 .comeo-title { font-family:var(--font-display); font-size:13px; font-weight:700; color:var(--warm); letter-spacing:.06em; }
 .comeo-sub { margin-left:auto; font-family:var(--font-mono); font-size:9px; color:rgba(255,255,255,.25); letter-spacing:.08em; }
-.comeo-messages { height:240px; overflow-y:auto; padding:14px; display:flex; flex-direction:column; gap:10px; background:var(--surface2); }
+.comeo-messages { height:280px; overflow-y:auto; padding:14px; display:flex; flex-direction:column; gap:10px; background:var(--surface2); }
 .comeo-messages::-webkit-scrollbar { width:3px; }
 .comeo-messages::-webkit-scrollbar-thumb { background:var(--line2); border-radius:2px; }
 .msg { display:flex; gap:8px; max-width:98%; }
@@ -200,7 +199,7 @@ body { font-family:var(--font-body); background:var(--paper); color:var(--ink); 
 .comeo-input:focus { border-color:var(--warm); background:var(--surface); }
 .comeo-input::placeholder { color:var(--faint); }
 
-/* ── AI FILL BANNER ── */
+/* AI FILL BANNER */
 .ai-fill-banner {
   display:none; background:linear-gradient(135deg,rgba(212,168,83,.12),rgba(212,168,83,.06));
   border:1.5px solid rgba(212,168,83,.35); border-radius:var(--rs); padding:10px 14px;
@@ -216,17 +215,17 @@ body { font-family:var(--font-body); background:var(--paper); color:var(--ink); 
 .btn-apply:hover { background:var(--warm2); }
 .btn-dismiss { background:transparent; color:var(--muted); border:1px solid var(--line2); border-radius:var(--rs); padding:6px 10px; font-size:11px; cursor:pointer; font-family:var(--font-body); }
 
-/* ── CHIPS ── */
+/* CHIPS */
 .chips { display:flex; flex-wrap:wrap; gap:7px; margin-bottom:22px; }
 .chip { background:var(--surface); border:1px solid var(--line); color:var(--muted); padding:5px 13px; border-radius:20px; font-size:11px; cursor:pointer; transition:all .14s; }
 .chip:hover { background:var(--ink); border-color:var(--ink); color:var(--warm); }
 
-/* ── CARD ── */
+/* CARD */
 .card { background:var(--surface); border:1px solid var(--line); border-radius:var(--r); padding:18px; margin-bottom:18px; box-shadow:var(--sh); }
 .card-title { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.14em; color:var(--muted); margin-bottom:14px; display:flex; align-items:center; gap:7px; }
 .card-title::before { content:''; width:3px; height:14px; background:var(--warm); border-radius:2px; }
 
-/* ── FORM ── */
+/* FORM */
 .fg { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
 .fg.c3 { grid-template-columns:1fr 1fr 1fr; } .fg.c4 { grid-template-columns:1fr 1fr 1fr 1fr; }
 .field { display:flex; flex-direction:column; gap:5px; }
@@ -237,7 +236,7 @@ body { font-family:var(--font-body); background:var(--paper); color:var(--ink); 
 .field select option { background:var(--surface); }
 .field textarea { resize:vertical; min-height:62px; }
 
-/* ── ACCOUNT SUGGEST ── */
+/* ACCOUNT SUGGEST */
 .asw { position:relative; }
 .adrop { position:absolute; top:calc(100% + 2px); left:0; right:0; background:var(--surface); border:1.5px solid var(--warm); border-radius:var(--rs); max-height:180px; overflow-y:auto; z-index:200; display:none; box-shadow:var(--sh2); }
 .adrop.open { display:block; }
@@ -246,7 +245,7 @@ body { font-family:var(--font-body); background:var(--paper); color:var(--ink); 
 .aoption .code { font-family:var(--font-mono); color:var(--warm); font-size:10px; min-width:44px; font-weight:600; }
 .aoption .name { color:var(--muted); }
 
-/* ── ECRITURE TABLE ── */
+/* ECRITURE TABLE */
 .et { width:100%; border-collapse:collapse; font-size:12.5px; }
 .et th { text-align:left; padding:9px 11px; background:var(--ink); color:var(--warm); border-bottom:2px solid var(--warm); font-size:8.5px; font-weight:700; text-transform:uppercase; letter-spacing:.12em; font-family:var(--font-mono); }
 .et td { padding:6px 11px; border-bottom:1px solid var(--line); vertical-align:middle; }
@@ -263,13 +262,7 @@ body { font-family:var(--font-body); background:var(--paper); color:var(--ink); 
 .del-line { background:none; border:none; color:var(--red); cursor:pointer; font-size:13px; opacity:.25; padding:3px 6px; border-radius:3px; transition:opacity .14s; }
 .del-line:hover { opacity:1; background:rgba(220,38,38,.08); }
 
-/* ── ECRITURES MULTIPLES ── */
-.ecr-group { background:var(--surface); border:1px solid var(--line); border-radius:var(--r); margin-bottom:10px; overflow:hidden; }
-.ecr-group-header { background:linear-gradient(90deg,var(--ink),#1a1c28); padding:8px 14px; display:flex; align-items:center; gap:8px; }
-.ecr-group-num { font-family:var(--font-mono); font-size:10px; color:var(--warm); font-weight:700; background:rgba(212,168,83,.15); padding:2px 8px; border-radius:3px; }
-.ecr-group-title { font-size:11.5px; color:rgba(255,255,255,.7); }
-
-/* ── DATA TABLE ── */
+/* DATA TABLE */
 .dtw { overflow-x:auto; border-radius:var(--r); border:1px solid var(--line); box-shadow:var(--sh); }
 .dt { width:100%; border-collapse:collapse; font-size:12px; min-width:600px; }
 .dt th { text-align:left; padding:10px 13px; background:var(--ink); color:var(--warm); border-bottom:2px solid var(--warm); font-size:8.5px; font-weight:700; text-transform:uppercase; letter-spacing:.12em; position:sticky; top:0; white-space:nowrap; font-family:var(--font-mono); }
@@ -281,7 +274,7 @@ body { font-family:var(--font-body); background:var(--paper); color:var(--ink); 
 .dt .credit { color:var(--green); font-family:var(--font-mono); text-align:right; }
 .dt .total-row td { background:var(--surface3); font-weight:700; color:var(--ink); border-top:2px solid var(--line2); }
 
-/* ── BILAN ── */
+/* BILAN */
 .bilan-grid { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
 .bilan-col { background:var(--surface); border:1px solid var(--line); border-radius:var(--r); overflow:hidden; box-shadow:var(--sh); }
 .bilan-col-header { padding:13px 16px; border-bottom:2px solid; background:var(--ink); font-family:var(--font-display); font-size:16px; font-weight:700; letter-spacing:.04em; }
@@ -296,7 +289,7 @@ body { font-family:var(--font-body); background:var(--paper); color:var(--ink); 
 .bilan-line .acc-amount { font-family:var(--font-mono); color:var(--ink); font-size:11px; font-weight:600; }
 .bilan-total { padding:12px 16px; display:flex; justify-content:space-between; font-family:var(--font-mono); background:var(--ink); color:var(--warm); font-size:13px; font-weight:600; }
 
-/* ── RESULTAT ── */
+/* RESULTAT */
 .rlist { display:flex; flex-direction:column; gap:2px; }
 .rrow { display:flex; align-items:center; justify-content:space-between; padding:7px 14px; border-radius:4px; font-size:12px; }
 .rrow.header { background:var(--ink); color:var(--warm); font-weight:700; font-size:10px; letter-spacing:.1em; text-transform:uppercase; font-family:var(--font-mono); }
@@ -306,7 +299,7 @@ body { font-family:var(--font-body); background:var(--paper); color:var(--ink); 
 .rrow .amount { font-family:var(--font-mono); }
 .rrow .pos { color:var(--green); } .rrow .neg { color:var(--red); }
 
-/* ── GRAND LIVRE ── */
+/* GRAND LIVRE */
 .gl-account { background:var(--surface); border:1px solid var(--line); border-radius:var(--r); margin-bottom:9px; overflow:hidden; box-shadow:var(--sh); }
 .gl-account-header { display:flex; align-items:center; gap:9px; padding:10px 14px; background:var(--ink); border-bottom:1px solid rgba(255,255,255,.06); cursor:pointer; transition:background .12s; }
 .gl-account-header:hover { background:#1a1c28; }
@@ -316,30 +309,30 @@ body { font-family:var(--font-body); background:var(--paper); color:var(--ink); 
 .gl-balance.debit { background:rgba(96,165,250,.1); color:#60a5fa; }
 .gl-balance.credit { background:rgba(74,222,128,.1); color:#4ade80; }
 
-/* ── TOOLBAR ── */
+/* TOOLBAR */
 .toolbar { display:flex; align-items:center; gap:8px; margin-bottom:16px; flex-wrap:wrap; }
-.search-input { background:var(--surface); border:1.5px solid var(--line); border-radius:var(--rs); color:var(--ink); padding:8px 12px; font-size:12px; font-family:var(--font-body); outline:none; transition:border-color .18s; min-width:200px; }
+.search-input { background:var(--surface); border:1.5px solid var(--line); border-radius:var(--rs); color:var(--ink); padding:8px 12px; font-size:12px; font-family:var(--font-body); outline:none; transition:border-color .18s; min-width:160px; }
 .search-input:focus { border-color:var(--warm); }
 .search-input::placeholder { color:var(--faint); }
 
-/* ── TAG ── */
+/* TAG */
 .ct { display:inline-flex; align-items:center; background:var(--warm-dim); border:1px solid rgba(212,168,83,.2); border-radius:3px; padding:1px 7px; font-family:var(--font-mono); font-size:10px; color:var(--warm); font-weight:600; }
 
-/* ── DIVIDER ── */
+/* DIVIDER */
 .divider { height:1px; background:var(--line); margin:14px 0; }
 
-/* ── EMPTY ── */
+/* EMPTY */
 .empty-state { text-align:center; padding:44px 20px; color:var(--faint); }
 .empty-state .icon { font-size:36px; margin-bottom:10px; opacity:.2; }
 .empty-state p { font-size:13px; }
 
-/* ── TOAST ── */
+/* TOAST */
 .toast-container { position:fixed; bottom:20px; right:20px; z-index:1000; display:flex; flex-direction:column; gap:6px; }
 .toast { background:var(--ink); border:1px solid rgba(255,255,255,.08); border-radius:var(--r); padding:10px 15px; font-size:12px; display:flex; align-items:center; gap:9px; min-width:250px; animation:slideIn .24s ease; box-shadow:0 8px 32px rgba(0,0,0,.4); transition:opacity .5s; color:rgba(255,255,255,.8); }
 .toast.success { border-color:rgba(74,222,128,.25); } .toast.error { border-color:rgba(220,38,38,.25); } .toast.info { border-color:rgba(212,168,83,.25); }
 @keyframes slideIn { from{transform:translateX(110%);opacity:0} to{transform:translateX(0);opacity:1} }
 
-/* ── EXPORT MODAL ── */
+/* EXPORT MODAL */
 .modal-overlay { position:fixed; inset:0; z-index:8888; background:rgba(10,11,16,.7); display:flex; align-items:center; justify-content:center; backdrop-filter:blur(4px); }
 .modal-box { background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:32px; width:420px; max-width:94vw; box-shadow:0 24px 60px rgba(0,0,0,.25); }
 .modal-title { font-family:var(--font-display); font-size:22px; font-weight:700; color:var(--ink); margin-bottom:6px; }
@@ -357,11 +350,30 @@ body { font-family:var(--font-body); background:var(--paper); color:var(--ink); 
 .btn-modal-ok { background:var(--ink); color:var(--warm); border:none; padding:9px 22px; border-radius:var(--rs); font-size:12.5px; font-weight:700; cursor:pointer; font-family:var(--font-body); letter-spacing:.04em; transition:all .14s; }
 .btn-modal-ok:hover { background:#1a1c28; transform:translateY(-1px); }
 
+/* FILTRE PÉRIODE */
+.filtre-periode-bar {
+  display:flex; align-items:center; gap:8px; background:var(--surface); border:1px solid var(--line);
+  border-radius:var(--rs); padding:9px 14px; margin-bottom:14px; flex-wrap:wrap;
+}
+.filtre-periode-bar label { font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.14em; color:var(--muted); }
+.filtre-periode-bar input, .filtre-periode-bar select { background:var(--surface2); border:1px solid var(--line); border-radius:3px; color:var(--ink); padding:5px 9px; font-size:12px; font-family:var(--font-body); outline:none; }
+.filtre-periode-bar input:focus, .filtre-periode-bar select:focus { border-color:var(--warm); }
+.btn-filtre { background:var(--ink); color:var(--warm); border:none; border-radius:var(--rs); padding:6px 14px; font-size:12px; font-weight:600; cursor:pointer; font-family:var(--font-body); transition:all .14s; }
+.btn-filtre:hover { background:#1a1c28; }
+.btn-filtre-reset { background:transparent; color:var(--muted); border:1px solid var(--line2); border-radius:var(--rs); padding:6px 10px; font-size:11px; cursor:pointer; font-family:var(--font-body); }
+
 .fb-loading { text-align:center; padding:32px; color:var(--muted); font-size:12px; font-family:var(--font-mono); letter-spacing:.08em; }
+
+/* ANALYSE CARD */
+.analyse-card {
+  background: linear-gradient(135deg, rgba(212,168,83,.08), rgba(212,168,83,.03));
+  border: 1.5px solid rgba(212,168,83,.25); border-radius: var(--r);
+  padding: 14px 16px; margin-bottom: 16px; font-size: 12.5px; line-height: 1.7;
+}
+.analyse-card .analyse-title { font-family: var(--font-display); font-size: 14px; font-weight: 700; color: var(--warm); margin-bottom: 8px; }
 
 @media print { .sidebar, .topbar, .comeo-box, .chips, .btn { display:none!important; } .shell { display:block; } .main { padding:0; } body { background:#fff; color:#000; } }
 @media (max-width:900px) { .shell { grid-template-columns:1fr; } .sidebar { display:none; } .kpi-grid { grid-template-columns:1fr 1fr; } .bilan-grid { grid-template-columns:1fr; } .fg.c4 { grid-template-columns:1fr 1fr; } }
-
 ::-webkit-scrollbar { width:4px; height:4px; }
 ::-webkit-scrollbar-track { background:var(--surface2); }
 ::-webkit-scrollbar-thumb { background:var(--line2); border-radius:2px; }
@@ -470,7 +482,7 @@ body { font-family:var(--font-body); background:var(--paper); color:var(--ink); 
     <!-- DASHBOARD -->
     <div class="view active" id="view-dashboard">
       <div class="ph">
-        <div><h1>Tableau de bord</h1><p>SYSCOHADA Révisé 2023 — 3 écritures par opération d'achat/vente</p></div>
+        <div><h1>Tableau de bord</h1><p>SYSCOHADA Révisé 2023 — Assistant comptable expert intégré</p></div>
         <div class="ph-actions">
           <button class="btn btn-sm-wire" onclick="openExportModal()">↓ Exporter</button>
           <button class="btn btn-ink" onclick="navigate('saisie')">✎ Nouvelle écriture</button>
@@ -483,20 +495,21 @@ body { font-family:var(--font-body); background:var(--paper); color:var(--ink); 
         <div class="kpi"><div class="kpi-label">Résultat provisoire</div><div class="kpi-value" id="dash-res" style="color:var(--warm)">0</div><div class="kpi-sub">Produits – Charges</div></div>
       </div>
       <div class="comeo-box">
-        <div class="comeo-header"><div class="comeo-dot"></div><span class="comeo-title">COMEO AI v3 — Expert Comptable SYSCOHADA</span><span class="comeo-sub">3 écritures · TVA · Stocks · Paie · Amortissements</span></div>
+        <div class="comeo-header"><div class="comeo-dot"></div><span class="comeo-title">COMEO AI v3 — Expert Comptable SYSCOHADA</span><span class="comeo-sub">Journal · Balance · Grand Livre · États financiers</span></div>
         <div class="comeo-messages" id="aiMessages">
-          <div class="msg ai"><div class="msg-av">C</div><div class="msg-body">Bonjour ! Je suis <strong>COMEO AI v3</strong>, expert-comptable SYSCOHADA.<br><br>
-          ✅ <strong>Je maîtrise les 3 écritures obligatoires</strong> pour tout achat/vente :<br>
-          — Écriture 1 : Constatation de l'opération (facture)<br>
-          — Écriture 2 : Mouvement de stock (entrée/sortie magasin)<br>
-          — Écriture 3 : Règlement / encaissement (si au comptant)<br><br>
-          Je traite aussi : TVA, amortissements, provisions, dépréciations, paie, charges constatées d'avance, produits à recevoir, bilan, compte de résultat, et bien plus.<br><br>
-          <em>Exemple : « Achat marchandises 500 000 FCFA TTC payé en espèces »</em>
+          <div class="msg ai"><div class="msg-av">C</div><div class="msg-body">Bonjour ! Je suis <strong>COMEO AI v3</strong>, votre expert-comptable SYSCOHADA dédié.<br><br>
+          Je suis là pour vous accompagner au quotidien dans la gestion comptable de votre entreprise. Chaque opération que vous me décrivez est <strong>enregistrée automatiquement dans votre journal</strong>.<br><br>
+          Vous pouvez aussi me demander des états à tout moment :<br>
+          — <em>« Montre-moi le journal du 1er janvier au 31 mars »</em><br>
+          — <em>« Donne-moi la balance du mois de février »</em><br>
+          — <em>« Grand livre du compte 601 sur janvier »</em><br>
+          — <em>« Bilan arrêté au 30 juin »</em><br><br>
+          Qu'est-ce que je peux faire pour vous aujourd'hui ?
           </div></div>
         </div>
         <div class="comeo-input-row">
-          <textarea class="comeo-input" id="aiInput" placeholder="Décrivez une opération ou posez une question comptable…" onkeydown="handleAiKey(event,'dashboard')"></textarea>
-          <button class="btn btn-ink" id="aiSendBtn" onclick="sendToAI('dashboard')">⚡ Analyser</button>
+          <textarea class="comeo-input" id="aiInput" placeholder="Décrivez une opération, demandez un état financier, posez une question…" onkeydown="handleAiKey(event,'dashboard')"></textarea>
+          <button class="btn btn-ink" id="aiSendBtn" onclick="sendToAI('dashboard')">⚡ Envoyer</button>
         </div>
       </div>
       <div class="chips">
@@ -504,34 +517,31 @@ body { font-family:var(--font-body); background:var(--paper); color:var(--ink); 
         <div class="chip" onclick="quickAI('Vente de marchandises 1200000 FCFA TTC par virement, TVA 18%. Coût d\'achat 700000. Passer les 3 écritures.')">Vente m/ses (3 écritures)</div>
         <div class="chip" onclick="quickAI('Achat de marchandises à crédit 800000 FCFA HT, TVA 18%, fournisseur HOLALI. Passer les 3 écritures.')">Achat à crédit (3 écritures)</div>
         <div class="chip" onclick="quickAI('Règlement salaires: brut 800000 FCFA, cotisations salariales 160000, impôts retenus 50000, acompte versé 200000')">Paie du personnel</div>
-        <div class="chip" onclick="quickAI('Acquisition véhicule 15000000 FCFA TTC TVA 18% financé 60% emprunt 40% caisse')">Acquisition immobilisation</div>
+        <div class="chip" onclick="quickAI('Montre-moi le journal du mois en cours')">Journal du mois</div>
+        <div class="chip" onclick="quickAI('Donne-moi la balance générale de l\'exercice en cours')">Balance générale</div>
+        <div class="chip" onclick="quickAI('Quel est le solde du compte caisse 571 actuellement ?')">Solde compte caisse</div>
         <div class="chip" onclick="quickAI('Dotation amortissement linéaire matériel informatique valeur 2400000 FCFA durée 4 ans valeur résiduelle 0')">Amortissement linéaire</div>
-        <div class="chip" onclick="quickAI('Régularisation fin exercice: stock initial marchandises 2000000, achats 5000000, stock final 1500000. Calculer variation et passer les écritures.')">Variation de stocks</div>
-        <div class="chip" onclick="quickAI('Centralisation TVA fin du mois: TVA facturée sur ventes 180000, TVA récupérable sur achats 90000, TVA récupérable sur immobilisations 36000')">Centralisation TVA</div>
-        <div class="chip" onclick="quickAI('Dépréciation créance client EDOH: créance 1200000, taux dépréciation 75%. Passer l\'écriture de dotation.')">Dépréciation créance</div>
-        <div class="chip" onclick="quickAI('Prime assurance annuelle payée le 1er octobre N pour 360000 FCFA HT. Calculer la charge constatée d\'avance au 31/12/N.')">Charges constatées d'avance</div>
+        <div class="chip" onclick="quickAI('Centralisation TVA fin du mois: TVA facturée sur ventes 180000, TVA récupérable sur achats 90000')">Centralisation TVA</div>
         <div class="chip" onclick="quickAI('Analyser mon bilan actuel et donner les ratios de liquidité, solvabilité et rentabilité')">Analyser mon bilan</div>
-        <div class="chip" onclick="quickAI('QCM: Le compte Fournisseurs rabais remises ristournes et autres avoirs à obtenir est un compte de bilan à l\'actif ou passif ou de gestion?')">QCM Comptabilité</div>
       </div>
     </div>
 
     <!-- SAISIE -->
     <div class="view" id="view-saisie">
       <div class="ph">
-        <div><h1>Saisie des écritures</h1><p>Saisie manuelle ou assistée par COMEO AI — 3 écritures automatiques</p></div>
+        <div><h1>Saisie des écritures</h1><p>Saisie manuelle ou assistée par COMEO AI</p></div>
         <div class="ph-actions"><button class="btn btn-ink" onclick="saveEcriture()">↳ Valider l'écriture</button></div>
       </div>
       <div class="comeo-box">
-        <div class="comeo-header"><div class="comeo-dot"></div><span class="comeo-title">COMEO AI — Saisie assistée (3 écritures)</span><span class="comeo-sub">Décrivez → COMEO remplit toutes les lignes automatiquement</span></div>
+        <div class="comeo-header"><div class="comeo-dot"></div><span class="comeo-title">COMEO AI — Saisie assistée</span><span class="comeo-sub">Décrivez → COMEO remplit toutes les lignes automatiquement</span></div>
         <div class="comeo-messages" id="aiMessages-saisie" style="height:140px">
-          <div class="msg ai"><div class="msg-av">C</div><div class="msg-body">Décrivez l'opération et je génèrerai automatiquement les <strong>3 écritures obligatoires</strong> :<br>1. Constatation facture → 2. Mouvement stock → 3. Règlement<br><br><em>Exemple : « Vente 350000 FCFA HT par chèque, TVA 18%, coût d'achat 200000 »</em></div></div>
+          <div class="msg ai"><div class="msg-av">C</div><div class="msg-body">Décrivez l'opération et je prépare les lignes d'écriture. Vérifiez avant de valider — c'est vous qui avez le dernier mot.</div></div>
         </div>
         <div class="comeo-input-row">
           <textarea class="comeo-input" id="aiInput-saisie" placeholder="ex: Achat matériel bureau 250000 FCFA HT par chèque, TVA 18%..." onkeydown="handleAiKey(event,'saisie')"></textarea>
-          <button class="btn btn-ink" onclick="sendToAI('saisie')">⚡ Générer les écritures</button>
+          <button class="btn btn-ink" onclick="sendToAI('saisie')">⚡ Préparer</button>
         </div>
       </div>
-
       <div class="ai-fill-banner" id="aiFillBanner">
         <div class="afi-icon">✨</div>
         <div class="afi-text">
@@ -540,7 +550,6 @@ body { font-family:var(--font-body); background:var(--paper); color:var(--ink); 
         </div>
         <button class="btn-dismiss" onclick="dismissFillBanner()">✕</button>
       </div>
-
       <div class="card">
         <div class="card-title">En-tête de l'écriture</div>
         <div class="fg c4">
@@ -575,64 +584,79 @@ body { font-family:var(--font-body); background:var(--paper); color:var(--ink); 
     <!-- JOURNAL -->
     <div class="view" id="view-journal">
       <div class="ph">
-        <div><h1>Journal général</h1><p>Toutes les opérations enregistrées</p></div>
+        <div><h1>Journal général</h1><p>Toutes les opérations enregistrées — filtrez par période ou journal</p></div>
         <div class="ph-actions">
           <button class="btn btn-sm-wire" onclick="openExportModal()">⎙ Exporter</button>
           <button class="btn btn-ink" onclick="navigate('saisie')">+ Nouvelle</button>
         </div>
       </div>
-      <div class="comeo-box">
-        <div class="comeo-header"><div class="comeo-dot"></div><span class="comeo-title">COMEO AI — Saisie rapide Journal</span></div>
-        <div class="comeo-messages" id="aiMessages-journal" style="height:100px">
-          <div class="msg ai"><div class="msg-av">C</div><div class="msg-body">Décrivez une opération pour l'enregistrer avec les 3 écritures complètes dans le journal.</div></div>
-        </div>
-        <div class="comeo-input-row">
-          <textarea class="comeo-input" id="aiInput-journal" placeholder="ex: Vente 200000 FCFA HT au client Koné par espèces, TVA 18%, coût achat 120000..." onkeydown="handleAiKey(event,'journal')"></textarea>
-          <button class="btn btn-ink" onclick="sendToAI('journal')">⚡ Enregistrer</button>
-        </div>
-      </div>
-      <div class="toolbar">
-        <input type="text" class="search-input" placeholder="Rechercher…" id="journalSearch" oninput="renderJournal()">
-        <select id="journalFilter" class="search-input" style="min-width:160px" onchange="renderJournal()">
-          <option value="">Tous les journaux</option>
+      <div class="filtre-periode-bar">
+        <label>Du</label>
+        <input type="date" id="jnl-date-debut" onchange="renderJournal()">
+        <label>Au</label>
+        <input type="date" id="jnl-date-fin" onchange="renderJournal()">
+        <label>Journal</label>
+        <select id="journalFilter" onchange="renderJournal()">
+          <option value="">Tous</option>
           <option value="AC">Achats</option><option value="VE">Ventes</option>
           <option value="BQ">Banque</option><option value="CA">Caisse</option><option value="OD">OD</option><option value="IN">Inventaire</option>
         </select>
+        <input type="text" class="search-input" placeholder="Rechercher…" id="journalSearch" oninput="renderJournal()" style="min-width:140px">
+        <button class="btn-filtre-reset" onclick="resetJournalFiltre()">✕ Réinitialiser</button>
       </div>
+      <div id="journal-analyse" style="display:none" class="analyse-card"></div>
       <div class="dtw">
         <table class="dt">
           <thead><tr><th>Date</th><th>Jnl</th><th>N° Pièce</th><th>Compte</th><th>Libellé</th><th style="text-align:right">Débit</th><th style="text-align:right">Crédit</th><th style="width:34px"></th></tr></thead>
           <tbody id="journalBody"><tr><td colspan="8"><div class="fb-loading">Chargement…</div></td></tr></tbody>
         </table>
       </div>
+      <div id="journal-totaux" style="margin-top:10px;font-family:var(--font-mono);font-size:11.5px;color:var(--muted);text-align:right"></div>
     </div>
 
     <!-- GRAND LIVRE -->
     <div class="view" id="view-grandlivre">
       <div class="ph">
-        <div><h1>Grand Livre</h1><p>Mouvements par compte</p></div>
+        <div><h1>Grand Livre</h1><p>Mouvements détaillés par compte — filtrez par période</p></div>
         <div class="ph-actions"><button class="btn btn-sm-wire" onclick="openExportModal()">⎙ Exporter</button></div>
       </div>
-      <div class="comeo-box">
-        <div class="comeo-header"><div class="comeo-dot"></div><span class="comeo-title">COMEO AI — Analyse Grand Livre</span></div>
-        <div class="comeo-messages" id="aiMessages-grandlivre" style="height:100px">
-          <div class="msg ai"><div class="msg-av">C</div><div class="msg-body">Saisissez une opération ou demandez une analyse de vos comptes.</div></div>
-        </div>
-        <div class="comeo-input-row">
-          <textarea class="comeo-input" id="aiInput-grandlivre" placeholder="ex: Achats fournitures 80000 FCFA TTC espèces..." onkeydown="handleAiKey(event,'grandlivre')"></textarea>
-          <button class="btn btn-ink" onclick="sendToAI('grandlivre')">⚡ Traiter</button>
-        </div>
+      <div class="filtre-periode-bar">
+        <label>Du</label>
+        <input type="date" id="gl-date-debut" onchange="renderGrandLivre()">
+        <label>Au</label>
+        <input type="date" id="gl-date-fin" onchange="renderGrandLivre()">
+        <input type="text" class="search-input" placeholder="Compte ou libellé…" id="glSearch" oninput="renderGrandLivre()" style="min-width:180px">
+        <button class="btn-filtre-reset" onclick="resetGLFiltre()">✕ Réinitialiser</button>
       </div>
-      <div class="toolbar"><input type="text" class="search-input" placeholder="Compte ou libellé…" id="glSearch" oninput="renderGrandLivre()"></div>
       <div id="grandLivreContent"><div class="empty-state"><div class="icon">⊞</div><p>Aucun mouvement</p></div></div>
     </div>
 
     <!-- BALANCE -->
     <div class="view" id="view-balance">
       <div class="ph">
-        <div><h1>Balance générale</h1><p>Synthèse des mouvements et soldes</p></div>
+        <div><h1>Balance générale</h1><p>Synthèse des mouvements et soldes par compte</p></div>
         <div class="ph-actions"><button class="btn btn-sm-wire" onclick="openExportModal()">⎙ Exporter</button></div>
       </div>
+      <div class="filtre-periode-bar">
+        <label>Du</label>
+        <input type="date" id="bal-date-debut" onchange="renderBalance()">
+        <label>Au</label>
+        <input type="date" id="bal-date-fin" onchange="renderBalance()">
+        <label>Journal</label>
+        <select id="bal-journal" onchange="renderBalance()">
+          <option value="">Tous les journaux</option>
+          <option value="AC">Achats</option><option value="VE">Ventes</option>
+          <option value="BQ">Banque</option><option value="CA">Caisse</option><option value="OD">OD</option><option value="IN">Inventaire</option>
+        </select>
+        <label>Classe</label>
+        <select id="bal-classe" onchange="renderBalance()">
+          <option value="">Toutes</option>
+          <option value="1">Classe 1</option><option value="2">Classe 2</option><option value="3">Classe 3</option>
+          <option value="4">Classe 4</option><option value="5">Classe 5</option><option value="6">Classe 6</option><option value="7">Classe 7</option>
+        </select>
+        <button class="btn-filtre-reset" onclick="resetBalanceFiltre()">✕ Réinitialiser</button>
+      </div>
+      <div id="balance-analyse" style="display:none" class="analyse-card"></div>
       <div class="dtw">
         <table class="dt">
           <thead><tr><th>Compte</th><th>Libellé</th><th style="text-align:right">Mvt Débit</th><th style="text-align:right">Mvt Crédit</th><th style="text-align:right">Solde Débiteur</th><th style="text-align:right">Solde Créditeur</th></tr></thead>
@@ -645,7 +669,14 @@ body { font-family:var(--font-body); background:var(--paper); color:var(--ink); 
     <div class="view" id="view-bilan">
       <div class="ph">
         <div><h1>Bilan</h1><p>Situation au <span id="bilanDate">31/12/2024</span></p></div>
-        <div class="ph-actions"><button class="btn btn-sm-wire" onclick="openExportModal()">⎙ Exporter</button></div>
+        <div class="ph-actions">
+          <button class="btn btn-sm-wire" onclick="openExportModal()">⎙ Exporter</button>
+        </div>
+      </div>
+      <div class="filtre-periode-bar">
+        <label>Arrêté au</label>
+        <input type="date" id="bilan-date-arrete" onchange="renderBilan()">
+        <button class="btn-filtre-reset" onclick="document.getElementById('bilan-date-arrete').value='';renderBilan()">Tout l'exercice</button>
       </div>
       <div class="bilan-grid" id="bilanContent">
         <div class="empty-state" style="grid-column:1/-1"><div class="icon">⊠</div><p>Saisissez des écritures pour générer le bilan</p></div>
@@ -690,240 +721,156 @@ body { font-family:var(--font-body); background:var(--paper); color:var(--ink); 
         </table>
       </div>
     </div>
-  </div>
-</div>
+
+  </div><!-- .main -->
+</div><!-- .shell -->
+
 <div class="toast-container" id="toastContainer"></div>
 
 <script>
 // ══════════════════════════════════════════
-// PLAN COMPTABLE SYSCOHADA COMPLET
+// PLAN COMPTABLE SYSCOHADA
 // ══════════════════════════════════════════
-const PC = {"101":"CAPITAL SOCIAL","1011":"Capital souscrit non appelé","1012":"Capital souscrit appelé non versé","1013":"Capital souscrit appelé versé non amorti","102":"CAPITAL PAR DOTATION","103":"CAPITAL PERSONNEL","104":"COMPTE DE L'EXPLOITANT","105":"PRIMES LIEES AU CAPITAL","106":"ECARTS DE REEVALUATION","111":"RESERVE LEGALE","112":"RESERVES STATUTAIRES","118":"AUTRES RESERVES","121":"REPORT A NOUVEAU CREDITEUR","129":"REPORT A NOUVEAU DEBITEUR","131":"RESULTAT NET BENEFICE","139":"RESULTAT NET PERTE","141":"SUBVENTIONS D'EQUIPEMENT","151":"AMORTISSEMENTS DEROGATOIRES","152":"PLUS-VALUES DE CESSION A REINVESTIR","161":"EMPRUNTS OBLIGATAIRES","162":"EMPRUNTS ETABLISSEMENTS DE CREDIT","163":"AVANCES RECUES DE L'ETAT","164":"AVANCES RECUES COMPTES COURANTS","165":"DEPOTS ET CAUTIONNEMENTS RECUS","166":"INTERETS COURUS","168":"AUTRES EMPRUNTS ET DETTES","191":"PROVISIONS POUR LITIGES","192":"PROVISIONS POUR GARANTIES DONNEES AUX CLIENTS","194":"PROVISIONS POUR PERTES DE CHANGE","195":"PROVISIONS POUR IMPOTS","196":"PROVISIONS POUR PENSIONS ET OBLIGATIONS SIMILAIRES","198":"AUTRES PROVISIONS POUR RISQUES ET CHARGES","211":"FRAIS DE DEVELOPPEMENT","212":"BREVETS LICENCES CONCESSIONS","213":"LOGICIELS ET SITES INTERNET","215":"MARQUES","216":"FONDS COMMERCIAL","221":"TERRAINS NUS","222":"TERRAINS BATIS","223":"TERRAINS BATIS - IMMEUBLES DE PLACEMENT","231":"BATIMENTS INDUSTRIELS ET COMMERCIAUX","232":"BATIMENTS ADMINISTRATIFS","241":"MATERIEL ET OUTILLAGE INDUSTRIEL","2411":"Matériel industriel","2412":"Outillage industriel","244":"MATERIEL ET MOBILIER DE BUREAU","2441":"Matériel de bureau","2442":"Matériel informatique","2443":"Matériel bureautique","2444":"Mobilier de bureau","245":"MATERIEL DE TRANSPORT","2451":"Matériel automobile","2452":"Matériel de transport ferroviaire","261":"TITRES DE PARTICIPATION","271":"PRETS ET CREANCES","272":"PRETS AU PERSONNEL","2812":"Amort. immobilisations incorporelles","2813":"Amort. bâtiments","2841":"Amort. matériel et outillage","2844":"Amort. matériel et mobilier","2845":"Amort. matériel de transport","2915":"Dépréciation fonds commercial","2963":"Dépréciation titres de participations","311":"MARCHANDISES A","312":"MARCHANDISES B","321":"MATIERES PREMIERES","331":"MATIERES CONSOMMABLES","334":"FOURNITURES DE BUREAU","335":"EMBALLAGES","361":"PRODUITS FINIS","381":"MARCHANDISES EN COURS DE ROUTE","391":"Dépréciations des stocks de marchandises","401":"FOURNISSEURS DETTES EN COMPTE","4011":"Fournisseurs","4012":"Fournisseurs Groupe","402":"FOURNISSEURS EFFETS A PAYER","404":"FOURNISSEURS ACQUISITIONS IMMO","408":"FOURNISSEURS FACTURES NON PARVENUES","4082":"Fournisseurs groupe factures non parvenues","4086":"Fournisseurs intérêts courus","4091":"Fournisseurs avances versées","4094":"Fournisseurs créances pour emballages","4098":"Fournisseurs RRR à obtenir","411":"CLIENTS","4111":"Clients","4112":"Clients Groupe","412":"CLIENTS EFFETS A RECEVOIR","4131":"Clients chèques impayés","4181":"Clients factures à établir","418":"CLIENTS PRODUITS A RECEVOIR","4191":"Clients avances reçues","4194":"Clients dettes pour emballages","4198":"Clients RRR à accorder","421":"PERSONNEL AVANCES ET ACOMPTES","4212":"Personnel acomptes","422":"PERSONNEL REMUNERATIONS DUES","4232":"Personnel saisies-arrêts","4281":"Personnel dettes provisionnées pour congés","4287":"Personnel produits à recevoir","431":"SECURITE SOCIALE","432":"CAISSES DE RETRAITE","4382":"Charges sociales sur congés à payer","4387":"Organismes sociaux produits à recevoir","441":"ETAT IMPOT SUR LES BENEFICES","442":"ETAT AUTRES IMPOTS ET TAXES","4431":"TVA facturée sur ventes","4432":"TVA facturée sur prestations","4433":"TVA facturée sur travaux","4434":"TVA facturée sur production livrée","4435":"TVA sur factures à établir","4441":"Etat TVA due","4449":"Etat crédit de TVA à reporter","4451":"TVA récupérable sur immobilisations","4452":"TVA récupérable sur achats","4453":"TVA récupérable sur transport","4454":"TVA récupérable sur services","4455":"TVA récupérable sur factures non parvenues","447":"ETAT IMPOTS RETENUS A LA SOURCE","4486":"Etat charges à payer","4492":"Etat avances et acomptes versés sur impôts","4495":"Etat subventions d'exploitation à recevoir","4496":"Etat subventions d'équilibre à recevoir","4711":"Débiteurs divers","4712":"Créditeurs divers","476":"CHARGES CONSTATEES D'AVANCE","477":"PRODUITS CONSTATES D'AVANCE","481":"FOURNISSEURS D'INVESTISSEMENTS","491":"DEPRECIATIONS COMPTES CLIENTS","4912":"Dépréciations comptes clients","501":"TITRES DU TRESOR","512":"EFFETS A L'ENCAISSEMENT","513":"CHEQUES A ENCAISSER","514":"CHEQUES A L'ENCAISSEMENT","521":"BANQUES LOCALES","5211":"Banques monnaie nationale","5215":"Banques devises","522":"BANQUES AUTRES ETATS","531":"CHEQUES POSTAUX","552":"MONNAIE ELECTRONIQUE MOBILE","554":"PORTE-MONNAIE ELECTRONIQUE","561":"CREDITS DE TRESORERIE","565":"BANQUES ESCOMPTE DE CREDITS","571":"CAISSE SIEGE SOCIAL","5711":"Caisse monnaie nationale","5712":"Caisse devises","572":"CAISSE SUCCURSALE","585":"VIREMENTS DE FONDS","590":"DEPRECIATIONS TITRES DE PLACEMENT","601":"ACHATS DE MARCHANDISES","6011":"Achats dans la Région","6012":"Achats hors Région","6013":"Achats aux entités du groupe","6015":"Frais sur achats","6019":"RRR obtenus sur achats de marchandises","602":"ACHATS MATIERES PREMIERES","604":"ACHATS MATIERES CONSOMMABLES","6055":"Fournitures de bureau non stockables","605":"AUTRES ACHATS","608":"ACHATS D'EMBALLAGES","6031":"Variation de stocks de marchandises","6032":"Variation stocks matières premières","612":"TRANSPORTS SUR VENTES","614":"TRANSPORTS DU PERSONNEL","621":"SOUS-TRAITANCE GENERALE","622":"LOCATIONS CHARGES LOCATIVES","624":"ENTRETIEN REPARATIONS MAINTENANCE","625":"PRIMES D'ASSURANCE","626":"ETUDES RECHERCHES DOCUMENTATION","627":"PUBLICITE PUBLICATIONS","628":"FRAIS DE TELECOMMUNICATIONS","631":"FRAIS BANCAIRES","632":"REMUNERATIONS INTERMEDIAIRES","634":"REDEVANCES BREVETS LICENCES","635":"COTISATIONS","638":"AUTRES CHARGES EXTERNES","641":"IMPOTS ET TAXES DIRECTS","6412":"Patentes licences et taxes annexes","645":"IMPOTS ET TAXES INDIRECTS","651":"PERTES SUR CREANCES CLIENTS","654":"VCN CESSIONS COURANTES IMMO","656":"PERTE DE CHANGE COMMERCIALE","658":"CHARGES DIVERSES","661":"REMUNERATIONS PERSONNEL NATIONAL","6611":"Appointements salaires commissions","6612":"Primes et gratifications","6613":"Congés payés","662":"REMUNERATIONS PERSONNEL NON NATIONAL","663":"INDEMNITES FORFAITAIRES PERSONNEL","664":"CHARGES SOCIALES","6641":"Charges sociales personnel national","671":"INTERETS DES EMPRUNTS","6712":"Intérêts emprunts établissements de crédit","673":"ESCOMPTES ACCORDES","674":"AUTRES INTERETS","676":"PERTES DE CHANGE FINANCIERES","681":"DOTATIONS AUX AMORTISSEMENTS","6812":"DAP immobilisations incorporelles","6813":"DAP immobilisations corporelles","691":"DOTATIONS PROVISIONS EXPLOITATION","6911":"Dotations aux provisions d'exploitation","6913":"Dotations aux dépréciations immobilisations incorporelles","6972":"Dotations aux dépréciations financières","6975":"Charges pour dépréciations sur titres de placement","6591":"Charges pour provisions pour risques à CT","6593":"Charges pour dépréciations sur stocks","6594":"Charges pour dépréciations sur créances","701":"VENTES DE MARCHANDISES","7011":"Ventes dans la Région","7012":"Ventes hors Région","7019":"RRR accordés","702":"VENTES DE PRODUITS FINIS","703":"VENTES PRODUITS INTERMEDIAIRES","705":"TRAVAUX FACTURES","706":"SERVICES VENDUS","707":"PRODUITS ACCESSOIRES","711":"SUBVENTIONS PRODUITS EXPORTATION","718":"AUTRES SUBVENTIONS EXPLOITATION","721":"IMMOBILISATIONS INCORPORELLES","722":"IMMOBILISATIONS CORPORELLES","736":"VARIATION STOCKS PRODUITS FINIS","734":"VARIATION STOCKS PRODUITS EN COURS","751":"PROFITS SUR CREANCES","754":"PRODUITS CESSIONS COURANTES IMMO","756":"GAINS DE CHANGE COMMERCIAUX","758":"PRODUITS DIVERS","759":"REPRISES DEPRECIATIONS PROVISIONS","771":"INTERETS PRETS ET CREANCES","7712":"Intérêts de prêts","772":"REVENUS PARTICIPATIONS","773":"ESCOMPTES OBTENUS","774":"REVENUS DE PLACEMENT","776":"GAINS DE CHANGE FINANCIERS","777":"GAINS CESSIONS TITRES","781":"TRANSFERTS CHARGES EXPLOITATION","791":"REPRISES PROVISIONS EXPLOITATION","7911":"Reprises de provisions d'exploitation","7972":"Reprises de dépréciations financières","7591":"Reprises de provisions pour risques à CT","7593":"Reprises de charges pour dépréciations stocks","7594":"Reprises de charges pour dépréciations créances","7795":"Reprises de charges pour dépréciations titres","811":"IMMO INCORPORELLES HAO","812":"IMMO CORPORELLES HAO","821":"PRODUITS CESSIONS IMMO INCORPORELLES","822":"PRODUITS CESSIONS IMMO CORPORELLES","831":"CHARGES HAO CONSTATEES","834":"PERTES SUR CREANCES HAO","839":"CHARGES PROVISIONNEES HAO","841":"PRODUITS HAO CONSTATES","851":"DOTATIONS AUX PROVISIONS REGLEMENTEES","852":"DOTATIONS AUX AMORTISSEMENTS HAO","854":"DOTATIONS PROVISIONS RISQUES HAO","861":"REPRISES HAO DE PROVISIONS REGLEMENTEES","864":"REPRISES DE PROVISIONS POUR RISQUES HAO","871":"PARTICIPATION LEGALE BENEFICES","881":"SUBVENTIONS D'EQUILIBRE","891":"IMPOTS SUR BENEFICES EXERCICE","895":"IMPOT MINIMUM FORFAITAIRE","899":"DEGREVEMENTS IMPOTS ANTERIEURS"};
+const PC = {"101":"CAPITAL SOCIAL","1011":"Capital souscrit non appelé","1012":"Capital souscrit appelé non versé","1013":"Capital souscrit appelé versé non amorti","102":"CAPITAL PAR DOTATION","103":"CAPITAL PERSONNEL","104":"COMPTE DE L'EXPLOITANT","105":"PRIMES LIEES AU CAPITAL","106":"ECARTS DE REEVALUATION","111":"RESERVE LEGALE","112":"RESERVES STATUTAIRES","118":"AUTRES RESERVES","121":"REPORT A NOUVEAU CREDITEUR","129":"REPORT A NOUVEAU DEBITEUR","131":"RESULTAT NET BENEFICE","139":"RESULTAT NET PERTE","141":"SUBVENTIONS D'EQUIPEMENT","151":"AMORTISSEMENTS DEROGATOIRES","161":"EMPRUNTS OBLIGATAIRES","162":"EMPRUNTS ETABLISSEMENTS DE CREDIT","163":"AVANCES RECUES DE L'ETAT","164":"AVANCES RECUES COMPTES COURANTS","165":"DEPOTS ET CAUTIONNEMENTS RECUS","166":"INTERETS COURUS","168":"AUTRES EMPRUNTS ET DETTES","191":"PROVISIONS POUR LITIGES","192":"PROVISIONS POUR GARANTIES","194":"PROVISIONS POUR PERTES DE CHANGE","195":"PROVISIONS POUR IMPOTS","196":"PROVISIONS RETRAITES","198":"AUTRES PROVISIONS","211":"FRAIS DE DEVELOPPEMENT","212":"BREVETS LICENCES","213":"LOGICIELS ET SITES","215":"MARQUES","216":"FONDS COMMERCIAL","221":"TERRAINS NUS","222":"TERRAINS BATIS","231":"BATIMENTS INDUSTRIELS","232":"BATIMENTS ADMINISTRATIFS","241":"MATERIEL ET OUTILLAGE","2441":"Matériel de bureau","2442":"Matériel informatique","2443":"Matériel bureautique","2444":"Mobilier de bureau","245":"MATERIEL DE TRANSPORT","2451":"Matériel automobile","261":"TITRES DE PARTICIPATION","271":"PRETS ET CREANCES","272":"PRETS AU PERSONNEL","2812":"Amort. immobilisations incorporelles","2813":"Amort. bâtiments","2841":"Amort. matériel et outillage","2844":"Amort. matériel et mobilier","2845":"Amort. matériel de transport","2915":"Dépréciation fonds commercial","311":"MARCHANDISES A","312":"MARCHANDISES B","321":"MATIERES PREMIERES","331":"MATIERES CONSOMMABLES","334":"FOURNITURES DE BUREAU","335":"EMBALLAGES","361":"PRODUITS FINIS","391":"Dépréciations des stocks","401":"FOURNISSEURS DETTES EN COMPTE","4011":"Fournisseurs","4012":"Fournisseurs Groupe","402":"FOURNISSEURS EFFETS A PAYER","404":"FOURNISSEURS IMMO","408":"FOURNISSEURS FACTURES NON PARVENUES","4082":"Fournisseurs groupe FNP","4091":"Fournisseurs avances versées","4098":"Fournisseurs RRR à obtenir","411":"CLIENTS","4111":"Clients","4112":"Clients Groupe","412":"CLIENTS EFFETS A RECEVOIR","418":"CLIENTS PRODUITS A RECEVOIR","4181":"Clients factures à établir","4191":"Clients avances reçues","4198":"Clients RRR à accorder","421":"PERSONNEL AVANCES ET ACOMPTES","4212":"Personnel acomptes","422":"PERSONNEL REMUNERATIONS DUES","431":"SECURITE SOCIALE","432":"CAISSES DE RETRAITE","441":"ETAT IMPOT SUR LES BENEFICES","442":"ETAT IMPOTS ET TAXES","4431":"TVA facturée sur ventes","4432":"TVA facturée sur prestations","4433":"TVA facturée sur travaux","4441":"Etat TVA due","4449":"Etat crédit de TVA","4451":"TVA récupérable sur immobilisations","4452":"TVA récupérable sur achats","4453":"TVA récupérable sur transport","4454":"TVA récupérable sur services","447":"ETAT IMPOTS RETENUS","4486":"Etat charges à payer","4492":"Etat avances impôts","4495":"Etat subventions exploitation","476":"CHARGES CONSTATEES D'AVANCE","477":"PRODUITS CONSTATES D'AVANCE","481":"FOURNISSEURS D'INVESTISSEMENTS","491":"DEPRECIATIONS COMPTES CLIENTS","4912":"Dépréciations clients","501":"TITRES DU TRESOR","512":"EFFETS A L'ENCAISSEMENT","513":"CHEQUES A ENCAISSER","521":"BANQUES LOCALES","5211":"Banques monnaie nationale","5215":"Banques devises","531":"CHEQUES POSTAUX","552":"MONNAIE ELECTRONIQUE MOBILE","561":"CREDITS DE TRESORERIE","571":"CAISSE SIEGE SOCIAL","5711":"Caisse monnaie nationale","5712":"Caisse devises","572":"CAISSE SUCCURSALE","585":"VIREMENTS DE FONDS","590":"DEPRECIATIONS TITRES","601":"ACHATS DE MARCHANDISES","6011":"Achats dans la Région","6012":"Achats hors Région","6015":"Frais sur achats","6019":"RRR obtenus sur achats","602":"ACHATS MATIERES PREMIERES","604":"ACHATS MATIERES CONSOMMABLES","6055":"Fournitures bureau non stockables","605":"AUTRES ACHATS","608":"ACHATS D'EMBALLAGES","6031":"Variation de stocks de marchandises","6032":"Variation stocks matières","612":"TRANSPORTS SUR VENTES","614":"TRANSPORTS DU PERSONNEL","621":"SOUS-TRAITANCE","622":"LOCATIONS","624":"ENTRETIEN REPARATIONS","625":"PRIMES D'ASSURANCE","626":"ETUDES RECHERCHES","627":"PUBLICITE","628":"TELECOMMUNICATIONS","631":"FRAIS BANCAIRES","632":"REMUNERATIONS INTERMEDIAIRES","634":"REDEVANCES BREVETS","635":"COTISATIONS","638":"AUTRES CHARGES EXTERNES","641":"IMPOTS ET TAXES DIRECTS","645":"IMPOTS ET TAXES INDIRECTS","651":"PERTES SUR CREANCES","654":"VCN CESSIONS IMMO","656":"PERTE DE CHANGE COMMERCIALE","658":"CHARGES DIVERSES","661":"REMUNERATIONS PERSONNEL","6611":"Appointements salaires","6612":"Primes et gratifications","6613":"Congés payés","662":"REMUNERATIONS NON NATIONAL","663":"INDEMNITES FORFAITAIRES","664":"CHARGES SOCIALES","6641":"Charges sociales nationales","671":"INTERETS DES EMPRUNTS","673":"ESCOMPTES ACCORDES","674":"AUTRES INTERETS","676":"PERTES DE CHANGE FINANCIERES","681":"DAP AMORTISSEMENTS","6812":"DAP incorporelles","6813":"DAP corporelles","691":"DOTATIONS PROVISIONS","6911":"Dotations provisions exploitation","6913":"DAP immo incorporelles","6594":"Charges pour dépréciations créances","6593":"Charges pour dépréciations stocks","701":"VENTES DE MARCHANDISES","7011":"Ventes dans la Région","7012":"Ventes hors Région","7019":"RRR accordés","702":"VENTES DE PRODUITS FINIS","705":"TRAVAUX FACTURES","706":"SERVICES VENDUS","707":"PRODUITS ACCESSOIRES","711":"SUBVENTIONS PRODUITS","718":"AUTRES SUBVENTIONS","721":"IMMO INCORPORELLES PRODUITES","722":"IMMO CORPORELLES PRODUITES","751":"PROFITS SUR CREANCES","754":"PRODUITS CESSIONS IMMO","756":"GAINS DE CHANGE COMMERCIAUX","758":"PRODUITS DIVERS","759":"REPRISES DEPRECIATIONS","771":"INTERETS PRETS","772":"REVENUS PARTICIPATIONS","773":"ESCOMPTES OBTENUS","774":"REVENUS DE PLACEMENT","776":"GAINS DE CHANGE FINANCIERS","781":"TRANSFERTS CHARGES","791":"REPRISES PROVISIONS","7594":"Reprises dépréciations créances","7593":"Reprises dépréciations stocks","811":"IMMO INCORPORELLES HAO","812":"IMMO CORPORELLES HAO","821":"PRODUITS CESSIONS INCORPORELLES","822":"PRODUITS CESSIONS CORPORELLES","831":"CHARGES HAO CONSTATEES","834":"PERTES CREANCES HAO","851":"DOTATIONS PROVISIONS REGLEMENTEES","852":"DOTATIONS AMORTISSEMENTS HAO","854":"DOTATIONS PROVISIONS RISQUES HAO","861":"REPRISES PROVISIONS REGLEMENTEES","871":"PARTICIPATION BENEFICES","881":"SUBVENTIONS D'EQUILIBRE","891":"IMPOTS SUR BENEFICES","895":"IMPOT MINIMUM FORFAITAIRE"};
 const CLASS_NAMES={'1':'Capitaux','2':'Immobilisations','3':'Stocks','4':'Tiers','5':'Trésorerie','6':'Charges','7':'Produits','8':'Spéciaux'};
 const NATURE_MAP={'1':'Passif','2':'Actif','3':'Actif','4':'Mixte','5':'Actif','6':'Charge','7':'Produit','8':'Spécial'};
+const JOURNAL_NAMES={'AC':'Achats','VE':'Ventes','BQ':'Banque','CA':'Caisse','OD':'Opérations Diverses','IN':'Inventaire','AN':'À Nouveau'};
 
 let ecritures=[], lignes=[], pieceCounter=1, currentProfile=null, isAILoading=false;
-let exportFormat='pdf', pendingAIEntry=null;
+let exportFormat='pdf';
 
 const GROQ_API_KEY = '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';
 
 // ══════════════════════════════════════════════════════════════════════════════
-// SYSTEM PROMPT V3 — EXPERT COMPTABLE SYSCOHADA COMPLET
-// Intègre toutes les connaissances des exercices de comptabilité
+// SYSTEM PROMPT V3 — EXPERT COMPTABLE HUMAIN ET ANALYTIQUE
 // ══════════════════════════════════════════════════════════════════════════════
-const SYSTEM_PROMPT = `Tu es COMEO AI v3, expert-comptable SYSCOHADA (Système Comptable OHADA Révisé 2023) maîtrisant TOUTE la comptabilité générale pour les entreprises en zone UEMOA/OHADA.
+function buildSystemPrompt(contextData) {
+  const { nbEcritures, companyName, exercice, ecrituresResume, totalDebit, totalCredit, comptesSoldes } = contextData;
 
-Tu t'appelles COMEO AI v3, créé par Marcio Jardel ZINZINDOHOUE. Réponds TOUJOURS en FRANÇAIS, de manière précise et pédagogique.
+  return `Tu es COMEO AI v3, expert-comptable SYSCOHADA senior dédié à l'entreprise "${companyName}" pour l'exercice ${exercice}.
 
-═══════════════════════════════════════════════════════════════
-RÈGLE ABSOLUE N°1 — LES 3 ÉCRITURES OBLIGATOIRES
-═══════════════════════════════════════════════════════════════
+Tu t'appelles COMEO AI v3. Tu as été conçu par Marcio Jardel ZINZINDOHOUE pour accompagner les équipes comptables dans leur travail quotidien.
 
-Pour TOUT achat ou vente de marchandises/produits, tu DOIS TOUJOURS passer 3 écritures distinctes et COMPLÈTES :
+═══════════════════════════
+PERSONNALITÉ ET STYLE DE COMMUNICATION
+═══════════════════════════
+
+Tu communiques comme un vrai expert-comptable senior qui accompagne son client :
+- Tu es chaleureux, précis et pédagogique — jamais froid ni robotique
+- Tu reformules ce que le comptable t'a demandé avant de répondre, pour montrer que tu as bien compris
+- Tu analyses, tu expliques le POURQUOI de chaque écriture, pas juste le QUOI
+- Si tu remarques quelque chose d'inhabituel (montant élevé, compte peu courant), tu le signales discrètement
+- Tu utilises "je" et tu t'adresses directement au comptable : "Voici ce que j'ai préparé…", "Je vous recommande de vérifier…"
+- Tu termines toujours par une phrase utile ou une recommandation pratique
+- Tu fais des paragraphes naturels, pas des listes à puces mécaniques
+- TOUJOURS en FRANÇAIS
+
+═══════════════════════════
+CONTEXTE COMPTABLE ACTUEL DE L'ENTREPRISE
+═══════════════════════════
+- Entreprise : ${companyName}
+- Exercice : ${exercice}
+- Nombre d'écritures enregistrées : ${nbEcritures}
+- Total mouvements débit : ${totalDebit} FCFA
+- Total mouvements crédit : ${totalCredit} FCFA
+${comptesSoldes ? `- Principaux soldes comptes : ${comptesSoldes}` : ''}
+${ecrituresResume ? `- Dernières opérations : ${ecrituresResume}` : ''}
+
+═══════════════════════════
+COMMANDES SPÉCIALES — ÉTATS FINANCIERS À LA DEMANDE
+═══════════════════════════
+
+Quand le comptable demande un état financier (journal, balance, grand livre) en précisant des dates ou un journal, tu DOIS :
+1. Reconnaître la demande et confirmer les paramètres
+2. Analyser les données du contexte si disponibles
+3. Répondre avec un commentaire analytique pertinent (tendances, anomalies, ratios)
+4. Utiliser le marqueur ###FILTRE### avec les paramètres extraits
+
+Format ###FILTRE### :
+###FILTRE###{"type":"journal","dateDebut":"2024-01-01","dateFin":"2024-01-31","journal":"","compte":""}
+
+Types disponibles : "journal", "balance", "grandlivre", "bilan"
+
+Exemples de détection :
+- "journal de janvier" → dateDebut: "YYYY-01-01", dateFin: "YYYY-01-31"
+- "journal du 15 au 28 février" → dateDebut: "YYYY-02-15", dateFin: "YYYY-02-28"  
+- "journal des achats de mars" → journal: "AC", dateDebut: "YYYY-03-01", dateFin: "YYYY-03-31"
+- "balance de l'exercice" → type balance, pas de dates
+- "grand livre du compte 601" → type grandlivre, compte: "601"
+- "solde du compte 571" → type grandlivre, compte: "571"
+- "bilan au 30 juin" → type bilan, dateFin: "YYYY-06-30"
+
+Pour l'année, utiliser ${exercice} par défaut.
+
+═══════════════════════════
+RÈGLE ABSOLUE — LES 3 ÉCRITURES OBLIGATOIRES
+═══════════════════════════
+
+Pour tout achat ou vente, passer TOUJOURS 3 écritures complètes et bien expliquées.
 
 **ÉCRITURE 1 — CONSTATATION DE LA FACTURE**
-Achat : D 601x (Achats m/ses) + D 4452 (TVA récup.) / C 4011 (F/sseur) ou C 571/521 (comptant)
-Vente : D 4111 (Client) ou D 571/521 (comptant) / C 701x (Ventes) + C 4431 (TVA facturée)
+Achat : D 601x + D 4452 (TVA) / C 4011 ou 571/521 (comptant)
+Vente : D 4111 ou 571/521 / C 701x + C 4431 (TVA)
 
-**ÉCRITURE 2 — MOUVEMENT DE STOCK**
-Achat — Entrée en magasin (inventaire permanent) :
-D 31.. (Stock de marchandises) / C 6031 (Variation de stock) — montant = prix d'achat HT
-Vente — Sortie de magasin (inventaire permanent) :
-D 6031 (Variation de stock) / C 31.. (Stock de marchandises) — montant = coût d'achat des m/ses vendues
+**ÉCRITURE 2 — MOUVEMENT DE STOCK (inventaire permanent)**
+Achat : D 31.. / C 6031 — montant = prix HT
+Vente : D 6031 / C 31.. — montant = coût d'achat
 
-**ÉCRITURE 3 — RÈGLEMENT (si paiement comptant)**
-Achat au comptant : cette écriture est INCLUSE dans l'écriture 1 (contrepartie directe en 571/521)
-Vente au comptant : INCLUSE dans l'écriture 1
-Achat à crédit + règlement ultérieur : D 4011 / C 521 (règlement du fournisseur)
-Vente à crédit + encaissement ultérieur : D 521 / C 4111 (encaissement client)
+**ÉCRITURE 3 — RÈGLEMENT (si paiement différé)**
+Règlement fournisseur : D 4011 / C 521
+Encaissement client : D 521 / C 4111
 
-⚠️ MÉTHODE D'INVENTAIRE INTERMITTENT (fin d'exercice uniquement) :
-- Annulation stock initial : D 6031 / C 31.. (stock initial)
-- Constatation stock final : D 31.. / C 6031 (stock final)
+CALCULS TVA (CI — 18%) :
+TTC → HT = TTC ÷ 1,18 | TVA = TTC − HT
+HT → TVA = HT × 18% | TTC = HT × 1,18
 
-═══════════════════════════════════════════════════════════════
-CALCULS TVA — CÔTE D'IVOIRE (18%)
-═══════════════════════════════════════════════════════════════
-- TTC donné → HT = TTC ÷ 1,18 (arrondi entier) | TVA = TTC − HT
-- HT donné → TVA = HT × 18% | TTC = HT × 1,18
-- Achats : 4452 (récupérable sur achats) | Immobilisations : 4451
-- Ventes : 4431 (facturée sur ventes) | Prestations : 4432 | Travaux : 4433
-- TVA due = 4441 (solde 4431 − 4452 quand TVA collectée > TVA déductible)
-- Crédit TVA = 4449 (quand TVA déductible > TVA collectée)
-- Centralisation TVA : D 4431/4432/4433 / C 4441 (TVA due) + C 4451/4452/4453 (solde)
+COMPTES TRÉSORERIE :
+- 5711 : Caisse (espèces) | 521/5211 : Banque | 513 : Chèques à encaisser
 
-═══════════════════════════════════════════════════════════════
-COMPTES DE TRÉSORERIE
-═══════════════════════════════════════════════════════════════
-- 5711 : Caisse (espèces, au comptant)
-- 521 / 5211 : Banque (chèque, virement, prélèvement)
-- 513 : Chèques à encaisser (réception du chèque)
-- 514 : Chèques à l'encaissement (remise à la banque)
-- 554 : Porte-monnaie électronique
+═══════════════════════════
+PAIE, IMMOBILISATIONS, RÉGULARISATIONS
+═══════════════════════════
 
-═══════════════════════════════════════════════════════════════
-PAIE DU PERSONNEL — 3 ÉTAPES
-═══════════════════════════════════════════════════════════════
-1. Comptabilisation bulletin de paie :
-   D 6611 (Appointements) + D 6612 (Primes) / C 422 (Rémunérations dues) [brut]
-   puis D 422 / C 431 (Sécu. soc.) + C 432 (Retraite) + C 447 (Impôts retenus) + C 4212 (Acomptes) [déductions]
-   D 6055 (frais remboursés) / C 422 (si remboursements)
-2. Charges patronales : D 664 / C 431 + C 432
-3. Règlement : D 422 / C 521 ou 571
+PAIE : 3 étapes — (1) Bulletin : D 6611/6612 / C 422, puis D 422 / C 431+432+447+4212
+(2) Charges patronales : D 664 / C 431+432 (3) Paiement : D 422 / C 521/571
 
-═══════════════════════════════════════════════════════════════
-IMMOBILISATIONS — ACQUISITION
-═══════════════════════════════════════════════════════════════
-- Achat immobilisation : D 24xx + D 4451 (TVA) / C 481 ou 404 (crédit) ou 521/571 (comptant)
-- Amortissement linéaire : Base = Valeur − Valeur résiduelle | Taux = 100% ÷ durée
-  D 6813 (DAP corporelles) / C 284x (Amort. cumulés)
-- Amortissement dégressif SOFTY : Taux décroissant = années restantes ÷ somme des rangs
-  Ex. 5 ans : somme = 15 ; An1 = 5/15, An2 = 4/15...
-- Amortissement dégressif fiscal : taux fiscal × VCN (valeur nette comptable)
-  → quand amort. fiscal < amort. éco : reprise d'amort. dérogatoire (D 151 / C 861)
-  → quand amort. fiscal > amort. éco : dotation amort. dérogatoire (D 851 / C 151)
-- Cession immobilisation : D 485x (créance cession) / C 822 (produit) + dotation complémentaire + D 812+284x / C 24xx
+IMMOBILISATIONS : D 24xx + D 4451 / C 481 ou 521/571
+Amortissement linéaire : D 6813 / C 284x | Taux = 100% ÷ durée | Base = Val − Val résiduelle
 
-═══════════════════════════════════════════════════════════════
-DÉPRÉCIATIONS ET PROVISIONS (distinction SYSCOHADA)
-═══════════════════════════════════════════════════════════════
-- Dépréciation = perte de valeur d'un actif
-  * Immo. incorporelles : D 6913 / C 2915
-  * Immo. financières : D 6972 / C 2963
-  * Stocks : D 6593 / C 391
-  * Clients : D 6594 / C 4912
-  * Titres placement : D 6795 / C 590
-  * Reprise N+1 : inverser (ex: D 4912 / C 7594)
-- Provision = dette incertaine (passif externe)
-  * Risques CT exploitation : D 6591 / C 4991
-  * Garanties clients : D 6911 / C 192
-  * Pertes de change : D 6971 / C 194
-  * Pensions : D 6911 / C 1961
-  * Provisions HAO : D 854 / C 195
-  * Reprise : inverser les comptes
+RÉGULARISATIONS :
+- CCA : D 476 / C charge (portion N+1)
+- Charges à payer : D charge / C 408 ou 4281 ou 4486
+- Produits à recevoir : D 4181 / C 701x + C 4435
 
-═══════════════════════════════════════════════════════════════
-COMPTES DE RÉGULARISATION
-═══════════════════════════════════════════════════════════════
-- Charges constatées d'avance : D 476 / C compte de charge concerné (montant HT)
-  → Concernent la portion de charge payée mais relative à l'exercice suivant
-- Charges à payer (dettes provisionnées) :
-  * Factures fournisseurs non parvenues : D 60xx + D 4455 / C 4082 (ou 408)
-  * Congés payés : D 6613 / C 4281
-  * Charges sociales sur congés : D 664 / C 4382
-  * Patentes : D 6412 / C 4486
-  * Intérêts courus emprunts : D 6712 / C 1662
-  * Intérêts commerciaux : D 6744 / C 4086
-- Produits constatés d'avance : D compte de produit / C 477 (HT)
-- Produits à recevoir :
-  * RRR à obtenir fournisseurs : D 4098 + D 4455 / C 609x + C 4431
-  * Factures clients à établir : D 4181 / C 70xx + C 4435
-  * Subventions à recevoir État : D 4495 / C 711x ou 718x
-  * Intérêts de prêts à recevoir : D 4287 / C 7712
+═══════════════════════════
+FORMAT DE RÉPONSE
+═══════════════════════════
 
-═══════════════════════════════════════════════════════════════
-IMPÔTS SUR BÉNÉFICES (IS / IBP)
-═══════════════════════════════════════════════════════════════
-- Acomptes trimestriels : D 441x / C 5xx
-- Constatation IS en fin d'exercice : D 891 / C 441x (solde = IS − acomptes déjà versés)
-- Le taux IS en zone OHADA varie (ex: 28% Togo, 25% Côte d'Ivoire selon législation locale)
+Pour une opération comptable :
+1. Brève reformulation de la demande (1 phrase)
+2. Calculs préliminaires commentés
+3. Tableau HTML pour chaque écriture numérotée
+4. Explication du sens économique de l'opération
+5. Éventuellement : remarque ou conseil
+6. ###ECRITURE### suivi du JSON de l'écriture PRINCIPALE uniquement
 
-═══════════════════════════════════════════════════════════════
-BILAN SYSCOHADA — STRUCTURE
-═══════════════════════════════════════════════════════════════
-ACTIF :
-- Actif immobilisé (classes 2) : Immobilisations incorporelles + corporelles + financières
-- Actif circulant (classes 3 et 4) : Stocks + Créances
-- Trésorerie-Actif (classe 5 solde débiteur)
-PASSIF :
-- Capitaux propres (classe 1) : Capital + Réserves + Résultat
-- Dettes financières (16x) : Emprunts LT
-- Passif circulant (classe 4 solde créditeur) : Fournisseurs + Dettes fiscales
-- Trésorerie-Passif (classe 5 solde créditeur + classe 56)
+Pour une demande d'état (journal, balance...) :
+1. Confirmation et commentaire analytique
+2. ###FILTRE### suivi du JSON de filtre
 
-═══════════════════════════════════════════════════════════════
-COMPTE DE RÉSULTAT — SOLDES INTERMÉDIAIRES (SIG)
-═══════════════════════════════════════════════════════════════
-1. Marge commerciale (XA) = Ventes m/ses (70) − Achats m/ses (601) ± Variation stocks (6031)
-   Taux de marge = MC ÷ Coût d'achat × 100
-   Taux de marque = MC ÷ CA × 100 (toujours < taux de marge)
-2. CA (XB) = Ventes (70+71+72+73) + Produits accessoires (707)
-3. Valeur ajoutée (XC) = CA + Autres produits − Achats − Services extérieurs − Impôts et taxes
-4. EBE (XD) = Valeur ajoutée − Charges de personnel (661+662+663+664)
-5. Résultat d'exploitation (XE) = EBE + Reprises amort./prov. − DAP
-6. Résultat financier (XF) = Revenus financiers (77) − Charges financières (67)
-7. RAO (XG) = RE + RF
-8. RHAO (XH) = Produits HAO (82+84) − Charges HAO (81+83+85)
-9. Résultat net (XI) = RAO + RHAO − Participation − IS
+Pour une question ou analyse :
+Réponse réfléchie, structurée en prose naturelle, avec des références aux normes SYSCOHADA si pertinent.
 
-═══════════════════════════════════════════════════════════════
-PRINCIPES COMPTABLES SYSCOHADA (QCM)
-═══════════════════════════════════════════════════════════════
-5 POSTULATS :
-1. Entité (séparation patrimoine entreprise/propriétaire)
-2. Continuité d'exploitation
-3. Spécialisation des exercices (indépendance)
-4. Permanence des méthodes
-5. Prééminence de la réalité économique sur l'apparence juridique
+FORMAT TABLEAU HTML :
+<table><thead><tr><th>Compte</th><th>Libellé</th><th>Débit FCFA</th><th>Crédit FCFA</th></tr></thead><tbody>...</tbody></table>
 
-5 CONVENTIONS :
-1. Coût historique (valeur d'acquisition)
-2. Prudence (gains latents non comptabilisés, pertes latentes PROVISIONNÉES)
-3. Transparence (régularité et sincérité)
-4. Importance significative
-5. Comptabilité d'engagement (droits et obligations dès naissance)
+FORMAT JSON ÉCRITURE (après ###ECRITURE###, sans backticks) :
+{"journal":"AC","libelle":"Description précise","lignes":[{"compte":"601","libelle":"Achats marchandises","debit":423729,"credit":0},{"compte":"4452","libelle":"TVA récupérable 18%","debit":76271,"credit":0},{"compte":"571","libelle":"Caisse","debit":0,"credit":500000}]}
 
-COMPTES SPÉCIAUX (QCM fréquents) :
-- 4098 "Fournisseurs RRR à obtenir" = BILAN ACTIF (créance sur fournisseur)
-- 4198 "Clients RRR à accorder" = BILAN PASSIF (dette envers client)
-- 609x "RRR obtenus non ventilés" = GESTION CHARGES (réduction d'achat = produit comptablement)
-- 709x "RRR accordés non ventilés" = GESTION CHARGES (réduction de vente)
-- 6019 = RRR obtenus sur achats : GESTION (vient en déduction des charges d'achat)
-- 7019 = RRR accordés : GESTION (vient en déduction des produits de vente)
-
-═══════════════════════════════════════════════════════════════
-VIREMENT COMME MOYEN COMPTABLE
-═══════════════════════════════════════════════════════════════
-- Regroupement : soldes comptes auxiliaires virés au compte principal (ex: clients individuels → 4111)
-- Ventilation : solde compte principal éclaté en comptes auxiliaires (ex: 31 → 311A + 312B + 313C)
-- Réciprocité : compte client chez fournisseur = image miroir du compte fournisseur chez client
-  (mêmes montants, sens inversés, même solde absolu mais de nature opposée)
-
-═══════════════════════════════════════════════════════════════
-FORMAT DE RÉPONSE OBLIGATOIRE
-═══════════════════════════════════════════════════════════════
-
-**Pour toute opération d'achat/vente :**
-
-1. Calculs préliminaires détaillés (HT, TVA, TTC, coût stock)
-2. Tableau HTML de chaque écriture avec numérotation (Écriture 1/2/3)
-3. Commentaire sur chaque écriture
-4. ###ECRITURE### suivi du JSON de l'écriture PRINCIPALE
-
-**Pour analyse/QCM :**
-- Réponse précise avec justification
-- Référence au principe ou règle SYSCOHADA
-- PAS de ###ECRITURE###
-
-**Format tableau HTML écriture :**
-<table>
-<thead><tr><th>Compte</th><th>Libellé</th><th>Débit FCFA</th><th>Crédit FCFA</th></tr></thead>
-<tbody>
-<tr><td>601x</td><td>Achats marchandises</td><td>XXX</td><td></td></tr>
-...
-</tbody>
-</table>
-
-═══════════════════════════════════════════════════════════════
-FORMAT JSON OBLIGATOIRE
-═══════════════════════════════════════════════════════════════
-Après ###ECRITURE###, écrire UNIQUEMENT ce JSON (sans markdown ni backticks) :
-{"journal":"AC","libelle":"Description courte précise","lignes":[{"compte":"601","libelle":"Achats marchandises","debit":423729,"credit":0},{"compte":"4452","libelle":"TVA récupérable 18%","debit":76271,"credit":0},{"compte":"571","libelle":"Caisse","debit":0,"credit":500000}]}
-
-Journaux : AC=Achats, VE=Ventes, BQ=Banque, CA=Caisse, OD=Opérations Diverses, IN=Inventaire, AN=À Nouveau
-
-⛔ RÈGLE ABSOLUE : Débit total = Crédit total. Vérifier TOUJOURS l'équilibre.
-⛔ Les montants doivent être des ENTIERS (pas de décimales).`;
+⛔ RÈGLE ABSOLUE : Débit total = Crédit total. Vérifier TOUJOURS l'équilibre avant de répondre.
+⛔ Les montants sont des ENTIERS (pas de décimales).
+⛔ Ne jamais inclure ###ECRITURE### et ###FILTRE### dans la même réponse.`;
+}
 
 // ══════════════════════════════════════════
 // AUTH
@@ -1085,15 +1032,12 @@ function fillLignesFromAI(ecr) {
   const banner = document.getElementById('aiFillBanner');
   const desc = document.getElementById('aiFillDesc');
   if(banner && desc) {
-    desc.textContent = ecr.libelle || 'Écriture générée par COMEO AI';
+    desc.textContent = ecr.libelle || 'Écriture préparée par COMEO AI';
     banner.classList.add('show');
   }
-  toast('✨ COMEO AI a rempli les lignes — vérifiez et validez !','info');
+  toast('✨ COMEO AI a préparé les lignes — vérifiez et validez !','info');
 }
-
-function dismissFillBanner() {
-  document.getElementById('aiFillBanner').classList.remove('show');
-}
+function dismissFillBanner() { document.getElementById('aiFillBanner').classList.remove('show'); }
 
 function renderLignes() {
   const tbody=document.getElementById('lignesBody'); tbody.innerHTML='';
@@ -1155,32 +1099,73 @@ async function saveEcriture() {
 }
 
 // ══════════════════════════════════════════
+// FILTRAGE COMMUN
+// ══════════════════════════════════════════
+function getEcrituresFiltrees(opts={}) {
+  const { dateDebut, dateFin, journal, compte } = opts;
+  return ecritures.filter(e => {
+    if(dateDebut && e.date < dateDebut) return false;
+    if(dateFin && e.date > dateFin) return false;
+    if(journal && e.journal !== journal) return false;
+    if(compte) {
+      return e.lignes.some(l => l.compte && l.compte.startsWith(compte));
+    }
+    return true;
+  });
+}
+
+// ══════════════════════════════════════════
 // JOURNAL
 // ══════════════════════════════════════════
+function resetJournalFiltre() {
+  document.getElementById('jnl-date-debut').value='';
+  document.getElementById('jnl-date-fin').value='';
+  document.getElementById('journalFilter').value='';
+  document.getElementById('journalSearch').value='';
+  document.getElementById('journal-analyse').style.display='none';
+  renderJournal();
+}
+
 function renderJournal() {
   const search=document.getElementById('journalSearch').value.toLowerCase();
   const filter=document.getElementById('journalFilter').value;
-  const tbody=document.getElementById('journalBody'); let rows=[];
-  ecritures.forEach(e=>{
-    if(filter&&e.journal!==filter)return;
+  const dateDebut=document.getElementById('jnl-date-debut').value;
+  const dateFin=document.getElementById('jnl-date-fin').value;
+  const tbody=document.getElementById('journalBody');
+  let rows=[], totalD=0, totalC=0;
+
+  const ecFiltrees = getEcrituresFiltrees({ dateDebut, dateFin, journal: filter });
+  ecFiltrees.forEach(e=>{
     e.lignes.forEach(l=>{
       if(search&&!l.compte.includes(search)&&!l.libelle.toLowerCase().includes(search)&&!(e.libelle||'').toLowerCase().includes(search)&&!(e.piece||'').includes(search))return;
+      totalD += l.debit||0;
+      totalC += l.credit||0;
       rows.push({e,l});
     });
   });
-  if(!rows.length){tbody.innerHTML='<tr><td colspan="8"><div class="empty-state"><div class="icon">≡</div><p>Aucune écriture</p></div></td></tr>';return;}
+
+  if(!rows.length){
+    tbody.innerHTML='<tr><td colspan="8"><div class="empty-state"><div class="icon">≡</div><p>Aucune écriture pour cette période</p></div></td></tr>';
+    document.getElementById('journal-totaux').textContent='';
+    return;
+  }
+
   tbody.innerHTML=rows.map(({e,l})=>`
     <tr>
       <td style="font-family:var(--font-mono);font-size:11px">${e.date}</td>
       <td><span class="ct">${e.journal}</span></td>
       <td style="font-family:var(--font-mono);color:var(--muted);font-size:10px">${e.piece||''}</td>
-      <td><span class="ct">${l.compte}</span><span style="color:var(--muted);font-size:10px;margin-left:5px">${(PC[l.compte]||'').substring(0,22)}</span></td>
+      <td><span class="ct">${l.compte}</span><span style="color:var(--muted);font-size:10px;margin-left:5px">${(PC[l.compte]||'').substring(0,20)}</span></td>
       <td>${l.libelle||e.libelle||''}</td>
       <td class="debit">${l.debit?fn(l.debit):''}</td>
       <td class="credit">${l.credit?fn(l.credit):''}</td>
       <td><button class="del-line" onclick="deleteEcriture('${e._docId}',${e.id})">✕</button></td>
     </tr>`).join('');
+
+  const totEl = document.getElementById('journal-totaux');
+  totEl.innerHTML = `<strong>${rows.length} lignes</strong> — Total Débit : <span style="color:var(--blue)">${fn(totalD)} FCFA</span> | Total Crédit : <span style="color:var(--green)">${fn(totalC)} FCFA</span> | Équilibre : <span style="color:${Math.abs(totalD-totalC)<1?'var(--green)':'var(--red)'}">${Math.abs(totalD-totalC)<1?'✓ Équilibré':'✗ Déséquilibré ('+fn(Math.abs(totalD-totalC))+')'}</span>`;
 }
+
 async function deleteEcriture(docId,id) {
   if(!confirm('Supprimer cette écriture ?'))return;
   await deleteEcritureFromFirestore(docId);
@@ -1191,9 +1176,10 @@ async function deleteEcriture(docId,id) {
 // ══════════════════════════════════════════
 // GRAND LIVRE
 // ══════════════════════════════════════════
-function getMap() {
+function getMap(opts={}) {
+  const ecFiltrees = opts.filtrer ? getEcrituresFiltrees(opts) : ecritures;
   const map={};
-  ecritures.forEach(e=>e.lignes.forEach(l=>{
+  ecFiltrees.forEach(e=>e.lignes.forEach(l=>{
     if(!l.compte)return;
     if(!map[l.compte])map[l.compte]={debit:0,credit:0,mvts:[]};
     map[l.compte].debit+=l.debit||0; map[l.compte].credit+=l.credit||0;
@@ -1201,9 +1187,20 @@ function getMap() {
   }));
   return map;
 }
+
+function resetGLFiltre() {
+  document.getElementById('gl-date-debut').value='';
+  document.getElementById('gl-date-fin').value='';
+  document.getElementById('glSearch').value='';
+  renderGrandLivre();
+}
+
 function renderGrandLivre() {
   const search=document.getElementById('glSearch').value.toLowerCase();
-  const map=getMap(), content=document.getElementById('grandLivreContent');
+  const dateDebut=document.getElementById('gl-date-debut').value;
+  const dateFin=document.getElementById('gl-date-fin').value;
+  const opts = dateDebut||dateFin ? {filtrer:true,dateDebut,dateFin} : {};
+  const map=getMap(opts), content=document.getElementById('grandLivreContent');
   const comptes=Object.keys(map).sort();
   if(!comptes.length){content.innerHTML='<div class="empty-state"><div class="icon">⊞</div><p>Aucun mouvement</p></div>';return;}
   const filtered=comptes.filter(c=>!search||c.includes(search)||(PC[c]||'').toLowerCase().includes(search));
@@ -1217,7 +1214,7 @@ function renderGrandLivre() {
       </div>
       <div id="gl-${code}" style="display:none">
         <table class="dt">
-          <thead><tr><th>Date</th><th>Jnl</th><th>Pièce</th><th>Libellé</th><th style="text-align:right">Débit</th><th style="text-align:right">Crédit</th><th style="text-align:right">Solde</th></tr></thead>
+          <thead><tr><th>Date</th><th>Jnl</th><th>Pièce</th><th>Libellé</th><th style="text-align:right">Débit</th><th style="text-align:right">Crédit</th><th style="text-align:right">Solde progressif</th></tr></thead>
           <tbody>${acc.mvts.map((m,i)=>{
             const rD=acc.mvts.slice(0,i+1).reduce((s,x)=>s+x.debit,0);
             const rC=acc.mvts.slice(0,i+1).reduce((s,x)=>s+x.credit,0);
@@ -1248,10 +1245,25 @@ function toggleGL(id){const el=document.getElementById(id);el.style.display=el.s
 // ══════════════════════════════════════════
 // BALANCE
 // ══════════════════════════════════════════
+function resetBalanceFiltre() {
+  document.getElementById('bal-date-debut').value='';
+  document.getElementById('bal-date-fin').value='';
+  document.getElementById('bal-journal').value='';
+  document.getElementById('bal-classe').value='';
+  document.getElementById('balance-analyse').style.display='none';
+  renderBalance();
+}
+
 function renderBalance() {
-  const map=getMap(),tbody=document.getElementById('balanceBody');
-  const comptes=Object.keys(map).sort();
-  if(!comptes.length){tbody.innerHTML='<tr><td colspan="6"><div class="empty-state"><p>Aucune donnée</p></div></td></tr>';return;}
+  const dateDebut=document.getElementById('bal-date-debut').value;
+  const dateFin=document.getElementById('bal-date-fin').value;
+  const journal=document.getElementById('bal-journal').value;
+  const classe=document.getElementById('bal-classe').value;
+  const opts = (dateDebut||dateFin||journal) ? {filtrer:true,dateDebut,dateFin,journal} : {};
+  const map=getMap(opts), tbody=document.getElementById('balanceBody');
+  let comptes=Object.keys(map).sort();
+  if(classe) comptes = comptes.filter(c=>c.startsWith(classe));
+  if(!comptes.length){tbody.innerHTML='<tr><td colspan="6"><div class="empty-state"><p>Aucune donnée pour cette sélection</p></div></td></tr>';return;}
   let tD=0,tC=0,tSD=0,tSC=0;
   const rows=comptes.map(code=>{
     const acc=map[code],s=acc.debit-acc.credit,sd=s>0?s:0,sc=s<0?-s:0;
@@ -1276,8 +1288,10 @@ function renderBalance() {
 // BILAN
 // ══════════════════════════════════════════
 function renderBilan() {
-  const map=getMap(),content=document.getElementById('bilanContent');
-  if(!Object.keys(map).length){content.innerHTML='<div class="empty-state" style="grid-column:1/-1"><div class="icon">⊠</div><p>Saisissez des écritures</p></div>';return;}
+  const dateArrete = document.getElementById('bilan-date-arrete')?.value;
+  const opts = dateArrete ? {filtrer:true, dateFin:dateArrete} : {};
+  const map=getMap(opts), content=document.getElementById('bilanContent');
+  if(!Object.keys(map).length){content.innerHTML='<div class="empty-state" style="grid-column:1/-1"><div class="icon">⊠</div><p>Saisissez des écritures pour générer le bilan</p></div>';return;}
   const actif={immob:{title:'ACTIF IMMOBILISÉ',comptes:[]},stocks:{title:'STOCKS ET EN-COURS',comptes:[]},creances:{title:'CRÉANCES ET EMPLOIS ASSIMILÉS',comptes:[]},treso:{title:'TRÉSORERIE-ACTIF',comptes:[]}};
   const passif={cap:{title:'CAPITAUX PROPRES ET RESSOURCES ASSIMILÉES',comptes:[]},df:{title:'DETTES FINANCIÈRES',comptes:[]},dct:{title:'PASSIF CIRCULANT',comptes:[]},tp:{title:'TRÉSORERIE-PASSIF',comptes:[]}};
   Object.entries(map).forEach(([code,acc])=>{
@@ -1299,41 +1313,34 @@ function renderBilan() {
   }).join('');
   const tA=[...actif.immob.comptes,...actif.stocks.comptes,...actif.creances.comptes,...actif.treso.comptes].reduce((s,c)=>s+c.solde,0);
   const tP=[...passif.cap.comptes,...passif.df.comptes,...passif.dct.comptes,...passif.tp.comptes].reduce((s,c)=>s+c.solde,0);
+  const label = dateArrete ? `Arrêté au ${dateArrete}` : `Exercice ${document.getElementById('exerciceYear').value}`;
   content.innerHTML=`
-    <div class="bilan-col"><div class="bilan-col-header actif">ACTIF</div>${rc(Object.values(actif))}<div class="bilan-total"><span>TOTAL ACTIF</span><span>${fn(tA)} FCFA</span></div></div>
-    <div class="bilan-col"><div class="bilan-col-header passif">PASSIF</div>${rc(Object.values(passif))}<div class="bilan-total"><span>TOTAL PASSIF</span><span>${fn(tP)} FCFA</span></div></div>`;
+    <div class="bilan-col"><div class="bilan-col-header actif">ACTIF — ${label}</div>${rc(Object.values(actif))}<div class="bilan-total"><span>TOTAL ACTIF</span><span>${fn(tA)} FCFA</span></div></div>
+    <div class="bilan-col"><div class="bilan-col-header passif">PASSIF — ${label}</div>${rc(Object.values(passif))}<div class="bilan-total"><span>TOTAL PASSIF</span><span>${fn(tP)} FCFA</span></div></div>`;
 }
 
 // ══════════════════════════════════════════
-// RESULTAT COMPLET
+// RESULTAT
 // ══════════════════════════════════════════
 function renderResultat() {
   const map=getMap(),content=document.getElementById('resultatContent');
   if(!Object.keys(map).length){content.innerHTML='<div class="empty-state"><div class="icon">↗</div><p>Aucune donnée</p></div>';return;}
   const gt=pfx=>Object.entries(map).filter(([c])=>pfx.some(p=>c.startsWith(p))).reduce((s,[,a])=>s+(a.debit-a.credit),0);
-  // Produits
   const ventes=Math.abs(gt(['701','702','703','704','705']));
   const prodsAcc=Math.abs(gt(['707']));
   const autrProd=Math.abs(gt(['75','718','711']));
-  // Charges exploitation
   const achats=gt(['601','602','603','604','605','608']);
   const transports=gt(['612','614']);
   const servExt=gt(['621','622','624','625','626','627','628','631','632','634','635','638']);
   const impTaxes=gt(['641','645']);
   const autresChg=gt(['651','654','658']);
-  // Personnel
   const personnel=gt(['661','662','663','664']);
-  // DAP
   const dap=gt(['681','691','697']);
-  // Financier
   const revFin=Math.abs(gt(['771','772','773','774','776','777']));
   const chgFin=gt(['671','673','674','676']);
-  // HAO
   const haoP=Math.abs(gt(['821','822','841']));
   const haoC=gt(['811','812','831','834','839','851','852','854']);
   const imp=gt(['891','895']);
-
-  // SIG
   const mc = ventes - Math.abs(gt(['601'])) - gt(['6031']);
   const ca = ventes + prodsAcc;
   const va = ca + autrProd - Math.abs(gt(['601','602','604','605','608'])) - gt(['6031','6032']) - transports - servExt - impTaxes - autresChg;
@@ -1343,7 +1350,6 @@ function renderResultat() {
   const rao = re + rf;
   const rhao = haoP - haoC;
   const res = rao + rhao - imp;
-
   const rr=(lbl,val,cls='')=>`<div class="rrow ${cls}"><span>${lbl}</span><span class="amount ${val>=0?'pos':'neg'}">${fn(Math.abs(val))} FCFA${val<0?' (−)':''}</span></div>`;
   content.innerHTML=`<div class="rlist">
     <div class="rrow header"><span>COMPTE DE RÉSULTAT — SYSCOHADA</span><span></span></div>
@@ -1495,10 +1501,33 @@ function exportWord() {
 }
 
 // ══════════════════════════════════════════
-// COMEO AI v3 — MOTEUR IA AMÉLIORÉ
+// COMEO AI v3 — MOTEUR IA HUMAIN ET ANALYTIQUE
 // ══════════════════════════════════════════
 function handleAiKey(e,ctx){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendToAI(ctx);}}
 function quickAI(text){document.getElementById('aiInput').value=text;navigate('dashboard');sendToAI('dashboard');}
+
+// Construction du contexte comptable pour l'IA
+function buildAIContext() {
+  let tD=0,tC=0;
+  ecritures.forEach(e=>e.lignes.forEach(l=>{tD+=l.debit||0;tC+=l.credit||0;}));
+  const map = getMap();
+  const comptesSoldes = Object.entries(map).slice(0,8).map(([c,a])=>{
+    const s=a.debit-a.credit;
+    return `${c}:${s>=0?'Sd':'Sc'}${fn(Math.abs(s))}`;
+  }).join(' | ');
+  const dernières = ecritures.slice(-5).map(e=>
+    `${e.date} [${e.journal}] ${e.libelle||'—'}`
+  ).join(' ; ');
+  return {
+    nbEcritures: ecritures.length,
+    companyName: currentProfile?.company || 'Entreprise',
+    exercice: document.getElementById('exerciceYear')?.value || '2024',
+    totalDebit: fn(tD),
+    totalCredit: fn(tC),
+    comptesSoldes,
+    ecrituresResume: dernières
+  };
+}
 
 async function sendToAI(context) {
   if(isAILoading)return;
@@ -1511,14 +1540,8 @@ async function sendToAI(context) {
   appendMsg(context,'user',msg);
   const tid = appendTyping(context);
 
-  // Contexte actuel de la comptabilité
-  const map = getMap();
-  const comptes = Object.keys(map).sort();
-  const contextNote = comptes.length > 0
-    ? `\n\n[CONTEXTE ENTREPRISE : ${ecritures.length} écritures. Comptes utilisés : ${comptes.slice(0,10).join(', ')}${comptes.length>10?'...':''}]`
-    : '';
-
-  const userMsg = msg + contextNote;
+  const ctxData = buildAIContext();
+  const systemPrompt = buildSystemPrompt(ctxData);
 
   try {
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -1526,11 +1549,11 @@ async function sendToAI(context) {
       headers: {'Content-Type':'application/json','Authorization':`Bearer ${GROQ_API_KEY}`},
       body: JSON.stringify({
         model: 'llama-3.3-70b-versatile',
-        max_tokens: 3000,
-        temperature: 0.1,
+        max_tokens: 3200,
+        temperature: 0.15,
         messages: [
-          {role:'system', content: SYSTEM_PROMPT},
-          {role:'user', content: userMsg}
+          {role:'system', content: systemPrompt},
+          {role:'user', content: msg}
         ]
       })
     });
@@ -1542,24 +1565,34 @@ async function sendToAI(context) {
     const data = await response.json();
     const fullText = data.choices?.[0]?.message?.content || 'Pas de réponse.';
 
-    // Séparation texte / JSON écriture
-    const markerIdx = fullText.indexOf('###ECRITURE###');
-    let displayText = fullText, jsonStr = null;
-    if(markerIdx !== -1) {
-      displayText = fullText.substring(0, markerIdx).trim();
-      jsonStr = fullText.substring(markerIdx + 14).trim();
-    }
+    // Détection marqueur écriture
+    const ecrMarker = fullText.indexOf('###ECRITURE###');
+    // Détection marqueur filtre
+    const filtreMarker = fullText.indexOf('###FILTRE###');
 
-    appendMsg(context, 'ai', displayText);
-
-    // Traitement JSON écriture
-    if(jsonStr) {
+    if(filtreMarker !== -1) {
+      // Mode affichage d'état financier
+      const displayText = fullText.substring(0, filtreMarker).trim();
+      const jsonStr = fullText.substring(filtreMarker + 12).trim();
+      appendMsg(context, 'ai', displayText);
+      try {
+        const clean = jsonStr.replace(/```json|```/g,'').trim();
+        const jsonMatch = clean.match(/(\{[\s\S]*?\})/);
+        if(jsonMatch) {
+          const filtre = JSON.parse(jsonMatch[1]);
+          applyFiltreAndNavigate(filtre, context);
+        }
+      } catch(pe) { console.warn('Filtre parse error:', pe); }
+    } else if(ecrMarker !== -1) {
+      // Mode écriture comptable
+      const displayText = fullText.substring(0, ecrMarker).trim();
+      const jsonStr = fullText.substring(ecrMarker + 14).trim();
+      appendMsg(context, 'ai', displayText);
       try {
         const clean = jsonStr.replace(/```json|```/g,'').trim();
         const jsonMatch = clean.match(/(\{[\s\S]*\})/);
         if(!jsonMatch) throw new Error('No JSON found');
         const ecr = JSON.parse(jsonMatch[1]);
-
         if(ecr.lignes && ecr.lignes.length >= 2) {
           let d=0, c=0;
           ecr.lignes.forEach(l=>{d+=parseFloat(l.debit)||0; c+=parseFloat(l.credit)||0;});
@@ -1567,7 +1600,7 @@ async function sendToAI(context) {
             if(context === 'saisie') {
               fillLignesFromAI(ecr);
             } else {
-              // Enregistrement automatique dans le journal
+              // Enregistrement automatique dans le journal Firestore
               const ecriture = {
                 id: Date.now(),
                 date: new Date().toISOString().split('T')[0],
@@ -1585,24 +1618,95 @@ async function sendToAI(context) {
               await saveEcritureToFirestore(ecriture);
               ecritures.push(ecriture); pieceCounter++;
               updateStats();
-              appendMsg(context,'ai',`✅ <strong>Écriture enregistrée</strong> — Pièce ${ecriture.piece} | Journal ${ecriture.journal} | ${ecriture.lignes.length} lignes | Équilibré : ${fn(d)} FCFA`);
+              // Mise à jour du rendu si une vue comptable est active
               const av = document.querySelector('.view.active')?.id?.replace('view-','');
               if(av && RENDERERS[av] && av!=='dashboard' && av!=='saisie') RENDERERS[av]();
+              appendMsg(context,'ai',
+                `✅ L'écriture a bien été enregistrée dans votre journal — Pièce <strong>${ecriture.piece}</strong> | Journal <strong>${JOURNAL_NAMES[ecriture.journal]||ecriture.journal}</strong> | ${ecriture.lignes.length} lignes | Montant équilibré : <strong>${fn(d)} FCFA</strong>`
+              );
             }
           } else {
-            appendMsg(context,'ai',`⚠️ L'écriture générée est déséquilibrée (Débit: ${fn(d)} / Crédit: ${fn(c)}) — non enregistrée. Vérifiez les montants.`);
+            appendMsg(context,'ai',`⚠️ Je remarque un déséquilibre dans l'écriture générée (Débit : ${fn(d)} FCFA / Crédit : ${fn(c)} FCFA). Cela ne peut pas être enregistré en l'état. Voulez-vous que je corrige l'écriture ?`);
           }
         }
       } catch(pe) {
         console.warn('JSON parse error:', pe.message);
       }
+    } else {
+      // Réponse analytique pure
+      appendMsg(context, 'ai', fullText);
     }
+
   } catch(err) {
     removeTyping(context, tid);
-    appendMsg(context,'ai',`❌ Erreur : ${err.message}`);
+    appendMsg(context,'ai',`Je rencontre une difficulté technique pour le moment : ${err.message}. Veuillez réessayer dans quelques instants.`);
   }
   isAILoading = false;
   if(sendBtnId) document.getElementById(sendBtnId).disabled = false;
+}
+
+// Application d'un filtre et navigation vers la vue correspondante
+function applyFiltreAndNavigate(filtre, context) {
+  const { type, dateDebut, dateFin, journal, compte } = filtre;
+  if(type === 'journal') {
+    navigate('journal');
+    if(dateDebut) document.getElementById('jnl-date-debut').value = dateDebut;
+    if(dateFin) document.getElementById('jnl-date-fin').value = dateFin;
+    if(journal) document.getElementById('journalFilter').value = journal;
+    renderJournal();
+    // Afficher analyse contextuelle dans le journal
+    const analyseEl = document.getElementById('journal-analyse');
+    if(analyseEl) {
+      const label = buildPeriodeLabel(dateDebut, dateFin, journal);
+      analyseEl.style.display = 'block';
+      analyseEl.innerHTML = `<div class="analyse-title">📋 Journal filtré — ${label}</div>Affichage des écritures pour la période demandée. Vérifiez les totaux en bas du tableau.`;
+    }
+  } else if(type === 'balance') {
+    navigate('balance');
+    if(dateDebut) document.getElementById('bal-date-debut').value = dateDebut;
+    if(dateFin) document.getElementById('bal-date-fin').value = dateFin;
+    if(journal) document.getElementById('bal-journal').value = journal;
+    renderBalance();
+  } else if(type === 'grandlivre') {
+    navigate('grandlivre');
+    if(dateDebut) document.getElementById('gl-date-debut').value = dateDebut;
+    if(dateFin) document.getElementById('gl-date-fin').value = dateFin;
+    if(compte) document.getElementById('glSearch').value = compte;
+    renderGrandLivre();
+    // Auto-ouvrir le compte si spécifié
+    if(compte) {
+      setTimeout(()=>{
+        const el = document.getElementById('gl-'+compte);
+        if(el) el.style.display = 'block';
+        else {
+          // Essayer avec les comptes qui commencent par ce code
+          const map = getMap();
+          Object.keys(map).filter(c=>c.startsWith(compte)).forEach(c=>{
+            const el2 = document.getElementById('gl-'+c);
+            if(el2) el2.style.display = 'block';
+          });
+        }
+      }, 200);
+    }
+  } else if(type === 'bilan') {
+    navigate('bilan');
+    if(dateFin) document.getElementById('bilan-date-arrete').value = dateFin;
+    renderBilan();
+  }
+}
+
+function buildPeriodeLabel(dateDebut, dateFin, journal) {
+  const mois=['','Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+  let label = '';
+  if(dateDebut && dateFin) {
+    const d1=new Date(dateDebut), d2=new Date(dateFin);
+    if(d1.getMonth()===d2.getMonth()) label = mois[d1.getMonth()+1]+' '+d1.getFullYear();
+    else label = dateDebut + ' au ' + dateFin;
+  } else if(dateFin) {
+    label = 'jusqu\'au ' + dateFin;
+  }
+  if(journal) label += (label?' — ':'')+JOURNAL_NAMES[journal];
+  return label || 'Exercice complet';
 }
 
 function appendMsg(context, role, text) {
@@ -1632,7 +1736,6 @@ function fmt(text) {
     .replace(/\*(.*?)\*/g,'<em>$1</em>')
     .replace(/`(.*?)`/g,'<code>$1</code>')
     .replace(/\n\n/g,'<br><br>').replace(/\n/g,'<br>')
-    // Restaurer les balises HTML des tableaux
     .replace(/&lt;table&gt;/gi,'<table>').replace(/&lt;\/table&gt;/gi,'</table>')
     .replace(/&lt;thead&gt;/gi,'<thead>').replace(/&lt;\/thead&gt;/gi,'</thead>')
     .replace(/&lt;tbody&gt;/gi,'<tbody>').replace(/&lt;\/tbody&gt;/gi,'</tbody>')
