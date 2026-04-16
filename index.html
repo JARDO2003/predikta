@@ -106,20 +106,20 @@ body { font-family:var(--font-body); background:var(--paper); color:var(--ink); 
 .topbar {
   grid-column:1/-1; background:var(--ink);
   border-bottom:2px solid var(--warm); display:flex; align-items:center;
-  padding:0 14px; gap:8px; position:sticky; top:0; z-index:100;
+  padding:0 10px; gap:6px; position:sticky; top:0; z-index:100;
   flex-wrap:nowrap; overflow:hidden;
 }
-.logo-wrap { display:flex; align-items:baseline; gap:6px; flex-shrink:0; }
-.logo { font-family:var(--font-display); font-size:20px; font-weight:700; color:var(--warm); letter-spacing:.04em; }
+.logo-wrap { display:flex; align-items:baseline; gap:5px; flex-shrink:0; }
+.logo { font-family:var(--font-display); font-size:18px; font-weight:700; color:var(--warm); letter-spacing:.04em; }
 .logo-sub { font-family:var(--font-mono); font-size:8px; color:rgba(212,168,83,.4); letter-spacing:.2em; text-transform:uppercase; }
 .tb-sep { width:1px; height:24px; background:rgba(255,255,255,.08); flex-shrink:0; }
-.company-pill { display:flex; align-items:center; gap:6px; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08); border-radius:4px; padding:4px 9px; font-size:11px; color:rgba(255,255,255,.5); min-width:0; overflow:hidden; }
-.company-pill strong { color:var(--warm); font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:120px; }
-.topbar-right { margin-left:auto; display:flex; align-items:center; gap:6px; flex-shrink:0; }
+.company-pill { display:flex; align-items:center; gap:5px; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08); border-radius:4px; padding:3px 8px; font-size:11px; color:rgba(255,255,255,.5); min-width:0; overflow:hidden; max-width:140px; }
+.company-pill strong { color:var(--warm); font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.topbar-right { margin-left:auto; display:flex; align-items:center; gap:5px; flex-shrink:0; }
 .ex-pill { display:flex; align-items:center; gap:4px; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08); border-radius:4px; padding:4px 8px; font-size:11px; color:rgba(255,255,255,.4); }
 .ex-pill input { background:none; border:none; color:var(--warm); font-size:12px; width:38px; text-align:center; font-family:var(--font-mono); outline:none; }
 .chip-badge { background:var(--warm-dim); border:1px solid rgba(212,168,83,.25); color:var(--warm); font-size:9px; font-weight:600; padding:3px 7px; border-radius:3px; font-family:var(--font-mono); letter-spacing:.1em; white-space:nowrap; }
-.btn { padding:6px 12px; border-radius:var(--rs); font-size:12px; font-weight:600; cursor:pointer; border:none; transition:all .14s; font-family:var(--font-body); display:inline-flex; align-items:center; gap:5px; white-space:nowrap; letter-spacing:.02em; }
+.btn { padding:6px 11px; border-radius:var(--rs); font-size:12px; font-weight:600; cursor:pointer; border:none; transition:all .14s; font-family:var(--font-body); display:inline-flex; align-items:center; gap:5px; white-space:nowrap; letter-spacing:.02em; }
 .btn-gold { background:var(--warm); color:var(--ink); }
 .btn-gold:hover { background:var(--warm2); transform:translateY(-1px); }
 .btn-gold:disabled { opacity:.35; cursor:not-allowed; transform:none; }
@@ -131,7 +131,7 @@ body { font-family:var(--font-body); background:var(--paper); color:var(--ink); 
 /* MOBILE MENU BUTTON */
 .mobile-menu-btn {
   display:none; background:transparent; border:1px solid rgba(255,255,255,.15);
-  color:rgba(255,255,255,.7); border-radius:4px; padding:6px 10px; cursor:pointer;
+  color:rgba(255,255,255,.7); border-radius:4px; padding:5px 8px; cursor:pointer;
   font-size:16px; flex-shrink:0;
 }
 @media(max-width:768px){ .mobile-menu-btn { display:flex; align-items:center; } }
@@ -178,6 +178,19 @@ body { font-family:var(--font-body); background:var(--paper); color:var(--ink); 
 .btn-sm-wire { background:transparent; color:var(--muted); border:1px solid var(--line2); font-size:11px; padding:5px 10px; }
 .btn-sm-wire:hover { background:var(--surface3); color:var(--ink); border-color:var(--ink); }
 
+/* ★ BOUTON VALIDER TOUT — VERT FORT */
+.btn-validate-all {
+  background:linear-gradient(135deg, #16a34a, #15803d);
+  color:#fff; border:none; border-radius:var(--rs);
+  padding:9px 18px; font-size:13px; font-weight:700;
+  cursor:pointer; font-family:var(--font-body);
+  display:inline-flex; align-items:center; gap:7px;
+  transition:all .16s; box-shadow:0 4px 16px rgba(22,163,74,.3);
+  letter-spacing:.03em;
+}
+.btn-validate-all:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(22,163,74,.45); }
+.btn-validate-all:disabled { opacity:.4; cursor:not-allowed; transform:none; }
+
 /* STATS GRID */
 .kpi-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:20px; }
 .kpi { background:var(--surface); border:1px solid var(--line); border-radius:var(--r); padding:16px 14px; position:relative; box-shadow:var(--sh); }
@@ -218,7 +231,7 @@ body { font-family:var(--font-body); background:var(--paper); color:var(--ink); 
 .comeo-input:focus { border-color:var(--warm); background:var(--surface); }
 .comeo-input::placeholder { color:var(--faint); }
 
-/* ★ BADGE MULTI-ÉCRITURES — affiché après que l'IA prépare plusieurs écritures */
+/* ★ BANDEAU MULTI-ÉCRITURES */
 .multi-ecr-banner {
   display:none; background:linear-gradient(135deg,rgba(22,163,74,.1),rgba(22,163,74,.04));
   border:1.5px solid rgba(22,163,74,.3); border-radius:var(--rs); padding:10px 14px;
@@ -233,9 +246,11 @@ body { font-family:var(--font-body); background:var(--paper); color:var(--ink); 
 .meb-list li { display:flex; align-items:center; gap:8px; font-size:11.5px; }
 .meb-list li .meb-n { font-family:var(--font-mono); font-size:9px; background:#16a34a; color:#fff; border-radius:50%; width:16px; height:16px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
 .meb-list li .meb-jnl { font-family:var(--font-mono); color:var(--warm); font-size:9px; background:var(--warm-dim); padding:1px 5px; border-radius:2px; }
-.meb-actions { display:flex; gap:6px; margin-top:8px; flex-wrap:wrap; }
+.meb-actions { display:flex; gap:6px; margin-top:10px; flex-wrap:wrap; }
 .meb-btn-nav { background:var(--ink); color:var(--warm); border:none; border-radius:var(--rs); padding:6px 13px; font-size:11.5px; font-weight:700; cursor:pointer; font-family:var(--font-body); transition:all .14s; }
 .meb-btn-nav:hover { background:#1a1c28; }
+.meb-btn-auto { background:linear-gradient(135deg,#16a34a,#15803d); color:#fff; border:none; border-radius:var(--rs); padding:6px 13px; font-size:11.5px; font-weight:700; cursor:pointer; font-family:var(--font-body); transition:all .14s; }
+.meb-btn-auto:hover { transform:translateY(-1px); }
 .meb-btn-dismiss { background:transparent; color:var(--muted); border:1px solid var(--line2); border-radius:var(--rs); padding:6px 10px; font-size:11px; cursor:pointer; font-family:var(--font-body); }
 
 /* AI FILL BANNER */
@@ -254,7 +269,7 @@ body { font-family:var(--font-body); background:var(--paper); color:var(--ink); 
 .btn-apply:hover { background:var(--warm2); }
 .btn-dismiss { background:transparent; color:var(--muted); border:1px solid var(--line2); border-radius:var(--rs); padding:6px 10px; font-size:11px; cursor:pointer; font-family:var(--font-body); }
 
-/* SAISIE QUEUE — quand plusieurs écritures sont en file d'attente */
+/* SAISIE QUEUE BAR */
 .saisie-queue-bar {
   display:none; background:var(--ink); border:1.5px solid var(--warm); border-radius:var(--rs);
   padding:9px 14px; margin-bottom:12px; gap:10px; align-items:center; flex-wrap:wrap;
@@ -264,6 +279,19 @@ body { font-family:var(--font-body); background:var(--paper); color:var(--ink); 
 .sqb-counter { background:var(--warm); color:var(--ink); border-radius:3px; padding:2px 8px; font-size:11px; font-weight:700; font-family:var(--font-mono); }
 .sqb-next { background:var(--warm); color:var(--ink); border:none; border-radius:var(--rs); padding:5px 12px; font-size:11.5px; font-weight:700; cursor:pointer; font-family:var(--font-body); }
 .sqb-skip { background:transparent; color:rgba(255,255,255,.4); border:1px solid rgba(255,255,255,.1); border-radius:var(--rs); padding:5px 10px; font-size:11px; cursor:pointer; font-family:var(--font-body); }
+
+/* ★ BARRE DE PROGRESSION AUTO-SAVE */
+.auto-save-bar {
+  display:none; background:var(--ink); border:1.5px solid #16a34a; border-radius:var(--rs);
+  padding:10px 14px; margin-bottom:12px; gap:10px; align-items:center; flex-wrap:wrap;
+  animation: fadein .3s ease;
+}
+.auto-save-bar.show { display:flex; }
+.asb-icon { font-size:18px; }
+.asb-text { flex:1; color:rgba(255,255,255,.8); font-size:12px; }
+.asb-text strong { color:#4ade80; }
+.asb-progress { width:100%; height:4px; background:rgba(255,255,255,.1); border-radius:2px; margin-top:6px; overflow:hidden; }
+.asb-progress-bar { height:100%; background:linear-gradient(90deg,#16a34a,#4ade80); border-radius:2px; transition:width .3s ease; }
 
 /* CHIPS */
 .chips { display:flex; flex-wrap:wrap; gap:7px; margin-bottom:20px; }
@@ -296,13 +324,27 @@ body { font-family:var(--font-body); background:var(--paper); color:var(--ink); 
 .aoption .code { font-family:var(--font-mono); color:var(--warm); font-size:10px; min-width:44px; font-weight:600; }
 .aoption .name { color:var(--muted); }
 
-/* ECRITURE TABLE */
-.et { width:100%; border-collapse:collapse; font-size:12px; }
+/* ★ ECRITURE TABLE — RESPONSIVE */
+.et-wrapper { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+.et { width:100%; border-collapse:collapse; font-size:12px; min-width:520px; }
 .et th { text-align:left; padding:9px 10px; background:var(--ink); color:var(--warm); border-bottom:2px solid var(--warm); font-size:8px; font-weight:700; text-transform:uppercase; letter-spacing:.12em; font-family:var(--font-mono); }
 .et td { padding:5px 10px; border-bottom:1px solid var(--line); vertical-align:middle; }
 .et tr:hover td { background:var(--surface2); }
 .et td input { background:transparent; border:none; color:var(--ink); padding:3px; font-size:12px; font-family:var(--font-body); width:100%; outline:none; }
 .et td input:focus { background:var(--surface2); border-radius:3px; padding:3px 7px; }
+
+/* ★ LIGNES MOBILE — CARD VIEW */
+.ligne-card {
+  display:none; background:var(--surface); border:1px solid var(--line);
+  border-radius:var(--rs); padding:10px; margin-bottom:8px; gap:8px;
+}
+.ligne-card-row { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.ligne-card-field { display:flex; flex-direction:column; gap:3px; }
+.ligne-card-label { font-size:8px; font-weight:700; text-transform:uppercase; letter-spacing:.12em; color:var(--muted); }
+.ligne-card-input { background:var(--surface2); border:1px solid var(--line); border-radius:3px; color:var(--ink); padding:7px 9px; font-size:12.5px; font-family:var(--font-body); outline:none; transition:border-color .18s; width:100%; }
+.ligne-card-input:focus { border-color:var(--warm); }
+.ligne-card-actions { display:flex; justify-content:flex-end; margin-top:4px; }
+
 .bal-bar { display:flex; align-items:center; gap:14px; padding:10px 12px; background:var(--ink); border-top:1px solid rgba(255,255,255,.08); border-radius:0 0 var(--r) var(--r); flex-wrap:wrap; }
 .bal-item { display:flex; align-items:center; gap:7px; }
 .bal-item label { font-size:8.5px; font-weight:700; text-transform:uppercase; letter-spacing:.12em; color:rgba(255,255,255,.3); font-family:var(--font-mono); }
@@ -434,6 +476,7 @@ body { font-family:var(--font-body); background:var(--paper); color:var(--ink); 
 .sn-body { font-size:11.5px; color:rgba(255,255,255,.7); line-height:1.5; margin-bottom:10px; }
 .sn-actions { display:flex; gap:8px; flex-wrap:wrap; }
 .sn-btn-go { background:var(--warm); color:var(--ink); border:none; border-radius:var(--rs); padding:7px 12px; font-size:12px; font-weight:700; cursor:pointer; font-family:var(--font-body); }
+.sn-btn-auto { background:linear-gradient(135deg,#16a34a,#15803d); color:#fff; border:none; border-radius:var(--rs); padding:7px 12px; font-size:12px; font-weight:700; cursor:pointer; font-family:var(--font-body); }
 .sn-btn-dismiss { background:transparent; color:rgba(255,255,255,.4); border:1px solid rgba(255,255,255,.1); border-radius:var(--rs); padding:7px 10px; font-size:11px; cursor:pointer; font-family:var(--font-body); }
 
 /* ══════════════════════════════════════════
@@ -456,12 +499,13 @@ body { font-family:var(--font-body); background:var(--paper); color:var(--ink); 
   .comeo-sub { display:none; }
   .chip-badge { display:none; }
   .ex-pill { display:none; }
-  .main { padding:14px 12px; }
-  .ph h1 { font-size:22px; }
-  .comeo-messages { height:220px; }
-  .et { font-size:11px; }
-  .et th { padding:6px 7px; font-size:7.5px; }
-  .et td { padding:4px 7px; }
+  .main { padding:12px 10px; }
+  .ph h1 { font-size:20px; }
+  .comeo-messages { height:200px; }
+  /* Table classique cachée sur mobile, card view affichée */
+  .et-wrapper { display:none; }
+  .ligne-card { display:flex; flex-direction:column; }
+  .add-line-btn { font-size:12px; }
 }
 
 @media(max-width:480px) {
@@ -472,10 +516,14 @@ body { font-family:var(--font-body); background:var(--paper); color:var(--ink); 
   .bilan-col-header { font-size:13px; }
   .rrow { font-size:11px; padding:5px 10px; }
   .ph-actions { width:100%; }
-  .ph-actions .btn { flex:1; justify-content:center; }
-  .filtre-periode-bar { gap:6px; }
+  .ph-actions .btn { flex:1; justify-content:center; font-size:11px; padding:7px 8px; }
+  .filtre-periode-bar { gap:5px; }
   .filtre-periode-bar input, .filtre-periode-bar select { font-size:11px; padding:4px 6px; }
   .export-options { grid-template-columns:1fr; }
+  .topbar { padding:0 8px; gap:4px; }
+  .logo { font-size:15px; }
+  .logo-sub { display:none; }
+  .company-pill { max-width:90px; font-size:10px; }
 }
 
 @media print {
@@ -547,7 +595,8 @@ body { font-family:var(--font-body); background:var(--paper); color:var(--ink); 
   <div class="sn-title">✨ COMEO AI a préparé des écritures</div>
   <div class="sn-body" id="saisieNotifBody">Les lignes sont prêtes dans la vue Saisie.</div>
   <div class="sn-actions">
-    <button class="sn-btn-go" onclick="goToSaisie()">→ Aller à Saisie</button>
+    <button class="sn-btn-auto" onclick="autoSaveAllFromNotif()">⚡ Tout enregistrer</button>
+    <button class="sn-btn-go" onclick="goToSaisie()">→ Saisie manuelle</button>
     <button class="sn-btn-dismiss" onclick="hideSaisieNotif()">Ignorer</button>
   </div>
 </div>
@@ -617,23 +666,32 @@ body { font-family:var(--font-body); background:var(--paper); color:var(--ink); 
         <div class="kpi"><div class="kpi-label">Total crédit</div><div class="kpi-value" id="dash-credit" style="color:var(--green)">0</div><div class="kpi-sub">FCFA</div></div>
         <div class="kpi"><div class="kpi-label">Résultat provisoire</div><div class="kpi-value" id="dash-res" style="color:var(--warm)">0</div><div class="kpi-sub">Produits – Charges</div></div>
       </div>
-      <!-- ★ BANDEAU MULTI-ÉCRITURES (dashboard) -->
+      <!-- BANDEAU MULTI-ÉCRITURES -->
       <div class="multi-ecr-banner" id="multiEcrBanner">
         <div class="meb-icon">✅</div>
         <div class="meb-text">
-          <strong id="mebTitle">COMEO AI a préparé les écritures</strong> — vérifiez chaque écriture dans la vue Saisie avant de valider.
+          <strong id="mebTitle">COMEO AI a préparé les écritures</strong>
           <ul class="meb-list" id="mebList"></ul>
           <div class="meb-actions">
-            <button class="meb-btn-nav" onclick="goToSaisie()">→ Aller à Saisie</button>
+            <button class="meb-btn-auto" onclick="autoSaveAllEcritures()">⚡ Tout enregistrer automatiquement</button>
+            <button class="meb-btn-nav" onclick="goToSaisie()">→ Saisie manuelle</button>
             <button class="meb-btn-dismiss" onclick="hideMultiEcrBanner()">✕ Fermer</button>
           </div>
+        </div>
+      </div>
+      <!-- AUTO SAVE BAR -->
+      <div class="auto-save-bar" id="autoSaveBar">
+        <div class="asb-icon">⚡</div>
+        <div class="asb-text">
+          <strong id="autoSaveMsg">Enregistrement en cours…</strong>
+          <div class="asb-progress"><div class="asb-progress-bar" id="autoSaveProgress" style="width:0%"></div></div>
         </div>
       </div>
       <div class="comeo-box">
         <div class="comeo-header"><div class="comeo-dot"></div><span class="comeo-title">COMEO AI v3 — Expert Comptable SYSCOHADA</span><span class="comeo-sub">Journal · Balance · Grand Livre · États financiers</span></div>
         <div class="comeo-messages" id="aiMessages">
           <div class="msg ai"><div class="msg-av">C</div><div class="msg-body">Bonjour ! Je suis <strong>COMEO AI v3</strong>, votre expert-comptable SYSCOHADA dédié.<br><br>
-          Je passe <strong>automatiquement les 3 écritures</strong> pour chaque opération : <em>constatation de facture + mouvement de stock + règlement</em>. Chaque écriture est enregistrée dans le journal indépendamment.<br><br>
+          Je passe <strong>automatiquement les 3 écritures</strong> pour chaque opération : <em>constatation de facture + mouvement de stock + règlement</em>. Chaque écriture est enregistrée <strong>directement dans le journal</strong>.<br><br>
           — <em>« Achat marchandises 500 000 FCFA TTC en espèces »</em><br>
           — <em>« Vente marchandises 1 200 000 FCFA par virement, coût 700 000 »</em><br>
           — <em>« Journal de janvier »</em> / <em>« Balance générale »</em><br><br>
@@ -663,19 +721,22 @@ body { font-family:var(--font-body); background:var(--paper); color:var(--ink); 
     <div class="view" id="view-saisie">
       <div class="ph">
         <div><h1>Saisie des écritures</h1><p>Saisie manuelle ou assistée par COMEO AI</p></div>
-        <div class="ph-actions"><button class="btn btn-ink" onclick="saveEcriture()">↳ Valider l'écriture</button></div>
+        <div class="ph-actions">
+          <button class="btn btn-ink" onclick="saveEcriture()">↳ Valider l'écriture</button>
+        </div>
       </div>
-      <!-- ★ BARRE QUEUE MULTI-ÉCRITURES -->
+      <!-- BARRE QUEUE MULTI-ÉCRITURES -->
       <div class="saisie-queue-bar" id="saisieQueueBar">
         <span class="sqb-label">ÉCRITURES EN FILE</span>
         <span class="sqb-counter" id="sqbCounter">0</span>
         <span style="color:rgba(255,255,255,.4);font-size:11px;flex:1">Validez cette écriture pour passer à la suivante</span>
+        <button class="btn-validate-all" id="btnValidateAll" onclick="autoSaveAllEcritures()">⚡ Tout enregistrer</button>
         <button class="sqb-skip" onclick="skipToNextEcriture()">Ignorer →</button>
       </div>
       <div class="comeo-box">
         <div class="comeo-header"><div class="comeo-dot"></div><span class="comeo-title">COMEO AI — Saisie assistée</span><span class="comeo-sub">Décrivez → COMEO remplit les lignes automatiquement</span></div>
         <div class="comeo-messages" id="aiMessages-saisie" style="height:130px">
-          <div class="msg ai"><div class="msg-av">C</div><div class="msg-body">Décrivez l'opération et je prépare les lignes d'écriture. Pour un achat ou une vente, je génère les 3 écritures — validez-les une par une.</div></div>
+          <div class="msg ai"><div class="msg-av">C</div><div class="msg-body">Décrivez l'opération et je prépare les lignes. Pour un achat ou vente, je génère les <strong>3 écritures</strong> — cliquez <strong>"Tout enregistrer"</strong> pour les valider toutes en une fois.</div></div>
         </div>
         <div class="comeo-input-row">
           <textarea class="comeo-input" id="aiInput-saisie" placeholder="ex: Achat matériel bureau 250000 FCFA HT par chèque, TVA 18%..." onkeydown="handleAiKey(event,'saisie')"></textarea>
@@ -685,7 +746,7 @@ body { font-family:var(--font-body); background:var(--paper); color:var(--ink); 
       <div class="ai-fill-banner" id="aiFillBanner">
         <div class="afi-icon">✨</div>
         <div class="afi-text">
-          <strong>COMEO AI a préparé l'écriture <span id="aiFillNum"></span></strong> — <span id="aiFillDesc">—</span><br>
+          <strong>COMEO AI — Écriture <span id="aiFillNum"></span></strong> — <span id="aiFillDesc">—</span><br>
           <span style="font-size:11px;color:var(--muted)">Vérifiez les lignes ci-dessous avant de valider</span>
         </div>
         <button class="btn-dismiss" onclick="dismissFillBanner()">✕</button>
@@ -708,12 +769,15 @@ body { font-family:var(--font-body); background:var(--paper); color:var(--ink); 
       </div>
       <div class="card">
         <div class="card-title">Lignes d'écriture</div>
-        <div style="overflow-x:auto">
+        <!-- TABLE VIEW (desktop) -->
+        <div class="et-wrapper">
           <table class="et">
-            <thead><tr><th style="min-width:120px">Compte</th><th>Libellé</th><th style="min-width:130px;text-align:right">Débit (FCFA)</th><th style="min-width:130px;text-align:right">Crédit (FCFA)</th><th style="width:36px"></th></tr></thead>
+            <thead><tr><th style="min-width:120px">Compte</th><th>Libellé</th><th style="min-width:110px;text-align:right">Débit (FCFA)</th><th style="min-width:110px;text-align:right">Crédit (FCFA)</th><th style="width:36px"></th></tr></thead>
             <tbody id="lignesBody"></tbody>
           </table>
         </div>
+        <!-- CARD VIEW (mobile) -->
+        <div id="lignesCardContainer"></div>
         <button class="add-line-btn" onclick="addLigne()">＋ Ajouter une ligne</button>
         <div class="bal-bar">
           <div class="bal-item"><label>Débit</label><span class="val" id="totalDebitDisplay" style="color:#60a5fa">0</span></div>
@@ -878,8 +942,8 @@ let ecritures=[], lignes=[], pieceCounter=1, currentProfile=null, isAILoading=fa
 let exportFormat='pdf';
 
 // ★ FILE D'ATTENTE MULTI-ÉCRITURES
-let ecrQueue = [];   // tableau d'écritures préparées par l'IA
-let ecrQueueIdx = 0; // index de l'écriture actuellement affichée
+let ecrQueue = [];
+let ecrQueueIdx = 0;
 
 const GROQ_API_KEY = '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';
 
@@ -898,7 +962,7 @@ function closeMobileSidebar() {
 }
 
 // ══════════════════════════════════════════
-// SYSTEM PROMPT V3 — LES 3 ECRITURES
+// SYSTEM PROMPT V3 — 3 ÉCRITURES
 // ══════════════════════════════════════════
 function buildSystemPrompt(contextData) {
   const { nbEcritures, companyName, exercice, ecrituresResume, totalDebit, totalCredit, comptesSoldes } = contextData;
@@ -912,6 +976,7 @@ RÈGLE FONDAMENTALE — 3 ÉCRITURES INDÉPENDANTES
 Pour tout achat ou vente (comptant ou à crédit), tu DOIS passer OBLIGATOIREMENT 3 écritures SÉPARÉES, chacune précédée de son propre marqueur ###ECRITURE###.
 
 ⚠️ JAMAIS UNE SEULE ÉCRITURE pour une vente ou un achat — TOUJOURS 3 marqueurs ###ECRITURE### distincts.
+⚠️ CHAQUE écriture doit être ÉQUILIBRÉE (Total Débit = Total Crédit).
 
 **ÉCRITURE 1 — CONSTATATION FACTURE** (journal AC ou VE)
 Achat comptant : D 601 + D 4452 / C 571 ou 521
@@ -1130,13 +1195,113 @@ function addLigne(compte='',libelle='',debit='',credit=''){lignes.push({compte,l
 function removeLigne(i){lignes.splice(i,1);renderLignes();}
 
 // ══════════════════════════════════════════
-// ★ GESTION FILE D'ATTENTE MULTI-ÉCRITURES
+// ★★★ ENREGISTREMENT AUTOMATIQUE — TOUTES LES ÉCRITURES IA
 // ══════════════════════════════════════════
 
 /**
- * Charge la file d'attente depuis les données IA
- * @param {Array} ecritures_ai - tableau d'objets écriture
+ * ★ FONCTION PRINCIPALE : Enregistre TOUTES les écritures de la file d'un coup
+ * C'est ce que fait un vrai comptable — il valide tout ce que l'IA a préparé
  */
+async function autoSaveAllEcritures() {
+  if(ecrQueue.length === 0) {
+    toast('Aucune écriture en file d\'attente','error');
+    return;
+  }
+  
+  const total = ecrQueue.length;
+  const bar = document.getElementById('autoSaveBar');
+  const msg = document.getElementById('autoSaveMsg');
+  const prog = document.getElementById('autoSaveProgress');
+  
+  // Afficher la barre de progression
+  bar.classList.add('show');
+  
+  const date = document.getElementById('ecr-date').value || new Date().toISOString().split('T')[0];
+  let saved = 0;
+  const errors = [];
+
+  for(let i = 0; i < ecrQueue.length; i++) {
+    const ecr = ecrQueue[i];
+    
+    // Mettre à jour le message
+    msg.innerHTML = `<strong>Enregistrement ${i+1}/${total}</strong> — [${ecr.journal}] ${ecr.libelle || 'Écriture '+(i+1)}`;
+    prog.style.width = ((i / total) * 100) + '%';
+    
+    // Valider les lignes
+    const valid = (ecr.lignes || []).filter(l => l.compte && (l.debit || l.credit));
+    if(valid.length < 2) { errors.push(`Écriture ${i+1}: moins de 2 lignes valides`); continue; }
+    
+    let d=0, c=0;
+    valid.forEach(l => { d += Math.round(parseFloat(l.debit)||0); c += Math.round(parseFloat(l.credit)||0); });
+    if(Math.abs(d-c) > 2) { errors.push(`Écriture ${i+1} [${ecr.journal}]: non équilibrée (D:${fn(d)} / C:${fn(c)})`); continue; }
+    
+    const piece = 'N°'+String(pieceCounter).padStart(5,'0');
+    const ecriture = {
+      id: Date.now() + i,
+      date,
+      journal: ecr.journal || 'OD',
+      piece,
+      libelle: ecr.libelle || 'Écriture IA',
+      createdAt: new Date().toISOString(),
+      lignes: valid.map(l => ({
+        compte: String(l.compte),
+        libelle: l.libelle || PC[String(l.compte)] || '',
+        debit: Math.round(parseFloat(l.debit)||0),
+        credit: Math.round(parseFloat(l.credit)||0)
+      }))
+    };
+    
+    const docId = await saveEcritureToFirestore(ecriture);
+    if(docId) {
+      ecritures.push(ecriture);
+      pieceCounter++;
+      saved++;
+    }
+    
+    // Petite pause pour UX
+    await new Promise(r => setTimeout(r, 150));
+  }
+  
+  // Finaliser
+  prog.style.width = '100%';
+  await new Promise(r => setTimeout(r, 400));
+  bar.classList.remove('show');
+  
+  // Vider la file
+  ecrQueue = []; ecrQueueIdx = 0;
+  lignes = [];
+  updateQueueBar();
+  hideMultiEcrBanner();
+  hideSaisieNotif();
+  dismissFillBanner();
+  
+  // Mettre à jour les stats
+  updateStats();
+  
+  if(errors.length > 0) {
+    toast(`⚠️ ${saved}/${total} écritures enregistrées — ${errors.length} erreur(s)`, 'error');
+    console.warn('Erreurs auto-save:', errors);
+  } else {
+    toast(`✅ ${saved} écriture${saved>1?'s':''} enregistrée${saved>1?'s':''} dans le journal !`, 'success');
+  }
+  
+  // Naviguer vers le journal pour confirmation visuelle
+  setTimeout(() => {
+    navigate('journal');
+    renderJournal();
+  }, 500);
+  
+  // Reset saisie
+  initSaisie();
+}
+
+/** Appelée depuis la notification flottante */
+async function autoSaveAllFromNotif() {
+  hideSaisieNotif();
+  await autoSaveAllEcritures();
+}
+
+// Charge la file d'attente depuis les données IA
 function setEcritureQueue(ecritures_ai) {
   ecrQueue = ecritures_ai;
   ecrQueueIdx = 0;
@@ -1146,9 +1311,7 @@ function setEcritureQueue(ecritures_ai) {
   }
 }
 
-/**
- * Charge l'écriture à l'index donné dans le formulaire de saisie
- */
+// Charge l'écriture à l'index donné dans le formulaire de saisie
 function loadEcritureFromQueue(idx) {
   if(idx >= ecrQueue.length) return;
   const ecr = ecrQueue[idx];
@@ -1180,9 +1343,11 @@ function updateQueueBar() {
   const bar = document.getElementById('saisieQueueBar');
   const counter = document.getElementById('sqbCounter');
   const remaining = ecrQueue.length - ecrQueueIdx;
-  if(remaining > 1) {
+  if(remaining > 0) {
     bar.classList.add('show');
-    counter.textContent = remaining - 1 + ' suivante' + (remaining-1>1?'s':'');
+    counter.textContent = remaining + ' écriture' + (remaining>1?'s':'');
+    const btnAll = document.getElementById('btnValidateAll');
+    if(btnAll) btnAll.style.display = remaining > 1 ? 'inline-flex' : 'none';
   } else {
     bar.classList.remove('show');
   }
@@ -1207,18 +1372,17 @@ function dismissFillBanner() {
 }
 
 // ★ BANDEAU MULTI-ÉCRITURES sur le dashboard
-function showMultiEcrBanner(ecritures_ai, context) {
+function showMultiEcrBanner(ecritures_ai) {
   const banner = document.getElementById('multiEcrBanner');
   const list = document.getElementById('mebList');
   const title = document.getElementById('mebTitle');
   if(!banner) return;
-  title.textContent = `COMEO AI a préparé ${ecritures_ai.length} écriture${ecritures_ai.length>1?'s':''} — vérifiez chaque écriture dans Saisie`;
+  title.textContent = `COMEO AI a préparé ${ecritures_ai.length} écriture${ecritures_ai.length>1?'s':''}`;
   list.innerHTML = ecritures_ai.map((e,i)=>
     `<li><span class="meb-n">${i+1}</span><span class="meb-jnl">${e.journal||'OD'}</span><span>${e.libelle||'Écriture '+(i+1)}</span></li>`
   ).join('');
   banner.classList.add('show');
-  // Auto-fermer après 30s
-  setTimeout(()=>banner.classList.remove('show'), 30000);
+  setTimeout(()=>banner.classList.remove('show'), 60000);
 }
 function hideMultiEcrBanner() {
   document.getElementById('multiEcrBanner').classList.remove('show');
@@ -1229,19 +1393,18 @@ function showSaisieNotif(libelle, count) {
   const notif = document.getElementById('saisieNotif');
   const body = document.getElementById('saisieNotifBody');
   if(count > 1) {
-    body.textContent = `${count} écritures préparées (${libelle}…). Validez-les une par une.`;
+    body.textContent = `${count} écritures préparées (${libelle}…). Cliquez "Tout enregistrer" pour les valider toutes.`;
   } else {
-    body.textContent = `"${libelle||'Écriture'}" — Vérifiez les lignes et validez.`;
+    body.textContent = `"${libelle||'Écriture'}" — Vérifiez et enregistrez.`;
   }
   notif.classList.add('show');
-  setTimeout(()=>notif.classList.remove('show'), 12000);
+  setTimeout(()=>notif.classList.remove('show'), 15000);
 }
 function hideSaisieNotif() {
   document.getElementById('saisieNotif').classList.remove('show');
 }
 function goToSaisie() {
   hideSaisieNotif();
-  hideMultiEcrBanner();
   navigate('saisie');
   setTimeout(()=>{
     const lignesCard = document.querySelector('#view-saisie .card:last-of-type');
@@ -1249,39 +1412,91 @@ function goToSaisie() {
   }, 200);
 }
 
+// ══════════════════════════════════════════
+// RENDER LIGNES — TABLE + CARD (RESPONSIVE)
+// ══════════════════════════════════════════
 function renderLignes() {
+  // TABLE VIEW (desktop)
   const tbody=document.getElementById('lignesBody'); tbody.innerHTML='';
+  // CARD VIEW (mobile)
+  const cardContainer=document.getElementById('lignesCardContainer'); cardContainer.innerHTML='';
+  
   lignes.forEach((l,i)=>{
+    // TABLE ROW
     const tr=document.createElement('tr');
     tr.innerHTML=`
       <td><div class="asw">
         <input type="text" value="${l.compte}" placeholder="Compte…" style="width:100%;font-family:var(--font-mono)"
-          oninput="lignes[${i}].compte=this.value;updateAccountSuggest(${i},this)"
-          onblur="hideDropdown(${i})">
-        <div class="adrop" id="drop-${i}"></div>
+          oninput="lignes[${i}].compte=this.value;updateAccountSuggest(${i},this,'table')"
+          onblur="hideDropdown('t-${i}')">
+        <div class="adrop" id="drop-t-${i}"></div>
       </div></td>
       <td><input type="text" value="${l.libelle||''}" placeholder="Libellé…" style="width:100%" oninput="lignes[${i}].libelle=this.value"></td>
       <td><input type="text" value="${l.debit||''}" placeholder="0" style="text-align:right;width:100%;font-family:var(--font-mono)" oninput="lignes[${i}].debit=parseFloat(this.value.replace(/[^0-9.]/g,''))||0;updateBalance()"></td>
       <td><input type="text" value="${l.credit||''}" placeholder="0" style="text-align:right;width:100%;font-family:var(--font-mono)" oninput="lignes[${i}].credit=parseFloat(this.value.replace(/[^0-9.]/g,''))||0;updateBalance()"></td>
       <td><button class="del-line" onclick="removeLigne(${i})">✕</button></td>`;
     tbody.appendChild(tr);
+    
+    // CARD (mobile)
+    const card=document.createElement('div');
+    card.className='ligne-card';
+    card.innerHTML=`
+      <div class="ligne-card-row">
+        <div class="ligne-card-field">
+          <div class="ligne-card-label">Compte</div>
+          <div style="position:relative">
+            <input class="ligne-card-input" type="text" value="${l.compte}" placeholder="Compte…" style="font-family:var(--font-mono)"
+              oninput="lignes[${i}].compte=this.value;updateAccountSuggest(${i},this,'card')"
+              onblur="hideDropdown('c-${i}')">
+            <div class="adrop" id="drop-c-${i}"></div>
+          </div>
+        </div>
+        <div class="ligne-card-field">
+          <div class="ligne-card-label">Libellé</div>
+          <input class="ligne-card-input" type="text" value="${l.libelle||''}" placeholder="Libellé…" oninput="lignes[${i}].libelle=this.value">
+        </div>
+      </div>
+      <div class="ligne-card-row">
+        <div class="ligne-card-field">
+          <div class="ligne-card-label" style="color:var(--blue)">Débit (FCFA)</div>
+          <input class="ligne-card-input" type="number" value="${l.debit||''}" placeholder="0" style="font-family:var(--font-mono)"
+            oninput="lignes[${i}].debit=parseFloat(this.value)||0;updateBalance()">
+        </div>
+        <div class="ligne-card-field">
+          <div class="ligne-card-label" style="color:var(--green)">Crédit (FCFA)</div>
+          <input class="ligne-card-input" type="number" value="${l.credit||''}" placeholder="0" style="font-family:var(--font-mono)"
+            oninput="lignes[${i}].credit=parseFloat(this.value)||0;updateBalance()">
+        </div>
+      </div>
+      <div class="ligne-card-actions">
+        <button class="del-line" style="opacity:.6" onclick="removeLigne(${i})">✕ Supprimer</button>
+      </div>`;
+    cardContainer.appendChild(card);
   });
   updateBalance();
 }
-function updateAccountSuggest(idx,input) {
-  const q=input.value.toLowerCase().trim(); const drop=document.getElementById('drop-'+idx);
+
+function updateAccountSuggest(idx, input, mode) {
+  const q=input.value.toLowerCase().trim();
+  const dropId = mode==='card' ? 'c-'+idx : 't-'+idx;
+  const drop=document.getElementById('drop-'+dropId);
+  if(!drop) return;
   if(!q||q.length<2){drop.classList.remove('open');return;}
   const matches=Object.entries(PC).filter(([code,lib])=>code.startsWith(q)||lib.toLowerCase().includes(q)).slice(0,12);
   if(!matches.length){drop.classList.remove('open');return;}
-  drop.innerHTML=matches.map(([code,lib])=>`<div class="aoption" onmousedown="selectAccount(${idx},'${code}','${lib.replace(/'/g,"\\'")}')"><span class="code">${code}</span><span class="name">${lib.substring(0,46)}</span></div>`).join('');
+  drop.innerHTML=matches.map(([code,lib])=>
+    `<div class="aoption" onmousedown="selectAccount(${idx},'${code}','${lib.replace(/'/g,"\\'")}')">
+      <span class="code">${code}</span><span class="name">${lib.substring(0,46)}</span>
+    </div>`).join('');
   drop.classList.add('open');
 }
+
 function selectAccount(idx,code,lib) {
   lignes[idx].compte=code; if(!lignes[idx].libelle)lignes[idx].libelle=lib.substring(0,54);
   renderLignes();
-  setTimeout(()=>{const rows=document.getElementById('lignesBody').querySelectorAll('tr');if(rows[idx]){const inp=rows[idx].querySelectorAll('input')[2];if(inp)inp.focus();}},50);
 }
-function hideDropdown(idx){setTimeout(()=>{const d=document.getElementById('drop-'+idx);if(d)d.classList.remove('open');},200);}
+function hideDropdown(id){setTimeout(()=>{const d=document.getElementById('drop-'+id);if(d)d.classList.remove('open');},200);}
+
 function updateBalance() {
   let d=0,c=0; lignes.forEach(l=>{d+=parseFloat(l.debit)||0;c+=parseFloat(l.credit)||0;});
   const s=d-c;
@@ -1291,9 +1506,9 @@ function updateBalance() {
   el.textContent=fn(Math.abs(s)); el.className='val '+(Math.abs(s)<0.01?'bok':'bbad');
 }
 
-/**
- * ★ VALIDATION ET ENREGISTREMENT — passe à l'écriture suivante si file d'attente
- */
+// ══════════════════════════════════════════
+// VALIDATION MANUELLE — ÉCRITURE PAR ÉCRITURE
+// ══════════════════════════════════════════
 async function saveEcriture() {
   const date=document.getElementById('ecr-date').value;
   const journal=document.getElementById('ecr-journal').value;
@@ -1327,14 +1542,13 @@ async function saveEcriture() {
   const jnlLabel = JOURNAL_NAMES[journal] || journal;
   toast(`✓ Écriture [${jnlLabel}] enregistrée — Pièce ${piece}`,'success');
 
-  // ★ Si file d'attente : charger l'écriture suivante
+  // Si file d'attente : charger l'écriture suivante
   ecrQueueIdx++;
   if(ecrQueueIdx < ecrQueue.length) {
     loadEcritureFromQueue(ecrQueueIdx);
     updateQueueBar();
     toast(`→ Écriture ${ecrQueueIdx+1}/${ecrQueue.length} prête à valider`,'info');
   } else {
-    // Fin de la file
     ecrQueue = []; ecrQueueIdx = 0;
     lignes = [];
     updateQueueBar();
@@ -1798,11 +2012,10 @@ async function sendToAI(context) {
     const data = await response.json();
     const fullText = data.choices?.[0]?.message?.content || 'Pas de réponse.';
 
-    // ★ DÉTECTION DU TYPE DE RÉPONSE
     const filtreMarker = fullText.indexOf('###FILTRE###');
 
     if(filtreMarker !== -1) {
-      // === MODE ÉTAT FINANCIER ===
+      // MODE ÉTAT FINANCIER
       const displayText = fullText.substring(0, filtreMarker).trim();
       const jsonStr = fullText.substring(filtreMarker + 12).trim();
       appendMsg(context, 'ai', displayText);
@@ -1816,36 +2029,26 @@ async function sendToAI(context) {
       } catch(pe) { console.warn('Filtre parse error:', pe); }
 
     } else if(fullText.includes('###ECRITURE###')) {
-      // ★★★ MODE MULTI-ÉCRITURES ===
-      // Extraire TOUS les blocs ###ECRITURE### de la réponse
+      // ★★★ MODE MULTI-ÉCRITURES
       const parts = fullText.split('###ECRITURE###');
-      // parts[0] = texte avant le 1er marqueur
-      // parts[1..n] = JSON + texte suivant pour chaque écriture
-
       const textBeforeFirst = parts[0].trim();
       const ecrituresAI = [];
-      const ecrituresTextes = []; // tableau du texte HTML de chaque écriture
 
       for(let i = 1; i < parts.length; i++) {
         const segment = parts[i].trim();
-        // Extraire le JSON de l'écriture (premier objet { } trouvé)
-        const jsonMatch = segment.match(/(\{[\s\S]*?\}(?=\s*$|\s*\*\*|\s*\n\s*\n|\s*###))/);
-        // Si pas de match limité, essayer un match plus large
         const jsonMatch2 = segment.match(/(\{[\s\S]*\})/);
-        const matched = jsonMatch ? jsonMatch[1] : (jsonMatch2 ? jsonMatch2[1] : null);
+        const matched = jsonMatch2 ? jsonMatch2[1] : null;
 
         if(matched) {
           try {
             const cleanJson = matched.replace(/```json|```/g,'').trim();
             const ecr = JSON.parse(cleanJson);
             if(ecr.lignes && ecr.lignes.length >= 2) {
-              // Vérifier équilibre
               let d=0, c=0;
               ecr.lignes.forEach(l=>{
                 d+=Math.round(parseFloat(l.debit)||0);
                 c+=Math.round(parseFloat(l.credit)||0);
               });
-              // Normaliser les montants
               ecr.lignes = ecr.lignes.map(l=>({
                 ...l,
                 debit: Math.round(parseFloat(l.debit)||0),
@@ -1857,45 +2060,35 @@ async function sendToAI(context) {
             }
           } catch(pe) { console.warn('JSON parse error écriture', i, ':', pe.message); }
         }
-        // Garder aussi le texte narratif de ce segment (avant le JSON)
-        const textePart = segment.replace(matched||'','').trim();
-        ecrituresTextes.push(textePart);
       }
 
-      // Afficher le texte principal dans le chat
-      let chatText = textBeforeFirst;
-      if(chatText) appendMsg(context, 'ai', chatText);
+      if(textBeforeFirst) appendMsg(context, 'ai', textBeforeFirst);
 
       if(ecrituresAI.length === 0) {
         appendMsg(context, 'ai', '⚠️ Je n\'ai pas pu extraire les écritures. Veuillez réessayer.');
       } else {
-        // Afficher confirmation dans le chat
+        // Message de confirmation avec bouton intégré
         const confirmMsg = `✅ <strong>${ecrituresAI.length} écriture${ecrituresAI.length>1?'s':''}</strong> préparée${ecrituresAI.length>1?'s':''} :<br>` +
           ecrituresAI.map((e,i)=>
             `<br><strong>${i+1}. [${e.journal}]</strong> ${e.libelle}`
           ).join('') +
-          `<br><br>→ Cliquez sur <strong>"Aller à Saisie"</strong> pour valider chaque écriture.`;
+          `<br><br>⚡ Cliquez <strong>"Tout enregistrer"</strong> pour enregistrer toutes les écritures dans le journal en une fois.`;
         appendMsg(context, 'ai', confirmMsg);
 
         // Charger la file d'attente
         setEcritureQueue(ecrituresAI);
 
         if(context === 'saisie') {
-          // Déjà sur la vue saisie
-          toast(`✨ ${ecrituresAI.length} écriture${ecrituresAI.length>1?'s':''} préparée${ecrituresAI.length>1?'s':''} — validez-les une par une`,'info');
-          setTimeout(()=>{
-            const lignesCard = document.querySelector('#view-saisie .card:last-of-type');
-            if(lignesCard) lignesCard.scrollIntoView({behavior:'smooth'});
-          }, 200);
+          toast(`✨ ${ecrituresAI.length} écriture${ecrituresAI.length>1?'s':''} préparée${ecrituresAI.length>1?'s':''}`,'info');
         } else {
           // Dashboard → afficher bandeau + notif
-          showMultiEcrBanner(ecrituresAI, context);
+          showMultiEcrBanner(ecrituresAI);
           showSaisieNotif(ecrituresAI[0]?.libelle || msg.substring(0,40), ecrituresAI.length);
         }
       }
 
     } else {
-      // Réponse analytique pure — pas d'écriture
+      // Réponse analytique pure
       appendMsg(context, 'ai', fullText);
     }
 
@@ -1937,13 +2130,6 @@ function applyFiltreAndNavigate(filtre, context) {
       setTimeout(()=>{
         const el = document.getElementById('gl-'+compte);
         if(el) el.style.display = 'block';
-        else {
-          const map = getMap();
-          Object.keys(map).filter(c=>c.startsWith(compte)).forEach(c=>{
-            const el2 = document.getElementById('gl-'+c);
-            if(el2) el2.style.display = 'block';
-          });
-        }
       }, 200);
     }
   } else if(type === 'bilan') {
