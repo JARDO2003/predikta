@@ -8,27 +8,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-  const firebaseConfig = {
-    apiKey: "AIzaSyCPGgtXoDUycykLaTSee0S0yY0tkeJpqKI",
-    authDomain: "data-com-a94a8.firebaseapp.com",
-    databaseURL: "https://data-com-a94a8-default-rtdb.firebaseio.com",
-    projectId: "data-com-a94a8",
-    storageBucket: "data-com-a94a8.appspot.com",
-    messagingSenderId: "276904640935",
-    appId: "1:276904640935:web:9cd805aeba6c34c767f682",
-    measurementId: "G-FYQCWY5G4S"
-  };
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-  window._db = db; window._fbCollection = collection; window._fbAddDoc = addDoc;
-  window._fbGetDocs = getDocs; window._fbDeleteDoc = deleteDoc; window._fbDoc = doc;
-  window._fbQuery = query; window._fbOrderBy = orderBy; window._fbSetDoc = setDoc;
-  window._fbGetDoc = getDoc; window._fbReady = true;
-  document.dispatchEvent(new Event('firebase-ready'));
-</script>
+
+
 <style>
 :root {
   --ink: #0a0b10;
@@ -1157,7 +1138,27 @@ body { font-family:var(--font-body); background:var(--paper); color:var(--ink); 
 
 <div class="toast-container" id="toastContainer"></div>
 
-<script>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  const firebaseConfig = {
+    apiKey: "AIzaSyCPGgtXoDUycykLaTSee0S0yY0tkeJpqKI",
+    authDomain: "data-com-a94a8.firebaseapp.com",
+    databaseURL: "https://data-com-a94a8-default-rtdb.firebaseio.com",
+    projectId: "data-com-a94a8",
+    storageBucket: "data-com-a94a8.appspot.com",
+    messagingSenderId: "276904640935",
+    appId: "1:276904640935:web:9cd805aeba6c34c767f682",
+    measurementId: "G-FYQCWY5G4S"
+  };
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  window._db = db; window._fbCollection = collection; window._fbAddDoc = addDoc;
+  window._fbGetDocs = getDocs; window._fbDeleteDoc = deleteDoc; window._fbDoc = doc;
+  window._fbQuery = query; window._fbOrderBy = orderBy; window._fbSetDoc = setDoc;
+  window._fbGetDoc = getDoc; window._fbReady = true;
+  document.dispatchEvent(new Event('firebase-ready'));
+
 // ══════════════════════════════════════════
 // PLAN COMPTABLE SYSCOHADA
 // ══════════════════════════════════════════
