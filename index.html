@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SYSCOHADA Pro — COMEO AI v3</title>
+<title>SYSCOHADA Pro — COMEO AI v4</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -157,9 +157,7 @@ body { font-family:var(--font-body); background:var(--paper); color:var(--ink); 
 .stat-row .val.g { color:#4ade80; } .stat-row .val.r { color:#f87171; }
 
 /* SIDEBAR OVERLAY (MOBILE) */
-.sidebar-overlay {
-  display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:90;
-}
+.sidebar-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:90; }
 .sidebar-overlay.show { display:block; }
 
 /* MAIN */
@@ -323,7 +321,7 @@ body { font-family:var(--font-body); background:var(--paper); color:var(--ink); 
 .aoption .code { font-family:var(--font-mono); color:var(--warm); font-size:10px; min-width:44px; font-weight:600; }
 .aoption .name { color:var(--muted); }
 
-/* ECRITURE TABLE */
+/* SAISIE TABLE */
 .et-wrapper { overflow-x:auto; -webkit-overflow-scrolling:touch; }
 .et { width:100%; border-collapse:collapse; font-size:12px; min-width:520px; }
 .et th { text-align:left; padding:9px 10px; background:var(--ink); color:var(--warm); border-bottom:2px solid var(--warm); font-size:8px; font-weight:700; text-transform:uppercase; letter-spacing:.12em; font-family:var(--font-mono); }
@@ -333,10 +331,7 @@ body { font-family:var(--font-body); background:var(--paper); color:var(--ink); 
 .et td input:focus { background:var(--surface2); border-radius:3px; padding:3px 7px; }
 
 /* CARD VIEW (mobile) */
-.ligne-card {
-  display:none; background:var(--surface); border:1px solid var(--line);
-  border-radius:var(--rs); padding:10px; margin-bottom:8px; gap:8px;
-}
+.ligne-card { display:none; background:var(--surface); border:1px solid var(--line); border-radius:var(--rs); padding:10px; margin-bottom:8px; gap:8px; }
 .ligne-card-row { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
 .ligne-card-field { display:flex; flex-direction:column; gap:3px; }
 .ligne-card-label { font-size:8px; font-weight:700; text-transform:uppercase; letter-spacing:.12em; color:var(--muted); }
@@ -354,149 +349,219 @@ body { font-family:var(--font-body); background:var(--paper); color:var(--ink); 
 .del-line { background:none; border:none; color:var(--red); cursor:pointer; font-size:13px; opacity:.25; padding:3px 6px; border-radius:3px; transition:opacity .14s; }
 .del-line:hover { opacity:1; background:rgba(220,38,38,.08); }
 
-/* ══════════════════════════════════════════
-   ★★★ JOURNAL REPENSÉ — GROUPÉ PAR ÉCRITURE
-   ══════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════
+   ★★★ JOURNAL — GROUPES D'OPÉRATIONS (3 ÉCRITURES LIÉES)
+   ═══════════════════════════════════════════════════════════ */
 
-/* Wrapper général */
-#journalContent { display:flex; flex-direction:column; gap:0; }
+/* Séparateur de date */
+.jnl-date-sep {
+  display:flex; align-items:center; gap:10px;
+  padding:16px 0 8px;
+}
+.jnl-date-sep-line { flex:1; height:1px; background:var(--line2); }
+.jnl-date-sep-label {
+  font-family:var(--font-mono); font-size:9.5px; font-weight:700;
+  color:var(--muted); text-transform:uppercase; letter-spacing:.14em;
+  white-space:nowrap; background:var(--paper); padding:0 6px;
+}
 
-/* Une écriture = un bloc */
-.jnl-ecriture {
-  background:var(--surface);
-  border:1px solid var(--line);
+/* ── GROUPE D'OPÉRATION ── */
+.jnl-groupe {
+  margin-bottom:18px;
   border-radius:var(--r);
-  margin-bottom:10px;
   overflow:hidden;
-  box-shadow:var(--sh);
-  transition:box-shadow .18s;
-}
-.jnl-ecriture:hover { box-shadow:var(--sh2); }
-
-/* En-tête de l'écriture */
-.jnl-ecriture-header {
-  display:grid;
-  grid-template-columns: auto 60px 1fr auto auto;
-  align-items:center;
-  gap:0;
-  padding:0;
-  background:var(--ink);
-  border-bottom:1px solid rgba(255,255,255,.06);
-  min-height:40px;
+  box-shadow: 0 2px 12px rgba(0,0,0,.07), 0 1px 3px rgba(0,0,0,.05);
+  border: 1px solid var(--line2);
 }
 
-.jnl-header-date {
-  padding:10px 14px;
+/* En-tête du groupe — identifie l'opération entière */
+.jnl-groupe-header {
+  background: var(--ink);
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 2px solid rgba(212,168,83,.3);
+  flex-wrap: wrap;
+  min-height: 46px;
+}
+.jnl-groupe-icon {
+  width: 32px; height: 32px;
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px;
+  background: rgba(212,168,83,.12);
+  border: 1px solid rgba(212,168,83,.2);
+  flex-shrink: 0;
+}
+.jnl-groupe-info { flex: 1; min-width: 0; }
+.jnl-groupe-libelle {
+  font-family: var(--font-display);
+  font-size: 13.5px;
+  font-weight: 700;
+  color: rgba(255,255,255,.9);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  max-width: 500px;
+}
+.jnl-groupe-meta {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: rgba(255,255,255,.28);
+  margin-top: 2px;
+  letter-spacing: .06em;
+}
+.jnl-groupe-total {
+  text-align: right;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.jnl-groupe-total-label {
+  font-family: var(--font-mono);
+  font-size: 7px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .14em;
+  color: rgba(255,255,255,.2);
+}
+.jnl-groupe-total-val {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--warm);
+  margin-top: 1px;
+}
+.jnl-groupe-badge-count {
+  background: rgba(212,168,83,.15);
+  border: 1px solid rgba(212,168,83,.25);
+  color: var(--warm);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 3px;
+  letter-spacing: .06em;
+  white-space: nowrap;
+}
+.jnl-groupe-del {
+  background:transparent; border:1px solid rgba(220,38,38,.18);
+  color:rgba(248,113,113,.3); border-radius:3px; cursor:pointer;
+  font-size:10px; padding:4px 8px; transition:all .14s; white-space:nowrap;
   font-family:var(--font-mono);
-  font-size:11px;
-  color:rgba(255,255,255,.55);
-  white-space:nowrap;
-  border-right:1px solid rgba(255,255,255,.06);
 }
+.jnl-groupe-del:hover { background:rgba(220,38,38,.1); color:#f87171; border-color:rgba(220,38,38,.4); }
 
-.jnl-header-jnl {
-  padding:10px 10px;
-  border-right:1px solid rgba(255,255,255,.06);
-  display:flex;
-  justify-content:center;
-}
+/* Corps du groupe — liste des écritures */
+.jnl-groupe-body { background: var(--surface); }
 
-.jnl-jnl-badge {
-  font-family:var(--font-mono);
-  font-size:9px;
-  font-weight:700;
-  padding:3px 7px;
-  border-radius:3px;
-  letter-spacing:.08em;
-  white-space:nowrap;
+/* ── ÉCRITURE INDIVIDUELLE dans le groupe ── */
+.jnl-ecriture {
+  border-bottom: 1px solid var(--line);
+  position: relative;
 }
-.jnl-jnl-badge.AC { background:rgba(37,99,235,.15); color:#60a5fa; border:1px solid rgba(37,99,235,.25); }
-.jnl-jnl-badge.VE { background:rgba(22,163,74,.15); color:#4ade80; border:1px solid rgba(22,163,74,.25); }
-.jnl-jnl-badge.BQ { background:rgba(99,102,241,.15); color:#a5b4fc; border:1px solid rgba(99,102,241,.25); }
-.jnl-jnl-badge.CA { background:rgba(234,179,8,.15); color:#fde047; border:1px solid rgba(234,179,8,.25); }
-.jnl-jnl-badge.OD { background:rgba(212,168,83,.15); color:#d4a853; border:1px solid rgba(212,168,83,.25); }
-.jnl-jnl-badge.IN { background:rgba(168,85,247,.15); color:#c4b5fd; border:1px solid rgba(168,85,247,.25); }
-.jnl-jnl-badge.AN { background:rgba(20,184,166,.15); color:#5eead4; border:1px solid rgba(20,184,166,.25); }
+.jnl-ecriture:last-child { border-bottom: none; }
 
-.jnl-header-info {
-  padding:10px 14px;
-  border-right:1px solid rgba(255,255,255,.06);
-  min-width:0;
+/* Barre latérale colorée selon le type d'écriture */
+.jnl-ecriture::before {
+  content: '';
+  position: absolute;
+  top: 0; bottom: 0; left: 0;
+  width: 3px;
 }
+.jnl-ecriture.type-AC::before { background: #3b82f6; }
+.jnl-ecriture.type-VE::before { background: #22c55e; }
+.jnl-ecriture.type-IN::before { background: var(--warm); }
+.jnl-ecriture.type-BQ::before { background: #8b5cf6; }
+.jnl-ecriture.type-CA::before { background: #f59e0b; }
+.jnl-ecriture.type-OD::before { background: #6b7280; }
+.jnl-ecriture.type-AN::before { background: #14b8a6; }
 
-.jnl-header-libelle {
-  font-size:12.5px;
-  font-weight:600;
-  color:rgba(255,255,255,.85);
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
-  max-width:400px;
+/* Sous-en-tête de l'écriture */
+.jnl-ecriture-subheader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 14px 7px 17px;
+  background: var(--surface3);
+  border-bottom: 1px solid var(--line);
+  flex-wrap: wrap;
 }
-.jnl-header-piece {
-  font-family:var(--font-mono);
-  font-size:9px;
-  color:rgba(255,255,255,.25);
-  margin-top:2px;
-  letter-spacing:.06em;
+.jnl-step-badge {
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: var(--warm);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
 }
+.jnl-step-label {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.jnl-step-piece {
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  color: var(--muted);
+  letter-spacing: .06em;
+}
+.jnl-step-jnl-badge {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 3px;
+  letter-spacing: .07em;
+  white-space: nowrap;
+}
+.jnl-step-jnl-badge.AC { background:rgba(59,130,246,.15); color:#60a5fa; border:1px solid rgba(59,130,246,.25); }
+.jnl-step-jnl-badge.VE { background:rgba(34,197,94,.15); color:#4ade80; border:1px solid rgba(34,197,94,.25); }
+.jnl-step-jnl-badge.BQ { background:rgba(139,92,246,.15); color:#c4b5fd; border:1px solid rgba(139,92,246,.25); }
+.jnl-step-jnl-badge.CA { background:rgba(245,158,11,.15); color:#fde047; border:1px solid rgba(245,158,11,.25); }
+.jnl-step-jnl-badge.OD { background:rgba(212,168,83,.15); color:#d4a853; border:1px solid rgba(212,168,83,.25); }
+.jnl-step-jnl-badge.IN { background:rgba(212,168,83,.12); color:#d4a853; border:1px solid rgba(212,168,83,.2); }
+.jnl-step-jnl-badge.AN { background:rgba(20,184,166,.15); color:#5eead4; border:1px solid rgba(20,184,166,.25); }
 
-.jnl-header-totaux {
-  padding:10px 14px;
-  text-align:right;
-  border-right:1px solid rgba(255,255,255,.06);
-  white-space:nowrap;
+.jnl-step-totaux {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--muted);
+  white-space: nowrap;
 }
-.jnl-tot-label { font-size:7.5px; font-weight:700; text-transform:uppercase; letter-spacing:.14em; color:rgba(255,255,255,.2); font-family:var(--font-mono); }
-.jnl-tot-val { font-family:var(--font-mono); font-size:11px; margin-top:1px; }
-.jnl-tot-val .d { color:#60a5fa; }
-.jnl-tot-val .sep { color:rgba(255,255,255,.15); margin:0 3px; }
-.jnl-tot-val .c { color:#4ade80; }
+.jnl-step-equil {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 2px;
+}
+.jnl-step-equil.ok { background:rgba(74,222,128,.08); color:#4ade80; border:1px solid rgba(74,222,128,.18); }
+.jnl-step-equil.nok { background:rgba(248,113,113,.08); color:#f87171; border:1px solid rgba(248,113,113,.18); }
+.jnl-step-del {
+  background:transparent; border:none; color:rgba(248,113,113,.25);
+  cursor:pointer; font-size:11px; padding:2px 5px; border-radius:2px;
+  transition:all .12s; line-height:1;
+}
+.jnl-step-del:hover { color:#f87171; background:rgba(220,38,38,.08); }
 
-.jnl-header-actions {
-  padding:10px 10px;
-  display:flex;
-  align-items:center;
-  gap:6px;
-}
-.jnl-equil-badge {
-  font-family:var(--font-mono);
-  font-size:8px;
-  font-weight:700;
-  padding:2px 6px;
-  border-radius:2px;
-}
-.jnl-equil-badge.ok { background:rgba(74,222,128,.1); color:#4ade80; border:1px solid rgba(74,222,128,.2); }
-.jnl-equil-badge.nok { background:rgba(248,113,113,.1); color:#f87171; border:1px solid rgba(248,113,113,.2); }
-.jnl-del-btn {
-  background:transparent; border:1px solid rgba(220,38,38,.2);
-  color:rgba(248,113,113,.4); border-radius:3px;
-  cursor:pointer; font-size:11px; padding:3px 7px;
-  transition:all .14s;
-}
-.jnl-del-btn:hover { background:rgba(220,38,38,.1); color:#f87171; border-color:rgba(220,38,38,.4); }
-
-/* Corps des lignes */
-.jnl-ecriture-body {
-  overflow-x:auto;
-}
-.jnl-lignes-table {
-  width:100%;
-  border-collapse:collapse;
-  min-width:480px;
-}
+/* Lignes de l'écriture */
+.jnl-ecriture-body { overflow-x:auto; }
+.jnl-lignes-table { width:100%; border-collapse:collapse; min-width:480px; }
 .jnl-lignes-table thead th {
-  padding:6px 14px;
-  font-family:var(--font-mono);
-  font-size:7.5px;
-  font-weight:700;
-  text-transform:uppercase;
-  letter-spacing:.14em;
-  color:var(--muted);
-  background:var(--surface3);
-  border-bottom:1px solid var(--line2);
-  text-align:left;
-  white-space:nowrap;
+  padding: 5px 14px;
+  font-family: var(--font-mono);
+  font-size: 7px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .14em;
+  color: var(--faint);
+  background: var(--surface2);
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  white-space: nowrap;
 }
 .jnl-lignes-table thead th.right { text-align:right; }
 .jnl-lignes-table tbody tr { border-bottom:1px solid var(--line); }
@@ -504,112 +569,34 @@ body { font-family:var(--font-body); background:var(--paper); color:var(--ink); 
 .jnl-lignes-table tbody tr:hover td { background:var(--surface2); }
 .jnl-lignes-table tbody td { padding:8px 14px; font-size:12px; color:var(--slate); vertical-align:middle; }
 
-.jnl-compte-badge {
-  display:inline-flex; align-items:center; gap:5px;
-}
+.jnl-compte-badge { display:inline-flex; align-items:center; gap:5px; }
 .jnl-compte-code {
-  font-family:var(--font-mono);
-  font-size:10px;
-  font-weight:600;
-  color:var(--warm);
-  background:var(--warm-dim);
-  border:1px solid rgba(212,168,83,.2);
-  border-radius:3px;
-  padding:2px 7px;
-  white-space:nowrap;
+  font-family:var(--font-mono); font-size:10px; font-weight:600;
+  color:var(--warm); background:var(--warm-dim); border:1px solid rgba(212,168,83,.2);
+  border-radius:3px; padding:2px 7px; white-space:nowrap;
 }
 .jnl-compte-name {
-  font-size:9.5px;
-  color:var(--faint);
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
-  max-width:160px;
-  display:inline-block;
+  font-size:9.5px; color:var(--faint); white-space:nowrap;
+  overflow:hidden; text-overflow:ellipsis; max-width:160px; display:inline-block;
 }
-.jnl-libelle-ligne {
-  color:var(--ink);
-  font-size:12px;
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
-  max-width:280px;
-}
-.jnl-debit-cell {
-  text-align:right;
-  font-family:var(--font-mono);
-  font-size:11.5px;
-  font-weight:600;
-  color:var(--blue);
-  white-space:nowrap;
-}
-.jnl-credit-cell {
-  text-align:right;
-  font-family:var(--font-mono);
-  font-size:11.5px;
-  font-weight:600;
-  color:var(--green);
-  white-space:nowrap;
-}
-.jnl-empty-cell {
-  text-align:right;
-  font-family:var(--font-mono);
-  font-size:11px;
-  color:var(--line2);
-}
+.jnl-libelle-ligne { color:var(--ink); font-size:12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:280px; }
+.jnl-debit-cell { text-align:right; font-family:var(--font-mono); font-size:11.5px; font-weight:600; color:var(--blue); white-space:nowrap; }
+.jnl-credit-cell { text-align:right; font-family:var(--font-mono); font-size:11.5px; font-weight:600; color:var(--green); white-space:nowrap; }
+.jnl-empty-cell { text-align:right; font-family:var(--font-mono); font-size:11px; color:var(--line2); }
 
-/* Footer des totaux journal */
+/* Footer totaux journal */
 .jnl-footer-totaux {
-  background:var(--ink);
-  border-top:2px solid var(--warm);
-  padding:12px 16px;
-  display:flex;
-  align-items:center;
-  justify-content:flex-end;
-  gap:20px;
-  flex-wrap:wrap;
-  margin-top:0;
-  border-radius:0 0 var(--r) var(--r);
+  background:var(--ink); border:1px solid rgba(255,255,255,.06);
+  border-radius:var(--r); padding:12px 16px; margin-top:4px;
+  display:flex; align-items:center; justify-content:flex-end; gap:20px; flex-wrap:wrap;
 }
-.jnl-footer-item {
-  display:flex; align-items:center; gap:8px;
-  font-size:11px;
-}
-.jnl-footer-label {
-  font-family:var(--font-mono);
-  font-size:8.5px;
-  font-weight:700;
-  text-transform:uppercase;
-  letter-spacing:.12em;
-  color:rgba(255,255,255,.3);
-}
-.jnl-footer-val {
-  font-family:var(--font-mono);
-  font-size:13px;
-  font-weight:600;
-}
+.jnl-footer-item { display:flex; align-items:center; gap:8px; font-size:11px; }
+.jnl-footer-label { font-family:var(--font-mono); font-size:8.5px; font-weight:700; text-transform:uppercase; letter-spacing:.12em; color:rgba(255,255,255,.3); }
+.jnl-footer-val { font-family:var(--font-mono); font-size:13px; font-weight:600; }
 .jnl-footer-val.d { color:#60a5fa; }
 .jnl-footer-val.c { color:#4ade80; }
 .jnl-footer-val.eq { color:#4ade80; font-size:11px; }
 .jnl-footer-val.neq { color:#f87171; font-size:11px; }
-
-/* Séparateur de date (regroupement par date) */
-.jnl-date-sep {
-  display:flex; align-items:center; gap:10px;
-  padding:14px 0 6px;
-}
-.jnl-date-sep-line { flex:1; height:1px; background:var(--line2); }
-.jnl-date-sep-label {
-  font-family:var(--font-mono);
-  font-size:9.5px;
-  font-weight:700;
-  color:var(--muted);
-  text-transform:uppercase;
-  letter-spacing:.14em;
-  white-space:nowrap;
-  background:var(--paper);
-  padding:0 4px;
-}
 
 /* Barre filtre période */
 .filtre-periode-bar {
@@ -624,7 +611,7 @@ body { font-family:var(--font-body); background:var(--paper); color:var(--ink); 
 .btn-filtre-reset { background:transparent; color:var(--muted); border:1px solid var(--line2); border-radius:var(--rs); padding:6px 10px; font-size:11px; cursor:pointer; font-family:var(--font-body); }
 .fb-loading { text-align:center; padding:28px; color:var(--muted); font-size:12px; font-family:var(--font-mono); letter-spacing:.08em; }
 
-/* DATA TABLE (pour balance, etc.) */
+/* DATA TABLE */
 .dtw { overflow-x:auto; border-radius:var(--r); border:1px solid var(--line); box-shadow:var(--sh); }
 .dt { width:100%; border-collapse:collapse; font-size:12px; min-width:560px; }
 .dt th { text-align:left; padding:9px 12px; background:var(--ink); color:var(--warm); border-bottom:2px solid var(--warm); font-size:8px; font-weight:700; text-transform:uppercase; letter-spacing:.12em; position:sticky; top:0; white-space:nowrap; font-family:var(--font-mono); }
@@ -735,16 +722,11 @@ body { font-family:var(--font-body); background:var(--paper); color:var(--ink); 
 .sn-btn-auto { background:linear-gradient(135deg,#16a34a,#15803d); color:#fff; border:none; border-radius:var(--rs); padding:7px 12px; font-size:12px; font-weight:700; cursor:pointer; font-family:var(--font-body); }
 .sn-btn-dismiss { background:transparent; color:rgba(255,255,255,.4); border:1px solid rgba(255,255,255,.1); border-radius:var(--rs); padding:7px 10px; font-size:11px; cursor:pointer; font-family:var(--font-body); }
 
-/* ══════════════════════════════════════════
-   RESPONSIVE
-   ══════════════════════════════════════════ */
+/* RESPONSIVE */
 @media(max-width:768px) {
   :root { --sidebar-w: 0px; }
   .shell { grid-template-columns: 1fr; }
-  .sidebar {
-    position:fixed; left:0; top:var(--topbar-h); height:calc(100vh - var(--topbar-h));
-    z-index:95; width:240px; transform:translateX(-100%);
-  }
+  .sidebar { position:fixed; left:0; top:var(--topbar-h); height:calc(100vh - var(--topbar-h)); z-index:95; width:240px; transform:translateX(-100%); }
   .sidebar.open { transform:translateX(0); }
   .kpi-grid { grid-template-columns:1fr 1fr; }
   .bilan-grid { grid-template-columns:1fr; }
@@ -760,16 +742,13 @@ body { font-family:var(--font-body); background:var(--paper); color:var(--ink); 
   .comeo-messages { height:200px; }
   .et-wrapper { display:none; }
   .ligne-card { display:flex; flex-direction:column; }
-  .jnl-ecriture-header { grid-template-columns: auto 50px 1fr auto; }
-  .jnl-header-totaux { display:none; }
-  .jnl-header-libelle { max-width:180px; }
+  .jnl-groupe-libelle { max-width: 200px; }
+  .jnl-groupe-total { display:none; }
 }
-
 @media(max-width:480px) {
   .kpi-grid { grid-template-columns:1fr 1fr; gap:8px; }
   .fg { grid-template-columns:1fr; }
-  .fg.c4 { grid-template-columns:1fr; }
-  .fg.c3 { grid-template-columns:1fr; }
+  .fg.c4, .fg.c3 { grid-template-columns:1fr; }
   .ph-actions { width:100%; }
   .ph-actions .btn { flex:1; justify-content:center; font-size:11px; padding:7px 8px; }
   .export-options { grid-template-columns:1fr; }
@@ -777,17 +756,13 @@ body { font-family:var(--font-body); background:var(--paper); color:var(--ink); 
   .logo { font-size:15px; }
   .logo-sub { display:none; }
   .company-pill { max-width:90px; font-size:10px; }
-  .jnl-ecriture-header { grid-template-columns: 1fr auto; }
-  .jnl-header-jnl, .jnl-header-date { display:none; }
 }
-
 @media print {
   .sidebar, .topbar, .comeo-box, .chips, .btn { display:none!important; }
   .shell { display:block; }
   .main { padding:0; }
   body { background:#fff; color:#000; }
 }
-
 ::-webkit-scrollbar { width:4px; height:4px; }
 ::-webkit-scrollbar-track { background:var(--surface2); }
 ::-webkit-scrollbar-thumb { background:var(--line2); border-radius:2px; }
@@ -799,7 +774,7 @@ body { font-family:var(--font-body); background:var(--paper); color:var(--ink); 
 <div id="authOverlay">
   <div class="auth-box">
     <div class="auth-emblem">
-      <div class="logo-big">COMEO AI V3</div>
+      <div class="logo-big">COMEO AI V4</div>
       <div class="ai-badge">Expert Comptable SYSCOHADA · Conforme OHADA 2023</div>
     </div>
     <div class="auth-tabs">
@@ -865,7 +840,7 @@ body { font-family:var(--font-body); background:var(--paper); color:var(--ink); 
     <button class="mobile-menu-btn" onclick="toggleMobileSidebar()" aria-label="Menu">☰</button>
     <div class="logo-wrap">
       <div class="logo">comeo AI</div>
-      <div class="logo-sub">Pro v3</div>
+      <div class="logo-sub">Pro v4</div>
     </div>
     <div class="tb-sep"></div>
     <div class="company-pill"><span>🏢</span><strong id="topCompanyName">—</strong></div>
@@ -943,15 +918,15 @@ body { font-family:var(--font-body); background:var(--paper); color:var(--ink); 
         </div>
       </div>
       <div class="comeo-box">
-        <div class="comeo-header"><div class="comeo-dot"></div><span class="comeo-title">COMEO AI v3 — Expert Comptable SYSCOHADA</span><span class="comeo-sub">Journal · Balance · Grand Livre · États financiers</span></div>
+        <div class="comeo-header"><div class="comeo-dot"></div><span class="comeo-title">COMEO AI v4 — Expert Comptable SYSCOHADA</span><span class="comeo-sub">Journal groupé · Balance · Grand Livre · États financiers</span></div>
         <div class="comeo-messages" id="aiMessages">
-          <div class="msg ai"><div class="msg-av">C</div><div class="msg-body">Bonjour ! Je suis <strong>COMEO AI v3</strong>, votre expert-comptable SYSCOHADA dédié.<br><br>
-          Je passe <strong>automatiquement les 3 écritures</strong> pour chaque opération. Je peux aussi vous montrer toutes les opérations d'une date précise — essayez : <em>"Montre-moi les opérations du 16 avril 2026"</em><br><br>
-          Qu'est-ce que je peux faire pour vous aujourd'hui ?
+          <div class="msg ai"><div class="msg-av">C</div><div class="msg-body">Bonjour ! Je suis <strong>COMEO AI v4</strong>, votre expert-comptable SYSCOHADA.<br><br>
+          Dans le <strong>Journal</strong>, les 3 écritures d'une même opération sont maintenant <strong>regroupées visuellement</strong> — achat, variation de stock et règlement apparaissent ensemble sous un même en-tête.<br><br>
+          Que puis-je faire pour vous aujourd'hui ?
           </div></div>
         </div>
         <div class="comeo-input-row">
-          <textarea class="comeo-input" id="aiInput" placeholder="Ex: Opérations du 16 avril 2026, ou: Achat marchandises 500 000 FCFA espèces…" onkeydown="handleAiKey(event,'dashboard')"></textarea>
+          <textarea class="comeo-input" id="aiInput" placeholder="Ex: Achat marchandises 500 000 FCFA espèces, TVA 18%…" onkeydown="handleAiKey(event,'dashboard')"></textarea>
           <button class="btn btn-ink" id="aiSendBtn" onclick="sendToAI('dashboard')">⚡</button>
         </div>
       </div>
@@ -961,9 +936,6 @@ body { font-family:var(--font-body); background:var(--paper); color:var(--ink); 
         <div class="chip" onclick="quickAI('Vente de marchandises 1200000 FCFA TTC par virement, TVA 18%, coût d\'achat 700000. Passer les 3 écritures obligatoires.')">Vente m/ses (3 écritures)</div>
         <div class="chip" onclick="quickAI('Achat de marchandises à crédit 800000 FCFA HT, TVA 18%, fournisseur HOLALI. Passer les 3 écritures.')">Achat à crédit (3 écritures)</div>
         <div class="chip" onclick="quickAI('Règlement salaires: brut 800000 FCFA, cotisations salariales 160000, impôts retenus 50000, acompte versé 200000')">Paie du personnel</div>
-        <div class="chip" onclick="quickAI('Montre-moi le journal du mois en cours')">Journal du mois</div>
-        <div class="chip" onclick="quickAI('Donne-moi la balance générale de l\'exercice en cours')">Balance générale</div>
-        <div class="chip" onclick="quickAI('Quel est le solde du compte caisse 571 actuellement ?')">Solde compte caisse</div>
         <div class="chip" onclick="quickAI('Dotation amortissement linéaire matériel informatique valeur 2400000 FCFA durée 4 ans valeur résiduelle 0')">Amortissement linéaire</div>
         <div class="chip" onclick="quickAI('Analyser mon bilan actuel et donner les ratios de liquidité, solvabilité et rentabilité')">Analyser mon bilan</div>
       </div>
@@ -1036,17 +1008,16 @@ body { font-family:var(--font-body); background:var(--paper); color:var(--ink); 
       </div>
     </div>
 
-    <!-- ★★★ JOURNAL REDESIGNÉ -->
+    <!-- JOURNAL REDESIGNÉ — GROUPÉ PAR OPÉRATION -->
     <div class="view" id="view-journal">
       <div class="ph">
-        <div><h1>Journal général</h1><p>Écritures groupées par opération — SYSCOHADA Révisé 2023</p></div>
+        <div><h1>Journal général</h1><p>Opérations regroupées — 3 écritures liées par opération</p></div>
         <div class="ph-actions">
           <button class="btn btn-sm-wire" onclick="openExportModal()">⎙ Exporter</button>
           <button class="btn btn-ink" onclick="navigate('saisie')">+ Nouvelle</button>
         </div>
       </div>
 
-      <!-- Barre filtre -->
       <div class="filtre-periode-bar">
         <label>Du</label><input type="date" id="jnl-date-debut" onchange="renderJournal()">
         <label>Au</label><input type="date" id="jnl-date-fin" onchange="renderJournal()">
@@ -1061,17 +1032,14 @@ body { font-family:var(--font-body); background:var(--paper); color:var(--ink); 
         <button class="btn-filtre-reset" onclick="resetJournalFiltre()">✕ Effacer</button>
       </div>
 
-      <!-- Analyse IA -->
       <div id="journal-analyse" style="display:none" class="analyse-card"></div>
-
-      <!-- Contenu journal -->
       <div id="journalContent"></div>
 
-      <!-- Footer totaux -->
       <div id="journal-totaux-footer" style="display:none">
-        <div class="jnl-footer-totaux" style="border-radius:var(--r);margin-top:0;">
-          <div class="jnl-footer-item"><span class="jnl-footer-label">Écritures</span><span class="jnl-footer-val" id="jnl-nb-ecr" style="color:var(--warm)">0</span></div>
-          <div class="jnl-footer-item"><span class="jnl-footer-label">Lignes</span><span class="jnl-footer-val" id="jnl-nb-lignes" style="color:rgba(255,255,255,.5)">0</span></div>
+        <div class="jnl-footer-totaux">
+          <div class="jnl-footer-item"><span class="jnl-footer-label">Opérations</span><span class="jnl-footer-val" id="jnl-nb-groupes" style="color:var(--warm)">0</span></div>
+          <div class="jnl-footer-item"><span class="jnl-footer-label">Écritures</span><span class="jnl-footer-val" id="jnl-nb-ecr" style="color:rgba(255,255,255,.5)">0</span></div>
+          <div class="jnl-footer-item"><span class="jnl-footer-label">Lignes</span><span class="jnl-footer-val" id="jnl-nb-lignes" style="color:rgba(255,255,255,.3)">0</span></div>
           <div class="jnl-footer-item"><span class="jnl-footer-label">Total Débit</span><span class="jnl-footer-val d" id="jnl-total-debit">0</span></div>
           <div class="jnl-footer-item"><span class="jnl-footer-label">Total Crédit</span><span class="jnl-footer-val c" id="jnl-total-credit">0</span></div>
           <div class="jnl-footer-item"><span id="jnl-equil-label" class="jnl-footer-val eq">✓ Équilibré</span></div>
@@ -1197,11 +1165,25 @@ const PC = {"101":"CAPITAL SOCIAL","1011":"Capital souscrit non appelé","1012":
 const CLASS_NAMES={'1':'Capitaux','2':'Immobilisations','3':'Stocks','4':'Tiers','5':'Trésorerie','6':'Charges','7':'Produits','8':'Spéciaux'};
 const NATURE_MAP={'1':'Passif','2':'Actif','3':'Actif','4':'Mixte','5':'Actif','6':'Charge','7':'Produit','8':'Spécial'};
 const JOURNAL_NAMES={'AC':'Achats','VE':'Ventes','BQ':'Banque','CA':'Caisse','OD':'Opérations Diverses','IN':'Inventaire','AN':'À Nouveau'};
+const JOURNAL_ICONS={'AC':'🛒','VE':'💰','BQ':'🏦','CA':'💵','OD':'📋','IN':'📦','AN':'📂'};
+
+// ══ Étiquettes lisibles par type d'écriture dans un groupe ══
+function getStepLabel(ecr, idx, total) {
+  const jnl = ecr.journal;
+  if(jnl === 'IN') return 'Mouvement de stock';
+  if(jnl === 'AC') return 'Constatation facture achat';
+  if(jnl === 'VE') return 'Constatation facture vente';
+  if(jnl === 'BQ') return idx === 0 ? 'Règlement banque' : 'Règlement banque';
+  if(jnl === 'CA') return idx === 0 ? 'Règlement caisse' : 'Règlement caisse';
+  if(jnl === 'OD') return 'Opération diverse';
+  if(jnl === 'AN') return 'À nouveau';
+  return ecr.libelle || 'Écriture';
+}
 
 let ecritures=[], lignes=[], pieceCounter=1, currentProfile=null, isAILoading=false;
 let exportFormat='pdf';
-let ecrQueue = [];
-let ecrQueueIdx = 0;
+let ecrQueue = [], ecrQueueIdx = 0;
+let currentGroupId = null; // ID du groupe courant pour lier les 3 écritures
 
 const GROQ_API_KEY = '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';
 
@@ -1218,100 +1200,78 @@ function closeMobileSidebar() {
 }
 
 // ══════════════════════════════════════════
-// SYSTEM PROMPT — AMÉLIORÉ AVEC FILTRAGE DATE
+// SYSTEM PROMPT
 // ══════════════════════════════════════════
 function buildSystemPrompt(contextData) {
   const { nbEcritures, companyName, exercice, ecrituresResume, totalDebit, totalCredit, comptesSoldes, allDates } = contextData;
   const today = new Date().toISOString().split('T')[0];
-  return `Tu es COMEO AI v3, expert-comptable SYSCOHADA senior dédié à l'entreprise "${companyName}" pour l'exercice ${exercice}.
-Tu as été conçu par Marcio Jardel ZINZINDOHOUE.
+  return `Tu es COMEO AI v4, expert-comptable SYSCOHADA senior dédié à l'entreprise "${companyName}" pour l'exercice ${exercice}.
 Date du jour : ${today}
 
 ═══════════════════════════
 RÈGLE FONDAMENTALE — 3 ÉCRITURES INDÉPENDANTES
 ═══════════════════════════
 
-Pour tout achat ou vente (comptant ou à crédit), tu DOIS passer OBLIGATOIREMENT 3 écritures SÉPARÉES, chacune précédée de son propre marqueur ###ECRITURE###.
+Pour tout achat ou vente, tu DOIS passer OBLIGATOIREMENT 3 écritures SÉPARÉES.
+Chaque écriture est précédée de son propre marqueur ###ECRITURE###.
 
-⚠️ JAMAIS UNE SEULE ÉCRITURE pour une vente ou un achat — TOUJOURS 3 marqueurs ###ECRITURE### distincts.
-⚠️ CHAQUE écriture doit être ÉQUILIBRÉE (Total Débit = Total Crédit).
-
-**ÉCRITURE 1 — CONSTATATION FACTURE** (journal AC ou VE)
+ÉCRITURE 1 — CONSTATATION FACTURE (journal AC ou VE)
 Achat comptant : D 601 + D 4452 / C 571 ou 521
 Achat à crédit : D 601 + D 4452 / C 4011
 Vente comptant : D 571 ou 521 / C 701 + C 4431
 Vente à crédit  : D 4111 / C 701 + C 4431
 
-**ÉCRITURE 2 — MOUVEMENT DE STOCK** (journal IN)
+ÉCRITURE 2 — MOUVEMENT DE STOCK (journal IN)
 Achat  : D 311 ou 312 / C 6031  (montant = HT de l'achat)
 Vente  : D 6031 / C 311 ou 312  (montant = coût d'achat)
 
-**ÉCRITURE 3 — RÈGLEMENT** (journal BQ ou CA si à crédit)
+ÉCRITURE 3 — RÈGLEMENT (journal BQ ou CA si à crédit)
 Achat à crédit payé  : D 4011 / C 521 ou 571
 Vente à crédit encaissée : D 521 ou 571 / C 4111
 
-CALCULS TVA (CI — 18%) :
+CALCULS TVA (18%) :
 TTC → HT = TTC ÷ 1.18  |  TVA = TTC − HT
 HT  → TVA = HT × 18%   |  TTC = HT × 1.18
 
-═══════════════════════════
-CONTEXTE COMPTABLE ACTUEL
-═══════════════════════════
+CONTEXTE COMPTABLE :
 - Entreprise : ${companyName} | Exercice : ${exercice}
-- Écritures : ${nbEcritures} | Débit total : ${totalDebit} FCFA | Crédit total : ${totalCredit} FCFA
-${comptesSoldes ? `- Soldes comptes : ${comptesSoldes}` : ''}
-${ecrituresResume ? `- Dernières opérations : ${ecrituresResume}` : ''}
+- Écritures : ${nbEcritures} | Débit : ${totalDebit} | Crédit : ${totalCredit}
+${comptesSoldes ? `- Soldes : ${comptesSoldes}` : ''}
 ${allDates ? `- Dates avec écritures : ${allDates}` : ''}
 
 ═══════════════════════════
-COMMANDES ÉTATS FINANCIERS ET FILTRAGE PAR DATE
+FILTRAGE PAR DATE / PÉRIODE
 ═══════════════════════════
 
-Quand le comptable demande les opérations d'une date ou période précise (ex: "opérations du 16 avril", "journal de janvier", "écritures du 2026-04-16"), réponds avec une analyse de la date + ###FILTRE### suivi du JSON.
+Pour les demandes de période (ex: "opérations du 16 avril", "journal de janvier"), réponds avec :
+###FILTRE###{"type":"journal","dateDebut":"2026-04-16","dateFin":"2026-04-16","journal":"","compte":""}
 
-Convertis toujours les dates en format YYYY-MM-DD. Exemples :
-- "16 avril 2026" → 2026-04-16
-- "janvier 2026" → dateDebut: 2026-01-01, dateFin: 2026-01-31
-- "mois dernier" → calculer par rapport à ${today}
-- "semaine dernière" → calculer par rapport à ${today}
-
-Format filtre : ###FILTRE###{"type":"journal","dateDebut":"2026-04-16","dateFin":"2026-04-16","journal":"","compte":""}
-Types : "journal", "balance", "grandlivre", "bilan"
-
-Pour "balance générale" ou "balance de l'exercice" : ###FILTRE###{"type":"balance","dateDebut":"","dateFin":"","journal":"","compte":""}
-Pour "solde du compte XXX" : ###FILTRE###{"type":"grandlivre","dateDebut":"","dateFin":"","journal":"","compte":"XXX"}
+Pour balance : ###FILTRE###{"type":"balance","dateDebut":"","dateFin":"","journal":"","compte":""}
+Pour grand livre compte : ###FILTRE###{"type":"grandlivre","dateDebut":"","dateFin":"","journal":"","compte":"XXX"}
 
 ═══════════════════════════
-FORMAT DE RÉPONSE — ÉCRITURES
+FORMAT RÉPONSE — ÉCRITURES
 ═══════════════════════════
 
-Pour achat/vente :
+Pour achat/vente, utilise EXACTEMENT ce format :
 
-[Brève reformulation]
 [Calculs commentés : HT, TVA, TTC]
 
-**Écriture 1 — [titre]**
-[Tableau HTML]
-###ECRITURE###{"journal":"AC","libelle":"…","lignes":[…]}
+**Écriture 1 — Constatation facture**
+[tableau HTML]
+###ECRITURE###{"journal":"AC","libelle":"Description précise","lignes":[{"compte":"601","libelle":"Achats marchandises","debit":423729,"credit":0},...]}
 
-**Écriture 2 — [titre]**
-[Tableau HTML]
-###ECRITURE###{"journal":"IN","libelle":"…","lignes":[…]}
+**Écriture 2 — Mouvement de stock**
+[tableau HTML]
+###ECRITURE###{"journal":"IN","libelle":"Entrée en stock — marchandises","lignes":[...]}
 
-**Écriture 3 — [titre]**
-[Tableau HTML]
-###ECRITURE###{"journal":"CA","libelle":"…","lignes":[…]}
+**Écriture 3 — Règlement**
+[tableau HTML]
+###ECRITURE###{"journal":"CA","libelle":"Règlement espèces","lignes":[...]}
 
-FORMAT JSON ÉCRITURE (après ###ECRITURE###, sans backticks) :
-{"journal":"AC","libelle":"Description précise","lignes":[{"compte":"601","libelle":"Achats marchandises","debit":423729,"credit":0},{"compte":"4452","libelle":"TVA récupérable 18%","debit":76271,"credit":0},{"compte":"571","libelle":"Caisse","debit":0,"credit":500000}]}
-
-FORMAT TABLEAU HTML :
-<table><thead><tr><th>Compte</th><th>Libellé</th><th>Débit FCFA</th><th>Crédit FCFA</th></tr></thead><tbody>...</tbody></table>
-
-⛔ Débit total = Crédit total pour CHAQUE écriture.
-⛔ Les montants sont des ENTIERS.
-⛔ Ne jamais mélanger ###ECRITURE### et ###FILTRE### dans la même réponse.
-⛔ TOUJOURS en FRANÇAIS.`;
+⛔ Chaque écriture DOIT être équilibrée (Débit = Crédit).
+⛔ Montants ENTIERS (pas de décimales).
+⛔ TOUJOURS EN FRANÇAIS.`;
 }
 
 // AUTH
@@ -1444,11 +1404,12 @@ function initSaisie() {
   renderLignes();
   updateQueueBar();
 }
-
 function addLigne(compte='',libelle='',debit='',credit=''){lignes.push({compte,libelle,debit,credit});renderLignes();}
 function removeLigne(i){lignes.splice(i,1);renderLignes();}
 
-// AUTO SAVE ALL
+// ══════════════════════════════════════════
+// AUTO SAVE — AVEC GROUPID COMMUN
+// ══════════════════════════════════════════
 async function autoSaveAllEcritures() {
   if(ecrQueue.length === 0) { toast('Aucune écriture en file d\'attente','error'); return; }
   const total = ecrQueue.length;
@@ -1457,8 +1418,15 @@ async function autoSaveAllEcritures() {
   const prog = document.getElementById('autoSaveProgress');
   bar.classList.add('show');
   const date = document.getElementById('ecr-date').value || new Date().toISOString().split('T')[0];
+
+  // IMPORTANT : même groupId pour toutes les écritures du lot IA
+  const groupId = 'grp_' + Date.now();
+  // Libellé principal = premier libellé de la queue (ex: "Achat marchandises HT…")
+  const groupLibelle = ecrQueue[0]?.libelle || 'Opération ' + new Date().toLocaleDateString('fr-FR');
+
   let saved = 0;
   const errors = [];
+
   for(let i = 0; i < ecrQueue.length; i++) {
     const ecr = ecrQueue[i];
     msg.innerHTML = `<strong>Enregistrement ${i+1}/${total}</strong> — [${ecr.journal}] ${ecr.libelle || 'Écriture '+(i+1)}`;
@@ -1470,7 +1438,12 @@ async function autoSaveAllEcritures() {
     if(Math.abs(d-c) > 2) { errors.push(`Écriture ${i+1} [${ecr.journal}]: non équilibrée`); continue; }
     const piece = 'N°'+String(pieceCounter).padStart(5,'0');
     const ecriture = {
-      id: Date.now() + i, date, journal: ecr.journal || 'OD', piece, libelle: ecr.libelle || 'Écriture IA',
+      id: Date.now() + i, date, journal: ecr.journal || 'OD', piece,
+      libelle: ecr.libelle || 'Écriture IA',
+      groupId,          // ← lie les 3 écritures ensemble
+      groupLibelle,     // ← titre commun du groupe
+      groupSize: total, // ← combien d'écritures dans ce groupe
+      groupIdx: i,      // ← position dans le groupe (0, 1, 2)
       createdAt: new Date().toISOString(),
       lignes: valid.map(l => ({
         compte: String(l.compte),
@@ -1492,7 +1465,7 @@ async function autoSaveAllEcritures() {
   if(errors.length > 0) {
     toast(`⚠️ ${saved}/${total} écritures enregistrées — ${errors.length} erreur(s)`, 'error');
   } else {
-    toast(`✅ ${saved} écriture${saved>1?'s':''} enregistrée${saved>1?'s':''} dans le journal !`, 'success');
+    toast(`✅ ${saved} écriture${saved>1?'s':''} enregistrée${saved>1?'s':''} et groupée${saved>1?'s':''} !`, 'success');
   }
   setTimeout(() => { navigate('journal'); renderJournal(); }, 500);
   initSaisie();
@@ -1561,7 +1534,7 @@ function showMultiEcrBanner(ecritures_ai) {
   const list = document.getElementById('mebList');
   const title = document.getElementById('mebTitle');
   if(!banner) return;
-  title.textContent = `COMEO AI a préparé ${ecritures_ai.length} écriture${ecritures_ai.length>1?'s':''}`;
+  title.textContent = `COMEO AI a préparé ${ecritures_ai.length} écriture${ecritures_ai.length>1?'s':''} liées`;
   list.innerHTML = ecritures_ai.map((e,i)=>
     `<li><span class="meb-n">${i+1}</span><span class="meb-jnl">${e.journal||'OD'}</span><span>${e.libelle||'Écriture '+(i+1)}</span></li>`
   ).join('');
@@ -1574,7 +1547,7 @@ function showSaisieNotif(libelle, count) {
   const notif = document.getElementById('saisieNotif');
   const body = document.getElementById('saisieNotifBody');
   if(count > 1) {
-    body.textContent = `${count} écritures préparées. Cliquez "Tout enregistrer" pour les valider toutes.`;
+    body.textContent = `${count} écritures liées préparées. Cliquez "Tout enregistrer" pour les grouper automatiquement.`;
   } else {
     body.textContent = `"${libelle||'Écriture'}" — Vérifiez et enregistrez.`;
   }
@@ -1672,7 +1645,7 @@ function updateBalance() {
   el.textContent=fn(Math.abs(s)); el.className='val '+(Math.abs(s)<0.01?'bok':'bbad');
 }
 
-// VALIDATION MANUELLE
+// VALIDATION MANUELLE (écriture isolée, pas de groupId)
 async function saveEcriture() {
   const date=document.getElementById('ecr-date').value;
   const journal=document.getElementById('ecr-journal').value;
@@ -1683,8 +1656,22 @@ async function saveEcriture() {
   if(valid.length<2){toast('Au moins 2 lignes requises','error');return;}
   let d=0,c=0; valid.forEach(l=>{d+=parseFloat(l.debit)||0;c+=parseFloat(l.credit)||0;});
   if(Math.abs(d-c)>0.01){toast("Écriture non équilibrée — Débit: "+fn(d)+" / Crédit: "+fn(c),'error');return;}
+
+  // Si on est dans une file de queue (mode IA), utiliser le groupId courant
+  let groupInfo = {};
+  if(ecrQueue.length > 0 && currentGroupId) {
+    groupInfo = {
+      groupId: currentGroupId,
+      groupLibelle: ecrQueue[0]?.libelle || libelle,
+      groupSize: ecrQueue.length,
+      groupIdx: ecrQueueIdx
+    };
+  }
+
   const ecriture={
-    id:Date.now(),date,journal,piece,libelle,createdAt:new Date().toISOString(),
+    id:Date.now(), date, journal, piece, libelle,
+    ...groupInfo,
+    createdAt:new Date().toISOString(),
     lignes:valid.map(l=>({compte:String(l.compte),libelle:l.libelle||PC[String(l.compte)]||'',debit:Math.round(parseFloat(l.debit)||0),credit:Math.round(parseFloat(l.credit)||0)}))
   };
   const docId = await saveEcritureToFirestore(ecriture);
@@ -1697,7 +1684,7 @@ async function saveEcriture() {
     loadEcritureFromQueue(ecrQueueIdx); updateQueueBar();
     toast(`→ Écriture ${ecrQueueIdx+1}/${ecrQueue.length} prête à valider`,'info');
   } else {
-    ecrQueue = []; ecrQueueIdx = 0; lignes = []; updateQueueBar();
+    ecrQueue = []; ecrQueueIdx = 0; currentGroupId = null; lignes = []; updateQueueBar();
     document.getElementById('ecr-libelle').value=''; document.getElementById('ecr-piece').value='';
     hideSaisieNotif(); initSaisie();
   }
@@ -1716,8 +1703,9 @@ function getEcrituresFiltrees(opts={}) {
 }
 
 // ══════════════════════════════════════════
-// ★★★ JOURNAL — RENDU GROUPÉ PAR ÉCRITURE
+// ★★★ JOURNAL — GROUPÉ PAR OPÉRATION (groupId)
 // ══════════════════════════════════════════
+
 function resetJournalFiltre() {
   document.getElementById('jnl-date-debut').value='';
   document.getElementById('jnl-date-fin').value='';
@@ -1734,6 +1722,7 @@ function formatDateFR(dateStr) {
   return `${parseInt(d)} ${mois[parseInt(m)]} ${y}`;
 }
 
+// Fonction principale : regroupe les écritures par groupId
 function renderJournal() {
   const search = (document.getElementById('journalSearch').value||'').toLowerCase();
   const filter = document.getElementById('journalFilter').value;
@@ -1748,8 +1737,8 @@ function renderJournal() {
   const ecFiltered = ecFiltrees.filter(e => {
     if(!search) return true;
     if((e.libelle||'').toLowerCase().includes(search)) return true;
+    if((e.groupLibelle||'').toLowerCase().includes(search)) return true;
     if((e.piece||'').toLowerCase().includes(search)) return true;
-    if(e.journal.toLowerCase().includes(search)) return true;
     return e.lignes.some(l =>
       (l.compte||'').includes(search) ||
       (l.libelle||'').toLowerCase().includes(search) ||
@@ -1763,94 +1752,146 @@ function renderJournal() {
     return;
   }
 
-  // Grouper par date
-  const byDate = {};
+  // ── ÉTAPE 1 : Construire des groupes ──
+  // Groupes IA : écritures ayant un groupId commun
+  // Écritures isolées : groupId absent ou unique
+  const groupMap = {}; // groupId → [ecritures]
+  const soloList = []; // écritures sans groupe
+
   ecFiltered.forEach(e => {
-    if(!byDate[e.date]) byDate[e.date] = [];
-    byDate[e.date].push(e);
+    if(e.groupId) {
+      if(!groupMap[e.groupId]) groupMap[e.groupId] = [];
+      groupMap[e.groupId].push(e);
+    } else {
+      soloList.push(e);
+    }
   });
 
-  let totalD = 0, totalC = 0, totalLignes = 0;
+  // Convertir les groupes en tableau trié par date
+  const groups = [];
+
+  // Groupes IA
+  Object.values(groupMap).forEach(ecrs => {
+    const sorted = [...ecrs].sort((a,b) => (a.groupIdx||0) - (b.groupIdx||0));
+    groups.push({
+      type: 'groupe',
+      date: sorted[0].date,
+      ecritures: sorted,
+      libelle: sorted[0].groupLibelle || sorted[0].libelle || 'Opération',
+      isGroupe: true
+    });
+  });
+
+  // Écritures isolées = chacune est son propre "groupe" d'une écriture
+  soloList.forEach(e => {
+    groups.push({
+      type: 'solo',
+      date: e.date,
+      ecritures: [e],
+      libelle: e.libelle || 'Écriture',
+      isGroupe: false
+    });
+  });
+
+  // Trier tous les groupes par date
+  groups.sort((a,b) => a.date.localeCompare(b.date) || (a.ecritures[0].createdAt||'').localeCompare(b.ecritures[0].createdAt||''));
+
+  // ── ÉTAPE 2 : Grouper par date (séparateur visuel) ──
+  const byDate = {};
+  groups.forEach(g => {
+    if(!byDate[g.date]) byDate[g.date] = [];
+    byDate[g.date].push(g);
+  });
+
+  let totalD = 0, totalC = 0, totalLignes = 0, totalEcritures = 0;
   let html = '';
 
   const dates = Object.keys(byDate).sort();
   dates.forEach(date => {
-    // Séparateur de date
     html += `<div class="jnl-date-sep">
       <div class="jnl-date-sep-line"></div>
       <div class="jnl-date-sep-label">📅 ${formatDateFR(date)}</div>
       <div class="jnl-date-sep-line"></div>
     </div>`;
 
-    byDate[date].forEach(e => {
-      let eD = 0, eC = 0;
-      e.lignes.forEach(l => { eD += l.debit||0; eC += l.credit||0; });
-      totalD += eD; totalC += eC; totalLignes += e.lignes.length;
-      const equil = Math.abs(eD - eC) < 1;
-      const jnlClass = e.journal || 'OD';
+    byDate[date].forEach(group => {
+      // Total du groupe
+      let groupD = 0, groupC = 0;
+      group.ecritures.forEach(e => {
+        e.lignes.forEach(l => { groupD += l.debit||0; groupC += l.credit||0; });
+        totalLignes += e.lignes.length;
+        totalEcritures++;
+      });
+      // On divise par 2 pour le total "économique" (débit = crédit en comptabilité en partie double)
+      const groupMontant = groupD; // = groupC si équilibré
+      totalD += groupD; totalC += groupC;
 
-      html += `<div class="jnl-ecriture">
-        <!-- EN-TÊTE ÉCRITURE -->
-        <div class="jnl-ecriture-header">
-          <div class="jnl-header-date">${date}</div>
-          <div class="jnl-header-jnl">
-            <span class="jnl-jnl-badge ${jnlClass}">${jnlClass}</span>
-          </div>
-          <div class="jnl-header-info">
-            <div class="jnl-header-libelle" title="${(e.libelle||'Sans libellé').replace(/"/g,'&quot;')}">${e.libelle||'<em style="opacity:.4">Sans libellé</em>'}</div>
-            <div class="jnl-header-piece">${e.piece||'—'} · ${JOURNAL_NAMES[e.journal]||e.journal}</div>
-          </div>
-          <div class="jnl-header-totaux">
-            <div class="jnl-tot-label">Débit / Crédit</div>
-            <div class="jnl-tot-val">
-              <span class="d">${fn(eD)}</span>
-              <span class="sep">/</span>
-              <span class="c">${fn(eC)}</span>
+      // Déterminer le type dominant du groupe
+      const mainJournal = group.ecritures[0]?.journal || 'OD';
+      const icon = JOURNAL_ICONS[mainJournal] || '📋';
+
+      // IDs des docs pour suppression de groupe
+      const docIds = group.ecritures.map(e => `'${e._docId}'`).join(',');
+      const ecrIds = group.ecritures.map(e => e.id).join(',');
+
+      if(group.isGroupe) {
+        // ── GROUPE DE 3 ÉCRITURES ──
+        html += `<div class="jnl-groupe">
+          <!-- EN-TÊTE GROUPE -->
+          <div class="jnl-groupe-header">
+            <div class="jnl-groupe-icon">${icon}</div>
+            <div class="jnl-groupe-info">
+              <div class="jnl-groupe-libelle" title="${(group.libelle||'').replace(/"/g,'&quot;')}">${group.libelle}</div>
+              <div class="jnl-groupe-meta">${date} · ${group.ecritures.length} écritures liées · ${group.ecritures.map(e=>e.piece||'—').join(' · ')}</div>
             </div>
+            <div class="jnl-groupe-total">
+              <div class="jnl-groupe-total-label">Montant total</div>
+              <div class="jnl-groupe-total-val">${fn(groupMontant)} FCFA</div>
+            </div>
+            <span class="jnl-groupe-badge-count">${group.ecritures.length} écriture${group.ecritures.length>1?'s':''}</span>
+            <button class="jnl-groupe-del" onclick="deleteGroupe([${docIds}],[${ecrIds}])" title="Supprimer tout le groupe">✕ Tout supprimer</button>
           </div>
-          <div class="jnl-header-actions">
-            <span class="jnl-equil-badge ${equil?'ok':'nok'}">${equil?'✓ EQ':'✗ NEQ'}</span>
-            <button class="jnl-del-btn" onclick="deleteEcriture('${e._docId}',${e.id})" title="Supprimer l'écriture">✕</button>
+          <!-- CORPS : liste des écritures -->
+          <div class="jnl-groupe-body">
+            ${group.ecritures.map((e, eIdx) => renderEcritureInGroupe(e, eIdx, group.ecritures.length)).join('')}
           </div>
-        </div>
+        </div>`;
+      } else {
+        // ── ÉCRITURE ISOLÉE (saisie manuelle) ──
+        const e = group.ecritures[0];
+        let eD = 0, eC = 0;
+        e.lignes.forEach(l => { eD += l.debit||0; eC += l.credit||0; });
+        const equil = Math.abs(eD - eC) < 1;
+        const jnlCls = e.journal || 'OD';
 
-        <!-- LIGNES DE L'ÉCRITURE -->
-        <div class="jnl-ecriture-body">
-          <table class="jnl-lignes-table">
-            <thead>
-              <tr>
-                <th style="width:180px">Compte</th>
-                <th>Libellé de la ligne</th>
-                <th class="right" style="width:140px">Débit (FCFA)</th>
-                <th class="right" style="width:140px">Crédit (FCFA)</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${e.lignes.map(l => `
-                <tr>
-                  <td>
-                    <div class="jnl-compte-badge">
-                      <span class="jnl-compte-code">${l.compte}</span>
-                      <span class="jnl-compte-name" title="${PC[l.compte]||''}">${(PC[l.compte]||'').substring(0,22)}</span>
-                    </div>
-                  </td>
-                  <td><span class="jnl-libelle-ligne">${l.libelle||e.libelle||'—'}</span></td>
-                  <td class="jnl-debit-cell">${l.debit ? fn(l.debit) : '<span style="color:var(--line2)">—</span>'}</td>
-                  <td class="jnl-credit-cell">${l.credit ? fn(l.credit) : '<span style="color:var(--line2)">—</span>'}</td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
-        </div>
-      </div>`;
+        html += `<div class="jnl-groupe">
+          <div class="jnl-groupe-header">
+            <div class="jnl-groupe-icon">${JOURNAL_ICONS[jnlCls]||'📋'}</div>
+            <div class="jnl-groupe-info">
+              <div class="jnl-groupe-libelle">${e.libelle||'<em style="opacity:.4">Sans libellé</em>'}</div>
+              <div class="jnl-groupe-meta">${date} · ${e.piece||'—'} · ${JOURNAL_NAMES[jnlCls]||jnlCls}</div>
+            </div>
+            <div class="jnl-groupe-total">
+              <div class="jnl-groupe-total-label">Débit / Crédit</div>
+              <div class="jnl-groupe-total-val" style="font-size:11px"><span style="color:#60a5fa">${fn(eD)}</span> / <span style="color:#4ade80">${fn(eC)}</span></div>
+            </div>
+            <span class="jnl-step-equil ${equil?'ok':'nok'}">${equil?'✓ EQ':'✗ NEQ'}</span>
+            <button class="jnl-groupe-del" onclick="deleteEcriture('${e._docId}',${e.id})" title="Supprimer">✕</button>
+          </div>
+          <div class="jnl-groupe-body">
+            ${renderEcritureInGroupe(e, 0, 1)}
+          </div>
+        </div>`;
+      }
     });
   });
 
   content.innerHTML = html;
 
-  // Footer totaux
+  // Footer
   footer.style.display = 'block';
-  document.getElementById('jnl-nb-ecr').textContent = ecFiltered.length;
+  document.getElementById('jnl-nb-groupes').textContent = groups.length;
+  document.getElementById('jnl-nb-ecr').textContent = totalEcritures;
   document.getElementById('jnl-nb-lignes').textContent = totalLignes;
   document.getElementById('jnl-total-debit').textContent = fn(totalD) + ' FCFA';
   document.getElementById('jnl-total-credit').textContent = fn(totalC) + ' FCFA';
@@ -1860,10 +1901,72 @@ function renderJournal() {
   eqEl.className = 'jnl-footer-val ' + (balanced ? 'eq' : 'neq');
 }
 
-async function deleteEcriture(docId,id) {
+// Rendu d'une écriture individuelle à l'intérieur d'un groupe
+function renderEcritureInGroupe(e, eIdx, totalInGroupe) {
+  let eD = 0, eC = 0;
+  e.lignes.forEach(l => { eD += l.debit||0; eC += l.credit||0; });
+  const equil = Math.abs(eD - eC) < 1;
+  const jnlCls = e.journal || 'OD';
+  const stepLabel = getStepLabel(e, eIdx, totalInGroupe);
+
+  return `<div class="jnl-ecriture type-${jnlCls}">
+    <!-- Sous-en-tête de cette écriture -->
+    <div class="jnl-ecriture-subheader">
+      ${totalInGroupe > 1 ? `<span class="jnl-step-badge">${eIdx+1}</span>` : ''}
+      <span class="jnl-step-jnl-badge ${jnlCls}">${jnlCls}</span>
+      <span class="jnl-step-label">${stepLabel}</span>
+      <span class="jnl-step-piece">${e.piece||'—'} · ${JOURNAL_NAMES[jnlCls]||jnlCls}</span>
+      <span class="jnl-step-totaux" style="margin-left:auto">
+        <span style="color:#60a5fa">${fn(eD)}</span> / <span style="color:#4ade80">${fn(eC)}</span>
+      </span>
+      <span class="jnl-step-equil ${equil?'ok':'nok'}">${equil?'✓':'✗'}</span>
+      <button class="jnl-step-del" onclick="deleteEcriture('${e._docId}',${e.id})" title="Supprimer cette écriture">✕</button>
+    </div>
+
+    <!-- Lignes comptables -->
+    <div class="jnl-ecriture-body">
+      <table class="jnl-lignes-table">
+        <thead>
+          <tr>
+            <th style="width:200px">Compte</th>
+            <th>Libellé</th>
+            <th class="right" style="width:140px">Débit (FCFA)</th>
+            <th class="right" style="width:140px">Crédit (FCFA)</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${e.lignes.map(l => `
+            <tr>
+              <td>
+                <div class="jnl-compte-badge">
+                  <span class="jnl-compte-code">${l.compte}</span>
+                  <span class="jnl-compte-name" title="${PC[l.compte]||''}">${(PC[l.compte]||'').substring(0,22)}</span>
+                </div>
+              </td>
+              <td><span class="jnl-libelle-ligne">${l.libelle||e.libelle||'—'}</span></td>
+              <td class="jnl-debit-cell">${l.debit ? fn(l.debit) : '<span style="color:var(--line2)">—</span>'}</td>
+              <td class="jnl-credit-cell">${l.credit ? fn(l.credit) : '<span style="color:var(--line2)">—</span>'}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+  </div>`;
+}
+
+// Supprimer tout un groupe
+async function deleteGroupe(docIds, ids) {
+  if(!confirm(`Supprimer ce groupe de ${docIds.length} écriture${docIds.length>1?'s':''} ?`))return;
+  for(const docId of docIds) await deleteEcritureFromFirestore(docId);
+  ids.forEach(id => { ecritures = ecritures.filter(e => e.id !== id); });
+  updateStats(); renderJournal();
+  toast(`${docIds.length} écriture${docIds.length>1?'s':''} supprimée${docIds.length>1?'s':''}`,'info');
+}
+
+async function deleteEcriture(docId, id) {
   if(!confirm('Supprimer cette écriture ?'))return;
   await deleteEcritureFromFirestore(docId);
-  ecritures=ecritures.filter(e=>e.id!==id);
+  ecritures = ecritures.filter(e => e.id !== id);
   updateStats(); renderJournal(); toast('Écriture supprimée','info');
 }
 
@@ -2121,9 +2224,9 @@ function exportPDF() {
   const pageW=210, now=new Date().toLocaleDateString('fr-FR');
   doc.setFillColor(10,11,16);doc.rect(0,0,pageW,22,'F');
   doc.setTextColor(212,168,83);doc.setFontSize(14);doc.setFont('helvetica','bold');
-  doc.text('SYSCOHADA Pro v3',14,10);
+  doc.text('SYSCOHADA Pro v4',14,10);
   doc.setFontSize(7);doc.setFont('helvetica','normal');
-  doc.text('COMEO AI v3 — Expert Comptable OHADA 2023',14,16);
+  doc.text('COMEO AI v4 — Expert Comptable OHADA 2023',14,16);
   doc.setTextColor(255,255,255);doc.setFontSize(8);
   doc.text(company,pageW-14,10,{align:'right'});doc.text('Exercice '+yr,pageW-14,16,{align:'right'});
   doc.setTextColor(10,11,16);doc.setFontSize(16);doc.setFont('helvetica','bold');
@@ -2144,7 +2247,7 @@ function exportPDF() {
     columnStyles:{0:{cellWidth:18},1:{cellWidth:10,halign:'center'},2:{cellWidth:18},3:{cellWidth:16,fontStyle:'bold'},4:{cellWidth:28},5:{cellWidth:36},6:{cellWidth:22,halign:'right'},7:{cellWidth:22,halign:'right'}},
     margin:{left:14,right:14}
   });
-  doc.save(`SYSCOHADA_v3_${company.replace(/\s+/g,'_')}_${yr}.pdf`);
+  doc.save(`SYSCOHADA_v4_${company.replace(/\s+/g,'_')}_${yr}.pdf`);
   toast('✓ PDF exporté','success');
 }
 
@@ -2161,7 +2264,7 @@ function exportWord() {
   const td='border-bottom:1px solid #e0dbd0;padding:5px 10px';
   const html=`<html><head><meta charset="utf-8"><style>body{font-family:'Segoe UI',Arial,sans-serif;font-size:11pt}table{width:100%;border-collapse:collapse;margin-bottom:20pt}th{${th}}td{${td}}tr:nth-child(even) td{background:#faf8f4}</style></head>
   <body>
-  <h1 style="font-family:Georgia,serif;font-size:16pt;color:#0a0b10">SYSCOHADA Pro v3 — ${company} — Exercice ${yr}</h1>
+  <h1 style="font-family:Georgia,serif;font-size:16pt;color:#0a0b10">SYSCOHADA Pro v4 — ${company} — Exercice ${yr}</h1>
   <p>Édité le ${now}</p>
   <h2>Journal Général</h2>
   <table><thead><tr><th>Date</th><th>Jnl</th><th>Pièce</th><th>Compte</th><th>Libellé compte</th><th>Libellé</th><th>Débit</th><th>Crédit</th></tr></thead>
@@ -2169,12 +2272,12 @@ function exportWord() {
   </body></html>`;
   const blob=new Blob([html],{type:'application/msword;charset=utf-8'});
   const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');a.href=url;a.download=`SYSCOHADA_v3_${company.replace(/\s+/g,'_')}_${yr}.doc`;a.click();URL.revokeObjectURL(url);
+  const a=document.createElement('a');a.href=url;a.download=`SYSCOHADA_v4_${company.replace(/\s+/g,'_')}_${yr}.doc`;a.click();URL.revokeObjectURL(url);
   toast('✓ Document Word exporté','success');
 }
 
 // ══════════════════════════════════════════
-// COMEO AI v3 — MOTEUR IA
+// COMEO AI v4 — MOTEUR IA
 // ══════════════════════════════════════════
 function handleAiKey(e,ctx){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendToAI(ctx);}}
 function quickAI(text){document.getElementById('aiInput').value=text;navigate('dashboard');sendToAI('dashboard');}
@@ -2188,7 +2291,6 @@ function buildAIContext() {
     return `${c}:${s>=0?'Sd':'Sc'}${fn(Math.abs(s))}`;
   }).join(' | ');
   const dernieres = ecritures.slice(-5).map(e=>`${e.date} [${e.journal}] ${e.libelle||'—'}`).join(' ; ');
-  // Toutes les dates avec des écritures
   const allDates = [...new Set(ecritures.map(e=>e.date))].sort().join(', ');
   return {
     nbEcritures: ecritures.length,
@@ -2241,7 +2343,6 @@ async function sendToAI(context) {
     const filtreMarker = fullText.indexOf('###FILTRE###');
 
     if(filtreMarker !== -1) {
-      // MODE FILTRAGE / ÉTAT FINANCIER
       const displayText = fullText.substring(0, filtreMarker).trim();
       const jsonStr = fullText.substring(filtreMarker + 12).trim();
       if(displayText) appendMsg(context, 'ai', displayText);
@@ -2255,7 +2356,6 @@ async function sendToAI(context) {
       } catch(pe) { console.warn('Filtre parse error:', pe); }
 
     } else if(fullText.includes('###ECRITURE###')) {
-      // MODE MULTI-ÉCRITURES
       const parts = fullText.split('###ECRITURE###');
       const textBeforeFirst = parts[0].trim();
       const ecrituresAI = [];
@@ -2283,13 +2383,15 @@ async function sendToAI(context) {
       if(ecrituresAI.length === 0) {
         appendMsg(context, 'ai', '⚠️ Je n\'ai pas pu extraire les écritures. Veuillez réessayer.');
       } else {
-        const confirmMsg = `✅ <strong>${ecrituresAI.length} écriture${ecrituresAI.length>1?'s':''}</strong> préparée${ecrituresAI.length>1?'s':''} :<br>` +
+        // Générer le groupId commun ici, avant la sauvegarde
+        currentGroupId = 'grp_' + Date.now();
+        const confirmMsg = `✅ <strong>${ecrituresAI.length} écriture${ecrituresAI.length>1?'s':''} liées</strong> préparées et groupées :<br>` +
           ecrituresAI.map((e,i)=>`<br><strong>${i+1}. [${e.journal}]</strong> ${e.libelle}`).join('') +
-          `<br><br>⚡ Cliquez <strong>"Tout enregistrer"</strong> pour les valider toutes en une fois.`;
+          `<br><br>⚡ Cliquez <strong>"Tout enregistrer"</strong> pour les valider — elles seront groupées dans le journal.`;
         appendMsg(context, 'ai', confirmMsg);
         setEcritureQueue(ecrituresAI);
         if(context === 'saisie') {
-          toast(`✨ ${ecrituresAI.length} écriture${ecrituresAI.length>1?'s':''} préparée${ecrituresAI.length>1?'s':''}`,'info');
+          toast(`✨ ${ecrituresAI.length} écriture${ecrituresAI.length>1?'s':''} préparée${ecrituresAI.length>1?'s':''}  — liées`,'info');
         } else {
           showMultiEcrBanner(ecrituresAI);
           showSaisieNotif(ecrituresAI[0]?.libelle || msg.substring(0,40), ecrituresAI.length);
