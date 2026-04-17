@@ -2513,6 +2513,47 @@ document.addEventListener('firebase-ready', async () => {
     } catch(e) { localStorage.removeItem('syscohada_session'); }
   }
 });
+// Exposition des fonctions globales (nécessaire avec type="module")
+window.doLogin = doLogin;
+window.doRegister = doRegister;
+window.doLogout = doLogout;
+window.switchTab = switchTab;
+window.navigate = navigate;
+window.sendToAI = sendToAI;
+window.handleAiKey = handleAiKey;
+window.quickAI = quickAI;
+window.addLigne = addLigne;
+window.removeLigne = removeLigne;
+window.saveEcriture = saveEcriture;
+window.updateAccountSuggest = updateAccountSuggest;
+window.selectAccount = selectAccount;
+window.hideDropdown = hideDropdown;
+window.updateBalance = updateBalance;
+window.autoSaveAllEcritures = autoSaveAllEcritures;
+window.autoSaveAllFromNotif = autoSaveAllFromNotif;
+window.skipToNextEcriture = skipToNextEcriture;
+window.dismissFillBanner = dismissFillBanner;
+window.hideMultiEcrBanner = hideMultiEcrBanner;
+window.hideSaisieNotif = hideSaisieNotif;
+window.goToSaisie = goToSaisie;
+window.toggleGL = toggleGL;
+window.deleteEcriture = deleteEcriture;
+window.deleteGroupe = deleteGroupe;
+window.openExportModal = openExportModal;
+window.closeExportModal = closeExportModal;
+window.selectExport = selectExport;
+window.doExport = doExport;
+window.renderJournal = renderJournal;
+window.renderGrandLivre = renderGrandLivre;
+window.renderBalance = renderBalance;
+window.renderBilan = renderBilan;
+window.renderPlanComptable = renderPlanComptable;
+window.resetJournalFiltre = resetJournalFiltre;
+window.resetGLFiltre = resetGLFiltre;
+window.resetBalanceFiltre = resetBalanceFiltre;
+window.updateStats = updateStats;
+window.toggleMobileSidebar = toggleMobileSidebar;
+window.closeMobileSidebar = closeMobileSidebar;
 </script>
 </body>
 </html>
