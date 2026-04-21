@@ -734,25 +734,3 @@ body { font-family:var(--font-body); background:var(--paper); color:var(--ink); 
 ::-webkit-scrollbar { width:4px; height:4px; }
 ::-webkit-scrollbar-track { background:var(--surface2); }
 ::-webkit-scrollbar-thumb { background:var(--line2); border-radius:2px; }
-
-
-/* === AJOUT WAVE / ABONNEMENT === */
-
-/* Badge essai dans la topbar */
-.trial-badge {
-  background: rgba(59,130,246,.12);
-  border: 1px solid rgba(59,130,246,.3);
-  color: #60a5fa;
-  font-family: var(--font-mono);
-  font-size: 9px;
-  padding: 3px 8px;
-  border-radius: 3px;
-  letter-spacing: .08em;
-  white-space: nowrap;
-  cursor: pointer;
-  transition: all .14s;
-}
-.trial-badge:hover {
-  background: rgba(59,130,246,.2);
-  color: #93c5fd;
-}
