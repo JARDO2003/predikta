@@ -116,8 +116,8 @@ const PC = {
   "891":"IMPOTS SUR BENEFICES","895":"IMPOT MINIMUM FORFAITAIRE"
 };
 
-const CLASS_NAMES  = { "1":"Capitaux","2":"Immobilisations","3":"Stocks","4":"Tiers","5":"Trésorerie","6":"Charges","7":"Produits","8":"Spéciaux" };
-const NATURE_MAP   = { "1":"Passif","2":"Actif","3":"Actif","4":"Mixte","5":"Actif","6":"Charge","7":"Produit","8":"Spécial" };
+const CLASS_NAMES   = { "1":"Capitaux","2":"Immobilisations","3":"Stocks","4":"Tiers","5":"Trésorerie","6":"Charges","7":"Produits","8":"Spéciaux" };
+const NATURE_MAP    = { "1":"Passif","2":"Actif","3":"Actif","4":"Mixte","5":"Actif","6":"Charge","7":"Produit","8":"Spécial" };
 const JOURNAL_NAMES = { "AC":"Achats","VE":"Ventes","BQ":"Banque","CA":"Caisse","OD":"Opérations Diverses","IN":"Inventaire","AN":"À Nouveau" };
 const JOURNAL_ICONS = { "AC":"🛒","VE":"💰","BQ":"🏦","CA":"💵","OD":"📋","IN":"📦","AN":"📂" };
 
@@ -151,6 +151,18 @@ let ecrQueue = [], ecrQueueIdx = 0;
 let currentGroupId = null;
 
 const GROQ_API_KEY = "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";
+
+// ══════════════════════════════════════════
+// DEVICE ID — PERSISTANCE SESSION
+// ══════════════════════════════════════════
+function _getOrCreateDeviceId() {
+  let did = localStorage.getItem("syscohada_device");
+  if (!did) {
+    did = "dev_" + Math.random().toString(36).slice(2) + "_" + Date.now();
+    localStorage.setItem("syscohada_device", did);
+  }
+  return did;
+}
 
 // ══════════════════════════════════════════
 // SIDEBAR MOBILE
@@ -288,7 +300,7 @@ async function doRegister() {
   const pass      = document.getElementById("r-pass").value;
   const err       = document.getElementById("r-err");
   err.classList.remove("show");
-  if (!company)      { err.textContent = "Nom d'entreprise requis"; err.classList.add("show"); return; }
+  if (!company)        { err.textContent = "Nom d'entreprise requis"; err.classList.add("show"); return; }
   if (pass.length < 4) { err.textContent = "Mot de passe trop court (4 caractères min.)"; err.classList.add("show"); return; }
   const profileId = company.toLowerCase().replace(/[^a-z0-9]/g, "_");
   try {
@@ -318,7 +330,13 @@ async function doLogin() {
     const profile = snap.data();
     if (atob(profile.password) !== pass) { err.textContent = "Mot de passe incorrect"; err.classList.add("show"); return; }
     currentProfile = { ...profile, id: profileId };
-    localStorage.setItem("syscohada_session", JSON.stringify({ profileId, company }));
+    // Sauvegarder la session avec le deviceId pour persistance sur cet appareil
+    localStorage.setItem("syscohada_session", JSON.stringify({
+      profileId,
+      company,
+      savedAt:  Date.now(),
+      deviceId: _getOrCreateDeviceId()
+    }));
     await loadApp();
   } catch (e) { err.textContent = "Erreur : " + e.message; err.classList.add("show"); }
 }
@@ -326,6 +344,7 @@ async function doLogin() {
 function doLogout() {
   if (!confirm("Se déconnecter ?")) return;
   localStorage.removeItem("syscohada_session");
+  localStorage.removeItem("syscohada_device");
   currentProfile = null; ecritures = [];
   document.getElementById("appShell").style.display   = "none";
   document.getElementById("authOverlay").style.display = "flex";
@@ -357,25 +376,19 @@ async function initSubscription() {
   try {
     const subInfo = await checkSubscription(currentProfile.id, window._db);
 
-    // Exposer pour la bannière et le widget
     window._showSubModal = () => {
       showSubscriptionModal(subInfo, currentProfile.id, window._db, currentProfile.company);
     };
 
     if (!subInfo.valid) {
-      // Essai expiré → bloquer l'interface et afficher la modale
       showExpiredBlock(currentProfile.id, window._db, currentProfile.company);
       _blockAppUI();
       return;
     }
 
-    // Bannière non-bloquante si < 36h restantes
     showTrialBanner(subInfo);
-
-    // Widget statut dans la sidebar
     _renderSubWidget(subInfo);
 
-    // Re-vérifier toutes les heures
     setInterval(async () => {
       const fresh = await checkSubscription(currentProfile.id, window._db);
       if (!fresh.valid) {
@@ -609,7 +622,7 @@ function setEcritureQueue(ecrituresAI) {
 
 function loadEcritureFromQueue(idx) {
   if (idx >= ecrQueue.length) return;
-  const ecr        = ecrQueue[idx];
+  const ecr          = ecrQueue[idx];
   const lignesSorted = sortLignesDebitAvantCredit(ecr.lignes || []);
   lignes = lignesSorted.map(l => ({
     compte:  String(l.compte || ""),
@@ -635,7 +648,7 @@ function loadEcritureFromQueue(idx) {
 }
 
 function updateQueueBar() {
-  const bar       = document.getElementById("saisieQueueBar");
+  const bar = document.getElementById("saisieQueueBar");
   if (!bar) return;
   const counter   = document.getElementById("sqbCounter");
   const remaining = ecrQueue.length - ecrQueueIdx;
@@ -1020,9 +1033,9 @@ function renderJournal() {
 function renderEcritureInGroupe(e, eIdx, totalInGroupe) {
   let eD = 0, eC = 0;
   e.lignes.forEach(l => { eD += l.debit || 0; eC += l.credit || 0; });
-  const equil          = Math.abs(eD - eC) < 1;
-  const jnlCls         = e.journal || "OD";
-  const stepLabel      = getStepLabel(e);
+  const equil           = Math.abs(eD - eC) < 1;
+  const jnlCls          = e.journal || "OD";
+  const stepLabel       = getStepLabel(e);
   const lignesAffichage = sortLignesDebitAvantCredit(e.lignes);
   return `<div class="jnl-ecriture type-${jnlCls}">
     <div class="jnl-ecriture-subheader">
@@ -1256,20 +1269,20 @@ function renderResultat() {
   if (!content) return;
   if (!Object.keys(map).length) { content.innerHTML = "<div class='empty-state'><div class='icon'>↗</div><p>Aucune donnée</p></div>"; return; }
   const gt = pfx => Object.entries(map).filter(([c]) => pfx.some(p => c.startsWith(p))).reduce((s, [, a]) => s + (a.debit - a.credit), 0);
-  const ventes    = Math.abs(gt(["701","702","703","704","705"]));
-  const prodsAcc  = Math.abs(gt(["707"]));
-  const autrProd  = Math.abs(gt(["75","718","711"]));
+  const ventes     = Math.abs(gt(["701","702","703","704","705"]));
+  const prodsAcc   = Math.abs(gt(["707"]));
+  const autrProd   = Math.abs(gt(["75","718","711"]));
   const transports = gt(["612","614"]);
-  const servExt   = gt(["621","622","624","625","626","627","628","631","632","634","635","638"]);
-  const impTaxes  = gt(["641","645"]);
-  const autresChg = gt(["651","654","658"]);
-  const personnel = gt(["661","662","663","664"]);
-  const dap       = gt(["681","691","697"]);
-  const revFin    = Math.abs(gt(["771","772","773","774","776","777"]));
-  const chgFin    = gt(["671","673","674","676"]);
-  const haoP      = Math.abs(gt(["821","822","841"]));
-  const haoC      = gt(["811","812","831","834","839","851","852","854"]);
-  const imp       = gt(["891","895"]);
+  const servExt    = gt(["621","622","624","625","626","627","628","631","632","634","635","638"]);
+  const impTaxes   = gt(["641","645"]);
+  const autresChg  = gt(["651","654","658"]);
+  const personnel  = gt(["661","662","663","664"]);
+  const dap        = gt(["681","691","697"]);
+  const revFin     = Math.abs(gt(["771","772","773","774","776","777"]));
+  const chgFin     = gt(["671","673","674","676"]);
+  const haoP       = Math.abs(gt(["821","822","841"]));
+  const haoC       = gt(["811","812","831","834","839","851","852","854"]);
+  const imp        = gt(["891","895"]);
   const mc   = ventes - Math.abs(gt(["601"])) - gt(["6031"]);
   const ca   = ventes + prodsAcc;
   const va   = ca + autrProd - Math.abs(gt(["601","602","604","605","608"])) - gt(["6031","6032"]) - transports - servExt - impTaxes - autresChg;
@@ -1406,10 +1419,10 @@ function exportPDF() {
     head:   [["Date","Jnl","N° Pièce","Compte","Libellé compte","Libellé opération","Débit FCFA","Crédit FCFA"]],
     body:   tableData,
     foot:   [["","","","","","TOTAUX", fn(totalD), fn(totalC)]],
-    styles:            { font:"helvetica", fontSize:7.5, cellPadding:2.5 },
-    headStyles:        { fillColor:[10,11,16], textColor:[212,168,83], fontStyle:"bold", fontSize:7 },
-    footStyles:        { fillColor:[30,34,54], textColor:[212,168,83], fontStyle:"bold", fontSize:8 },
-    alternateRowStyles:{ fillColor:[250,248,244] },
+    styles:             { font:"helvetica", fontSize:7.5, cellPadding:2.5 },
+    headStyles:         { fillColor:[10,11,16], textColor:[212,168,83], fontStyle:"bold", fontSize:7 },
+    footStyles:         { fillColor:[30,34,54], textColor:[212,168,83], fontStyle:"bold", fontSize:8 },
+    alternateRowStyles: { fillColor:[250,248,244] },
     columnStyles: {
       0:{cellWidth:18}, 1:{cellWidth:10,halign:"center"}, 2:{cellWidth:18},
       3:{cellWidth:16,fontStyle:"bold"}, 4:{cellWidth:28}, 5:{cellWidth:36},
@@ -1533,9 +1546,9 @@ async function sendToAI(context) {
       } catch (pe) { console.warn("Filtre parse error:", pe); }
 
     } else if (fullText.includes("###ECRITURE###")) {
-      const parts          = fullText.split("###ECRITURE###");
+      const parts           = fullText.split("###ECRITURE###");
       const textBeforeFirst = parts[0].trim();
-      const ecrituresAI    = [];
+      const ecrituresAI     = [];
       for (let i = 1; i < parts.length; i++) {
         const segment   = parts[i].trim();
         const jsonMatch = segment.match(/(\{[\s\S]*\})/);
@@ -1678,20 +1691,38 @@ function toast(message, type = "info") {
 }
 
 // ══════════════════════════════════════════
-// INIT SESSION
+// INIT SESSION — RECONNEXION AUTOMATIQUE
 // ══════════════════════════════════════════
 document.addEventListener("firebase-ready", async () => {
-  const session = localStorage.getItem("syscohada_session");
-  if (session) {
+  const raw = localStorage.getItem("syscohada_session");
+  if (raw) {
     try {
-      const { profileId } = JSON.parse(session);
+      const session       = JSON.parse(raw);
+      const { profileId, deviceId } = session;
+      const currentDevice = _getOrCreateDeviceId();
+      // Si le deviceId enregistré ne correspond pas → autre appareil → forcer reconnexion
+      if (deviceId && deviceId !== currentDevice) {
+        localStorage.removeItem("syscohada_session");
+        return;
+      }
       const ref  = window._fbDoc(window._db, "profiles", profileId);
       const snap = await window._fbGetDoc(ref);
       if (snap.exists()) {
         currentProfile = { ...snap.data(), id: profileId };
+        // Rafraîchir la session (renouveler savedAt)
+        localStorage.setItem("syscohada_session", JSON.stringify({
+          profileId,
+          company:  currentProfile.company,
+          savedAt:  Date.now(),
+          deviceId: currentDevice
+        }));
         await loadApp();
+      } else {
+        localStorage.removeItem("syscohada_session");
       }
-    } catch (e) { localStorage.removeItem("syscohada_session"); }
+    } catch (e) {
+      localStorage.removeItem("syscohada_session");
+    }
   }
 });
 
