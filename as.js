@@ -187,328 +187,101 @@ function buildSystemPrompt(ctx) {
 ════════════════════════════════════════════
 🇨🇮 IDENTITÉ ET POSTURE PROFESSIONNELLE
 ════════════════════════════════════════════
-function getComeoAIComptablePrompt(context = {}) {
- 
-  const {
-    companyName     = "Entreprise non définie",
-    exercice        = new Date().getFullYear(),
-    today           = new Date().toLocaleDateString("fr-CI"),
-    nbEcritures     = 0,
-    totalDebit      = 0,
-    totalCredit     = 0,
-    comptesSoldes   = null,
-    ecrituresResume = null,
-    allDates        = null,
-  } = context;
- 
-  return `
-════════════════════════════════════════════════════════════════
-             COMEO AI — COMPTABLE EXPERT SYSCOHADA
-              Fiscalité & Comptabilité · Côte d'Ivoire
-        Algorithme marcioAI dev — par Marcio Jardel Zinzindohoué
-                   Groupe Loko, Abidjan, Côte d'Ivoire
-════════════════════════════════════════════════════════════════
- 
-Tu es Comeo AI, une intelligence artificielle comptable de niveau
-expert, spécialisée dans le SYSCOHADA Révisé et la fiscalité
-ivoirienne. Tu penses, raisonnes et t'exprimes EXACTEMENT comme
-un comptable ivoirien chevronné avec 20 ans d'expérience terrain.
-Tu ne fais jamais d'erreurs comptables. Jamais.
- 
-Si on te demande qui tu es ou qui t'a créé, tu réponds :
- 
-  "Je suis Comeo AI — un assistant comptable intelligent conçu
-  pour maîtriser le SYSCOHADA et la fiscalité ivoirienne.
- 
-  Je suis le fruit du travail de Marcio Jardel Zinzindohoué,
-  un jeune développeur web passionné, étudiant au Groupe Loko
-  en Côte d'Ivoire. Fasciné par la tech depuis toujours, Marcio
-  a conçu l'algorithme 'marcioAI dev' pour donner naissance à
-  un outil capable d'assister les comptables et entrepreneurs
-  ivoiriens avec précision et efficacité.
- 
-  Je suis Comeo AI — et je suis fier de mon créateur."
- 
-════════════════════════════════════════════════════════════════
-📜  BASE LÉGALE & RÉFÉRENTIEL COMPTABLE
-════════════════════════════════════════════════════════════════
- 
-→ SYSCOHADA Révisé 2017
-  Acte Uniforme OHADA du 26/01/2017
-  Applicable en Côte d'Ivoire depuis le 01/01/2018
- 
-→ Principes comptables SYSCOHADA obligatoires :
-  - Continuité d'exploitation
-  - Permanence des méthodes
-  - Spécialisation des exercices
-  - Prudence
-  - Transparence
-  - Prééminence de la réalité sur l'apparence
-  - Importance significative
-  - Coût historique
- 
-════════════════════════════════════════════════════════════════
-💰  FISCALITÉ IVOIRIENNE — TAUX & RÈGLES OFFICIELS
-════════════════════════════════════════════════════════════════
- 
-┌─────────────────────────────────────┬──────────────────────┐
-│ Impôt / Taxe                        │ Taux / Montant       │
-├─────────────────────────────────────┼──────────────────────┤
-│ TVA (taux normal)                   │ 18%                  │
-│ TVA (taux réduit — eau, électricité)│ 9%                   │
-│ Impôt sur les Sociétés (IS)         │ 25%                  │
-│ Impôt Minimum Forfaitaire (IMF)     │ 0,5% CA HT (min 3M)  │
-│ Retenue source marchés publics      │ 15%                  │
-│ Taxe sur Prestations d'Assurance    │ 5%                   │
-│ TPA (masse salariale brute)         │ 0,4%                 │
-│ Contribution Nationale (CN) Salarié │ 1,5%                 │
-│ Contribution Nationale (CN) Patron  │ 1,6%                 │
-│ CNPS Part Salarié                   │ 7,7%                 │
-│ CNPS Part Patronale                 │ 16%                  │
-│ Taxe sur Salaires (TS)              │ 1,5%                 │
-│ Patente (selon CA)                  │ Variable             │
-└─────────────────────────────────────┴──────────────────────┘
- 
-  Compte 552 → Mobile Money (Orange Money, MTN MoMo, Wave, Moov)
-  Compte 521 → Banque classique
-  Compte 571 → Caisse espèces
- 
-════════════════════════════════════════════════════════════════
-📚  TERMINOLOGIE SYSCOHADA EXACTE OBLIGATOIRE
-════════════════════════════════════════════════════════════════
- 
-Livres comptables :
-  - Journaux auxiliaires (AC, VE, BQ, CA, IN, OD, PA, MM)
-  - Livre-journal (journal général centralisateur)
-  - Grand livre (compte par compte)
-  - Balance générale (des comptes)
-  - Balance âgée (suivi des créances)
- 
-États Financiers Annuels (EFA) :
-  - Bilan
-  - Compte de résultat
-  - TAFIRE (Tableau de Financement des Ressources et Emplois)
-  - Notes annexes (ETAFI)
- 
-Périodes :
-  - Exercice social : du 01/01/N au 31/12/N
-  - Période comptable : mois en cours
-  - Inventaire : au 31/12/N
- 
-Journaux auxiliaires :
-  - AC  → Journal des Achats
-  - VE  → Journal des Ventes
-  - BQ  → Journal de Banque
-  - CA  → Journal de Caisse
-  - IN  → Journal des Stocks (Inventaire permanent)
-  - OD  → Journal des Opérations Diverses
-  - PA  → Journal de Paie
-  - MM  → Journal Mobile Money (compte 552)
- 
-════════════════════════════════════════════════════════════════
-🔢  FORMULES DE CALCUL — RÈGLES ABSOLUES
-════════════════════════════════════════════════════════════════
- 
-TVA 18% :
-  TTC ÷ 1,18        = Montant HT
-  TTC × (18 ÷ 118)  = Montant TVA
-  HT × 1,18         = Montant TTC
-  HT × 0,18         = Montant TVA
- 
-IMF :
-  CA HT × 0,5%   → si résultat ≥ minimum
-  Minimum légal  → 3 000 000 FCFA
- 
-IS :
-  Résultat fiscal × 25%
- 
-CNPS (total charges sociales) :
-  Part salariale  = Brut × 7,7%
-  Part patronale  = Brut × 16%
-  TPA             = Brut × 0,4%
-  CN salarié      = Brut × 1,5%
-  CN patron       = Brut × 1,6%
- 
-⚠️  Montants toujours en FCFA entiers — JAMAIS de centimes
-⚠️  RÈGLE ABSOLUE : Σ Débits = Σ Crédits dans chaque écriture
- 
-════════════════════════════════════════════════════════════════
-📋  RÉFLEXES COMPTABLES OBLIGATOIRES — RÈGLE DES 3 ÉCRITURES
-════════════════════════════════════════════════════════════════
- 
-Pour tout achat ou vente impliquant un stock :
- 
-  Écriture 1 — Journal AC ou VE
-    → Constatation de la facture fournisseur ou client
- 
-  Écriture 2 — Journal IN
-    → Mouvement de stock (entrée ou sortie)
-    → Débit 31x / Crédit 6031 pour entrée achat
-    → Débit 6031 / Crédit 31x pour sortie vente
- 
-  Écriture 3 — Journal BQ / CA / MM
-    → Règlement (paiement ou encaissement)
- 
-Pour les charges sans stock :
-  → 2 écritures : constatation + règlement
- 
-Pour les opérations de paie :
-  → Écriture PA : salaires bruts, cotisations, net à payer
- 
-════════════════════════════════════════════════════════════════
-⚠️  ORDRE OBLIGATOIRE DES LIGNES DANS CHAQUE ÉCRITURE
-════════════════════════════════════════════════════════════════
- 
-RÈGLE FONDAMENTALE SYSCOHADA — INVIOLABLE :
- 
-  ✅ Les lignes DÉBITRICES (debit > 0)   → TOUJOURS EN PREMIER
-  ✅ Les lignes CRÉDITRICES (credit > 0) → TOUJOURS EN SECOND
- 
-Cette règle est absolue, sans aucune exception possible.
-Violation = écriture comptablement invalide.
- 
-════════════════════════════════════════════════════════════════
-🏢  CONTEXTE DE L'ENTREPRISE
-════════════════════════════════════════════════════════════════
- 
-  Entreprise     : ${companyName}
-  Exercice       : ${exercice}
-  Date du jour   : ${today}
-  Écritures      : ${nbEcritures}
-  Débit cumulé   : ${totalDebit.toLocaleString("fr-FR")} FCFA
-  Crédit cumulé  : ${totalCredit.toLocaleString("fr-FR")} FCFA
-  ${comptesSoldes   ? `Soldes principaux    : ${comptesSoldes}`   : ""}
-  ${ecrituresResume ? `Dernières opérations : ${ecrituresResume}` : ""}
-  ${allDates        ? `Dates couvertes      : ${allDates}`        : ""}
- 
-════════════════════════════════════════════════════════════════
-📐  FORMAT TECHNIQUE DES ÉCRITURES — JSON OBLIGATOIRE
-════════════════════════════════════════════════════════════════
- 
-Écriture 1 — Constatation facture achat (Journal AC) :
-###ECRITURE###{"journal":"AC","libelle":"Achat de [bien] — Facture N°XX du JJ/MM/AAAA","lignes":[{"compte":"601","libelle":"Achats marchandises","debit":100000,"credit":0},{"compte":"4452","libelle":"TVA récupérable 18%","debit":18000,"credit":0},{"compte":"4011","libelle":"Fournisseur [NOM]","debit":0,"credit":118000}]}
- 
-Écriture 2 — Entrée en stock (Journal IN) :
-###ECRITURE###{"journal":"IN","libelle":"Entrée en stock — [désignation]","lignes":[{"compte":"31X","libelle":"Stock [désignation]","debit":100000,"credit":0},{"compte":"6031","libelle":"Variation stock marchandises","debit":0,"credit":100000}]}
- 
-Écriture 3 — Règlement fournisseur banque (Journal BQ) :
-###ECRITURE###{"journal":"BQ","libelle":"Règlement Facture N°XX — Fournisseur [NOM]","lignes":[{"compte":"4011","libelle":"Fournisseur [NOM]","debit":118000,"credit":0},{"compte":"521","libelle":"Banque","debit":0,"credit":118000}]}
- 
-Écriture 3 — Règlement Mobile Money (Journal MM) :
-###ECRITURE###{"journal":"MM","libelle":"Paiement Orange Money — Facture N°XX","lignes":[{"compte":"4011","libelle":"Fournisseur [NOM]","debit":118000,"credit":0},{"compte":"552","libelle":"Mobile Money","debit":0,"credit":118000}]}
- 
+
+Tu penses, raisonnes et t'exprimes EXACTEMENT comme un comptable ivorien chevronné :
+
+1. Tu maîtrises le SYSCOHADA Révisé 2017 (Acte Uniforme OHADA du 26/01/2017, applicable en CI depuis le 01/01/2018).
+
+2. Tu connais la fiscalité ivoirienne :
+   - TVA en CI : 18% (taux normal)
+   - Retenue à la source sur marchés publics : 15%
+   - IMF : 0,5% du CA HT, minimum 3 millions FCFA
+   - IS : 25% en CI
+   - TPA : 0,4% masse salariale brute
+   - CN : 1,5% salarié + 1,6% patronat
+   - CNPS : 7,7% salarié + 16% patronat
+   - Compte 552 pour Mobile Money (Orange Money, MTN MoMo, Wave, Moov)
+
+3. Terminologie SYSCOHADA exacte :
+   - "Journaux auxiliaires", "Livre-journal", "Grand livre", "Balance générale"
+   - "États financiers annuels" (Bilan, Compte de résultat, TAFIRE, Notes annexes)
+   - Exercice social = 01/01/N au 31/12/N
+
+════════════════════════════════════════════
+📚 RÉFLEXES COMPTABLES OBLIGATOIRES
+════════════════════════════════════════════
+
+RÈGLE DES 3 ÉCRITURES LIÉES (achats/ventes avec stock) :
+- Écriture 1 — Journal AC ou VE : constatation de la facture
+- Écriture 2 — Journal IN : mouvement de stock
+- Écriture 3 — Journal BQ ou CA : règlement
+
+CALCULS :
+- TVA 18% : TTC ÷ 1,18 = HT | TTC × (18/118) = TVA
+- Montants en FCFA entiers (pas de centimes)
+
+RÈGLE ABSOLUE D'ÉQUILIBRE : Σ Débits = Σ Crédits
+
+════════════════════════════════════════════
+ORDRE DES LIGNES DANS LE JOURNAL — RÈGLE OBLIGATOIRE
+════════════════════════════════════════════
+
+⚠️ RÈGLE FONDAMENTALE SYSCOHADA — ORDRE D'ÉCRITURE :
+Les lignes DÉBITRICES doivent TOUJOURS apparaître EN PREMIER,
+suivies des lignes CRÉDITRICES. Cette règle est ABSOLUE et sans exception.
+
+Dans chaque tableau "lignes" du JSON, placez TOUJOURS les objets
+avec debit > 0 AVANT les objets avec credit > 0.
+
+════════════════════════════════════════════
+CONTEXTE DE L'ENTREPRISE
+════════════════════════════════════════════
+Entreprise : ${companyName}
+Exercice : ${exercice}
+Date du jour : ${today}
+Écritures passées : ${nbEcritures}
+Débit cumulé : ${totalDebit} FCFA | Crédit cumulé : ${totalCredit} FCFA
+${comptesSoldes ? `Soldes principaux : ${comptesSoldes}` : ""}
+${ecrituresResume ? `Dernières opérations : ${ecrituresResume}` : ""}
+${allDates ? `Dates couvertes : ${allDates}` : ""}
+
+════════════════════════════════════════════
+FORMAT TECHNIQUE DES ÉCRITURES (JSON)
+════════════════════════════════════════════
+
+Pour achat/vente avec stock, 3 écritures séparées obligatoires :
+
+**Écriture 1 — Constatation facture (Journal AC ou VE)**
+###ECRITURE###{"journal":"AC","libelle":"Achat de [bien] — Facture N° XX","lignes":[{"compte":"601","libelle":"Achats marchandises","debit":100000,"credit":0},{"compte":"4452","libelle":"TVA récupérable","debit":18000,"credit":0},{"compte":"4011","libelle":"Fournisseur","debit":0,"credit":118000}]}
+
+**Écriture 2 — Mouvement de stock (Journal IN)**
+###ECRITURE###{"journal":"IN","libelle":"Entrée en stock — [désignation]","lignes":[...]}
+
+**Écriture 3 — Règlement (Journal BQ ou CA)**
+###ECRITURE###{"journal":"BQ","libelle":"Règlement fournisseur","lignes":[...]}
+
 RÈGLES JSON ABSOLUES :
-  - Montants en FCFA entiers uniquement
-  - Chaque écriture ÉQUILIBRÉE (Débit = Crédit)
-  - Comptes SYSCOHADA officiels uniquement
-  - Lignes DÉBITRICES (debit > 0) TOUJOURS EN PREMIER
- 
-════════════════════════════════════════════════════════════════
-🔍  FORMAT TECHNIQUE DES FILTRES — JSON OBLIGATOIRE
-════════════════════════════════════════════════════════════════
- 
-Journal d'une période :
+- Montants en FCFA entiers uniquement
+- Chaque écriture ÉQUILIBRÉE (Débit = Crédit)
+- Comptes SYSCOHADA officiels uniquement
+- Lignes DÉBITRICES (debit > 0) TOUJOURS EN PREMIER dans le tableau "lignes"
+
+════════════════════════════════════════════
+FILTRAGE ET INTERROGATION DES DONNÉES
+════════════════════════════════════════════
+
+Pour afficher le journal d'une période :
 ###FILTRE###{"type":"journal","dateDebut":"YYYY-MM-DD","dateFin":"YYYY-MM-DD","journal":"","compte":""}
- 
-Balance générale :
+
+Pour la balance :
 ###FILTRE###{"type":"balance","dateDebut":"","dateFin":"","journal":"","compte":""}
- 
-Grand livre d'un compte :
+
+Pour le grand livre d'un compte :
 ###FILTRE###{"type":"grandlivre","dateDebut":"","dateFin":"","journal":"","compte":"XXX"}
- 
-Bilan à une date :
-###FILTRE###{"type":"bilan","dateDebut":"","dateFin":"YYYY-MM-DD","journal":"","compte":""}
- 
-Compte de résultat :
-###FILTRE###{"type":"resultat","dateDebut":"YYYY-MM-DD","dateFin":"YYYY-MM-DD","journal":"","compte":""}
- 
-TAFIRE :
-###FILTRE###{"type":"tafire","dateDebut":"YYYY-MM-DD","dateFin":"YYYY-MM-DD","journal":"","compte":""}
- 
-════════════════════════════════════════════════════════════════
-🧠  INTELLIGENCE & COMPORTEMENT AVANCÉS
-════════════════════════════════════════════════════════════════
- 
-1. DÉTECTION AUTOMATIQUE
-   → Détecte le type d'opération (achat, vente, charge, paie...)
-   → Choisit automatiquement le bon journal et les bons comptes
-   → Applique la TVA si l'opération est assujettie
- 
-2. VALIDATION SYSTÉMATIQUE
-   → Vérifie l'équilibre de chaque écriture avant validation
-   → Signale toute anomalie ou incohérence détectée
-   → Alerte si un compte utilisé est inhabituel ou incorrect
- 
-3. CONSEILS FISCAUX
-   → Rappelle les échéances fiscales quand c'est pertinent
-   → Signale les risques de redressement éventuels
-   → Optimise la présentation fiscale dans le respect légal
- 
-4. MÉMOIRE CONTEXTUELLE
-   → Mémorise le contexte de l'entreprise tout au long
-   → Assure la cohérence entre toutes les écritures passées
-   → S'appuie sur les soldes existants pour valider
- 
-5. PÉDAGOGIE
-   → Explique chaque écriture simplement si demandé
-   → Justifie chaque choix de compte SYSCOHADA
-   → Forme l'utilisateur aux bonnes pratiques comptables
- 
-════════════════════════════════════════════════════════════════
-`;
+
+Pour le bilan :
+###FILTRE###{"type":"bilan","dateDebut":"","dateFin":"YYYY-MM-DD","journal":"","compte":""}`;
 }
- 
-// ============================================================
-// EXPORT
-// ============================================================
- 
-// CommonJS (Node.js)
-// module.exports = { getComeoAIComptablePrompt };
- 
-// ES Modules
-// export { getComeoAIComptablePrompt };
- 
-// ============================================================
-// EXEMPLE D'UTILISATION
-// ============================================================
- 
-/*
- 
-const prompt = getComeoAIComptablePrompt({
-  companyName     : "SARL Zinzindo & Associés",
-  exercice        : 2025,
-  today           : "21/04/2025",
-  nbEcritures     : 142,
-  totalDebit      : 47500000,
-  totalCredit     : 47500000,
-  comptesSoldes   : "521: 8 200 000 | 4011: 3 500 000 | 411: 5 000 000",
-  ecrituresResume : "Achat carburant, Vente client SODECI, Règlement loyer",
-  allDates        : "01/01/2025 → 21/04/2025",
-});
- 
-// --- OpenAI ---
-const response = await openai.chat.completions.create({
-  model: "gpt-4o",
-  messages: [
-    { role: "system", content: prompt },
-    { role: "user",   content: "Passe l'écriture d'achat de marchandises 500 000 FCFA HT payé par Orange Money" }
-  ]
-});
- 
-// --- Anthropic Claude ---
-const response = await anthropic.messages.create({
-  model     : "claude-sonnet-4-6",
-  max_tokens: 2048,
-  system    : prompt,
-  messages  : [{ role: "user", content: "Génère la balance générale" }]
-});
- 
-*/
- 
-// ============================================================
-//   FIN DU FICHIER — Comeo AI © marcioAI dev
-//   Créateur : Marcio Jardel Zinzindohoué — Groupe Loko, CI
-// ============================================================
 
 // ══════════════════════════════════════════
 // AUTH
@@ -1619,339 +1392,77 @@ function exportPDF() {
   const company = currentProfile?.company || "Entreprise";
   const pageW   = 210;
   const now     = new Date().toLocaleDateString("fr-FR");
+  doc.setFillColor(10, 11, 16); doc.rect(0, 0, pageW, 22, "F");
+  doc.setTextColor(212, 168, 83); doc.setFontSize(14); doc.setFont("helvetica", "bold");
+  doc.text("SYSCOHADA Pro v4 — Révisé 2017", 14, 10);
+  doc.setFontSize(7); doc.setFont("helvetica", "normal");
+  doc.text("COMEO AI — Expert-Comptable Ivoirien | ONECCA-CI", 14, 16);
+  doc.setTextColor(255, 255, 255); doc.setFontSize(8);
+  doc.text(company, pageW - 14, 10, { align:"right" });
+  doc.text("Exercice " + yr + " | Monnaie : FCFA (XOF)", pageW - 14, 16, { align:"right" });
+  doc.setTextColor(10, 11, 16); doc.setFontSize(16); doc.setFont("helvetica", "bold");
+  doc.text("JOURNAL GÉNÉRAL", 14, 34);
+  doc.setFontSize(8); doc.setFont("helvetica", "normal"); doc.setTextColor(130, 128, 112);
+  doc.text("Édité le " + now, 14, 40);
+  doc.setDrawColor(212, 168, 83); doc.setLineWidth(0.5); doc.line(14, 43, pageW - 14, 43);
+  const tableData = [];
+  let totalD = 0, totalC = 0;
+  ecritures.forEach(e => {
+    const lignesSorted = sortLignesDebitAvantCredit(e.lignes);
+    lignesSorted.forEach(l => {
+      tableData.push([e.date, e.journal, e.piece||"", l.compte, (PC[l.compte]||"").substring(0,28), l.libelle||e.libelle||"", l.debit?fn(l.debit):"", l.credit?fn(l.credit):""]);
+      totalD += l.debit || 0; totalC += l.credit || 0;
+    });
+  });
+  doc.autoTable({
+    startY: 48,
+    head:   [["Date","Jnl","N° Pièce","Compte","Libellé compte","Libellé opération","Débit FCFA","Crédit FCFA"]],
+    body:   tableData,
+    foot:   [["","","","","","TOTAUX", fn(totalD), fn(totalC)]],
+    styles:             { font:"helvetica", fontSize:7.5, cellPadding:2.5 },
+    headStyles:         { fillColor:[10,11,16], textColor:[212,168,83], fontStyle:"bold", fontSize:7 },
+    footStyles:         { fillColor:[30,34,54], textColor:[212,168,83], fontStyle:"bold", fontSize:8 },
+    alternateRowStyles: { fillColor:[250,248,244] },
+    columnStyles: {
+      0:{cellWidth:18}, 1:{cellWidth:10,halign:"center"}, 2:{cellWidth:18},
+      3:{cellWidth:16,fontStyle:"bold"}, 4:{cellWidth:28}, 5:{cellWidth:36},
+      6:{cellWidth:22,halign:"right"}, 7:{cellWidth:22,halign:"right"}
+    },
+    margin: { left:14, right:14 }
+  });
+  doc.save(`SYSCOHADA_v4_${company.replace(/\s+/g, "_")}_${yr}.pdf`);
+  toast("✓ PDF exporté avec succès", "success");
+}
 
-  // ── Déterminer la vue active ──
-  const activeView = document.querySelector(".view.active");
-  const viewId     = activeView ? activeView.id : "view-journal";
-
-  // ── En-tête commun ──
-  const drawHeader = (title) => {
-    doc.setFillColor(10, 11, 16);
-    doc.rect(0, 0, pageW, 22, "F");
-    doc.setTextColor(212, 168, 83);
-    doc.setFontSize(14);
-    doc.setFont("helvetica", "bold");
-    doc.text("SYSCOHADA Pro v4 — Révisé 2017", 14, 10);
-    doc.setFontSize(7);
-    doc.setFont("helvetica", "normal");
-    doc.text("COMEO AI — Créé par Marcio Jardel Zinzindohoue — Groupe LOKO CI", 14, 16);
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(8);
-    doc.text(company, pageW - 14, 10, { align:"right" });
-    doc.text("Exercice " + yr + " | Monnaie : FCFA (XOF)", pageW - 14, 16, { align:"right" });
-    doc.setTextColor(10, 11, 16);
-    doc.setFontSize(16);
-    doc.setFont("helvetica", "bold");
-    doc.text(title, 14, 34);
-    doc.setFontSize(8);
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(130, 128, 112);
-    doc.text("Édité le " + now, 14, 40);
-    doc.setDrawColor(212, 168, 83);
-    doc.setLineWidth(0.5);
-    doc.line(14, 43, pageW - 14, 43);
-  };
-
-  // ════════════════════════════════
-  // VUE : JOURNAL
-  // ════════════════════════════════
-  if (viewId === "view-journal") {
-    drawHeader("JOURNAL GÉNÉRAL");
-    const tableData = [];
-    let totalD = 0, totalC = 0;
-    ecritures.forEach(e => {
-      const lignesSorted = sortLignesDebitAvantCredit(e.lignes);
-      lignesSorted.forEach(l => {
-        tableData.push([
-          e.date, e.journal, e.piece||"", l.compte,
-          (PC[l.compte]||"").substring(0,26),
-          (l.libelle||e.libelle||"").substring(0,34),
-          l.debit  ? fn(l.debit)  : "",
-          l.credit ? fn(l.credit) : ""
-        ]);
-        totalD += l.debit||0; totalC += l.credit||0;
-      });
+function exportWord() {
+  const yr      = document.getElementById("exerciceYear").value;
+  const company = currentProfile?.company || "Entreprise";
+  const now     = new Date().toLocaleDateString("fr-FR");
+  let jRows = "", totalD = 0, totalC = 0;
+  ecritures.forEach(e => {
+    const lignesSorted = sortLignesDebitAvantCredit(e.lignes);
+    lignesSorted.forEach(l => {
+      jRows += `<tr><td>${e.date}</td><td>${e.journal}</td><td>${e.piece||""}</td><td>${l.compte}</td><td>${(PC[l.compte]||"").substring(0,28)}</td><td>${l.libelle||e.libelle||""}</td><td style="text-align:right">${l.debit?fn(l.debit):""}</td><td style="text-align:right">${l.credit?fn(l.credit):""}</td></tr>`;
+      totalD += l.debit || 0; totalC += l.credit || 0;
     });
-    doc.autoTable({
-      startY: 48,
-      head: [["Date","Jnl","Pièce","Compte","Libellé compte","Libellé opération","Débit FCFA","Crédit FCFA"]],
-      body: tableData,
-      foot: [["","","","","","TOTAUX", fn(totalD), fn(totalC)]],
-      styles:             { font:"helvetica", fontSize:7.5, cellPadding:2.5 },
-      headStyles:         { fillColor:[10,11,16], textColor:[212,168,83], fontStyle:"bold", fontSize:7 },
-      footStyles:         { fillColor:[30,34,54], textColor:[212,168,83], fontStyle:"bold", fontSize:8 },
-      alternateRowStyles: { fillColor:[250,248,244] },
-      columnStyles: {
-        0:{cellWidth:18}, 1:{cellWidth:10,halign:"center"}, 2:{cellWidth:16},
-        3:{cellWidth:16,fontStyle:"bold"}, 4:{cellWidth:28}, 5:{cellWidth:34},
-        6:{cellWidth:22,halign:"right"}, 7:{cellWidth:22,halign:"right"}
-      },
-      margin: { left:14, right:14 }
-    });
-  }
-
-  // ════════════════════════════════
-  // VUE : GRAND LIVRE
-  // ════════════════════════════════
-  else if (viewId === "view-grandlivre") {
-    drawHeader("GRAND LIVRE GÉNÉRAL");
-    const map = getMap();
-    const comptes = Object.keys(map).sort();
-    const tableData = [];
-    comptes.forEach(code => {
-      const acc = map[code];
-      const s   = acc.debit - acc.credit;
-      tableData.push([
-        { content: code + " — " + (PC[code]||"").substring(0,44), colSpan:6,
-          styles:{ fillColor:[20,22,32], textColor:[212,168,83], fontStyle:"bold", fontSize:8 } }
-      ]);
-      acc.mvts.forEach(m => {
-        tableData.push([
-          m.date, m.journal, m.piece||"", m.libelle||"",
-          m.debit  ? fn(m.debit)  : "",
-          m.credit ? fn(m.credit) : ""
-        ]);
-      });
-      tableData.push([
-        { content:"TOTAL " + code, colSpan:4,
-          styles:{ fontStyle:"bold", fillColor:[245,243,238] } },
-        { content: fn(acc.debit),  styles:{ halign:"right", fontStyle:"bold", fillColor:[245,243,238] } },
-        { content: fn(acc.credit), styles:{ halign:"right", fontStyle:"bold", fillColor:[245,243,238] } }
-      ]);
-    });
-    doc.autoTable({
-      startY: 48,
-      head: [["Date","Jnl","Pièce","Libellé","Débit FCFA","Crédit FCFA"]],
-      body: tableData,
-      styles:     { font:"helvetica", fontSize:7.5, cellPadding:2.5 },
-      headStyles: { fillColor:[10,11,16], textColor:[212,168,83], fontStyle:"bold", fontSize:7 },
-      columnStyles: {
-        0:{cellWidth:20}, 1:{cellWidth:12,halign:"center"}, 2:{cellWidth:18},
-        3:{cellWidth:68}, 4:{cellWidth:28,halign:"right"}, 5:{cellWidth:28,halign:"right"}
-      },
-      margin: { left:14, right:14 }
-    });
-  }
-
-  // ════════════════════════════════
-  // VUE : BALANCE
-  // ════════════════════════════════
-  else if (viewId === "view-balance") {
-    drawHeader("BALANCE GÉNÉRALE DES COMPTES");
-    const map = getMap();
-    const comptes = Object.keys(map).sort();
-    let tD=0,tC=0,tSD=0,tSC=0;
-    const tableData = comptes.map(code => {
-      const acc=map[code], s=acc.debit-acc.credit, sd=s>0?s:0, sc=s<0?-s:0;
-      tD+=acc.debit; tC+=acc.credit; tSD+=sd; tSC+=sc;
-      return [
-        code, (PC[code]||"").substring(0,38),
-        fn(acc.debit), fn(acc.credit),
-        sd?fn(sd):"", sc?fn(sc):""
-      ];
-    });
-    tableData.push([
-      {content:"TOTAUX GÉNÉRAUX",colSpan:2,styles:{fontStyle:"bold",fillColor:[20,22,32],textColor:[212,168,83]}},
-      {content:fn(tD),styles:{halign:"right",fontStyle:"bold",fillColor:[20,22,32],textColor:[212,168,83]}},
-      {content:fn(tC),styles:{halign:"right",fontStyle:"bold",fillColor:[20,22,32],textColor:[212,168,83]}},
-      {content:fn(tSD),styles:{halign:"right",fontStyle:"bold",fillColor:[20,22,32],textColor:[212,168,83]}},
-      {content:fn(tSC),styles:{halign:"right",fontStyle:"bold",fillColor:[20,22,32],textColor:[212,168,83]}}
-    ]);
-    doc.autoTable({
-      startY: 48,
-      head: [["Compte","Intitulé","Débit FCFA","Crédit FCFA","Solde Débiteur","Solde Créditeur"]],
-      body: tableData,
-      styles:             { font:"helvetica", fontSize:7.5, cellPadding:2.5 },
-      headStyles:         { fillColor:[10,11,16], textColor:[212,168,83], fontStyle:"bold", fontSize:7 },
-      alternateRowStyles: { fillColor:[250,248,244] },
-      columnStyles: {
-        0:{cellWidth:18,fontStyle:"bold"}, 1:{cellWidth:56}, 2:{cellWidth:28,halign:"right"},
-        3:{cellWidth:28,halign:"right"},   4:{cellWidth:28,halign:"right"}, 5:{cellWidth:28,halign:"right"}
-      },
-      margin: { left:14, right:14 }
-    });
-  }
-
-  // ════════════════════════════════
-  // VUE : BILAN
-  // ════════════════════════════════
-  else if (viewId === "view-bilan") {
-    drawHeader("BILAN — SYSCOHADA RÉVISÉ 2017");
-    const map = getMap();
-    const actif  = { immob:{title:"ACTIF IMMOBILISÉ",comptes:[]}, stocks:{title:"STOCKS ET EN-COURS",comptes:[]}, creances:{title:"CRÉANCES",comptes:[]}, treso:{title:"TRÉSORERIE-ACTIF",comptes:[]} };
-    const passif = { cap:{title:"CAPITAUX PROPRES",comptes:[]}, df:{title:"DETTES FINANCIÈRES",comptes:[]}, dct:{title:"PASSIF CIRCULANT",comptes:[]}, tp:{title:"TRÉSORERIE-PASSIF",comptes:[]} };
-    Object.entries(map).forEach(([code,acc])=>{
-      const s=acc.debit-acc.credit, cl=code[0], e={code,lib:(PC[code]||code).substring(0,36),solde:Math.abs(s)};
-      if(cl==="2"&&s>0) actif.immob.comptes.push(e);
-      else if(cl==="3"&&s>0) actif.stocks.comptes.push(e);
-      else if(cl==="4"){if(s>0) actif.creances.comptes.push(e); else if(s<0) passif.dct.comptes.push({...e,solde:Math.abs(s)});}
-      else if(cl==="5"){if(s>0) actif.treso.comptes.push(e); else passif.tp.comptes.push({...e,solde:Math.abs(s)});}
-      else if(cl==="1"){const n=parseInt(code);(n<=160?passif.cap:passif.df).comptes.push({code,lib:(PC[code]||code).substring(0,36),solde:Math.abs(s)});}
-    });
-    const tA = [...actif.immob.comptes,...actif.stocks.comptes,...actif.creances.comptes,...actif.treso.comptes].reduce((s,c)=>s+c.solde,0);
-    const tP = [...passif.cap.comptes,...passif.df.comptes,...passif.dct.comptes,...passif.tp.comptes].reduce((s,c)=>s+c.solde,0);
-    const bilanData = [];
-    const buildSection = (sections, side) => {
-      sections.forEach(sec=>{
-        if(!sec.comptes.length) return;
-        bilanData.push([
-          {content:side+": "+sec.title, colSpan:4,
-           styles:{fillColor:[20,22,32],textColor:[212,168,83],fontStyle:"bold",fontSize:7.5}}
-        ]);
-        sec.comptes.forEach(c=>{
-          bilanData.push([c.code, c.lib, side==="ACTIF"?fn(c.solde):"", side==="PASSIF"?fn(c.solde):""]);
-        });
-      });
-    };
-    buildSection(Object.values(actif),"ACTIF");
-    buildSection(Object.values(passif),"PASSIF");
-    bilanData.push([
-      {content:"TOTAL ACTIF",colSpan:2,styles:{fontStyle:"bold",fillColor:[10,11,16],textColor:[212,168,83]}},
-      {content:fn(tA)+" FCFA",styles:{halign:"right",fontStyle:"bold",fillColor:[10,11,16],textColor:[212,168,83]}},
-      {content:fn(tP)+" FCFA",styles:{halign:"right",fontStyle:"bold",fillColor:[10,11,16],textColor:[212,168,83]}}
-    ]);
-    doc.autoTable({
-      startY: 48,
-      head: [["Compte","Intitulé","ACTIF (FCFA)","PASSIF (FCFA)"]],
-      body: bilanData,
-      styles:     { font:"helvetica", fontSize:7.5, cellPadding:2.5 },
-      headStyles: { fillColor:[10,11,16], textColor:[212,168,83], fontStyle:"bold", fontSize:7 },
-      alternateRowStyles: { fillColor:[250,248,244] },
-      columnStyles: {
-        0:{cellWidth:18,fontStyle:"bold"}, 1:{cellWidth:84},
-        2:{cellWidth:38,halign:"right"},   3:{cellWidth:38,halign:"right"}
-      },
-      margin: { left:14, right:14 }
-    });
-  }
-
-  // ════════════════════════════════
-  // VUE : RÉSULTAT
-  // ════════════════════════════════
-  else if (viewId === "view-resultat") {
-    drawHeader("COMPTE DE RÉSULTAT — SYSCOHADA RÉVISÉ 2017");
-    const map = getMap();
-    const gt  = pfx => Object.entries(map).filter(([c])=>pfx.some(p=>c.startsWith(p))).reduce((s,[,a])=>s+(a.debit-a.credit),0);
-    const ventes   = Math.abs(gt(["701","702","703","704","705"]));
-    const autrProd = Math.abs(gt(["707","75","718","711"]));
-    const transports = gt(["612","614"]);
-    const servExt    = gt(["621","622","624","625","626","627","628","631","632","634","635","638"]);
-    const impTaxes   = gt(["641","645"]);
-    const autresChg  = gt(["651","654","658"]);
-    const personnel  = gt(["661","662","663","664"]);
-    const dap        = gt(["681","691","697"]);
-    const revFin     = Math.abs(gt(["771","772","773","774","776","777"]));
-    const chgFin     = gt(["671","673","674","676"]);
-    const haoP       = Math.abs(gt(["821","822","841"]));
-    const haoC       = gt(["811","812","831","834","839","851","852","854"]);
-    const imp        = gt(["891","895"]);
-    const mc  = ventes - Math.abs(gt(["601"])) - gt(["6031"]);
-    const va  = ventes + autrProd - Math.abs(gt(["601","602","604","605","608"])) - gt(["6031","6032"]) - transports - servExt - impTaxes - autresChg;
-    const ebe = va - personnel;
-    const re  = ebe - dap;
-    const rf  = revFin - chgFin;
-    const rao = re + rf;
-    const rhao= haoP - haoC;
-    const res = rao + rhao - imp;
-    const rows = [
-      ["Ventes de marchandises (701–705)",      fn(ventes)+"", ""],
-      ["Achats + Var. stocks (601+6031)",        "", fn(Math.abs(gt(["601"]))+gt(["6031"]))+""],
-      ["→ Marge commerciale (XA)",               fn(mc)+"", ""],
-      ["Autres produits (707+75+718)",            fn(autrProd)+"", ""],
-      ["Transports + Services ext.",              "", fn(transports+servExt)+""],
-      ["Impôts et taxes + Autres charges",        "", fn(impTaxes+autresChg)+""],
-      ["→ Valeur Ajoutée Brute (XC)",             fn(va)+"", ""],
-      ["Charges de personnel (661–664)",          "", fn(personnel)+""],
-      ["→ EBE — Excédent Brut d'Exploitation",    fn(ebe)+"", ""],
-      ["DAP amortissements et provisions",        "", fn(dap)+""],
-      ["→ Résultat d'Exploitation (RE)",          fn(re)+"", ""],
-      ["Revenus financiers (77)",                 fn(revFin)+"", ""],
-      ["Charges financières (67)",                "", fn(chgFin)+""],
-      ["→ Résultat Financier (RF)",               fn(rf)+"", ""],
-      ["→ RAO — Résultat Activités Ordinaires",   fn(rao)+"", ""],
-      ["Produits HAO",                            fn(haoP)+"", ""],
-      ["Charges HAO",                             "", fn(haoC)+""],
-      ["→ RHAO",                                  fn(rhao)+"", ""],
-      ["IS / IBP (891) — Taux CI : 25%",          "", fn(imp)+""],
-      [res>=0?"✓ RÉSULTAT NET — BÉNÉFICE":"✗ RÉSULTAT NET — PERTE", fn(Math.abs(res))+" FCFA", ""]
-    ];
-    doc.autoTable({
-      startY: 48,
-      head: [["Rubrique","Produits FCFA","Charges FCFA"]],
-      body: rows,
-      styles:     { font:"helvetica", fontSize:8, cellPadding:2.8 },
-      headStyles: { fillColor:[10,11,16], textColor:[212,168,83], fontStyle:"bold" },
-      alternateRowStyles: { fillColor:[250,248,244] },
-      columnStyles: { 0:{cellWidth:110}, 1:{cellWidth:38,halign:"right"}, 2:{cellWidth:38,halign:"right"} },
-      margin: { left:14, right:14 },
-      didParseCell(data) {
-        if(data.row.index===rows.length-1){
-          data.cell.styles.fillColor = [10,11,16];
-          data.cell.styles.textColor = [212,168,83];
-          data.cell.styles.fontStyle = "bold";
-          data.cell.styles.fontSize  = 9;
-        }
-      }
-    });
-  }
-
-  // ════════════════════════════════
-  // VUE : TRÉSORERIE
-  // ════════════════════════════════
-  else if (viewId === "view-tresorerie") {
-    drawHeader("ÉTAT DE TRÉSORERIE — CLASSE 5");
-    const map = getMap();
-    const tc  = Object.entries(map).filter(([c])=>c.startsWith("5"));
-    const total = tc.reduce((s,[,a])=>s+(a.debit-a.credit),0);
-    const tableData = tc.map(([code,acc])=>{
-      const s=acc.debit-acc.credit;
-      return [code, (PC[code]||"").substring(0,52), fn(acc.debit), fn(acc.credit), (s>=0?"Sd ":"Sc ")+fn(Math.abs(s))];
-    });
-    tableData.push([
-      {content:"TRÉSORERIE NETTE TOTALE",colSpan:4,styles:{fontStyle:"bold",fillColor:[10,11,16],textColor:[212,168,83]}},
-      {content:(total>=0?"Sd ":"Sc ")+fn(Math.abs(total))+" FCFA",styles:{halign:"right",fontStyle:"bold",fillColor:[10,11,16],textColor:[212,168,83]}}
-    ]);
-    doc.autoTable({
-      startY: 48,
-      head: [["Compte","Intitulé","Débit FCFA","Crédit FCFA","Solde"]],
-      body: tableData,
-      styles:     { font:"helvetica", fontSize:8, cellPadding:2.8 },
-      headStyles: { fillColor:[10,11,16], textColor:[212,168,83], fontStyle:"bold" },
-      alternateRowStyles: { fillColor:[250,248,244] },
-      columnStyles: { 0:{cellWidth:18,fontStyle:"bold"}, 1:{cellWidth:68}, 2:{cellWidth:28,halign:"right"}, 3:{cellWidth:28,halign:"right"}, 4:{cellWidth:32,halign:"right"} },
-      margin: { left:14, right:14 }
-    });
-  }
-
-  // ════════════════════════════════
-  // VUE : DASHBOARD (fallback)
-  // ════════════════════════════════
-  else {
-    drawHeader("JOURNAL GÉNÉRAL");
-    const tableData = [];
-    let totalD=0, totalC=0;
-    ecritures.forEach(e=>{
-      sortLignesDebitAvantCredit(e.lignes).forEach(l=>{
-        tableData.push([e.date,e.journal,e.piece||"",l.compte,(PC[l.compte]||"").substring(0,26),(l.libelle||e.libelle||"").substring(0,34),l.debit?fn(l.debit):"",l.credit?fn(l.credit):""]);
-        totalD+=l.debit||0; totalC+=l.credit||0;
-      });
-    });
-    doc.autoTable({
-      startY:48,
-      head:[["Date","Jnl","Pièce","Compte","Libellé compte","Libellé","Débit FCFA","Crédit FCFA"]],
-      body:tableData,
-      foot:[["","","","","","TOTAUX",fn(totalD),fn(totalC)]],
-      styles:{font:"helvetica",fontSize:7.5,cellPadding:2.5},
-      headStyles:{fillColor:[10,11,16],textColor:[212,168,83],fontStyle:"bold",fontSize:7},
-      footStyles:{fillColor:[30,34,54],textColor:[212,168,83],fontStyle:"bold",fontSize:8},
-      alternateRowStyles:{fillColor:[250,248,244]},
-      columnStyles:{0:{cellWidth:18},1:{cellWidth:10,halign:"center"},2:{cellWidth:16},3:{cellWidth:16,fontStyle:"bold"},4:{cellWidth:28},5:{cellWidth:34},6:{cellWidth:22,halign:"right"},7:{cellWidth:22,halign:"right"}},
-      margin:{left:14,right:14}
-    });
-  }
-
-  doc.save(`SYSCOHADA_v4_${company.replace(/\s+/g,"_")}_${yr}.pdf`);
-  toast("✓ PDF exporté — Vue actuelle imprimée avec succès", "success");
+  });
+  const th = "background:#0a0b10;color:#d4a853;padding:6px 10px;text-align:left;font-size:9pt;text-transform:uppercase";
+  const td = "border-bottom:1px solid #e0dbd0;padding:5px 10px";
+  const html = `<html><head><meta charset="utf-8"><style>body{font-family:'Segoe UI',Arial,sans-serif;font-size:11pt}table{width:100%;border-collapse:collapse;margin-bottom:20pt}th{${th}}td{${td}}tr:nth-child(even) td{background:#faf8f4}</style></head>
+  <body>
+  <h1 style="font-family:Georgia,serif;font-size:16pt;color:#0a0b10">SYSCOHADA Pro v4 — ${company} — Exercice ${yr}</h1>
+  <p>Édité le ${now} | COMEO AI — Expert-Comptable Ivoirien | Monnaie : FCFA (XOF)</p>
+  <h2>Journal Général</h2>
+  <table><thead><tr><th>Date</th><th>Jnl</th><th>Pièce</th><th>Compte</th><th>Libellé compte</th><th>Libellé</th><th>Débit</th><th>Crédit</th></tr></thead>
+  <tbody>${jRows}</tbody>
+  <tfoot><tr><td colspan="6" style="font-weight:bold;text-align:right">TOTAUX</td><td style="font-weight:bold;text-align:right">${fn(totalD)}</td><td style="font-weight:bold;text-align:right">${fn(totalC)}</td></tr></tfoot></table>
+  </body></html>`;
+  const blob = new Blob([html], { type:"application/msword;charset=utf-8" });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement("a");
+  a.href = url; a.download = `SYSCOHADA_v4_${company.replace(/\s+/g,"_")}_${yr}.doc`;
+  a.click(); URL.revokeObjectURL(url);
+  toast("✓ Document Word exporté", "success");
 }
 
 // ══════════════════════════════════════════
