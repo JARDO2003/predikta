@@ -150,7 +150,7 @@ let exportFormat = "pdf";
 let ecrQueue = [], ecrQueueIdx = 0;
 let currentGroupId = null;
 
-const GROQ_API_KEY = "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";
+const GROQ_API_KEY = "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";
 
 // ══════════════════════════════════════════
 // SIDEBAR MOBILE
