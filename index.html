@@ -23,30 +23,21 @@
       <div class="auth-tab active" id="tab-login" onclick="switchTab('login')">Connexion</div>
       <div class="auth-tab" id="tab-register" onclick="switchTab('register')">Créer un profil</div>
     </div>
-   <!-- NOUVEAU — Ajout lien "Mot de passe oublié" -->
-<div id="form-login" class="auth-form">
-  <div class="af-field"><label class="af-label">Nom d'entreprise</label><input class="af-input" type="text" id="l-company" placeholder="ex: SOTRA SARL"></div>
-  <div class="af-field"><label class="af-label">Mot de passe</label><input class="af-input" type="password" id="l-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
-  <div class="auth-err" id="l-err"></div>
-  <button class="auth-btn" onclick="doLogin()">⚡ Se connecter</button>
-  <div style="text-align:center;margin-top:10px">
-    <span onclick="showForgotMsg()" style="font-size:11px;color:rgba(212,168,83,.5);cursor:pointer;text-decoration:underline;font-family:var(--font-mono)">Mot de passe oublié ?</span>
+    <div id="form-login" class="auth-form">
+      <div class="af-field"><label class="af-label">Nom d'entreprise</label><input class="af-input" type="text" id="l-company" placeholder="ex: SOTRA SARL"></div>
+      <div class="af-field"><label class="af-label">Mot de passe</label><input class="af-input" type="password" id="l-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
+      <div class="auth-err" id="l-err"></div>
+      <button class="auth-btn" onclick="doLogin()">⚡ Se connecter</button>
+    </div>
+    <div id="form-register" class="auth-form" style="display:none">
+      <div class="af-field"><label class="af-label">Nom de l'entreprise</label><input class="af-input" type="text" id="r-company" placeholder="ex: SOTRA SARL"></div>
+      <div class="af-field"><label class="af-label">N° Compte ventes</label><input class="af-input" type="text" id="r-compte701" placeholder="701" value="701"></div>
+      <div class="af-field"><label class="af-label">Exercice comptable</label><input class="af-input" type="text" id="r-exercice" placeholder="2024" value="2024" maxlength="4"></div>
+      <div class="af-field"><label class="af-label">Mot de passe (min 4 car.)</label><input class="af-input" type="password" id="r-pass" placeholder="Minimum 4 caractères"></div>
+      <div class="auth-err" id="r-err"></div>
+      <button class="auth-btn" onclick="doRegister()">✓ Créer mon profil</button>
+    </div>
   </div>
-  <div id="forgotMsg" style="display:none;background:rgba(212,168,83,.06);border:1px solid rgba(212,168,83,.2);border-radius:6px;padding:10px 12px;margin-top:8px;font-size:11.5px;color:rgba(212,168,83,.8);text-align:center;line-height:1.6">
-    📱 Votre mot de passe vous sera envoyé par WhatsApp.<br>
-    <strong>Contactez-nous : +225 05 08 46 30 03</strong>
-  </div>
-</div>
-   <!-- NOUVEAU — Ajout du champ WhatsApp -->
-<div id="form-register" class="auth-form" style="display:none">
-  <div class="af-field"><label class="af-label">Nom de l'entreprise</label><input class="af-input" type="text" id="r-company" placeholder="ex: SOTRA SARL"></div>
-  <div class="af-field"><label class="af-label">Numéro WhatsApp 📱</label><input class="af-input" type="tel" id="r-whatsapp" placeholder="ex: 0708463003"></div>
-  <div class="af-field"><label class="af-label">N° Compte ventes</label><input class="af-input" type="text" id="r-compte701" placeholder="701" value="701"></div>
-  <div class="af-field"><label class="af-label">Exercice comptable</label><input class="af-input" type="text" id="r-exercice" placeholder="2024" value="2024" maxlength="4"></div>
-  <div class="af-field"><label class="af-label">Mot de passe (min 4 car.)</label><input class="af-input" type="password" id="r-pass" placeholder="Minimum 4 caractères"></div>
-  <div class="auth-err" id="r-err"></div>
-  <button class="auth-btn" onclick="doRegister()">✓ Créer mon profil</button>
-</div>
 </div>
 
 <!-- EXPORT MODAL -->
@@ -128,6 +119,7 @@
       <div class="stat-row"><span class="lbl">Total crédit</span><span class="val" id="s-credit">0</span></div>
       <div class="stat-row"><span class="lbl">Équilibre</span><span class="val g" id="s-equil">✓</span></div>
     </div>
+    <!-- WIDGET ABONNEMENT INJECTÉ ICI PAR JS -->
   </div>
 
   <div class="main">
@@ -147,7 +139,6 @@
         <div class="kpi"><div class="kpi-label">Total crédit</div><div class="kpi-value" id="dash-credit" style="color:var(--green)">0</div><div class="kpi-sub">FCFA</div></div>
         <div class="kpi"><div class="kpi-label">Résultat provisoire</div><div class="kpi-value" id="dash-res" style="color:var(--warm)">0</div><div class="kpi-sub">Produits – Charges</div></div>
       </div>
-      <!-- BANDEAU MULTI-ÉCRITURES -->
       <div class="multi-ecr-banner" id="multiEcrBanner">
         <div class="meb-icon">✅</div>
         <div class="meb-text">
@@ -160,7 +151,6 @@
           </div>
         </div>
       </div>
-      <!-- AUTO SAVE BAR -->
       <div class="auto-save-bar" id="autoSaveBar">
         <div class="asb-icon">⚡</div>
         <div class="asb-text">
@@ -259,7 +249,7 @@
       </div>
     </div>
 
-    <!-- JOURNAL REDESIGNÉ — GROUPÉ PAR OPÉRATION -->
+    <!-- JOURNAL -->
     <div class="view" id="view-journal">
       <div class="ph">
         <div><h1>Journal général</h1><p>Opérations regroupées — 3 écritures liées par opération</p></div>
@@ -268,7 +258,6 @@
           <button class="btn btn-ink" onclick="navigate('saisie')">+ Nouvelle</button>
         </div>
       </div>
-
       <div class="filtre-periode-bar">
         <label>Du</label><input type="date" id="jnl-date-debut" onchange="renderJournal()">
         <label>Au</label><input type="date" id="jnl-date-fin" onchange="renderJournal()">
@@ -282,10 +271,8 @@
         <input type="text" class="search-input" placeholder="Rechercher compte / libellé…" id="journalSearch" oninput="renderJournal()" style="min-width:160px;flex:1">
         <button class="btn-filtre-reset" onclick="resetJournalFiltre()">✕ Effacer</button>
       </div>
-
       <div id="journal-analyse" style="display:none" class="analyse-card"></div>
       <div id="journalContent"></div>
-
       <div id="journal-totaux-footer" style="display:none">
         <div class="jnl-footer-totaux">
           <div class="jnl-footer-item"><span class="jnl-footer-label">Opérations</span><span class="jnl-footer-val" id="jnl-nb-groupes" style="color:var(--warm)">0</span></div>
@@ -402,54 +389,11 @@
         </table>
       </div>
     </div>
-    <!-- AJOUTER — Modal Paiement Wave / WhatsApp -->
-<div id="paymentModal" style="display:none;position:fixed;inset:0;z-index:9998;background:rgba(10,11,16,.92);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;padding:16px">
-  <div style="background:#111218;border:1px solid rgba(212,168,83,.3);border-radius:16px;padding:40px 32px;width:460px;max-width:100%;box-shadow:0 32px 80px rgba(0,0,0,.8);text-align:center">
-    <div style="font-size:32px;margin-bottom:12px">⏰</div>
-    <div style="font-family:'Playfair Display',serif;font-size:22px;color:#d4a853;margin-bottom:8px">Période d'essai terminée</div>
-    <div style="font-size:13px;color:rgba(255,255,255,.5);margin-bottom:8px">Votre essai gratuit de 48h est écoulé.</div>
-    <div style="font-size:13px;color:rgba(255,255,255,.7);margin-bottom:28px">Abonnez-vous pour continuer à utiliser <strong style="color:#d4a853">COMEO AI v4</strong></div>
-
-    <div style="background:rgba(212,168,83,.08);border:1px solid rgba(212,168,83,.2);border-radius:10px;padding:16px;margin-bottom:24px">
-      <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:rgba(255,255,255,.3);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px">Tarif mensuel</div>
-      <div style="font-family:'Playfair Display',serif;font-size:32px;color:#d4a853;font-weight:700">2 000 FCFA</div>
-      <div style="font-size:11px;color:rgba(255,255,255,.35);margin-top:4px">par mois · accès illimité</div>
-    </div>
-
-    <div style="display:flex;flex-direction:column;gap:12px">
-      <!-- WAVE -->
-      <a href="https://pay.wave.com/m/M_ci_iqMcg8KwRE-W/c/ci/?amount=2000" target="_blank"
-        style="display:flex;align-items:center;justify-content:center;gap:12px;background:linear-gradient(135deg,#1a9be6,#0d7abf);color:#fff;border:none;border-radius:10px;padding:16px 24px;font-size:14px;font-weight:700;font-family:'Space Grotesk',sans-serif;cursor:pointer;text-decoration:none;transition:all .18s"
-        onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 24px rgba(26,155,230,.4)'"
-        onmouseout="this.style.transform='';this.style.boxShadow=''">
-        <svg width="28" height="28" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="100" cy="100" r="100" fill="#1a9be6"/>
-          <text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" fill="white" font-size="110" font-weight="bold" font-family="Arial">W</text>
-        </svg>
-        Payer par Wave — 2 000 FCFA
-      </a>
-
-      <!-- WHATSAPP -->
-      <a href="https://wa.me/2250508463003?text=Bonjour%2C%20je%20souhaite%20m%27abonner%20%C3%A0%20COMEO%20AI%20v4%20pour%20l%27entreprise%20" id="waPayLink" target="_blank"
-        style="display:flex;align-items:center;justify-content:center;gap:12px;background:linear-gradient(135deg,#25d366,#1da851);color:#fff;border:none;border-radius:10px;padding:16px 24px;font-size:14px;font-weight:700;font-family:'Space Grotesk',sans-serif;cursor:pointer;text-decoration:none;transition:all .18s"
-        onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 24px rgba(37,211,102,.4)'"
-        onmouseout="this.style.transform='';this.style.boxShadow=''">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
-          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-        </svg>
-        Autre moyen de paiement (WhatsApp)
-      </a>
-    </div>
-
-    <div style="margin-top:20px;font-size:10.5px;color:rgba(255,255,255,.2);font-family:'JetBrains Mono',monospace">
-      Après paiement, votre accès sera activé sous 24h<br>par notre équipe.
-    </div>
-    <button onclick="doLogout()" style="margin-top:14px;background:transparent;border:none;color:rgba(255,255,255,.2);font-size:11px;cursor:pointer;font-family:'Space Grotesk',sans-serif;text-decoration:underline">Se déconnecter</button>
-  </div>
-</div>
 
   </div>
 </div>
 
 <div class="toast-container" id="toastContainer"></div>
- <script type="module" src="as.js"></script>
+<script type="module" src="as.js"></script>
+</body>
+</html>
