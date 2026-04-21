@@ -1384,7 +1384,6 @@ function selectExport(fmt) {
   document.getElementById("opt-word")?.classList.toggle("selected", fmt === "word");
 }
 function doExport() { closeExportModal(); if (exportFormat === "pdf") exportPDF(); else exportWord(); }
-
 function exportPDF() {
   const { jsPDF } = window.jspdf;
   const doc     = new jsPDF({ orientation:"portrait", unit:"mm", format:"a4" });
@@ -1392,46 +1391,339 @@ function exportPDF() {
   const company = currentProfile?.company || "Entreprise";
   const pageW   = 210;
   const now     = new Date().toLocaleDateString("fr-FR");
-  doc.setFillColor(10, 11, 16); doc.rect(0, 0, pageW, 22, "F");
-  doc.setTextColor(212, 168, 83); doc.setFontSize(14); doc.setFont("helvetica", "bold");
-  doc.text("SYSCOHADA Pro v4 — Révisé 2017", 14, 10);
-  doc.setFontSize(7); doc.setFont("helvetica", "normal");
-  doc.text("COMEO AI — Expert-Comptable Ivoirien | ONECCA-CI", 14, 16);
-  doc.setTextColor(255, 255, 255); doc.setFontSize(8);
-  doc.text(company, pageW - 14, 10, { align:"right" });
-  doc.text("Exercice " + yr + " | Monnaie : FCFA (XOF)", pageW - 14, 16, { align:"right" });
-  doc.setTextColor(10, 11, 16); doc.setFontSize(16); doc.setFont("helvetica", "bold");
-  doc.text("JOURNAL GÉNÉRAL", 14, 34);
-  doc.setFontSize(8); doc.setFont("helvetica", "normal"); doc.setTextColor(130, 128, 112);
-  doc.text("Édité le " + now, 14, 40);
-  doc.setDrawColor(212, 168, 83); doc.setLineWidth(0.5); doc.line(14, 43, pageW - 14, 43);
-  const tableData = [];
-  let totalD = 0, totalC = 0;
-  ecritures.forEach(e => {
-    const lignesSorted = sortLignesDebitAvantCredit(e.lignes);
-    lignesSorted.forEach(l => {
-      tableData.push([e.date, e.journal, e.piece||"", l.compte, (PC[l.compte]||"").substring(0,28), l.libelle||e.libelle||"", l.debit?fn(l.debit):"", l.credit?fn(l.credit):""]);
-      totalD += l.debit || 0; totalC += l.credit || 0;
+
+  // ── Déterminer la vue active ──
+  const activeView = document.querySelector(".view.active");
+  const viewId     = activeView ? activeView.id : "view-journal";
+
+  // ── En-tête commun ──
+  const drawHeader = (title) => {
+    doc.setFillColor(10, 11, 16);
+    doc.rect(0, 0, pageW, 22, "F");
+    doc.setTextColor(212, 168, 83);
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.text("SYSCOHADA Pro v4 — Révisé 2017", 14, 10);
+    doc.setFontSize(7);
+    doc.setFont("helvetica", "normal");
+    doc.text("COMEO AI — Créé par Marcio Jardel Zinzindohoue — Groupe LOKO CI", 14, 16);
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(8);
+    doc.text(company, pageW - 14, 10, { align:"right" });
+    doc.text("Exercice " + yr + " | Monnaie : FCFA (XOF)", pageW - 14, 16, { align:"right" });
+    doc.setTextColor(10, 11, 16);
+    doc.setFontSize(16);
+    doc.setFont("helvetica", "bold");
+    doc.text(title, 14, 34);
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(130, 128, 112);
+    doc.text("Édité le " + now, 14, 40);
+    doc.setDrawColor(212, 168, 83);
+    doc.setLineWidth(0.5);
+    doc.line(14, 43, pageW - 14, 43);
+  };
+
+  // ════════════════════════════════
+  // VUE : JOURNAL
+  // ════════════════════════════════
+  if (viewId === "view-journal") {
+    drawHeader("JOURNAL GÉNÉRAL");
+    const tableData = [];
+    let totalD = 0, totalC = 0;
+    ecritures.forEach(e => {
+      const lignesSorted = sortLignesDebitAvantCredit(e.lignes);
+      lignesSorted.forEach(l => {
+        tableData.push([
+          e.date, e.journal, e.piece||"", l.compte,
+          (PC[l.compte]||"").substring(0,26),
+          (l.libelle||e.libelle||"").substring(0,34),
+          l.debit  ? fn(l.debit)  : "",
+          l.credit ? fn(l.credit) : ""
+        ]);
+        totalD += l.debit||0; totalC += l.credit||0;
+      });
     });
-  });
-  doc.autoTable({
-    startY: 48,
-    head:   [["Date","Jnl","N° Pièce","Compte","Libellé compte","Libellé opération","Débit FCFA","Crédit FCFA"]],
-    body:   tableData,
-    foot:   [["","","","","","TOTAUX", fn(totalD), fn(totalC)]],
-    styles:             { font:"helvetica", fontSize:7.5, cellPadding:2.5 },
-    headStyles:         { fillColor:[10,11,16], textColor:[212,168,83], fontStyle:"bold", fontSize:7 },
-    footStyles:         { fillColor:[30,34,54], textColor:[212,168,83], fontStyle:"bold", fontSize:8 },
-    alternateRowStyles: { fillColor:[250,248,244] },
-    columnStyles: {
-      0:{cellWidth:18}, 1:{cellWidth:10,halign:"center"}, 2:{cellWidth:18},
-      3:{cellWidth:16,fontStyle:"bold"}, 4:{cellWidth:28}, 5:{cellWidth:36},
-      6:{cellWidth:22,halign:"right"}, 7:{cellWidth:22,halign:"right"}
-    },
-    margin: { left:14, right:14 }
-  });
-  doc.save(`SYSCOHADA_v4_${company.replace(/\s+/g, "_")}_${yr}.pdf`);
-  toast("✓ PDF exporté avec succès", "success");
+    doc.autoTable({
+      startY: 48,
+      head: [["Date","Jnl","Pièce","Compte","Libellé compte","Libellé opération","Débit FCFA","Crédit FCFA"]],
+      body: tableData,
+      foot: [["","","","","","TOTAUX", fn(totalD), fn(totalC)]],
+      styles:             { font:"helvetica", fontSize:7.5, cellPadding:2.5 },
+      headStyles:         { fillColor:[10,11,16], textColor:[212,168,83], fontStyle:"bold", fontSize:7 },
+      footStyles:         { fillColor:[30,34,54], textColor:[212,168,83], fontStyle:"bold", fontSize:8 },
+      alternateRowStyles: { fillColor:[250,248,244] },
+      columnStyles: {
+        0:{cellWidth:18}, 1:{cellWidth:10,halign:"center"}, 2:{cellWidth:16},
+        3:{cellWidth:16,fontStyle:"bold"}, 4:{cellWidth:28}, 5:{cellWidth:34},
+        6:{cellWidth:22,halign:"right"}, 7:{cellWidth:22,halign:"right"}
+      },
+      margin: { left:14, right:14 }
+    });
+  }
+
+  // ════════════════════════════════
+  // VUE : GRAND LIVRE
+  // ════════════════════════════════
+  else if (viewId === "view-grandlivre") {
+    drawHeader("GRAND LIVRE GÉNÉRAL");
+    const map = getMap();
+    const comptes = Object.keys(map).sort();
+    const tableData = [];
+    comptes.forEach(code => {
+      const acc = map[code];
+      const s   = acc.debit - acc.credit;
+      tableData.push([
+        { content: code + " — " + (PC[code]||"").substring(0,44), colSpan:6,
+          styles:{ fillColor:[20,22,32], textColor:[212,168,83], fontStyle:"bold", fontSize:8 } }
+      ]);
+      acc.mvts.forEach(m => {
+        tableData.push([
+          m.date, m.journal, m.piece||"", m.libelle||"",
+          m.debit  ? fn(m.debit)  : "",
+          m.credit ? fn(m.credit) : ""
+        ]);
+      });
+      tableData.push([
+        { content:"TOTAL " + code, colSpan:4,
+          styles:{ fontStyle:"bold", fillColor:[245,243,238] } },
+        { content: fn(acc.debit),  styles:{ halign:"right", fontStyle:"bold", fillColor:[245,243,238] } },
+        { content: fn(acc.credit), styles:{ halign:"right", fontStyle:"bold", fillColor:[245,243,238] } }
+      ]);
+    });
+    doc.autoTable({
+      startY: 48,
+      head: [["Date","Jnl","Pièce","Libellé","Débit FCFA","Crédit FCFA"]],
+      body: tableData,
+      styles:     { font:"helvetica", fontSize:7.5, cellPadding:2.5 },
+      headStyles: { fillColor:[10,11,16], textColor:[212,168,83], fontStyle:"bold", fontSize:7 },
+      columnStyles: {
+        0:{cellWidth:20}, 1:{cellWidth:12,halign:"center"}, 2:{cellWidth:18},
+        3:{cellWidth:68}, 4:{cellWidth:28,halign:"right"}, 5:{cellWidth:28,halign:"right"}
+      },
+      margin: { left:14, right:14 }
+    });
+  }
+
+  // ════════════════════════════════
+  // VUE : BALANCE
+  // ════════════════════════════════
+  else if (viewId === "view-balance") {
+    drawHeader("BALANCE GÉNÉRALE DES COMPTES");
+    const map = getMap();
+    const comptes = Object.keys(map).sort();
+    let tD=0,tC=0,tSD=0,tSC=0;
+    const tableData = comptes.map(code => {
+      const acc=map[code], s=acc.debit-acc.credit, sd=s>0?s:0, sc=s<0?-s:0;
+      tD+=acc.debit; tC+=acc.credit; tSD+=sd; tSC+=sc;
+      return [
+        code, (PC[code]||"").substring(0,38),
+        fn(acc.debit), fn(acc.credit),
+        sd?fn(sd):"", sc?fn(sc):""
+      ];
+    });
+    tableData.push([
+      {content:"TOTAUX GÉNÉRAUX",colSpan:2,styles:{fontStyle:"bold",fillColor:[20,22,32],textColor:[212,168,83]}},
+      {content:fn(tD),styles:{halign:"right",fontStyle:"bold",fillColor:[20,22,32],textColor:[212,168,83]}},
+      {content:fn(tC),styles:{halign:"right",fontStyle:"bold",fillColor:[20,22,32],textColor:[212,168,83]}},
+      {content:fn(tSD),styles:{halign:"right",fontStyle:"bold",fillColor:[20,22,32],textColor:[212,168,83]}},
+      {content:fn(tSC),styles:{halign:"right",fontStyle:"bold",fillColor:[20,22,32],textColor:[212,168,83]}}
+    ]);
+    doc.autoTable({
+      startY: 48,
+      head: [["Compte","Intitulé","Débit FCFA","Crédit FCFA","Solde Débiteur","Solde Créditeur"]],
+      body: tableData,
+      styles:             { font:"helvetica", fontSize:7.5, cellPadding:2.5 },
+      headStyles:         { fillColor:[10,11,16], textColor:[212,168,83], fontStyle:"bold", fontSize:7 },
+      alternateRowStyles: { fillColor:[250,248,244] },
+      columnStyles: {
+        0:{cellWidth:18,fontStyle:"bold"}, 1:{cellWidth:56}, 2:{cellWidth:28,halign:"right"},
+        3:{cellWidth:28,halign:"right"},   4:{cellWidth:28,halign:"right"}, 5:{cellWidth:28,halign:"right"}
+      },
+      margin: { left:14, right:14 }
+    });
+  }
+
+  // ════════════════════════════════
+  // VUE : BILAN
+  // ════════════════════════════════
+  else if (viewId === "view-bilan") {
+    drawHeader("BILAN — SYSCOHADA RÉVISÉ 2017");
+    const map = getMap();
+    const actif  = { immob:{title:"ACTIF IMMOBILISÉ",comptes:[]}, stocks:{title:"STOCKS ET EN-COURS",comptes:[]}, creances:{title:"CRÉANCES",comptes:[]}, treso:{title:"TRÉSORERIE-ACTIF",comptes:[]} };
+    const passif = { cap:{title:"CAPITAUX PROPRES",comptes:[]}, df:{title:"DETTES FINANCIÈRES",comptes:[]}, dct:{title:"PASSIF CIRCULANT",comptes:[]}, tp:{title:"TRÉSORERIE-PASSIF",comptes:[]} };
+    Object.entries(map).forEach(([code,acc])=>{
+      const s=acc.debit-acc.credit, cl=code[0], e={code,lib:(PC[code]||code).substring(0,36),solde:Math.abs(s)};
+      if(cl==="2"&&s>0) actif.immob.comptes.push(e);
+      else if(cl==="3"&&s>0) actif.stocks.comptes.push(e);
+      else if(cl==="4"){if(s>0) actif.creances.comptes.push(e); else if(s<0) passif.dct.comptes.push({...e,solde:Math.abs(s)});}
+      else if(cl==="5"){if(s>0) actif.treso.comptes.push(e); else passif.tp.comptes.push({...e,solde:Math.abs(s)});}
+      else if(cl==="1"){const n=parseInt(code);(n<=160?passif.cap:passif.df).comptes.push({code,lib:(PC[code]||code).substring(0,36),solde:Math.abs(s)});}
+    });
+    const tA = [...actif.immob.comptes,...actif.stocks.comptes,...actif.creances.comptes,...actif.treso.comptes].reduce((s,c)=>s+c.solde,0);
+    const tP = [...passif.cap.comptes,...passif.df.comptes,...passif.dct.comptes,...passif.tp.comptes].reduce((s,c)=>s+c.solde,0);
+    const bilanData = [];
+    const buildSection = (sections, side) => {
+      sections.forEach(sec=>{
+        if(!sec.comptes.length) return;
+        bilanData.push([
+          {content:side+": "+sec.title, colSpan:4,
+           styles:{fillColor:[20,22,32],textColor:[212,168,83],fontStyle:"bold",fontSize:7.5}}
+        ]);
+        sec.comptes.forEach(c=>{
+          bilanData.push([c.code, c.lib, side==="ACTIF"?fn(c.solde):"", side==="PASSIF"?fn(c.solde):""]);
+        });
+      });
+    };
+    buildSection(Object.values(actif),"ACTIF");
+    buildSection(Object.values(passif),"PASSIF");
+    bilanData.push([
+      {content:"TOTAL ACTIF",colSpan:2,styles:{fontStyle:"bold",fillColor:[10,11,16],textColor:[212,168,83]}},
+      {content:fn(tA)+" FCFA",styles:{halign:"right",fontStyle:"bold",fillColor:[10,11,16],textColor:[212,168,83]}},
+      {content:fn(tP)+" FCFA",styles:{halign:"right",fontStyle:"bold",fillColor:[10,11,16],textColor:[212,168,83]}}
+    ]);
+    doc.autoTable({
+      startY: 48,
+      head: [["Compte","Intitulé","ACTIF (FCFA)","PASSIF (FCFA)"]],
+      body: bilanData,
+      styles:     { font:"helvetica", fontSize:7.5, cellPadding:2.5 },
+      headStyles: { fillColor:[10,11,16], textColor:[212,168,83], fontStyle:"bold", fontSize:7 },
+      alternateRowStyles: { fillColor:[250,248,244] },
+      columnStyles: {
+        0:{cellWidth:18,fontStyle:"bold"}, 1:{cellWidth:84},
+        2:{cellWidth:38,halign:"right"},   3:{cellWidth:38,halign:"right"}
+      },
+      margin: { left:14, right:14 }
+    });
+  }
+
+  // ════════════════════════════════
+  // VUE : RÉSULTAT
+  // ════════════════════════════════
+  else if (viewId === "view-resultat") {
+    drawHeader("COMPTE DE RÉSULTAT — SYSCOHADA RÉVISÉ 2017");
+    const map = getMap();
+    const gt  = pfx => Object.entries(map).filter(([c])=>pfx.some(p=>c.startsWith(p))).reduce((s,[,a])=>s+(a.debit-a.credit),0);
+    const ventes   = Math.abs(gt(["701","702","703","704","705"]));
+    const autrProd = Math.abs(gt(["707","75","718","711"]));
+    const transports = gt(["612","614"]);
+    const servExt    = gt(["621","622","624","625","626","627","628","631","632","634","635","638"]);
+    const impTaxes   = gt(["641","645"]);
+    const autresChg  = gt(["651","654","658"]);
+    const personnel  = gt(["661","662","663","664"]);
+    const dap        = gt(["681","691","697"]);
+    const revFin     = Math.abs(gt(["771","772","773","774","776","777"]));
+    const chgFin     = gt(["671","673","674","676"]);
+    const haoP       = Math.abs(gt(["821","822","841"]));
+    const haoC       = gt(["811","812","831","834","839","851","852","854"]);
+    const imp        = gt(["891","895"]);
+    const mc  = ventes - Math.abs(gt(["601"])) - gt(["6031"]);
+    const va  = ventes + autrProd - Math.abs(gt(["601","602","604","605","608"])) - gt(["6031","6032"]) - transports - servExt - impTaxes - autresChg;
+    const ebe = va - personnel;
+    const re  = ebe - dap;
+    const rf  = revFin - chgFin;
+    const rao = re + rf;
+    const rhao= haoP - haoC;
+    const res = rao + rhao - imp;
+    const rows = [
+      ["Ventes de marchandises (701–705)",      fn(ventes)+"", ""],
+      ["Achats + Var. stocks (601+6031)",        "", fn(Math.abs(gt(["601"]))+gt(["6031"]))+""],
+      ["→ Marge commerciale (XA)",               fn(mc)+"", ""],
+      ["Autres produits (707+75+718)",            fn(autrProd)+"", ""],
+      ["Transports + Services ext.",              "", fn(transports+servExt)+""],
+      ["Impôts et taxes + Autres charges",        "", fn(impTaxes+autresChg)+""],
+      ["→ Valeur Ajoutée Brute (XC)",             fn(va)+"", ""],
+      ["Charges de personnel (661–664)",          "", fn(personnel)+""],
+      ["→ EBE — Excédent Brut d'Exploitation",    fn(ebe)+"", ""],
+      ["DAP amortissements et provisions",        "", fn(dap)+""],
+      ["→ Résultat d'Exploitation (RE)",          fn(re)+"", ""],
+      ["Revenus financiers (77)",                 fn(revFin)+"", ""],
+      ["Charges financières (67)",                "", fn(chgFin)+""],
+      ["→ Résultat Financier (RF)",               fn(rf)+"", ""],
+      ["→ RAO — Résultat Activités Ordinaires",   fn(rao)+"", ""],
+      ["Produits HAO",                            fn(haoP)+"", ""],
+      ["Charges HAO",                             "", fn(haoC)+""],
+      ["→ RHAO",                                  fn(rhao)+"", ""],
+      ["IS / IBP (891) — Taux CI : 25%",          "", fn(imp)+""],
+      [res>=0?"✓ RÉSULTAT NET — BÉNÉFICE":"✗ RÉSULTAT NET — PERTE", fn(Math.abs(res))+" FCFA", ""]
+    ];
+    doc.autoTable({
+      startY: 48,
+      head: [["Rubrique","Produits FCFA","Charges FCFA"]],
+      body: rows,
+      styles:     { font:"helvetica", fontSize:8, cellPadding:2.8 },
+      headStyles: { fillColor:[10,11,16], textColor:[212,168,83], fontStyle:"bold" },
+      alternateRowStyles: { fillColor:[250,248,244] },
+      columnStyles: { 0:{cellWidth:110}, 1:{cellWidth:38,halign:"right"}, 2:{cellWidth:38,halign:"right"} },
+      margin: { left:14, right:14 },
+      didParseCell(data) {
+        if(data.row.index===rows.length-1){
+          data.cell.styles.fillColor = [10,11,16];
+          data.cell.styles.textColor = [212,168,83];
+          data.cell.styles.fontStyle = "bold";
+          data.cell.styles.fontSize  = 9;
+        }
+      }
+    });
+  }
+
+  // ════════════════════════════════
+  // VUE : TRÉSORERIE
+  // ════════════════════════════════
+  else if (viewId === "view-tresorerie") {
+    drawHeader("ÉTAT DE TRÉSORERIE — CLASSE 5");
+    const map = getMap();
+    const tc  = Object.entries(map).filter(([c])=>c.startsWith("5"));
+    const total = tc.reduce((s,[,a])=>s+(a.debit-a.credit),0);
+    const tableData = tc.map(([code,acc])=>{
+      const s=acc.debit-acc.credit;
+      return [code, (PC[code]||"").substring(0,52), fn(acc.debit), fn(acc.credit), (s>=0?"Sd ":"Sc ")+fn(Math.abs(s))];
+    });
+    tableData.push([
+      {content:"TRÉSORERIE NETTE TOTALE",colSpan:4,styles:{fontStyle:"bold",fillColor:[10,11,16],textColor:[212,168,83]}},
+      {content:(total>=0?"Sd ":"Sc ")+fn(Math.abs(total))+" FCFA",styles:{halign:"right",fontStyle:"bold",fillColor:[10,11,16],textColor:[212,168,83]}}
+    ]);
+    doc.autoTable({
+      startY: 48,
+      head: [["Compte","Intitulé","Débit FCFA","Crédit FCFA","Solde"]],
+      body: tableData,
+      styles:     { font:"helvetica", fontSize:8, cellPadding:2.8 },
+      headStyles: { fillColor:[10,11,16], textColor:[212,168,83], fontStyle:"bold" },
+      alternateRowStyles: { fillColor:[250,248,244] },
+      columnStyles: { 0:{cellWidth:18,fontStyle:"bold"}, 1:{cellWidth:68}, 2:{cellWidth:28,halign:"right"}, 3:{cellWidth:28,halign:"right"}, 4:{cellWidth:32,halign:"right"} },
+      margin: { left:14, right:14 }
+    });
+  }
+
+  // ════════════════════════════════
+  // VUE : DASHBOARD (fallback)
+  // ════════════════════════════════
+  else {
+    drawHeader("JOURNAL GÉNÉRAL");
+    const tableData = [];
+    let totalD=0, totalC=0;
+    ecritures.forEach(e=>{
+      sortLignesDebitAvantCredit(e.lignes).forEach(l=>{
+        tableData.push([e.date,e.journal,e.piece||"",l.compte,(PC[l.compte]||"").substring(0,26),(l.libelle||e.libelle||"").substring(0,34),l.debit?fn(l.debit):"",l.credit?fn(l.credit):""]);
+        totalD+=l.debit||0; totalC+=l.credit||0;
+      });
+    });
+    doc.autoTable({
+      startY:48,
+      head:[["Date","Jnl","Pièce","Compte","Libellé compte","Libellé","Débit FCFA","Crédit FCFA"]],
+      body:tableData,
+      foot:[["","","","","","TOTAUX",fn(totalD),fn(totalC)]],
+      styles:{font:"helvetica",fontSize:7.5,cellPadding:2.5},
+      headStyles:{fillColor:[10,11,16],textColor:[212,168,83],fontStyle:"bold",fontSize:7},
+      footStyles:{fillColor:[30,34,54],textColor:[212,168,83],fontStyle:"bold",fontSize:8},
+      alternateRowStyles:{fillColor:[250,248,244]},
+      columnStyles:{0:{cellWidth:18},1:{cellWidth:10,halign:"center"},2:{cellWidth:16},3:{cellWidth:16,fontStyle:"bold"},4:{cellWidth:28},5:{cellWidth:34},6:{cellWidth:22,halign:"right"},7:{cellWidth:22,halign:"right"}},
+      margin:{left:14,right:14}
+    });
+  }
+
+  doc.save(`SYSCOHADA_v4_${company.replace(/\s+/g,"_")}_${yr}.pdf`);
+  toast("✓ PDF exporté — Vue actuelle imprimée avec succès", "success");
 }
 
 function exportWord() {
