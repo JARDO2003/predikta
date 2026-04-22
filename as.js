@@ -343,14 +343,17 @@ async function doLogin() {
     const profile = snap.data();
     if (atob(profile.password) !== pass) { err.textContent = "Mot de passe incorrect"; err.classList.add("show"); return; }
     currentProfile = { ...profile, id: profileId };
-    // ── Persistance permanente sur ce navigateur (pas d'expiration) ──
+
+    // Sauvegarder TOUT le profil localement dans le navigateur
     localStorage.setItem("syscohada_session", JSON.stringify({
       profileId,
-      company,
-      savedAt:  Date.now(),
-      deviceId: _getOrCreateDeviceId(),
-      persistent: true   // ← marqueur : session persistante
+      company:   profile.company,
+      exercice:  profile.exercice  || "2024",
+      compte701: profile.compte701 || "701",
+      password:  profile.password,
+      savedAt:   Date.now()
     }));
+
     await loadApp();
   } catch (e) { err.textContent = "Erreur : " + e.message; err.classList.add("show"); }
 }
@@ -365,12 +368,34 @@ function doLogout() {
   document.getElementById("authOverlay").style.display = "flex";
 }
 
-function waitForFirebase() {
-  return new Promise(r => {
-    if (window._fbReady) { r(); return; }
-    document.addEventListener("firebase-ready", r, { once: true });
-  });
-}
+(async function tryAutoLogin() {
+  const raw = localStorage.getItem("syscohada_session");
+  if (!raw) return;
+
+  try {
+    const session = JSON.parse(raw);
+    if (!session?.profileId || !session?.company) {
+      localStorage.removeItem("syscohada_session");
+      return;
+    }
+
+    // Reconstruire le profil depuis localStorage SANS Firebase
+    currentProfile = {
+      id:        session.profileId,
+      company:   session.company,
+      exercice:  session.exercice  || "2024",
+      compte701: session.compte701 || "701",
+      password:  session.password  || ""
+    };
+
+    // Charger l'app (Firebase sera utilisé pour les écritures uniquement)
+    await waitForFirebase();
+    await loadApp();
+
+  } catch (e) {
+    localStorage.removeItem("syscohada_session");
+  }
+})();
 
 // ══════════════════════════════════════════
 // CHARGEMENT APP + ABONNEMENT
