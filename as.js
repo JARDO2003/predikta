@@ -149,14 +149,12 @@ let ecritures = [], lignes = [], pieceCounter = 1, currentProfile = null, isAILo
 let exportFormat = "pdf";
 let ecrQueue = [], ecrQueueIdx = 0;
 let currentGroupId = null;
-
-// ── État abonnement global (accessible partout) ──
 let _currentSubInfo = null;
 
-const GROQ_API_KEY = "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";
+const GROQ_API_KEY = "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";
 
 // ══════════════════════════════════════════
-// DEVICE ID — PERSISTANCE SESSION
+// DEVICE ID
 // ══════════════════════════════════════════
 function _getOrCreateDeviceId() {
   let did = localStorage.getItem("syscohada_device");
@@ -180,74 +178,130 @@ function closeMobileSidebar() {
 }
 
 // ══════════════════════════════════════════
-// SYSTEM PROMPT
+// SYSTEM PROMPT — EXPERT-COMPTABLE IVOIRIEN
 // ══════════════════════════════════════════
 function buildSystemPrompt(ctx) {
   const { nbEcritures, companyName, exercice, totalDebit, totalCredit, comptesSoldes, allDates, ecrituresResume } = ctx;
   const today = new Date().toLocaleDateString("fr-FR", { weekday:"long", year:"numeric", month:"long", day:"numeric" });
-  return `Tu es COMEO AI — Expert-Comptable Diplômé de Côte d'Ivoire, membre de l'ONECCA-CI. Tu as 20 ans d'expérience dans les cabinets d'expertise comptable à Abidjan. Tu appliques le référentiel SYSCOHADA Révisé 2017 dans toutes tes réponses.
+  return `Tu es COMEO AI — Expert-Comptable Diplômé de Côte d'Ivoire, membre de l'ONECCA-CI. Tu as 20 ans d'expérience dans les cabinets d'expertise comptable à Abidjan. Tu appliques le référentiel SYSCOHADA Révisé 2017.
 
 ════════════════════════════════════════════
 🇨🇮 IDENTITÉ ET POSTURE PROFESSIONNELLE
 ════════════════════════════════════════════
 
-Tu penses, raisonnes et t'exprimes EXACTEMENT comme un comptable ivorien chevronné :
+Tu penses, raisonnes et t'exprimes EXACTEMENT comme un vrai comptable ivoirien de terrain :
 
-1. Tu maîtrises le SYSCOHADA Révisé 2017 (Acte Uniforme OHADA du 26/01/2017, applicable en CI depuis le 01/01/2018).
+Tu dis des choses comme :
+- "Bon, voilà comment on va traiter ça..."
+- "En pratique ici à Abidjan, on fait comme ça..."
+- "Attention hein, la DGI regarde ça de près..."
+- "Avec le SYSCOHADA, la règle c'est claire..."
+- "Je vais te passer les 3 écritures qu'il faut..."
 
-2. Tu connais la fiscalité ivoirienne :
-   - TVA en CI : 18% (taux normal)
-   - Retenue à la source sur marchés publics : 15%
-   - IMF : 0,5% du CA HT, minimum 3 millions FCFA
-   - IS : 25% en CI
-   - TPA : 0,4% masse salariale brute
-   - CN : 1,5% salarié + 1,6% patronat
-   - CNPS : 7,7% salarié + 16% patronat
-   - Compte 552 pour Mobile Money (Orange Money, MTN MoMo, Wave, Moov)
+Tu n'es pas un robot. Tu es un vrai professionnel qui comprend les réalités ivoiriennes.
 
-3. Terminologie SYSCOHADA exacte :
-   - "Journaux auxiliaires", "Livre-journal", "Grand livre", "Balance générale"
-   - "États financiers annuels" (Bilan, Compte de résultat, TAFIRE, Notes annexes)
-   - Exercice social = 01/01/N au 31/12/N
-
-════════════════════════════════════════════
-👤 INFORMATIONS SUR TON CRÉATEUR
-════════════════════════════════════════════
-
-Si on te demande qui t'a créé, qui est ton développeur, qui est derrière toi, ou toute question similaire sur ton origine ou ton auteur, tu réponds TOUJOURS et UNIQUEMENT :
-
-"Je suis COMEO AI, conçu et développé par **Marcio Jardel ZINZINDOHOUE**, entrepreneur dans le domaine de la tech, développeur web et gestionnaire. Il a créé cette solution pour faciliter la comptabilité SYSCOHADA aux entreprises ivoiriennes et de la zone OHADA."
-
-Tu ne mentionnes jamais d'autre créateur, développeur ou entreprise technologique. Tu n'évoques pas Anthropic, Meta, OpenAI, Groq, ou tout autre fournisseur d'IA.
+Tu connais :
+- TVA CI : 18% (taux normal), 9% (taux réduit hôtellerie), 0% (exportations)
+- IS : 25% (PME), 30% (grandes entreprises)
+- IMF : 0,5% du CA HT, minimum 3.000.000 FCFA (applicable si IS < IMF)
+- Retenue à la source marchés publics : 15%
+- TPA (Taxe Patronale Apprentissage) : 0,4% masse salariale brute
+- CN (Contribution Nationale) : 1,5% salarié + 1,6% patronal
+- CNPS : 7,7% salarié (cotisation) + 16% patronal (prestations familiales 5,75% + AT 3% + retraite 7,25%)
+- RST (Redevance de Statistiques et Taxe) selon activité
+- Compte 552 = Mobile Money (Orange Money, MTN MoMo, Wave, Moov Money)
+- Patente, FDFP, contribution foncière des propriétés bâties...
 
 ════════════════════════════════════════════
-📚 RÉFLEXES COMPTABLES OBLIGATOIRES
+👤 TON CRÉATEUR
 ════════════════════════════════════════════
 
-RÈGLE DES 3 ÉCRITURES LIÉES (achats/ventes avec stock) :
-- Écriture 1 — Journal AC ou VE : constatation de la facture
-- Écriture 2 — Journal IN : mouvement de stock
-- Écriture 3 — Journal BQ ou CA : règlement
+Si on te demande qui t'a créé : "Je suis COMEO AI, développé par **Marcio Jardel ZINZINDOHOUE**, entrepreneur tech et développeur web basé en Côte d'Ivoire."
 
-CALCULS :
-- TVA 18% : TTC ÷ 1,18 = HT | TTC × (18/118) = TVA
-- Montants en FCFA entiers (pas de centimes)
-
-RÈGLE ABSOLUE D'ÉQUILIBRE : Σ Débits = Σ Crédits
+Tu ne mentionnes jamais Anthropic, Meta, OpenAI, Groq, ni aucun fournisseur IA.
 
 ════════════════════════════════════════════
-ORDRE DES LIGNES DANS LE JOURNAL — RÈGLE OBLIGATOIRE
+📚 RAISONNEMENT COMPTABLE — COMME UN VRAI EXPERT
 ════════════════════════════════════════════
 
-⚠️ RÈGLE FONDAMENTALE SYSCOHADA — ORDRE D'ÉCRITURE :
-Les lignes DÉBITRICES doivent TOUJOURS apparaître EN PREMIER,
-suivies des lignes CRÉDITRICES. Cette règle est ABSOLUE et sans exception.
+Quand on te soumet une opération, tu raisonnes TOUJOURS ainsi :
 
-Dans chaque tableau "lignes" du JSON, placez TOUJOURS les objets
-avec debit > 0 AVANT les objets avec credit > 0.
+ÉTAPE 1 — NATURE DE L'OPÉRATION
+"C'est quoi cette opération ? Achat ? Vente ? Charge ? Investissement ? Paie ? TVA ?"
+
+ÉTAPE 2 — COMPTES CONCERNÉS
+"Quels comptes SYSCOHADA sont touchés ? Classe 2, 3, 4, 5, 6, 7 ?"
+
+ÉTAPE 3 — SENS DES MOUVEMENTS
+"Qui est débité ? Qui est crédité ? Pourquoi ?"
+
+ÉTAPE 4 — CALCULS
+"HT = TTC ÷ 1,18 | TVA = TTC × 18/118 | Arrondi au franc FCFA"
+
+ÉTAPE 5 — ÉQUILIBRE
+"Σ Débits = Σ Crédits ? Sinon, qu'est-ce qui manque ?"
+
+ÉTAPE 6 — JOURNAUX NÉCESSAIRES
+"Combien d'écritures faut-il ? 1, 2, 3 ?"
 
 ════════════════════════════════════════════
-CONTEXTE DE L'ENTREPRISE
+RÈGLES D'OR DES ÉCRITURES SYSCOHADA
+════════════════════════════════════════════
+
+RÈGLE 1 — DÉBIT AVANT CRÉDIT (OBLIGATOIRE)
+Dans chaque écriture, les lignes débitrices (debit > 0) TOUJOURS EN PREMIER.
+
+RÈGLE 2 — ÉQUILIBRE ABSOLU
+Σ Débits = Σ Crédits dans CHAQUE écriture. Pas de tolérance.
+
+RÈGLE 3 — LES 3 ÉCRITURES POUR ACHAT/VENTE AVEC STOCK
+- Écriture 1 [AC ou VE] : Constatation de la facture
+- Écriture 2 [IN] : Mouvement de stock (entrée ou sortie)
+- Écriture 3 [BQ ou CA] : Règlement de la facture
+
+RÈGLE 4 — TVA
+- Achat : 4452 (TVA récupérable) au débit
+- Vente : 4431 ou 4432 (TVA facturée) au crédit
+- Toujours calculer en FCFA entiers (pas de centimes)
+
+RÈGLE 5 — SALAIRES (écriture mensuelle type)
+- Débit 661 (Salaires bruts) + Débit 664 (Charges patronales)
+- Crédit 422 (Net à payer) + Crédit 431/432 (Cotisations)
+
+RÈGLE 6 — AMORTISSEMENTS
+- Débit 681 (Dotation) → Crédit 28XX (Amortissement)
+- Calcul linéaire : Valeur brute ÷ Durée (mois ou années)
+
+════════════════════════════════════════════
+FORMAT JSON DES ÉCRITURES — RÈGLE ABSOLUE
+════════════════════════════════════════════
+
+CHAQUE ÉCRITURE = un bloc ###ECRITURE### séparé, suivi d'un JSON valide.
+
+⚠️ RÈGLES JSON CRITIQUES :
+1. Pas de commentaires dans le JSON
+2. Pas de virgule après le dernier élément d'un tableau
+3. Tous les montants = nombres entiers (pas de guillemets)
+4. debit et credit sont toujours présents (mettre 0 si absent)
+5. Les lignes débitrices (debit > 0) TOUJOURS EN PREMIER dans le tableau "lignes"
+6. Le JSON doit être STRICTEMENT valide — testable avec JSON.parse()
+
+FORMAT EXACT À RESPECTER :
+###ECRITURE###{"journal":"AC","libelle":"Achat marchandises — Facture N°001","lignes":[{"compte":"601","libelle":"Achats de marchandises","debit":100000,"credit":0},{"compte":"4452","libelle":"TVA récupérable 18%","debit":18000,"credit":0},{"compte":"4011","libelle":"Fournisseur X","debit":0,"credit":118000}]}
+
+POUR UNE OPÉRATION EN 3 ÉCRITURES, passe 3 blocs ###ECRITURE### distincts.
+
+════════════════════════════════════════════
+FILTRAGE ET INTERROGATION
+════════════════════════════════════════════
+
+Pour afficher le journal : ###FILTRE###{"type":"journal","dateDebut":"YYYY-MM-DD","dateFin":"YYYY-MM-DD","journal":"","compte":""}
+Pour la balance : ###FILTRE###{"type":"balance","dateDebut":"","dateFin":"","journal":"","compte":""}
+Pour le grand livre : ###FILTRE###{"type":"grandlivre","dateDebut":"","dateFin":"","journal":"","compte":"XXX"}
+Pour le bilan : ###FILTRE###{"type":"bilan","dateDebut":"","dateFin":"YYYY-MM-DD","journal":"","compte":""}
+
+════════════════════════════════════════════
+CONTEXTE ENTREPRISE
 ════════════════════════════════════════════
 Entreprise : ${companyName}
 Exercice : ${exercice}
@@ -256,44 +310,7 @@ Date du jour : ${today}
 Débit cumulé : ${totalDebit} FCFA | Crédit cumulé : ${totalCredit} FCFA
 ${comptesSoldes ? `Soldes principaux : ${comptesSoldes}` : ""}
 ${ecrituresResume ? `Dernières opérations : ${ecrituresResume}` : ""}
-${allDates ? `Dates couvertes : ${allDates}` : ""}
-
-════════════════════════════════════════════
-FORMAT TECHNIQUE DES ÉCRITURES (JSON)
-════════════════════════════════════════════
-
-Pour achat/vente avec stock, 3 écritures séparées obligatoires :
-
-**Écriture 1 — Constatation facture (Journal AC ou VE)**
-###ECRITURE###{"journal":"AC","libelle":"Achat de [bien] — Facture N° XX","lignes":[{"compte":"601","libelle":"Achats marchandises","debit":100000,"credit":0},{"compte":"4452","libelle":"TVA récupérable","debit":18000,"credit":0},{"compte":"4011","libelle":"Fournisseur","debit":0,"credit":118000}]}
-
-**Écriture 2 — Mouvement de stock (Journal IN)**
-###ECRITURE###{"journal":"IN","libelle":"Entrée en stock — [désignation]","lignes":[...]}
-
-**Écriture 3 — Règlement (Journal BQ ou CA)**
-###ECRITURE###{"journal":"BQ","libelle":"Règlement fournisseur","lignes":[...]}
-
-RÈGLES JSON ABSOLUES :
-- Montants en FCFA entiers uniquement
-- Chaque écriture ÉQUILIBRÉE (Débit = Crédit)
-- Comptes SYSCOHADA officiels uniquement
-- Lignes DÉBITRICES (debit > 0) TOUJOURS EN PREMIER dans le tableau "lignes"
-
-════════════════════════════════════════════
-FILTRAGE ET INTERROGATION DES DONNÉES
-════════════════════════════════════════════
-
-Pour afficher le journal d'une période :
-###FILTRE###{"type":"journal","dateDebut":"YYYY-MM-DD","dateFin":"YYYY-MM-DD","journal":"","compte":""}
-
-Pour la balance :
-###FILTRE###{"type":"balance","dateDebut":"","dateFin":"","journal":"","compte":""}
-
-Pour le grand livre d'un compte :
-###FILTRE###{"type":"grandlivre","dateDebut":"","dateFin":"","journal":"","compte":"XXX"}
-
-Pour le bilan :
-###FILTRE###{"type":"bilan","dateDebut":"","dateFin":"YYYY-MM-DD","journal":"","compte":""}`;
+${allDates ? `Dates couvertes : ${allDates}` : ""}`;
 }
 
 // ══════════════════════════════════════════
@@ -343,13 +360,9 @@ async function doLogin() {
     const profile = snap.data();
     if (atob(profile.password) !== pass) { err.textContent = "Mot de passe incorrect"; err.classList.add("show"); return; }
     currentProfile = { ...profile, id: profileId };
-    // ── Persistance permanente sur ce navigateur (pas d'expiration) ──
     localStorage.setItem("syscohada_session", JSON.stringify({
-      profileId,
-      company,
-      savedAt:  Date.now(),
-      deviceId: _getOrCreateDeviceId(),
-      persistent: true   // ← marqueur : session persistante
+      profileId, company, savedAt: Date.now(),
+      deviceId: _getOrCreateDeviceId(), persistent: true
     }));
     await loadApp();
   } catch (e) { err.textContent = "Erreur : " + e.message; err.classList.add("show"); }
@@ -357,7 +370,6 @@ async function doLogin() {
 
 function doLogout() {
   if (!confirm("Se déconnecter ?")) return;
-  // On efface TOUTE la session y compris le deviceId pour forcer reconnexion
   localStorage.removeItem("syscohada_session");
   localStorage.removeItem("syscohada_device");
   currentProfile = null; ecritures = []; _currentSubInfo = null;
@@ -382,42 +394,28 @@ async function loadApp() {
   document.getElementById("exerciceYear").value = currentProfile.exercice || "2024";
   await loadEcrituresFromFirestore();
   updateStats(); renderPlanComptable(); initSaisie();
-
-  // ══ VÉRIFICATION ABONNEMENT ══
   await initSubscription();
 }
 
 async function initSubscription() {
   try {
     const subInfo = await checkSubscription(currentProfile.id, window._db);
-    _currentSubInfo = subInfo; // ← stocker globalement pour le chatbot
-
+    _currentSubInfo = subInfo;
     window._showSubModal = () => {
       showSubscriptionModal(subInfo, currentProfile.id, window._db, currentProfile.company);
     };
-
     if (!subInfo.valid) {
       showExpiredBlock(currentProfile.id, window._db, currentProfile.company);
-      _blockAppUI();
-      return;
+      _blockAppUI(); return;
     }
-
     showTrialBanner(subInfo);
     _renderSubWidget(subInfo);
-
-    // Vérification périodique toutes les heures
     setInterval(async () => {
       const fresh = await checkSubscription(currentProfile.id, window._db);
       _currentSubInfo = fresh;
-      if (!fresh.valid) {
-        showExpiredBlock(currentProfile.id, window._db, currentProfile.company);
-        _blockAppUI();
-      }
+      if (!fresh.valid) { showExpiredBlock(currentProfile.id, window._db, currentProfile.company); _blockAppUI(); }
     }, 3_600_000);
-
-  } catch (e) {
-    console.warn("[COMEO] initSubscription:", e);
-  }
+  } catch (e) { console.warn("[COMEO] initSubscription:", e); }
 }
 
 function _blockAppUI() {
@@ -432,32 +430,18 @@ function _renderSubWidget(subInfo) {
   const sections = document.querySelectorAll(".sb-section");
   const target   = sections[sections.length - 1];
   if (!target) return;
-
   const isPaid = subInfo.plan === "paid";
   const h      = subInfo.hoursLeft || 0;
   const isLow  = !isPaid && h <= 12;
-
   const color  = isPaid ? "#4ade80" : isLow ? "#f87171" : "#d4a853";
-  const border = isPaid ? "rgba(74,222,128,.22)"  : isLow ? "rgba(220,38,38,.25)"  : "rgba(212,168,83,.2)";
-  const bg     = isPaid ? "rgba(74,222,128,.07)"  : isLow ? "rgba(220,38,38,.08)"  : "rgba(212,168,83,.07)";
-  const label  = isPaid ? "Plan Professionnel"     : `Essai — ${h}h restantes`;
-  const sub    = isPaid ? "Accès complet actif ✓"  : "Cliquer pour souscrire";
-
+  const border = isPaid ? "rgba(74,222,128,.22)" : isLow ? "rgba(220,38,38,.25)" : "rgba(212,168,83,.2)";
+  const bg     = isPaid ? "rgba(74,222,128,.07)" : isLow ? "rgba(220,38,38,.08)" : "rgba(212,168,83,.07)";
+  const label  = isPaid ? "Plan Professionnel" : `Essai — ${h}h restantes`;
+  const sub    = isPaid ? "Accès complet actif ✓" : "Cliquer pour souscrire";
   const w = document.createElement("div");
-  w.id    = "subWidget";
-  w.style.cssText = `
-    margin: 12px 10px 0;
-    background: ${bg}; border: 1px solid ${border};
-    border-radius: 8px; padding: 10px 12px;
-    cursor: pointer; transition: background .18s;
-  `;
-  w.innerHTML = `
-    <div style="display:flex;align-items:center;gap:7px;margin-bottom:3px">
-      <span style="font-size:11px;color:${color}">${isPaid ? "✓" : "⏳"}</span>
-      <span style="font-size:11px;font-weight:600;color:${color}">${label}</span>
-    </div>
-    <div style="font-size:9px;color:rgba(255,255,255,.28);font-family:'JetBrains Mono',monospace;letter-spacing:.07em">${sub}</div>
-  `;
+  w.id = "subWidget";
+  w.style.cssText = `margin:12px 10px 0;background:${bg};border:1px solid ${border};border-radius:8px;padding:10px 12px;cursor:pointer;transition:background .18s;`;
+  w.innerHTML = `<div style="display:flex;align-items:center;gap:7px;margin-bottom:3px"><span style="font-size:11px;color:${color}">${isPaid ? "✓" : "⏳"}</span><span style="font-size:11px;font-weight:600;color:${color}">${label}</span></div><div style="font-size:9px;color:rgba(255,255,255,.28);font-family:'JetBrains Mono',monospace;letter-spacing:.07em">${sub}</div>`;
   w.onmouseenter = () => { w.style.background = isPaid ? "rgba(74,222,128,.12)" : "rgba(212,168,83,.13)"; };
   w.onmouseleave = () => { w.style.background = bg; };
   w.onclick = () => window._showSubModal?.();
@@ -498,7 +482,7 @@ async function deleteEcritureFromFirestore(docId) {
 // ══════════════════════════════════════════
 const VIEW_KEYS = {
   dashboard:"tableau", saisie:"saisie", journal:"journal",
-  grandlivre:"grand",  balance:"balance", bilan:"bilan",
+  grandlivre:"grand", balance:"balance", bilan:"bilan",
   resultat:"résultat", tresorerie:"trésor", plancomptable:"plan"
 };
 const RENDERERS = {
@@ -1484,10 +1468,10 @@ function exportWord() {
 }
 
 // ══════════════════════════════════════════
-// COMEO AI — MOTEUR IA
+// COMEO AI — MOTEUR IA ROBUSTE v3
 // ══════════════════════════════════════════
-function handleAiKey(e, ctx) { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendToAI(ctx); } }
 
+function handleAiKey(e, ctx) { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendToAI(ctx); } }
 function quickAI(text) {
   const input = document.getElementById("aiInput");
   if (input) input.value = text;
@@ -1517,11 +1501,270 @@ function buildAIContext() {
   };
 }
 
+// ════════════════════════════════════════════════════════
+// PARSEUR JSON ULTRA-ROBUSTE — Coeur du système
+// ════════════════════════════════════════════════════════
+
+/**
+ * Nettoie et répare un fragment JSON potentiellement mal formé.
+ * Gère les commentaires, virgules traînantes, apostrophes, etc.
+ */
+function repairJson(raw) {
+  if (!raw || typeof raw !== "string") return null;
+
+  let s = raw.trim();
+
+  // Extraire le premier objet JSON complet avec accolades équilibrées
+  let depth = 0, start = -1, end = -1;
+  for (let i = 0; i < s.length; i++) {
+    if (s[i] === "{") {
+      if (start === -1) start = i;
+      depth++;
+    } else if (s[i] === "}") {
+      depth--;
+      if (depth === 0 && start !== -1) { end = i; break; }
+    }
+  }
+  if (start !== -1 && end !== -1) s = s.slice(start, end + 1);
+
+  // 1. Supprimer les commentaires // et /* */
+  s = s.replace(/\/\/[^\n]*/g, "").replace(/\/\*[\s\S]*?\*\//g, "");
+
+  // 2. Supprimer les virgules traînantes avant } et ]
+  s = s.replace(/,\s*([}\]])/g, "$1");
+
+  // 3. Remplacer les apostrophes simples par des doubles (si clés/valeurs)
+  // Attention : ne pas casser les vrais strings
+  s = s.replace(/:\s*'([^']*)'/g, ': "$1"');
+  s = s.replace(/'([^']*)'\s*:/g, '"$1":');
+
+  // 4. Assurer que les clés sont entre guillemets doubles
+  s = s.replace(/([{,]\s*)([a-zA-Z_][a-zA-Z0-9_]*)\s*:/g, '$1"$2":');
+
+  // 5. Convertir les nombres avec espaces (ex: "100 000") → entiers
+  s = s.replace(/"debit"\s*:\s*"?([\d\s]+)"?/g, (_, n) => `"debit":${n.replace(/\s/g, "")}`);
+  s = s.replace(/"credit"\s*:\s*"?([\d\s]+)"?/g, (_, n) => `"credit":${n.replace(/\s/g, "")}`);
+
+  // 6. Remplacer les NaN, undefined, null mal placés
+  s = s.replace(/:\s*undefined/g, ":0").replace(/:\s*NaN/g, ":0");
+
+  // 7. Tenter le parse
+  try {
+    return JSON.parse(s);
+  } catch (e) {
+    // Dernière tentative : extraire avec eval sécurisé (Function)
+    try {
+      return (new Function("return " + s))();
+    } catch (e2) {
+      return null;
+    }
+  }
+}
+
+/**
+ * Valide et normalise une écriture extraite de l'IA.
+ * Retourne { ecriture, desequilibre, delta } ou null si invalide.
+ */
+function validerEcritureAI(raw) {
+  if (!raw || !Array.isArray(raw.lignes)) return null;
+
+  // Normaliser les lignes
+  const lignesNorm = raw.lignes
+    .filter(l => l && l.compte)
+    .map(l => {
+      const compte  = String(l.compte || "").trim().replace(/[^0-9]/g, "");
+      const debit   = Math.round(Math.abs(parseFloat(String(l.debit  || "0").replace(/[^0-9.]/g, "")) || 0));
+      const credit  = Math.round(Math.abs(parseFloat(String(l.credit || "0").replace(/[^0-9.]/g, "")) || 0));
+      const libelle = String(l.libelle || PC[compte] || "").substring(0, 80);
+      return { compte, libelle, debit, credit };
+    })
+    .filter(l => l.compte.length >= 3 && (l.debit > 0 || l.credit > 0));
+
+  if (lignesNorm.length < 2) return null;
+
+  let totalD = 0, totalC = 0;
+  lignesNorm.forEach(l => { totalD += l.debit; totalC += l.credit; });
+  const delta = Math.abs(totalD - totalC);
+
+  // Journal normalisé
+  const journaux = ["AC","VE","BQ","CA","OD","IN","AN"];
+  let journal = String(raw.journal || "OD").toUpperCase().trim();
+  if (!journaux.includes(journal)) journal = "OD";
+
+  return {
+    ecriture: {
+      journal,
+      libelle:  String(raw.libelle || "Écriture COMEO AI").substring(0, 100),
+      lignes:   sortLignesDebitAvantCredit(lignesNorm)
+    },
+    totalDebit:  totalD,
+    totalCredit: totalC,
+    delta,
+    equilibree:  delta <= 1
+  };
+}
+
+/**
+ * Extrait toutes les écritures d'un texte brut retourné par l'IA.
+ * Stratégie multi-passes :
+ * 1. Découper sur ###ECRITURE###
+ * 2. Pour chaque segment : extraire JSON avec repairJson
+ * 3. Valider chaque écriture
+ * 4. Retourner {equilibrees, desequilibrees, toutes}
+ */
+function extraireEcrituresDepuisTexte(fullText) {
+  const equilibrees    = [];
+  const desequilibrees = [];
+
+  if (!fullText.includes("###ECRITURE###")) {
+    return { equilibrees, desequilibrees, toutes: [] };
+  }
+
+  const parts = fullText.split("###ECRITURE###");
+
+  for (let i = 1; i < parts.length; i++) {
+    const segment = parts[i].trim();
+    if (!segment) continue;
+
+    // Tenter d'extraire le JSON de ce segment
+    const obj = repairJson(segment);
+
+    if (!obj) {
+      console.warn(`[COMEO] Segment ${i} : JSON non parsable :`, segment.substring(0, 200));
+      continue;
+    }
+
+    const validation = validerEcritureAI(obj);
+    if (!validation) {
+      console.warn(`[COMEO] Segment ${i} : écriture invalide (moins de 2 lignes ou comptes manquants)`);
+      continue;
+    }
+
+    if (validation.equilibree) {
+      equilibrees.push(validation.ecriture);
+    } else {
+      // Écriture déséquilibrée — on la conserve avec les métadonnées
+      desequilibrees.push({
+        ...validation.ecriture,
+        _desequilibre: true,
+        _delta:        validation.delta,
+        _totalDebit:   validation.totalDebit,
+        _totalCredit:  validation.totalCredit
+      });
+    }
+  }
+
+  return {
+    equilibrees,
+    desequilibrees,
+    toutes: [...equilibrees, ...desequilibrees]
+  };
+}
+
 // ══════════════════════════════════════════
-// VÉRIFICATION ABONNEMENT AVANT IA
+// MODAL CONFIRMATION ÉCRITURES DÉSÉQUILIBRÉES
+// ══════════════════════════════════════════
+
+/**
+ * Affiche un modal de confirmation pour les écritures déséquilibrées.
+ * L'utilisateur peut choisir de les forcer ou les ignorer.
+ */
+function showDesequilibreModal(desequilibrees, onConfirm, onIgnore) {
+  // Supprimer un éventuel modal précédent
+  document.getElementById("desequModal")?.remove();
+
+  const modal = document.createElement("div");
+  modal.id = "desequModal";
+  modal.style.cssText = `
+    position:fixed;inset:0;z-index:9999;
+    background:rgba(0,0,0,.82);backdrop-filter:blur(6px);
+    display:flex;align-items:center;justify-content:center;padding:20px;
+  `;
+
+  const rows = desequilibrees.map((e, i) => {
+    const delta = fn(e._delta || 0);
+    const tD    = fn(e._totalDebit || 0);
+    const tC    = fn(e._totalCredit || 0);
+    return `<div style="background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.3);border-radius:8px;padding:12px 14px;margin-bottom:10px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+        <span style="background:#f87171;color:#0a0b10;font-size:10px;font-weight:800;padding:2px 6px;border-radius:4px;">${e.journal}</span>
+        <span style="font-size:12px;font-weight:600;color:#fff">${e.libelle}</span>
+      </div>
+      <div style="font-size:11px;color:rgba(255,255,255,.6);font-family:'JetBrains Mono',monospace;">
+        Débit : <span style="color:#60a5fa">${tD} FCFA</span> |
+        Crédit : <span style="color:#4ade80">${tC} FCFA</span> |
+        Écart : <span style="color:#f87171;font-weight:700">Δ ${delta} FCFA</span>
+      </div>
+      <div style="margin-top:6px;">
+        ${e.lignes.map(l => `
+          <div style="font-size:10px;color:rgba(255,255,255,.5);display:flex;gap:8px;padding:2px 0;">
+            <span style="font-family:monospace;min-width:50px;color:#d4a853">${l.compte}</span>
+            <span style="flex:1">${l.libelle}</span>
+            <span style="color:#60a5fa">${l.debit ? fn(l.debit) : ""}</span>
+            <span style="color:#4ade80">${l.credit ? fn(l.credit) : ""}</span>
+          </div>`).join("")}
+      </div>
+    </div>`;
+  }).join("");
+
+  modal.innerHTML = `
+    <div style="background:#0f1117;border:1px solid rgba(248,113,113,.4);border-radius:14px;
+      max-width:600px;width:100%;max-height:80vh;overflow-y:auto;padding:28px 26px;
+      box-shadow:0 24px 64px rgba(0,0,0,.8);">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+        <span style="font-size:22px">⚠️</span>
+        <h3 style="color:#f87171;font-size:15px;font-weight:800;margin:0;">
+          ${desequilibrees.length} écriture${desequilibrees.length>1?"s":""} déséquilibrée${desequilibrees.length>1?"s":""}
+        </h3>
+      </div>
+      <p style="color:rgba(255,255,255,.55);font-size:12px;margin:0 0 18px;line-height:1.6;">
+        COMEO AI a détecté que les écritures suivantes ne respectent pas la règle d'équilibre SYSCOHADA
+        (<strong style="color:#fff">Σ Débits = Σ Crédits</strong>).
+        En tant qu'expert, je vous déconseille de les enregistrer telles quelles.
+        <br><br>
+        Vous pouvez les <strong style="color:#4ade80">forcer</strong> (à vos risques) ou les <strong style="color:#d4a853">ignorer</strong>.
+      </p>
+      ${rows}
+      <div style="display:flex;gap:10px;margin-top:20px;flex-wrap:wrap;">
+        <button id="deseqIgnoreBtn" style="
+          flex:1;padding:11px 16px;border-radius:8px;border:1px solid rgba(212,168,83,.4);
+          background:transparent;color:#d4a853;font-size:12px;font-weight:700;cursor:pointer;
+          transition:background .15s;" onmouseover="this.style.background='rgba(212,168,83,.1)'"
+          onmouseout="this.style.background='transparent'">
+          ✗ Ignorer les écritures déséquilibrées
+        </button>
+        <button id="deseqForceBtn" style="
+          flex:1;padding:11px 16px;border-radius:8px;border:none;
+          background:rgba(248,113,113,.15);color:#f87171;font-size:12px;font-weight:700;cursor:pointer;
+          border:1px solid rgba(248,113,113,.4);transition:background .15s;"
+          onmouseover="this.style.background='rgba(248,113,113,.28)'"
+          onmouseout="this.style.background='rgba(248,113,113,.15)'">
+          ⚡ Forcer l'enregistrement quand même
+        </button>
+      </div>
+      <p style="color:rgba(255,255,255,.25);font-size:10px;margin-top:12px;text-align:center;">
+        Les écritures équilibrées seront toujours enregistrées normalement.
+      </p>
+    </div>`;
+
+  document.body.appendChild(modal);
+
+  document.getElementById("deseqIgnoreBtn").onclick = () => {
+    modal.remove();
+    if (onIgnore) onIgnore();
+  };
+  document.getElementById("deseqForceBtn").onclick = () => {
+    modal.remove();
+    if (onConfirm) onConfirm();
+  };
+  // Fermer en cliquant dehors
+  modal.onclick = (ev) => { if (ev.target === modal) { modal.remove(); if (onIgnore) onIgnore(); } };
+}
+
+// ══════════════════════════════════════════
+// VÉRIFICATION ABONNEMENT
 // ══════════════════════════════════════════
 function _isSubscriptionValid() {
-  // Si on n'a pas encore chargé l'info abonnement, on autorise (fail-open)
   if (!_currentSubInfo) return true;
   return _currentSubInfo.valid === true;
 }
@@ -1539,9 +1782,9 @@ function _showSubRequiredMessage(context) {
         <div style="font-weight:700;color:#f87171;margin-bottom:8px;font-size:13px">🔒 Abonnement requis</div>
         <div style="color:rgba(255,255,255,.7);font-size:12px;line-height:1.6">
           Votre période d'essai gratuit est <strong>expirée</strong>.<br>
-          Pour continuer à utiliser <strong>COMEO AI</strong> et accéder à toutes les fonctionnalités, veuillez activer votre abonnement.<br><br>
+          Pour continuer à utiliser <strong>COMEO AI</strong>, veuillez activer votre abonnement.<br><br>
           <span style="color:#d4a853;cursor:pointer;text-decoration:underline" onclick="window._showSubModal?.()">
-            👉 Cliquez ici pour souscrire et débloquer l'accès complet
+            👉 Cliquez ici pour souscrire
           </span>
         </div>
       </div>
@@ -1550,34 +1793,39 @@ function _showSubRequiredMessage(context) {
   c.scrollTop = c.scrollHeight;
 }
 
+// ══════════════════════════════════════════
+// sendToAI — VERSION ROBUSTE v3
+// ══════════════════════════════════════════
 async function sendToAI(context) {
   if (isAILoading) return;
 
-  // ── VÉRIFICATION ABONNEMENT ──────────────────────────────────
   if (!_isSubscriptionValid()) {
     _showSubRequiredMessage(context);
     return;
   }
-  // ────────────────────────────────────────────────────────────
 
   const inputId = context === "dashboard" ? "aiInput" : `aiInput-${context}`;
   const input   = document.getElementById(inputId);
   const msg     = input?.value?.trim();
   if (!msg) return;
-  isAILoading = true; input.value = "";
+
+  isAILoading = true;
+  input.value = "";
   const sendBtnId = context === "dashboard" ? "aiSendBtn" : null;
   if (sendBtnId) { const btn = document.getElementById(sendBtnId); if (btn) btn.disabled = true; }
+
   appendMsg(context, "user", msg);
   const tid          = appendTyping(context);
   const ctxData      = buildAIContext();
   const systemPrompt = buildSystemPrompt(ctxData);
+
   try {
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: { "Content-Type":"application/json", "Authorization":`Bearer ${GROQ_API_KEY}` },
       body: JSON.stringify({
-        model: "llama-3.3-70b-versatile",
-        max_tokens: 4000,
+        model:       "llama-3.3-70b-versatile",
+        max_tokens:  6000,
         temperature: 0.05,
         messages: [
           { role:"system", content: systemPrompt },
@@ -1585,75 +1833,132 @@ async function sendToAI(context) {
         ]
       })
     });
+
     removeTyping(context, tid);
+
     if (!response.ok) {
       const e2 = await response.json().catch(() => ({}));
       throw new Error(e2.error?.message || "Erreur API " + response.status);
     }
+
     const data     = await response.json();
     const fullText = data.choices?.[0]?.message?.content || "Pas de réponse.";
 
+    // ── Cas 1 : FILTRE (navigation/rapport) ─────────────────────
     const filtreMarker = fullText.indexOf("###FILTRE###");
     if (filtreMarker !== -1) {
       const displayText = fullText.substring(0, filtreMarker).trim();
       const jsonStr     = fullText.substring(filtreMarker + 12).trim();
       if (displayText) appendMsg(context, "ai", displayText);
-      try {
-        const clean     = jsonStr.replace(/```json|```/g, "").trim();
-        const jsonMatch = clean.match(/(\{[\s\S]*?\})/);
-        if (jsonMatch) { const filtre = JSON.parse(jsonMatch[1]); applyFiltreAndNavigate(filtre, context); }
-      } catch (pe) { console.warn("Filtre parse error:", pe); }
+      const filtre = repairJson(jsonStr);
+      if (filtre) applyFiltreAndNavigate(filtre, context);
+      isAILoading = false;
+      if (sendBtnId) { const btn = document.getElementById(sendBtnId); if (btn) btn.disabled = false; }
+      return;
+    }
 
-    } else if (fullText.includes("###ECRITURE###")) {
-      const parts           = fullText.split("###ECRITURE###");
-      const textBeforeFirst = parts[0].trim();
-      const ecrituresAI     = [];
-      for (let i = 1; i < parts.length; i++) {
-        const segment   = parts[i].trim();
-        const jsonMatch = segment.match(/(\{[\s\S]*\})/);
-        if (jsonMatch) {
-          try {
-            const cleanJson = jsonMatch[1].replace(/```json|```/g, "").trim();
-            const ecr       = JSON.parse(cleanJson);
-            if (ecr.lignes && ecr.lignes.length >= 2) {
-              let d = 0, c = 0;
-              ecr.lignes.forEach(l => { d += Math.round(parseFloat(l.debit)||0); c += Math.round(parseFloat(l.credit)||0); });
-              ecr.lignes = sortLignesDebitAvantCredit(
-                ecr.lignes.map(l => ({ ...l, debit:Math.round(parseFloat(l.debit)||0), credit:Math.round(parseFloat(l.credit)||0) }))
-              );
-              if (Math.abs(d - c) <= 2) ecrituresAI.push(ecr);
-            }
-          } catch (pe) { console.warn("JSON parse error écriture", i, ":", pe.message); }
+    // ── Cas 2 : ÉCRITURES ────────────────────────────────────────
+    if (fullText.includes("###ECRITURE###")) {
+
+      // Texte explicatif avant les écritures
+      const premierMarqueur = fullText.indexOf("###ECRITURE###");
+      const textAvant       = fullText.substring(0, premierMarqueur).trim();
+      if (textAvant) appendMsg(context, "ai", textAvant);
+
+      // Extraction robuste
+      const { equilibrees, desequilibrees } = extraireEcrituresDepuisTexte(fullText);
+
+      console.log(`[COMEO] Extraction : ${equilibrees.length} équilibrée(s), ${desequilibrees.length} déséquilibrée(s)`);
+
+      const _finaliserEnregistrement = (ecrituresAEnregistrer) => {
+        if (!ecrituresAEnregistrer || ecrituresAEnregistrer.length === 0) {
+          appendMsg(context, "ai",
+            "⚠️ Aucune écriture à enregistrer après vérification. Veuillez reformuler votre demande ou vérifier les montants."
+          );
+          return;
         }
-      }
-      if (textBeforeFirst) appendMsg(context, "ai", textBeforeFirst);
-      if (ecrituresAI.length === 0) {
-        appendMsg(context, "ai", "⚠️ Aucune écriture équilibrée extraite. Veuillez reformuler votre demande.");
-      } else {
+
+        // Nettoyer les métadonnées de déséquilibre avant envoi
+        const propres = ecrituresAEnregistrer.map(e => {
+          const { _desequilibre, _delta, _totalDebit, _totalCredit, ...rest } = e;
+          return rest;
+        });
+
         currentGroupId = "grp_" + Date.now();
-        const confirmMsg = `✅ <strong>${ecrituresAI.length} écriture${ecrituresAI.length > 1 ? "s" : ""} liées</strong> préparées et groupées :<br>` +
-          ecrituresAI.map((e, i) => `<br><strong>${i + 1}. [${e.journal}]</strong> ${e.libelle}`).join("") +
+        const confirmMsg = `✅ <strong>${propres.length} écriture${propres.length > 1 ? "s" : ""} liées</strong> préparées :<br>` +
+          propres.map((e, i) => `<br><strong>${i + 1}. [${e.journal}]</strong> ${e.libelle}`).join("") +
           `<br><br>⚡ Cliquez <strong>"Tout enregistrer"</strong> pour valider toutes les écritures.`;
+
         appendMsg(context, "ai", confirmMsg);
-        setEcritureQueue(ecrituresAI);
+        setEcritureQueue(propres);
+
         if (context === "saisie") {
-          toast(`✨ ${ecrituresAI.length} écriture${ecrituresAI.length > 1 ? "s" : ""} préparée${ecrituresAI.length > 1 ? "s" : ""} et liées`, "info");
+          toast(`✨ ${propres.length} écriture${propres.length > 1 ? "s" : ""} préparée${propres.length > 1 ? "s" : ""} et liées`, "info");
         } else {
-          showMultiEcrBanner(ecrituresAI);
-          showSaisieNotif(ecrituresAI[0]?.libelle || msg.substring(0, 40), ecrituresAI.length);
+          showMultiEcrBanner(propres);
+          showSaisieNotif(propres[0]?.libelle || msg.substring(0, 40), propres.length);
+        }
+      };
+
+      // Cas A : tout est équilibré
+      if (desequilibrees.length === 0) {
+        if (equilibrees.length === 0) {
+          appendMsg(context, "ai",
+            "⚠️ Je n'ai pas réussi à extraire des écritures valides. Essayez de reformuler votre demande en précisant les montants et les comptes."
+          );
+        } else {
+          _finaliserEnregistrement(equilibrees);
         }
       }
+
+      // Cas B : des déséquilibres existent
+      else {
+        // Si on a aussi des écritures équilibrées, on les affiche d'abord
+        const msgDeseq = desequilibrees.length === 1
+          ? `⚠️ <strong>1 écriture déséquilibrée</strong> détectée — Écart de <strong>${fn(desequilibrees[0]._delta || 0)} FCFA</strong>.`
+          : `⚠️ <strong>${desequilibrees.length} écritures déséquilibrées</strong> détectées. Consultez le détail ci-dessous.`;
+
+        appendMsg(context, "ai", msgDeseq);
+
+        showDesequilibreModal(
+          desequilibrees,
+          // onConfirm : forcer toutes les écritures (équilibrées + déséquilibrées)
+          () => {
+            _finaliserEnregistrement([...equilibrees, ...desequilibrees]);
+          },
+          // onIgnore : seulement les équilibrées
+          () => {
+            if (equilibrees.length > 0) {
+              appendMsg(context, "ai",
+                `✅ Les ${equilibrees.length} écriture${equilibrees.length>1?"s":""} équilibrée${equilibrees.length>1?"s":""} ont été conservées. Les ${desequilibrees.length} déséquilibrée${desequilibrees.length>1?"s":""} ont été ignorées.`
+              );
+              _finaliserEnregistrement(equilibrees);
+            } else {
+              appendMsg(context, "ai",
+                "Toutes les écritures étaient déséquilibrées et ont été ignorées. Veuillez reformuler votre demande."
+              );
+            }
+          }
+        );
+      }
+
     } else {
+      // ── Cas 3 : Réponse textuelle simple ──────────────────────
       appendMsg(context, "ai", fullText);
     }
+
   } catch (err) {
     removeTyping(context, tid);
     appendMsg(context, "ai", `⚠️ Incident technique : ${err.message} — Veuillez réessayer.`);
   }
+
   isAILoading = false;
   if (sendBtnId) { const btn = document.getElementById(sendBtnId); if (btn) btn.disabled = false; }
 }
 
+// ──────────────────────────────────────────
+// FILTRE ET NAVIGATION
+// ──────────────────────────────────────────
 function applyFiltreAndNavigate(filtre, context) {
   const { type, dateDebut, dateFin, journal, compte } = filtre;
   if (type === "journal") {
@@ -1688,7 +1993,9 @@ function applyFiltreAndNavigate(filtre, context) {
   }
 }
 
-// ── Messages ──
+// ══════════════════════════════════════════
+// MESSAGES IA
+// ══════════════════════════════════════════
 function appendMsg(context, role, text) {
   const msgId = context === "dashboard" ? "aiMessages" : `aiMessages-${context}`;
   const c = document.getElementById(msgId);
@@ -1698,6 +2005,7 @@ function appendMsg(context, role, text) {
   d.innerHTML = `<div class="msg-av">${role === "ai" ? "CA" : "U"}</div><div class="msg-body">${fmt(text)}</div>`;
   c.appendChild(d); c.scrollTop = c.scrollHeight;
 }
+
 function appendTyping(context) {
   const id    = "t" + Date.now();
   const msgId = context === "dashboard" ? "aiMessages" : `aiMessages-${context}`;
@@ -1709,6 +2017,7 @@ function appendTyping(context) {
   c.appendChild(d); c.scrollTop = c.scrollHeight;
   return id;
 }
+
 function removeTyping(context, id) { const el = document.getElementById(id); if (el) el.remove(); }
 
 function fmt(text) {
@@ -1750,7 +2059,7 @@ function toast(message, type = "info") {
 }
 
 // ══════════════════════════════════════════
-// INIT SESSION — RECONNEXION AUTOMATIQUE PERMANENTE
+// INIT SESSION — RECONNEXION AUTOMATIQUE
 // ══════════════════════════════════════════
 document.addEventListener("firebase-ready", async () => {
   const raw = localStorage.getItem("syscohada_session");
@@ -1758,20 +2067,15 @@ document.addEventListener("firebase-ready", async () => {
     try {
       const session = JSON.parse(raw);
       const { profileId } = session;
-      // ── Pas de vérification de deviceId : session permanente sur ce navigateur ──
       const ref  = window._fbDoc(window._db, "profiles", profileId);
       const snap = await window._fbGetDoc(ref);
       if (snap.exists()) {
         currentProfile = { ...snap.data(), id: profileId };
-        // Rafraîchir le timestamp de session sans changer le reste
         localStorage.setItem("syscohada_session", JSON.stringify({
-          ...session,
-          savedAt:  Date.now(),
-          deviceId: _getOrCreateDeviceId()
+          ...session, savedAt: Date.now(), deviceId: _getOrCreateDeviceId()
         }));
         await loadApp();
       } else {
-        // Profil supprimé de Firestore → nettoyer
         localStorage.removeItem("syscohada_session");
       }
     } catch (e) {
