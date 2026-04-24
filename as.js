@@ -151,7 +151,7 @@ let ecrQueue = [], ecrQueueIdx = 0;
 let currentGroupId = null;
 let _currentSubInfo = null;
 
-const GROQ_API_KEY = "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";
+const GROQ_API_KEY = "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";
 
 // ══════════════════════════════════════════
 // DEVICE ID
