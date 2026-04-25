@@ -496,7 +496,7 @@ var firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 var db = firebase.firestore();
- 
+
 /* ===================================================
    UTILS
 =================================================== */
@@ -538,21 +538,21 @@ function hashPassword(str) {
   for (var i = 0; i < str.length; i++) { h = ((h << 5) - h) + str.charCodeAt(i); h |= 0; }
   return String(Math.abs(h));
 }
- 
+
 /* ===================================================
    AUTH STATE
 =================================================== */
 var currentUser = null;
 var currentEntrepriseType = 'commerce';
 var allEcritures = [];
- 
+
 function switchAuth(tab) {
   document.querySelectorAll('.auth-tab').forEach(function(t) { t.classList.remove('active'); });
   document.querySelectorAll('.auth-form').forEach(function(f) { f.classList.remove('active'); });
   event.target.classList.add('active');
   document.getElementById('form-' + tab).classList.add('active');
 }
- 
+
 function doRegister() {
   var err = document.getElementById('register-error');
   var suc = document.getElementById('register-success');
@@ -564,7 +564,7 @@ function doRegister() {
   if (!nom || !contact || !pass) { err.textContent = 'Tous les champs sont requis.'; err.style.display = 'block'; return; }
   if (pass.length < 6) { err.textContent = 'Mot de passe trop court (min 6).'; err.style.display = 'block'; return; }
   if (pass !== pass2) { err.textContent = 'Les mots de passe ne correspondent pas.'; err.style.display = 'block'; return; }
- 
+
   var btn = document.getElementById('btn-register');
   btn.disabled = true; btn.textContent = 'Creation...';
   db.collection('users').where('nom_entreprise', '==', nom).get().then(function(snap) {
@@ -606,14 +606,14 @@ function doRegister() {
     btn.textContent = 'Creer mon compte (24h gratuit)';
   });
 }
- 
+
 function doLogin() {
   var err = document.getElementById('login-error');
   err.style.display = 'none';
   var nom = document.getElementById('login-entreprise').value.trim();
   var pass = document.getElementById('login-password').value;
   if (!nom || !pass) { err.textContent = 'Remplissez tous les champs.'; err.style.display = 'block'; return; }
- 
+
   var btn = document.getElementById('btn-login');
   btn.disabled = true; btn.textContent = 'Connexion...';
   db.collection('users').where('nom_entreprise', '==', nom).limit(1).get().then(function(snap) {
@@ -644,7 +644,7 @@ function doLogin() {
     btn.textContent = 'Se connecter';
   });
 }
- 
+
 function switchAuthDirect(tab) {
   document.querySelectorAll('.auth-tab').forEach(function(t) { t.classList.remove('active'); });
   document.querySelectorAll('.auth-form').forEach(function(f) { f.classList.remove('active'); });
@@ -653,14 +653,14 @@ function switchAuthDirect(tab) {
   else tabs[1].classList.add('active');
   document.getElementById('form-' + tab).classList.add('active');
 }
- 
+
 function forgotPassword() {
   var nom = document.getElementById('login-entreprise').value.trim();
   var msg = 'Bonjour, j\'ai oubli\u00e9 mon mot de passe Comeo AI. Mon entreprise : ' + (nom || '____');
   var url = 'https://wa.me/2250508463003?text=' + encodeURIComponent(msg);
   window.open(url, '_blank');
 }
- 
+
 function logout() {
   currentUser = null;
   allEcritures = [];
@@ -669,7 +669,7 @@ function logout() {
   document.getElementById('paywall-overlay').style.display = 'none';
   document.getElementById('login-password').value = '';
 }
- 
+
 function afterLogin() {
   document.getElementById('auth-overlay').style.display = 'none';
   document.getElementById('app').classList.add('active');
@@ -678,7 +678,7 @@ function afterLogin() {
   updateSubscriptionStatus();
   loadEcritures();
 }
- 
+
 function updateSubscriptionStatus() {
   var now = Date.now();
   var trialActive = now < currentUser.trial_ends_at;
@@ -698,13 +698,13 @@ function updateSubscriptionStatus() {
     showPaywall();
   }
 }
- 
+
 function showPaywall() {
   document.getElementById('paywall-overlay').style.display = 'flex';
 }
- 
+
 setInterval(function() { if (currentUser) updateSubscriptionStatus(); }, 60000);
- 
+
 /* ===================================================
    DATA — ECRITURES
 =================================================== */
@@ -730,7 +730,7 @@ function loadEcritures() {
     showToast('Erreur chargement donnees');
   });
 }
- 
+
 function saveEcriture(data) {
   if (!currentUser) return Promise.resolve();
   var payload = Object.assign({}, data);
@@ -752,7 +752,7 @@ function saveEcriture(data) {
     return doc;
   });
 }
- 
+
 /* ===================================================
    DASHBOARD
 =================================================== */
@@ -777,7 +777,7 @@ function renderDashboard() {
   document.getElementById('dash-total-debit').textContent = fmtAmount(totalDebit);
   document.getElementById('dash-total-credit').textContent = fmtAmount(totalCredit);
   document.getElementById('dash-solde-treso').textContent = fmtAmount(soldeTreso);
- 
+
   var last = allEcritures.slice(0, 5);
   if (!last.length) {
     document.getElementById('dash-last-ecritures').innerHTML = '<div style="color:var(--text3);font-size:12px;padding:10px;">Aucune ecriture ce mois.</div>';
@@ -792,7 +792,7 @@ function renderDashboard() {
   html += '</tbody></table>';
   document.getElementById('dash-last-ecritures').innerHTML = html;
 }
- 
+
 /* ===================================================
    NAVIGATION
 =================================================== */
@@ -808,7 +808,7 @@ function showView(id, el) {
   if (id === 'tresorerie') renderTresorerie();
   if (id === 'dashboard') renderDashboard();
 }
- 
+
 /* ===================================================
    JOURNAL — Saisie manuelle
 =================================================== */
@@ -832,7 +832,7 @@ function saveManualEntry() {
   saveEcriture(ecriture);
   document.getElementById('output-content').innerHTML = '<div class="journal-card"><div class="journal-card-header"><div class="journal-card-title">Ecriture manuelle enregistr\u00e9e</div></div><div style="padding:12px;color:var(--text2);font-size:13px;">' + escHtml(desc) + ' \u2014 ' + fmtAmount(montant) + '</div></div>';
 }
- 
+
 /* ===================================================
    ENTREPRISE TYPE
 =================================================== */
@@ -888,7 +888,7 @@ var ENTREPRISE_CONFIG = {
     types: [{value:'',label:'Auto IA'},{value:'facturation_transport',label:'Facturation'},{value:'achat_carburant',label:'Carburant'},{value:'entretien_vehicule',label:'Entretien'},{value:'salaire_chauffeur',label:'Salaires'},{value:'achat_vehicule',label:'Acquisition'},{value:'amortissement',label:'Amortissement'}]
   }
 };
- 
+
 function selectEntreprise(el) {
   document.querySelectorAll('.e-chip').forEach(function(c) { c.classList.remove('active'); });
   el.classList.add('active');
@@ -911,7 +911,7 @@ function renderTypeSelect() {
   }).join('');
 }
 function setQuick(text) { document.getElementById('op-description').value = text; }
- 
+
 /* ===================================================
    PLAN COMPTABLE
 =================================================== */
@@ -925,7 +925,7 @@ var PLAN_COMPTABLE = {
   "Classe 7 — Produits": {"701":"Ventes de marchandises","702":"Ventes de produits finis","703":"Ventes de produits intermediaires","705":"Travaux factures","706":"Services vendus","707":"Produits accessoires","708":"Revenus activites annexes","7091":"Variation stocks produits finis","741":"Subventions d'exploitation","751":"Revenus immeubles non affectes","771":"Escomptes obtenus","772":"Gains de change","781":"Reprises amortissements et provisions"},
   "Classe 8 — Autres charges et produits": {"811":"Charges exercices anterieurs","821":"Produits exercices anterieurs","831":"Charges HAO","841":"Produits cessions immobilisations","861":"Participation travailleurs","871":"Impots sur le resultat"}
 };
- 
+
 function renderPlan(filter) {
   filter = filter || '';
   var body = document.getElementById('plan-body');
@@ -948,7 +948,7 @@ function renderPlan(filter) {
   body.innerHTML = html || '<div style="padding:30px;text-align:center;color:var(--text3)">Aucun compte trouve</div>';
 }
 function filterPlan(val) { renderPlan(val); }
- 
+
 /* ===================================================
    GUIDE DES ECRITURES
 =================================================== */
@@ -968,7 +968,7 @@ var GUIDE_DATA = [
     { title: "Charges patronales", entries: [{c:"6611",l:"Cotisations patronales",d:"CP",cr:""},{c:"431",l:"CNPS",d:"",cr:"CP"}] }
   ]}
 ];
- 
+
 function renderGuide() {
   var body = document.getElementById('guide-body');
   var html = '';
@@ -985,7 +985,7 @@ function renderGuide() {
   });
   body.innerHTML = html;
 }
- 
+
 /* ===================================================
    GRAND LIVRE
 =================================================== */
@@ -1022,7 +1022,7 @@ function renderGrandLivre(filter) {
   });
   body.innerHTML = html;
 }
- 
+
 /* ===================================================
    BALANCE
 =================================================== */
@@ -1053,7 +1053,7 @@ function renderBalance() {
   });
   body.innerHTML = '<table class="data-table"><thead><tr><th>Compte</th><th>Libelle</th><th style="text-align:right">Total Debit</th><th style="text-align:right">Total Credit</th><th style="text-align:right">Solde D</th><th style="text-align:right">Solde C</th></tr></thead><tbody>' + rows + '</tbody><tfoot><tr style="border-top:2px solid var(--border);font-weight:700;"><td colspan="2">TOTAL GENERAL</td><td class="col-debit">' + fmtAmount(totalTD) + '</td><td class="col-credit">' + fmtAmount(totalTC) + '</td><td class="col-solde">' + (totalTD >= totalTC ? fmtAmount(totalTD-totalTC) : '') + '</td><td class="col-solde">' + (totalTC > totalTD ? fmtAmount(totalTC-totalTD) : '') + '</td></tr></tfoot></table>';
 }
- 
+
 function exportBalanceCSV() {
   var csv = 'Compte;Libelle;Total Debit;Total Credit;Solde D;Solde C\n';
   var byCompte = {};
@@ -1073,7 +1073,7 @@ function exportBalanceCSV() {
   });
   downloadCSV(csv, 'balance.csv');
 }
- 
+
 /* ===================================================
    TRESORERIE
 =================================================== */
@@ -1106,7 +1106,7 @@ function renderTresorerie() {
   });
   body.innerHTML = html;
 }
- 
+
 function exportTresorerieCSV() {
   var csv = 'Date;Reference;Description;Compte;Debit;Credit\n';
   allEcritures.forEach(function(e) {
@@ -1118,7 +1118,7 @@ function exportTresorerieCSV() {
   });
   downloadCSV(csv, 'tresorerie.csv');
 }
- 
+
 function downloadCSV(csv, filename) {
   var blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
   var url = URL.createObjectURL(blob);
@@ -1127,36 +1127,90 @@ function downloadCSV(csv, filename) {
   URL.revokeObjectURL(url);
   showToast('Export CSV effectue');
 }
- 
+
 /* ===================================================
-   IA — Anthropic Claude
+   ═══════════════════════════════════════════════════
+   ANCIEN CODE — API ANTHROPIC (conservé en référence)
+   ═══════════════════════════════════════════════════
+
+   var ANTHROPIC_URL = 'https://api.anthropic.com/v1/messages';
+   var CLAUDE_MODEL  = 'claude-sonnet-4-20250514';
+
+   function claudeCall(systemPrompt, userMessage) {
+     return fetch(ANTHROPIC_URL, {
+       method: 'POST',
+       headers: { 'Content-Type': 'application/json' },
+       body: JSON.stringify({
+         model: CLAUDE_MODEL,
+         max_tokens: 1000,
+         system: systemPrompt,
+         messages: [{ role: 'user', content: userMessage }]
+       })
+     }).then(function(res) {
+       return res.json();
+     }).then(function(data) {
+       if (data.error) throw new Error(data.error.message || 'Erreur API Claude');
+       if (!data.content || !data.content[0] || !data.content[0].text) throw new Error('Reponse API invalide');
+       return data.content[0].text.trim();
+     });
+   }
+   ═══════════════════════════════════════════════════
 =================================================== */
-var ANTHROPIC_URL = 'https://api.anthropic.com/v1/messages';
-var CLAUDE_MODEL  = 'claude-sonnet-4-20250514';
- 
-var SYSTEM_PREANALYSE = "Tu es un expert-comptable OHADA certifie, specialise SYSCOHADA Revise 2017.\nOn te donne une operation comptable avec le TYPE D'ENTREPRISE. Tu dois effectuer une PRE-ANALYSE complete.\n\nTABLE DE COMPTES OBLIGATOIRE :\nIMMOBILISATIONS : informatique->2443, mobilier->2441, bureau->2442, voiture->2411, camion->2412, industriel->231, agricole->232, medical->245, batiments->221\nTVA : immobilisations->4451 | achats biens->4452 | services->4453 | collectee->4421\nFOURNISSEURS : ordinaire->401 | immobilisations->404\nCLIENTS : ordinaire->411 | douteux->416\nTRESOREIE : banque->512 | caisse->571\nCHARGES : marchandises->601 | matieres->602 | fournitures->604 | salaires->6511 | cotisations->6611 | loyers->622 | entretien->624 | telephone->628 | honoraires->632 | transports->613 | amort. transport->6817 | amort. info->6844\nPRODUITS : marchandises->701 | produits finis->702 | travaux->705 | services->706 | subventions->741 | equipement->131\nSTOCKS : marchandises->301 | matieres->311 | en-cours->331 | produits finis->351\nVARIATION STOCK : marchandises->6091/301 | produits finis->7091/351\n\nTVA zone OHADA = 18%. Si TTC donne -> HT = ARRONDI(TTC/1.18) | TVA = TTC - HT\nReponds UNIQUEMENT en JSON pur :\n{\n  \"nature\": \"type\",\n  \"operations_requises\": [\"liste\"],\n  \"compte_principal\": \"numero\",\n  \"compte_principal_libelle\": \"libelle\",\n  \"compte_tva\": \"4451|4452|4453|null\",\n  \"compte_contrepartie\": \"512|571|401|404|411|...\",\n  \"tva_applicable\": true,\n  \"montant_ttc\": 0,\n  \"montant_ht\": 0,\n  \"montant_tva\": 0,\n  \"calcul_tva\": \"explication\",\n  \"mode_reglement\": \"banque|caisse|credit_fournisseur|credit_client\",\n  \"necessite_variation_stock\": true,\n  \"avertissements\": \"hypotheses\"\n}";
- 
-var SYSTEM_GENERATE = "Tu es Comeo AI, expert-comptable OHADA, SYSCOHADA Revise 2017.\nTu recois une operation, le type d'entreprise, et une pre-analyse avec les comptes EXACTS.\nREGLE ABSOLUE : Utilise EXACTEMENT les comptes et montants de la pre-analyse.\nNe jamais enregistrer un montant TTC directement en immobilisation ou charge.\nVerification finale : Debit total = Credit total pour CHAQUE ecriture.\nFORMAT JSON pur uniquement :\n{\n  \"titre\": \"Titre court\",\n  \"date\": \"date\",\n  \"reference\": \"ref\",\n  \"type_entreprise\": \"type\",\n  \"ecritures\": [\n    {\n      \"etape\": \"Ecriture 1\",\n      \"lignes\": [\n        { \"compte\": \"num\", \"libelle\": \"lib\", \"debit\": 0, \"credit\": 0 }\n      ]\n    }\n  ],\n  \"analyse\": \"Explication\",\n  \"notes\": \"Vigilance\"\n}";
- 
-function claudeCall(systemPrompt, userMessage) {
-  return fetch(ANTHROPIC_URL, {
+
+/* ===================================================
+   NOUVEAU CODE — API GROQ
+=================================================== */
+// ⚙️ CONFIGURATION GROQ — remplacez YOUR_GROQ_API_KEY par votre clé
+var GROQ_API_KEY = '';
+var GROQ_URL     = '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';
+var GROQ_MODEL   = 'llama-3.3-70b-versatile'; // Modèle Groq rapide et puissant
+                                               // Autres options : 'mixtral-8x7b-32768', 'gemma2-9b-it'
+
+/**
+ * groqCall — équivalent de claudeCall() mais pour l'API Groq
+ * L'API Groq suit le format OpenAI (system + messages).
+ * @param {string} systemPrompt  - Le prompt système (même valeur qu'avant)
+ * @param {string} userMessage   - Le message utilisateur (même valeur qu'avant)
+ * @returns {Promise<string>}    - Le texte de la réponse
+ */
+function groqCall(systemPrompt, userMessage) {
+  return fetch(GROQ_URL, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + GROQ_API_KEY
+    },
     body: JSON.stringify({
-      model: CLAUDE_MODEL,
+      model: GROQ_MODEL,
       max_tokens: 1000,
-      system: systemPrompt,
-      messages: [{ role: 'user', content: userMessage }]
+      temperature: 0.1,          // Faible température pour la comptabilité (précision)
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user',   content: userMessage  }
+      ]
     })
   }).then(function(res) {
     return res.json();
   }).then(function(data) {
-    if (data.error) throw new Error(data.error.message || 'Erreur API Claude');
-    if (!data.content || !data.content[0] || !data.content[0].text) throw new Error('Reponse API invalide');
-    return data.content[0].text.trim();
+    // Gestion d'erreur API Groq
+    if (data.error) throw new Error(data.error.message || 'Erreur API Groq');
+    if (!data.choices || !data.choices[0] || !data.choices[0].message || !data.choices[0].message.content) {
+      throw new Error('Reponse API Groq invalide');
+    }
+    return data.choices[0].message.content.trim();
   });
 }
- 
+
+/* ===================================================
+   PROMPTS SYSTEME (identiques à l'ancienne version)
+=================================================== */
+var SYSTEM_PREANALYSE = "Tu es un expert-comptable OHADA certifie, specialise SYSCOHADA Revise 2017.\nOn te donne une operation comptable avec le TYPE D'ENTREPRISE. Tu dois effectuer une PRE-ANALYSE complete.\n\nTABLE DE COMPTES OBLIGATOIRE :\nIMMOBILISATIONS : informatique->2443, mobilier->2441, bureau->2442, voiture->2411, camion->2412, industriel->231, agricole->232, medical->245, batiments->221\nTVA : immobilisations->4451 | achats biens->4452 | services->4453 | collectee->4421\nFOURNISSEURS : ordinaire->401 | immobilisations->404\nCLIENTS : ordinaire->411 | douteux->416\nTRESOREIE : banque->512 | caisse->571\nCHARGES : marchandises->601 | matieres->602 | fournitures->604 | salaires->6511 | cotisations->6611 | loyers->622 | entretien->624 | telephone->628 | honoraires->632 | transports->613 | amort. transport->6817 | amort. info->6844\nPRODUITS : marchandises->701 | produits finis->702 | travaux->705 | services->706 | subventions->741 | equipement->131\nSTOCKS : marchandises->301 | matieres->311 | en-cours->331 | produits finis->351\nVARIATION STOCK : marchandises->6091/301 | produits finis->7091/351\n\nTVA zone OHADA = 18%. Si TTC donne -> HT = ARRONDI(TTC/1.18) | TVA = TTC - HT\nReponds UNIQUEMENT en JSON pur :\n{\n  \"nature\": \"type\",\n  \"operations_requises\": [\"liste\"],\n  \"compte_principal\": \"numero\",\n  \"compte_principal_libelle\": \"libelle\",\n  \"compte_tva\": \"4451|4452|4453|null\",\n  \"compte_contrepartie\": \"512|571|401|404|411|...\",\n  \"tva_applicable\": true,\n  \"montant_ttc\": 0,\n  \"montant_ht\": 0,\n  \"montant_tva\": 0,\n  \"calcul_tva\": \"explication\",\n  \"mode_reglement\": \"banque|caisse|credit_fournisseur|credit_client\",\n  \"necessite_variation_stock\": true,\n  \"avertissements\": \"hypotheses\"\n}";
+
+var SYSTEM_GENERATE = "Tu es Comeo AI, expert-comptable OHADA, SYSCOHADA Revise 2017.\nTu recois une operation, le type d'entreprise, et une pre-analyse avec les comptes EXACTS.\nREGLE ABSOLUE : Utilise EXACTEMENT les comptes et montants de la pre-analyse.\nNe jamais enregistrer un montant TTC directement en immobilisation ou charge.\nVerification finale : Debit total = Credit total pour CHAQUE ecriture.\nFORMAT JSON pur uniquement :\n{\n  \"titre\": \"Titre court\",\n  \"date\": \"date\",\n  \"reference\": \"ref\",\n  \"type_entreprise\": \"type\",\n  \"ecritures\": [\n    {\n      \"etape\": \"Ecriture 1\",\n      \"lignes\": [\n        { \"compte\": \"num\", \"libelle\": \"lib\", \"debit\": 0, \"credit\": 0 }\n      ]\n    }\n  ],\n  \"analyse\": \"Explication\",\n  \"notes\": \"Vigilance\"\n}";
+
+/* ===================================================
+   PRE-ANALYSE (utilise maintenant groqCall)
+=================================================== */
 function preAnalyse(desc, type, montant, extra, entrepriseType) {
   var cfg = ENTREPRISE_CONFIG[entrepriseType];
   var prompt = 'TYPE : ' + cfg.label + '\nOperation : ' + desc;
@@ -1164,7 +1218,13 @@ function preAnalyse(desc, type, montant, extra, entrepriseType) {
   if (type) prompt += '\nType : ' + type;
   if (extra) prompt += '\nDetails : ' + extra;
   prompt += '\nEffectue la pre-analyse et retourne le JSON.';
-  return claudeCall(SYSTEM_PREANALYSE, prompt).then(function(raw) {
+
+  /* ANCIEN CODE (Anthropic) :
+     return claudeCall(SYSTEM_PREANALYSE, prompt).then(...)
+  */
+
+  // NOUVEAU CODE (Groq) :
+  return groqCall(SYSTEM_PREANALYSE, prompt).then(function(raw) {
     var clean = raw.replace(/```json\s*/gi,'').replace(/```\s*/gi,'').trim();
     var js = clean.indexOf('{');
     var je = clean.lastIndexOf('}');
@@ -1172,9 +1232,12 @@ function preAnalyse(desc, type, montant, extra, entrepriseType) {
     return JSON.parse(clean.slice(js, je+1));
   });
 }
- 
+
+/* ===================================================
+   GENERATION JOURNAL (utilise maintenant groqCall)
+=================================================== */
 var isGenerating = false;
- 
+
 function generateJournal() {
   if (isGenerating) return;
   var desc = document.getElementById('op-description').value.trim();
@@ -1184,13 +1247,13 @@ function generateJournal() {
   var type = document.getElementById('op-type').value;
   var extra = document.getElementById('op-extra').value.trim();
   if (!desc) { showToast("Decrivez l'operation"); return; }
- 
+
   isGenerating = true;
   document.getElementById('btn-generate').disabled = true;
   var cfg = ENTREPRISE_CONFIG[currentEntrepriseType];
- 
+
   document.getElementById('output-content').innerHTML = '<div class="loading-state"><div class="spinner"></div><div>Analyse IA en cours...</div></div>';
- 
+
   preAnalyse(desc, type, montant, extra, currentEntrepriseType).catch(function(e) {
     console.warn('Pre-analyse echouee', e);
     return null;
@@ -1210,7 +1273,14 @@ function generateJournal() {
       userMsg += '\nMode : ' + analyse.mode_reglement;
       userMsg += '\nVariation stock : ' + analyse.necessite_variation_stock;
     }
-    return claudeCall(SYSTEM_GENERATE, userMsg);
+
+    /* ANCIEN CODE (Anthropic) :
+       return claudeCall(SYSTEM_GENERATE, userMsg);
+    */
+
+    // NOUVEAU CODE (Groq) :
+    return groqCall(SYSTEM_GENERATE, userMsg);
+
   }).then(function(rawJson) {
     var clean = rawJson.replace(/```json\s*/gi,'').replace(/```\s*/gi,'').trim();
     var js = clean.indexOf('{');
@@ -1231,12 +1301,12 @@ function generateJournal() {
     document.getElementById('btn-generate').disabled = false;
   });
 }
- 
+
 function renderJournal(result, opDesc, date, ref) {
   var ecritures = result.ecritures || [];
   var isMulti = ecritures.length > 0 && Array.isArray(ecritures[0] && ecritures[0].lignes);
   var cardsHTML = '';
- 
+
   if (isMulti) {
     ecritures.forEach(function(ec, idx) {
       var lignes = ec.lignes || [];
@@ -1263,8 +1333,7 @@ function renderJournal(result, opDesc, date, ref) {
     });
     cardsHTML = '<div class="journal-card"><div class="journal-card-header"><div class="journal-card-title">' + escHtml(result.titre||opDesc) + '</div><div class="journal-card-date">' + (result.date||date) + '</div><div class="journal-card-ref">' + escHtml(result.reference||ref) + '</div><div class="' + (eq ? 'equilibre-ok' : 'equilibre-err') + '">' + (eq ? 'OK Equilibre' : 'Desequilibre') + '</div></div><table class="data-table"><thead><tr><th style="width:80px">Compte</th><th>Libelle</th><th style="text-align:right;width:120px">Debit</th><th style="text-align:right;width:120px">Credit</th></tr></thead><tbody>' + rows + '</tbody></table><div class="journal-totals"><div class="total-item"><span class="total-label">Total Debit</span><span class="total-debit">' + fmtAmount(totD) + '</span></div><div class="total-item"><span class="total-label">Total Credit</span><span class="total-credit">' + fmtAmount(totC) + '</span></div></div></div>';
   }
- 
-  var resultJson = JSON.stringify(result);
+
   var html = '<div class="journal-result">'
     + '<div class="ai-analysis"><div class="ai-analysis-header"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>Analyse — ' + escHtml(result.type_entreprise||'SYSCOHADA') + '</div><div class="ai-analysis-text">' + escHtml(result.analyse||'').replace(/\n/g,'<br>') + '</div>' + (result.notes ? '<div style="margin-top:8px;font-size:12px;color:var(--text3)">Note : ' + escHtml(result.notes) + '</div>' : '') + '</div>'
     + cardsHTML
@@ -1275,12 +1344,12 @@ function renderJournal(result, opDesc, date, ref) {
   document.getElementById('output-content').innerHTML = html;
   window._lastJournalResult = result;
 }
- 
+
 function exportCurrentJournalCSV() {
   if (!window._lastJournalResult) return;
   exportJournalCSV(window._lastJournalResult);
 }
- 
+
 function exportJournalCSV(result) {
   var ecritures = result.ecritures || [];
   var csv = 'Ecriture;Compte;Libelle;Debit;Credit\n';
@@ -1297,7 +1366,7 @@ function exportJournalCSV(result) {
   }
   downloadCSV(csv, 'journal_' + (result.reference || 'export') + '.csv');
 }
- 
+
 /* ===================================================
    INIT
 =================================================== */
@@ -1306,11 +1375,10 @@ renderQuickOps();
 renderTypeSelect();
 renderPlan();
 renderGuide();
- 
+
 document.getElementById('op-description').addEventListener('keydown', function(e) {
   if (e.key === 'Enter' && e.ctrlKey) { e.preventDefault(); generateJournal(); }
 });
 </script>
 </body>
 </html>
- 
