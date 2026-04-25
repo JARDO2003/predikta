@@ -175,7 +175,7 @@ let _currentSubInfo = null;
 window._unsubAdmin = null;
 
 const GROQ_API_KEY = "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";
-const GROQ_MODELS  = ["llama-3.3-70b-versatile", "llama-3.1-70b-versatile", "mixtral-8x7b-32768"];
+const GROQ_MODELS = ["llama-3.3-70b-versatile", "llama-3.1-70b-versatile", "llama3-70b-8192"];
 const GROQ_MAX_RETRIES = 3;
 
 function _getOrCreateDeviceId() {
@@ -399,8 +399,8 @@ async function checkSubscription(profileId, localDb) {
         const data = snap.data();
         const now = Date.now();
         const expires = data.expiresAt ? new Date(data.expiresAt).getTime() : Infinity;
-        const valid = data.valid !== false && (expires > now || data.plan === "free");
-        const hoursLeft = data.hoursLeft || (expires > now && expires !== Infinity ? Math.floor((expires - now) / 3600000) : (data.plan === "free" ? 99999 : 0));
+       const valid = data.valid !== false && (expires > now || data.plan === "free" || data.plan === "paid");
+const hoursLeft = data.plan === "paid" ? 720 : (data.hoursLeft || (expires > now && expires !== Infinity ? Math.floor((expires - now) / 3600000) : (data.plan === "free" ? 99999 : 0)));
         return { ...data, valid, hoursLeft, source: "admin" };
       }
     } catch (e) { console.warn("[COMEO] checkSubscription adminDb:", e); }
@@ -473,9 +473,15 @@ function showSubscriptionModal(subInfo, profileId, localDb, company) {
 
 async function markPaymentPending(profileId, localDb) {
   try {
-    await setDoc(doc(localDb, "subscriptions", profileId), {
-      profileId, plan: "pending", valid: false, status: "pending", updatedAt: new Date().toISOString()
-    }, { merge: true });
+    const existingSnap = await getDoc(doc(localDb, "subscriptions", profileId));
+const existing = existingSnap.exists() ? existingSnap.data() : {};
+if (existing.plan === "paid" && existing.valid !== false) {
+  toast("Abonnement déjà actif.", "info");
+  return;
+}
+await setDoc(doc(localDb, "subscriptions", profileId), {
+  profileId, plan: "pending", valid: false, status: "pending", updatedAt: new Date().toISOString()
+}, { merge: true });
     toast("Demande envoyée à l'administrateur (Z.html).", "success");
     const subModal = document.getElementById("subModal");
     if (subModal) subModal.style.display = "none";
