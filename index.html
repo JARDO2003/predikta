@@ -481,10 +481,9 @@ table.data-table td { padding: 8px 12px; vertical-align: middle; }
 <div id="toast"></div>
 
 <script>
-/* ═══════════════════════════════════════════════════════
-   FIREBASE CONFIG
-══════════════════════════════════════════════════════ */
-const firebaseConfig = {
+  FIREBASE CONFIG
+=================================================== */
+var firebaseConfig = {
   apiKey: "AIzaSyCPGgtXoDUycykLaTSee0S0yY0tkeJpqKI",
   authDomain: "data-com-a94a8.firebaseapp.com",
   databaseURL: "https://data-com-a94a8-default-rtdb.firebaseio.com",
@@ -495,11 +494,11 @@ const firebaseConfig = {
   measurementId: "G-FYQCWY5G4S"
 };
 firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-
-/* ═══════════════════════════════════════════════════════
+var db = firebase.firestore();
+ 
+/* ===================================================
    UTILS
-══════════════════════════════════════════════════════ */
+=================================================== */
 function fmtAmount(n) {
   if (n === undefined || n === null || n === 0) return '';
   return new Intl.NumberFormat('fr-FR').format(Math.round(n)) + ' FCFA';
@@ -509,66 +508,75 @@ function parseAmount(v) {
   return parseInt(String(v).replace(/[^0-9]/g, '')) || 0;
 }
 function todayDate() { return new Date().toISOString().split('T')[0]; }
-function showToast(msg, dur = 3000) {
-  const t = document.getElementById('toast');
+function showToast(msg, dur) {
+  dur = dur || 3000;
+  var t = document.getElementById('toast');
   t.textContent = msg;
   t.classList.add('show');
   clearTimeout(t._tid);
-  t._tid = setTimeout(() => t.classList.remove('show'), dur);
+  t._tid = setTimeout(function() { t.classList.remove('show'); }, dur);
 }
 function genRef() {
-  const now = new Date();
+  var now = new Date();
   return 'JNL-' + now.getFullYear() + String(now.getMonth()+1).padStart(2,'0') + String(now.getDate()).padStart(2,'0') + '-' + String(Math.floor(Math.random()*900)+100);
 }
 function escHtml(s) {
   if (!s) return '';
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 function getPlanLibelle(compte) {
   if (!compte) return '';
-  for (const cl of Object.values(PLAN_COMPTABLE)) { if (cl[compte]) return cl[compte]; }
+  var classes = Object.values(PLAN_COMPTABLE);
+  for (var i = 0; i < classes.length; i++) {
+    if (classes[i][compte]) return classes[i][compte];
+  }
   return '';
 }
 function hashPassword(str) {
-  let h = 0;
-  for (let i = 0; i < str.length; i++) { h = ((h << 5) - h) + str.charCodeAt(i); h |= 0; }
+  var h = 0;
+  for (var i = 0; i < str.length; i++) { h = ((h << 5) - h) + str.charCodeAt(i); h |= 0; }
   return String(Math.abs(h));
 }
-
-/* ═══════════════════════════════════════════════════════
+ 
+/* ===================================================
    AUTH STATE
-══════════════════════════════════════════════════════ */
-let currentUser = null;
-let currentEntrepriseType = 'commerce';
-let allEcritures = [];
-
+=================================================== */
+var currentUser = null;
+var currentEntrepriseType = 'commerce';
+var allEcritures = [];
+ 
 function switchAuth(tab) {
-  document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+  document.querySelectorAll('.auth-tab').forEach(function(t) { t.classList.remove('active'); });
+  document.querySelectorAll('.auth-form').forEach(function(f) { f.classList.remove('active'); });
   event.target.classList.add('active');
   document.getElementById('form-' + tab).classList.add('active');
 }
-
-async function doRegister() {
-  const err = document.getElementById('register-error');
-  const suc = document.getElementById('register-success');
+ 
+function doRegister() {
+  var err = document.getElementById('register-error');
+  var suc = document.getElementById('register-success');
   err.style.display = 'none'; suc.style.display = 'none';
-  const nom = document.getElementById('reg-entreprise').value.trim();
-  const contact = document.getElementById('reg-contact').value.trim();
-  const pass = document.getElementById('reg-password').value;
-  const pass2 = document.getElementById('reg-password2').value;
+  var nom = document.getElementById('reg-entreprise').value.trim();
+  var contact = document.getElementById('reg-contact').value.trim();
+  var pass = document.getElementById('reg-password').value;
+  var pass2 = document.getElementById('reg-password2').value;
   if (!nom || !contact || !pass) { err.textContent = 'Tous les champs sont requis.'; err.style.display = 'block'; return; }
   if (pass.length < 6) { err.textContent = 'Mot de passe trop court (min 6).'; err.style.display = 'block'; return; }
   if (pass !== pass2) { err.textContent = 'Les mots de passe ne correspondent pas.'; err.style.display = 'block'; return; }
-
-  const btn = document.getElementById('btn-register');
-  btn.disabled = true; btn.textContent = 'Création...';
-  try {
-    const snap = await db.collection('users').where('nom_entreprise', '==', nom).get();
-    if (!snap.empty) { err.textContent = 'Cette entreprise existe déjà. Connectez-vous.'; err.style.display = 'block'; btn.disabled = false; btn.textContent = 'Créer mon compte (24h gratuit)'; return; }
-    const now = Date.now();
-    const trialEnd = now + 24 * 60 * 60 * 1000;
-    await db.collection('users').add({
+ 
+  var btn = document.getElementById('btn-register');
+  btn.disabled = true; btn.textContent = 'Creation...';
+  db.collection('users').where('nom_entreprise', '==', nom).get().then(function(snap) {
+    if (!snap.empty) {
+      err.textContent = 'Cette entreprise existe deja. Connectez-vous.';
+      err.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = 'Creer mon compte (24h gratuit)';
+      return;
+    }
+    var now = Date.now();
+    var trialEnd = now + 24 * 60 * 60 * 1000;
+    db.collection('users').add({
       nom_entreprise: nom,
       contact: contact,
       password_hash: hashPassword(pass),
@@ -579,47 +587,79 @@ async function doRegister() {
       last_payment_date: 0,
       payment_amount: 0,
       type_entreprise: 'commerce'
+    }).then(function() {
+      suc.textContent = 'Compte cree ! Essai gratuit de 24h active. Connectez-vous.';
+      suc.style.display = 'block';
+      setTimeout(function() { switchAuthDirect('login'); }, 1500);
+    }).catch(function(e) {
+      err.textContent = 'Erreur : ' + e.message;
+      err.style.display = 'block';
+    }).finally(function() {
+      btn.disabled = false;
+      btn.textContent = 'Creer mon compte (24h gratuit)';
     });
-    suc.textContent = 'Compte créé ! Essai gratuit de 24h activé. Connectez-vous.';
-    suc.style.display = 'block';
-    setTimeout(() => switchAuth('login'), 1500);
-  } catch(e) {
+  }).catch(function(e) {
     err.textContent = 'Erreur : ' + e.message;
     err.style.display = 'block';
-  }
-  btn.disabled = false; btn.textContent = 'Créer mon compte (24h gratuit)';
+    btn.disabled = false;
+    btn.textContent = 'Creer mon compte (24h gratuit)';
+  });
 }
-
-async function doLogin() {
-  const err = document.getElementById('login-error');
+ 
+function doLogin() {
+  var err = document.getElementById('login-error');
   err.style.display = 'none';
-  const nom = document.getElementById('login-entreprise').value.trim();
-  const pass = document.getElementById('login-password').value;
+  var nom = document.getElementById('login-entreprise').value.trim();
+  var pass = document.getElementById('login-password').value;
   if (!nom || !pass) { err.textContent = 'Remplissez tous les champs.'; err.style.display = 'block'; return; }
-
-  const btn = document.getElementById('btn-login');
+ 
+  var btn = document.getElementById('btn-login');
   btn.disabled = true; btn.textContent = 'Connexion...';
-  try {
-    const snap = await db.collection('users').where('nom_entreprise', '==', nom).limit(1).get();
-    if (snap.empty) { err.textContent = 'Entreprise non trouvée.'; err.style.display = 'block'; btn.disabled = false; btn.textContent = 'Se connecter'; return; }
-    const doc = snap.docs[0];
-    const data = doc.data();
-    if (data.password_hash !== hashPassword(pass)) { err.textContent = 'Mot de passe incorrect.'; err.style.display = 'block'; btn.disabled = false; btn.textContent = 'Se connecter'; return; }
-    currentUser = { id: doc.id, ...data };
+  db.collection('users').where('nom_entreprise', '==', nom).limit(1).get().then(function(snap) {
+    if (snap.empty) {
+      err.textContent = 'Entreprise non trouvee.';
+      err.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = 'Se connecter';
+      return;
+    }
+    var doc = snap.docs[0];
+    var data = doc.data();
+    if (data.password_hash !== hashPassword(pass)) {
+      err.textContent = 'Mot de passe incorrect.';
+      err.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = 'Se connecter';
+      return;
+    }
+    currentUser = Object.assign({ id: doc.id }, data);
     afterLogin();
-  } catch(e) {
+    btn.disabled = false;
+    btn.textContent = 'Se connecter';
+  }).catch(function(e) {
     err.textContent = 'Erreur : ' + e.message;
     err.style.display = 'block';
-  }
-  btn.disabled = false; btn.textContent = 'Se connecter';
+    btn.disabled = false;
+    btn.textContent = 'Se connecter';
+  });
 }
-
+ 
+function switchAuthDirect(tab) {
+  document.querySelectorAll('.auth-tab').forEach(function(t) { t.classList.remove('active'); });
+  document.querySelectorAll('.auth-form').forEach(function(f) { f.classList.remove('active'); });
+  var tabs = document.querySelectorAll('.auth-tab');
+  if (tab === 'login') tabs[0].classList.add('active');
+  else tabs[1].classList.add('active');
+  document.getElementById('form-' + tab).classList.add('active');
+}
+ 
 function forgotPassword() {
-  const nom = document.getElementById('login-entreprise').value.trim();
-  const url = 'https://wa.me/2250508463003?text=' + encodeURIComponent('Bonjour, j'ai oublié mon mot de passe Comeo AI. Mon entreprise : ' + (nom || '____'));
+  var nom = document.getElementById('login-entreprise').value.trim();
+  var msg = 'Bonjour, j\'ai oubli\u00e9 mon mot de passe Comeo AI. Mon entreprise : ' + (nom || '____');
+  var url = 'https://wa.me/2250508463003?text=' + encodeURIComponent(msg);
   window.open(url, '_blank');
 }
-
+ 
 function logout() {
   currentUser = null;
   allEcritures = [];
@@ -628,112 +668,106 @@ function logout() {
   document.getElementById('paywall-overlay').style.display = 'none';
   document.getElementById('login-password').value = '';
 }
-
+ 
 function afterLogin() {
   document.getElementById('auth-overlay').style.display = 'none';
   document.getElementById('app').classList.add('active');
-  document.getElementById('header-org').textContent = '🏢 ' + currentUser.nom_entreprise;
+  document.getElementById('header-org').textContent = '\u{1F3E2} ' + currentUser.nom_entreprise;
   currentEntrepriseType = currentUser.type_entreprise || 'commerce';
   updateSubscriptionStatus();
   loadEcritures();
 }
-
+ 
 function updateSubscriptionStatus() {
-  const now = Date.now();
-  const trialActive = now < currentUser.trial_ends_at;
-  const subActive = currentUser.is_subscribed && now < currentUser.subscription_ends_at;
-  const badge = document.getElementById('header-status');
+  var now = Date.now();
+  var trialActive = now < currentUser.trial_ends_at;
+  var subActive = currentUser.is_subscribed && now < currentUser.subscription_ends_at;
+  var badge = document.getElementById('header-status');
   if (trialActive) {
-    const h = Math.ceil((currentUser.trial_ends_at - now) / 3600000);
+    var h = Math.ceil((currentUser.trial_ends_at - now) / 3600000);
     badge.className = 'badge-warn';
-    badge.textContent = `⏳ Essai : ${h}h restantes`;
+    badge.textContent = '\u23F3 Essai : ' + h + 'h restantes';
   } else if (subActive) {
-    const j = Math.ceil((currentUser.subscription_ends_at - now) / 86400000);
+    var j = Math.ceil((currentUser.subscription_ends_at - now) / 86400000);
     badge.className = 'badge';
-    badge.textContent = `✅ Abonné (${j}j)`;
+    badge.textContent = '\u2705 Abonn\u00e9 (' + j + 'j)';
   } else {
     badge.className = 'badge-warn';
-    badge.textContent = '🔒 Essai terminé';
+    badge.textContent = '\uD83D\uDD12 Essai termin\u00e9';
     showPaywall();
   }
 }
-
+ 
 function showPaywall() {
   document.getElementById('paywall-overlay').style.display = 'flex';
 }
-function hidePaywall() {
-  document.getElementById('paywall-overlay').style.display = 'none';
-}
-
-/* check subscription every minute */
-setInterval(() => { if (currentUser) updateSubscriptionStatus(); }, 60000);
-
-/* ═══════════════════════════════════════════════════════
-   DATA — ÉCRITURES
-══════════════════════════════════════════════════════ */
-async function loadEcritures() {
+ 
+setInterval(function() { if (currentUser) updateSubscriptionStatus(); }, 60000);
+ 
+/* ===================================================
+   DATA — ECRITURES
+=================================================== */
+function loadEcritures() {
   if (!currentUser) return;
-  try {
-    const snap = await db.collection('ecritures').where('user_id', '==', currentUser.id).orderBy('date', 'desc').get();
-    allEcritures = snap.docs.map(d => {
-      const data = d.data();
-      // Normaliser anciens docs qui n'ont que ecritures
+  db.collection('ecritures').where('user_id', '==', currentUser.id).orderBy('date', 'desc').get().then(function(snap) {
+    allEcritures = snap.docs.map(function(d) {
+      var data = d.data();
       if (data.ecritures && Array.isArray(data.ecritures) && (!data.lignes || !data.lignes.length)) {
         data.lignes = [];
-        data.ecritures.forEach(ec => {
-          (ec.lignes || []).forEach(l => data.lignes.push(l));
+        data.ecritures.forEach(function(ec) {
+          (ec.lignes || []).forEach(function(l) { data.lignes.push(l); });
         });
       }
-      return { id: d.id, ...data };
+      return Object.assign({ id: d.id }, data);
     });
     renderDashboard();
     renderGrandLivre();
     renderBalance();
     renderTresorerie();
-  } catch(e) {
+  }).catch(function(e) {
     console.warn('loadEcritures', e);
-    showToast('Erreur chargement données');
-  }
+    showToast('Erreur chargement donnees');
+  });
 }
-
-async function saveEcriture(data) {
-  if (!currentUser) return;
-  // Normaliser : si format multi-ecritures (IA), aplatir en lignes
-  const payload = { ...data };
+ 
+function saveEcriture(data) {
+  if (!currentUser) return Promise.resolve();
+  var payload = Object.assign({}, data);
   if (payload.ecritures && Array.isArray(payload.ecritures)) {
     payload.lignes = [];
-    payload.ecritures.forEach(ec => {
-      (ec.lignes || []).forEach(l => payload.lignes.push(l));
+    payload.ecritures.forEach(function(ec) {
+      (ec.lignes || []).forEach(function(l) { payload.lignes.push(l); });
     });
   }
-  const doc = { ...payload, user_id: currentUser.id, created_at: Date.now() };
-  const ref = await db.collection('ecritures').add(doc);
-  doc.id = ref.id;
-  allEcritures.unshift(doc);
-  renderDashboard();
-  renderGrandLivre();
-  renderBalance();
-  renderTresorerie();
-  showToast('Écriture enregistrée');
-  return doc;
-}
-
-/* ═══════════════════════════════════════════════════════
-   DASHBOARD
-══════════════════════════════════════════════════════ */
-function renderDashboard() {
-  const now = new Date();
-  const ym = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0');
-  const thisMonth = allEcritures.filter(e => e.date && e.date.startsWith(ym));
-  let totalDebit = 0, totalCredit = 0;
-  thisMonth.forEach(e => {
-    (e.lignes || []).forEach(l => { totalDebit += l.debit || 0; totalCredit += l.credit || 0; });
+  var doc = Object.assign({}, payload, { user_id: currentUser.id, created_at: Date.now() });
+  return db.collection('ecritures').add(doc).then(function(ref) {
+    doc.id = ref.id;
+    allEcritures.unshift(doc);
+    renderDashboard();
+    renderGrandLivre();
+    renderBalance();
+    renderTresorerie();
+    showToast('Ecriture enregistree');
+    return doc;
   });
-  let soldeTreso = 0;
-  allEcritures.forEach(e => {
-    (e.lignes || []).forEach(l => {
-      const c = String(l.compte || '');
-      if (c.startsWith('5') || c.startsWith('57') || c.startsWith('51') || c.startsWith('52') || c.startsWith('53') || c.startsWith('54') || c.startsWith('58')) {
+}
+ 
+/* ===================================================
+   DASHBOARD
+=================================================== */
+function renderDashboard() {
+  var now = new Date();
+  var ym = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0');
+  var thisMonth = allEcritures.filter(function(e) { return e.date && e.date.startsWith(ym); });
+  var totalDebit = 0, totalCredit = 0;
+  thisMonth.forEach(function(e) {
+    (e.lignes || []).forEach(function(l) { totalDebit += l.debit || 0; totalCredit += l.credit || 0; });
+  });
+  var soldeTreso = 0;
+  allEcritures.forEach(function(e) {
+    (e.lignes || []).forEach(function(l) {
+      var c = String(l.compte || '');
+      if (c.startsWith('5')) {
         soldeTreso += (l.debit || 0) - (l.credit || 0);
       }
     });
@@ -742,29 +776,28 @@ function renderDashboard() {
   document.getElementById('dash-total-debit').textContent = fmtAmount(totalDebit);
   document.getElementById('dash-total-credit').textContent = fmtAmount(totalCredit);
   document.getElementById('dash-solde-treso').textContent = fmtAmount(soldeTreso);
-
-  const last = allEcritures.slice(0, 5);
+ 
+  var last = allEcritures.slice(0, 5);
   if (!last.length) {
-    document.getElementById('dash-last-ecritures').innerHTML = '<div style="color:var(--text3);font-size:12px;padding:10px;">Aucune écriture ce mois.</div>';
+    document.getElementById('dash-last-ecritures').innerHTML = '<div style="color:var(--text3);font-size:12px;padding:10px;">Aucune ecriture ce mois.</div>';
     return;
   }
-  let html = '<table class="data-table"><thead><tr><th>Date</th><th>Réf</th><th>Description</th><th style="text-align:right">Débit</th><th style="text-align:right">Crédit</th></tr></thead><tbody>';
-  last.forEach(e => {
-    let td = 0, tc = 0;
-    (e.lignes || []).forEach(l => { td += l.debit || 0; tc += l.credit || 0; });
-    html += `<tr><td>${escHtml(e.date)}</td><td>${escHtml(e.reference)}</td><td>${escHtml(e.description)}</td><td class="col-debit">${fmtAmount(td)}</td><td class="col-credit">${fmtAmount(tc)}</td></tr>`;
+  var html = '<table class="data-table"><thead><tr><th>Date</th><th>R\u00e9f</th><th>Description</th><th style="text-align:right">D\u00e9bit</th><th style="text-align:right">Cr\u00e9dit</th></tr></thead><tbody>';
+  last.forEach(function(e) {
+    var td = 0, tc = 0;
+    (e.lignes || []).forEach(function(l) { td += l.debit || 0; tc += l.credit || 0; });
+    html += '<tr><td>' + escHtml(e.date) + '</td><td>' + escHtml(e.reference) + '</td><td>' + escHtml(e.description) + '</td><td class="col-debit">' + fmtAmount(td) + '</td><td class="col-credit">' + fmtAmount(tc) + '</td></tr>';
   });
   html += '</tbody></table>';
   document.getElementById('dash-last-ecritures').innerHTML = html;
 }
-
-
-/* ═══════════════════════════════════════════════════════
+ 
+/* ===================================================
    NAVIGATION
-══════════════════════════════════════════════════════ */
+=================================================== */
 function showView(id, el) {
-  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-  document.querySelectorAll('.sidebar-item').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.view').forEach(function(v) { v.classList.remove('active'); });
+  document.querySelectorAll('.sidebar-item').forEach(function(s) { s.classList.remove('active'); });
   document.getElementById('view-' + id).classList.add('active');
   if (el) el.classList.add('active');
   if (id === 'plan') renderPlan();
@@ -774,17 +807,17 @@ function showView(id, el) {
   if (id === 'tresorerie') renderTresorerie();
   if (id === 'dashboard') renderDashboard();
 }
-
-/* ═══════════════════════════════════════════════════════
-   JOURNAL — Saisie manuelle rapide
-══════════════════════════════════════════════════════ */
+ 
+/* ===================================================
+   JOURNAL — Saisie manuelle
+=================================================== */
 function saveManualEntry() {
-  const desc = document.getElementById('op-description').value.trim();
-  const date = document.getElementById('op-date').value || todayDate();
-  const ref = document.getElementById('op-ref').value.trim() || genRef();
-  const montant = parseAmount(document.getElementById('op-montant').value);
+  var desc = document.getElementById('op-description').value.trim();
+  var date = document.getElementById('op-date').value || todayDate();
+  var ref = document.getElementById('op-ref').value.trim() || genRef();
+  var montant = parseAmount(document.getElementById('op-montant').value);
   if (!desc || !montant) { showToast('Veuillez remplir la description et le montant'); return; }
-  const ecriture = {
+  var ecriture = {
     titre: desc,
     date: date,
     reference: ref,
@@ -792,61 +825,71 @@ function saveManualEntry() {
     type_entreprise: currentEntrepriseType,
     lignes: [
       { compte: '601', libelle: 'Charge / Achat', debit: montant, credit: 0 },
-      { compte: '512', libelle: 'Banque / Règlement', debit: 0, credit: montant }
+      { compte: '512', libelle: 'Banque / Reglement', debit: 0, credit: montant }
     ]
   };
   saveEcriture(ecriture);
-  document.getElementById('output-content').innerHTML = `<div class="journal-result"><div class="journal-card"><div class="journal-card-header"><div class="journal-card-title">Écriture manuelle enregistrée</div></div><div style="padding:12px;color:var(--text2);font-size:13px;">${escHtml(desc)} — ${fmtAmount(montant)}</div></div></div>`;
+  document.getElementById('output-content').innerHTML = '<div class="journal-card"><div class="journal-card-header"><div class="journal-card-title">Ecriture manuelle enregistr\u00e9e</div></div><div style="padding:12px;color:var(--text2);font-size:13px;">' + escHtml(desc) + ' \u2014 ' + fmtAmount(montant) + '</div></div>';
 }
-
-/* ═══════════════════════════════════════════════════════
+ 
+/* ===================================================
    ENTREPRISE TYPE
-══════════════════════════════════════════════════════ */
-const ENTREPRISE_CONFIG = {
+=================================================== */
+var ENTREPRISE_CONFIG = {
   commerce: {
-    label: '🏪 Commerce', quickOps: ['Vente marchandises crédit','Achat marchandises crédit','Encaissement client','Règlement fournisseur','Variation stock','Salaires','Amortissement','TVA','Immobilisation','Emprunt'],
-    types: [{value:'',label:'Auto IA'},{value:'vente',label:'Vente'},{value:'achat',label:'Achat'},{value:'reglement_client',label:'Encaissement'},{value:'reglement_fourn',label:'Règlement'},{value:'stock',label:'Stock'},{value:'salaire',label:'Salaires'},{value:'amortissement',label:'Amortissement'},{value:'tva',label:'TVA'},{value:'immobilisation',label:'Immobilisation'},{value:'emprunt',label:'Emprunt'}]
+    label: 'Commerce',
+    quickOps: ['Vente marchandises credit','Achat marchandises credit','Encaissement client','Reglement fournisseur','Variation stock','Salaires','Amortissement','TVA','Immobilisation','Emprunt'],
+    types: [{value:'',label:'Auto IA'},{value:'vente',label:'Vente'},{value:'achat',label:'Achat'},{value:'reglement_client',label:'Encaissement'},{value:'reglement_fourn',label:'Reglement'},{value:'stock',label:'Stock'},{value:'salaire',label:'Salaires'},{value:'amortissement',label:'Amortissement'},{value:'tva',label:'TVA'},{value:'immobilisation',label:'Immobilisation'},{value:'emprunt',label:'Emprunt'}]
   },
   service: {
-    label: '💼 Services', quickOps: ['Facturation service','Encaissement honoraires','Achat fournitures','Salaires','Loyer','Amortissement','TVA','Acompte'],
+    label: 'Services',
+    quickOps: ['Facturation service','Encaissement honoraires','Achat fournitures','Salaires','Loyer','Amortissement','TVA','Acompte'],
     types: [{value:'',label:'Auto IA'},{value:'facturation',label:'Facturation'},{value:'encaissement',label:'Encaissement'},{value:'achat_fourniture',label:'Fournitures'},{value:'salaire',label:'Salaires'},{value:'loyer',label:'Loyer'},{value:'amortissement',label:'Amortissement'},{value:'tva',label:'TVA'}]
   },
   industrie: {
-    label: '🏭 Industrie', quickOps: ['Achat MP','Consommation MP','Constatation produits finis','Vente produits finis','Variation stock PF','Sous-traitance','Amortissement industriel','Salaires ouvriers','Énergie usine'],
+    label: 'Industrie',
+    quickOps: ['Achat MP','Consommation MP','Constatation produits finis','Vente produits finis','Variation stock PF','Sous-traitance','Amortissement industriel','Salaires ouvriers','Energie usine'],
     types: [{value:'',label:'Auto IA'},{value:'achat_mp',label:'Achat MP'},{value:'production',label:'Production'},{value:'vente_pf',label:'Vente PF'},{value:'stock_mp',label:'Stock MP'},{value:'stock_pf',label:'Stock PF'},{value:'salaire',label:'Salaires'},{value:'amortissement',label:'Amortissement'}]
   },
   banque: {
-    label: '🏦 Banque', quickOps: ['Dépôt client','Crédit court terme','Intérêts prêts','Commissions bancaires','Remboursement crédit','Dotation provisions','Opération change','Salaires personnel'],
-    types: [{value:'',label:'Auto IA'},{value:'depot',label:'Dépôts'},{value:'credit',label:'Crédits'},{value:'interets',label:'Intérêts'},{value:'commission',label:'Commissions'},{value:'change',label:'Change'},{value:'provision_creance',label:'Provisions'}]
+    label: 'Banque',
+    quickOps: ['Depot client','Credit court terme','Interets prets','Commissions bancaires','Remboursement credit','Dotation provisions','Operation change','Salaires personnel'],
+    types: [{value:'',label:'Auto IA'},{value:'depot',label:'Depots'},{value:'credit',label:'Credits'},{value:'interets',label:'Interets'},{value:'commission',label:'Commissions'},{value:'change',label:'Change'},{value:'provision_creance',label:'Provisions'}]
   },
   sante: {
-    label: '🏥 Santé', quickOps: ['Recettes consultations','Facturation hospitalisation','Achat médicaments','Achat matériel médical','Salaires médical','Charges CNPS','Règlement patient','Subvention État','Amortissement médical'],
-    types: [{value:'',label:'Auto IA'},{value:'recette_soins',label:'Recettes soins'},{value:'achat_medicaments',label:'Médicaments'},{value:'hospitalisation',label:'Hospitalisation'},{value:'salaire',label:'Salaires'},{value:'subvention',label:'Subvention'},{value:'amortissement_medical',label:'Amortissement'}]
+    label: 'Sante',
+    quickOps: ['Recettes consultations','Facturation hospitalisation','Achat medicaments','Achat materiel medical','Salaires medical','Charges CNPS','Reglement patient','Subvention Etat','Amortissement medical'],
+    types: [{value:'',label:'Auto IA'},{value:'recette_soins',label:'Recettes soins'},{value:'achat_medicaments',label:'Medicaments'},{value:'hospitalisation',label:'Hospitalisation'},{value:'salaire',label:'Salaires'},{value:'subvention',label:'Subvention'},{value:'amortissement_medical',label:'Amortissement'}]
   },
   education: {
-    label: '🎓 Éducation', quickOps: ['Frais scolarité caisse','Scolarité avance','Facturation scolarité','Subvention État','Salaires enseignants','Achat fournitures','Achat matériel info','Amortissement','Inscription'],
-    types: [{value:'',label:'Auto IA'},{value:'frais_scolarite',label:'Scolarité'},{value:'subvention',label:'Subvention'},{value:'salaire_enseignant',label:'Salaires'},{value:'achat_fournitures',label:'Fournitures'},{value:'immobilisation',label:'Équipements'},{value:'amortissement',label:'Amortissement'}]
+    label: 'Education',
+    quickOps: ['Frais scolarite caisse','Scolarite avance','Facturation scolarite','Subvention Etat','Salaires enseignants','Achat fournitures','Achat materiel info','Amortissement','Inscription'],
+    types: [{value:'',label:'Auto IA'},{value:'frais_scolarite',label:'Scolarite'},{value:'subvention',label:'Subvention'},{value:'salaire_enseignant',label:'Salaires'},{value:'achat_fournitures',label:'Fournitures'},{value:'immobilisation',label:'Equipements'},{value:'amortissement',label:'Amortissement'}]
   },
   ong: {
-    label: '🌍 ONG', quickOps: ['Subvention bailleur','Dépenses projet','Frais siège','Salaires équipe','Achat équipements','Mission terrain','Don en espèces','Cotisations membres'],
-    types: [{value:'',label:'Auto IA'},{value:'subvention_projet',label:'Subvention'},{value:'depense_projet',label:'Dépenses projet'},{value:'salaire',label:'Salaires'},{value:'cotisation',label:'Cotisations'},{value:'mission',label:'Mission'}]
+    label: 'ONG',
+    quickOps: ['Subvention bailleur','Depenses projet','Frais siege','Salaires equipe','Achat equipements','Mission terrain','Don en especes','Cotisations membres'],
+    types: [{value:'',label:'Auto IA'},{value:'subvention_projet',label:'Subvention'},{value:'depense_projet',label:'Depenses projet'},{value:'salaire',label:'Salaires'},{value:'cotisation',label:'Cotisations'},{value:'mission',label:'Mission'}]
   },
   agri: {
-    label: '🌾 Agriculture', quickOps: ['Achat intrants','Vente récoltes','Variation stock','Salaires saisonniers','Amortissement tracteur','Subvention agricole','Carburant','Achat irrigation'],
-    types: [{value:'',label:'Auto IA'},{value:'achat_intrants',label:'Intrants'},{value:'vente_recolte',label:'Vente'},{value:'stock_agri',label:'Stock'},{value:'salaire_ouvrier',label:'Main-d'œuvre'},{value:'subvention_agri',label:'Subvention'}]
+    label: 'Agriculture',
+    quickOps: ['Achat intrants','Vente recoltes','Variation stock','Salaires saisonniers','Amortissement tracteur','Subvention agricole','Carburant','Achat irrigation'],
+    types: [{value:'',label:'Auto IA'},{value:'achat_intrants',label:'Intrants'},{value:'vente_recolte',label:'Vente'},{value:'stock_agri',label:'Stock'},{value:'salaire_ouvrier',label:'Main-oeuvre'},{value:'subvention_agri',label:'Subvention'}]
   },
   immo: {
-    label: '🏗️ Immobilier', quickOps: ['Facture avancement','Achat matériaux','Sous-traitance','Acompte reçu','Retenue garantie','Salaires chantier','Location engins','Immobilisation BTP','Travaux en cours'],
-    types: [{value:'',label:'Auto IA'},{value:'facturation_travaux',label:'Facturation'},{value:'achat_materiaux',label:'Matériaux'},{value:'sous_traitance',label:'Sous-traitance'},{value:'acompte_chantier',label:'Acomptes'},{value:'wip',label:'WIP'},{value:'salaire',label:'Main-d'œuvre'}]
+    label: 'Immobilier',
+    quickOps: ['Facture avancement','Achat materiaux','Sous-traitance','Acompte recu','Retenue garantie','Salaires chantier','Location engins','Immobilisation BTP','Travaux en cours'],
+    types: [{value:'',label:'Auto IA'},{value:'facturation_travaux',label:'Facturation'},{value:'achat_materiaux',label:'Materiaux'},{value:'sous_traitance',label:'Sous-traitance'},{value:'acompte_chantier',label:'Acomptes'},{value:'wip',label:'WIP'},{value:'salaire',label:'Main-oeuvre'}]
   },
   transport: {
-    label: '🚚 Transport', quickOps: ['Facturation transport','Achat carburant','Entretien véhicule','Amortissement véhicules','Assurance flotte','Salaires chauffeurs','Achat pièces','Péage','Achat camion'],
+    label: 'Transport',
+    quickOps: ['Facturation transport','Achat carburant','Entretien vehicule','Amortissement vehicules','Assurance flotte','Salaires chauffeurs','Achat pieces','Peage','Achat camion'],
     types: [{value:'',label:'Auto IA'},{value:'facturation_transport',label:'Facturation'},{value:'achat_carburant',label:'Carburant'},{value:'entretien_vehicule',label:'Entretien'},{value:'salaire_chauffeur',label:'Salaires'},{value:'achat_vehicule',label:'Acquisition'},{value:'amortissement',label:'Amortissement'}]
   }
 };
-
+ 
 function selectEntreprise(el) {
-  document.querySelectorAll('.e-chip').forEach(c => c.classList.remove('active'));
+  document.querySelectorAll('.e-chip').forEach(function(c) { c.classList.remove('active'); });
   el.classList.add('active');
   currentEntrepriseType = el.dataset.type;
   document.getElementById('context-badge').textContent = ENTREPRISE_CONFIG[currentEntrepriseType].label;
@@ -854,75 +897,86 @@ function selectEntreprise(el) {
   renderTypeSelect();
 }
 function renderQuickOps() {
-  const cfg = ENTREPRISE_CONFIG[currentEntrepriseType];
-  document.getElementById('quick-ops-container').innerHTML = cfg.quickOps.map(op => `<span class="quick-chip" onclick="setQuick('${op.replace(/'/g, "\'")}')">${op}</span>`).join('');
+  var cfg = ENTREPRISE_CONFIG[currentEntrepriseType];
+  document.getElementById('quick-ops-container').innerHTML = cfg.quickOps.map(function(op) {
+    return '<span class="quick-chip" onclick="setQuick(' + "'" + op + "'" + ')">' + op + '</span>';
+  }).join('');
 }
 function renderTypeSelect() {
-  const cfg = ENTREPRISE_CONFIG[currentEntrepriseType];
-  const sel = document.getElementById('op-type');
-  sel.innerHTML = cfg.types.map(t => `<option value="${t.value}">${t.label}</option>`).join('');
+  var cfg = ENTREPRISE_CONFIG[currentEntrepriseType];
+  var sel = document.getElementById('op-type');
+  sel.innerHTML = cfg.types.map(function(t) {
+    return '<option value="' + t.value + '">' + t.label + '</option>';
+  }).join('');
 }
 function setQuick(text) { document.getElementById('op-description').value = text; }
-
-/* ═══════════════════════════════════════════════════════
+ 
+/* ===================================================
    PLAN COMPTABLE
-══════════════════════════════════════════════════════ */
-const PLAN_COMPTABLE = {
-  "Classe 1 — Ressources durables": {"101":"Capital social","106":"Réserves","121":"Résultat net : bénéfice","129":"Résultat net : perte","131":"Subventions d'équipement","141":"Emprunts et dettes financières","161":"Emprunts ordinaires établissements de crédit","165":"Dépôts et cautionnements reçus","166":"Intérêts courus"},
-  "Classe 2 — Actif immobilisé": {"211":"Terrains nus","221":"Bâtiments industriels","231":"Matériel et outillage industriel","232":"Matériel agricole","241":"Matériel de transport","2411":"Véhicules de tourisme","2412":"Camions et véhicules utilitaires","244":"Matériel de bureau et informatique","2441":"Mobilier de bureau","2442":"Matériel de bureau","2443":"Matériel informatique","245":"Matériel médical","251":"Titres de participation","272":"Prêts","281":"Amortissements immobilisations corporelles","2813":"Amortissements bâtiments","2816":"Amortissements matériel et outillage","2817":"Amortissements matériel de transport","2844":"Amortissements matériel bureau et informatique","291":"Dépréciations immobilisations incorporelles"},
-  "Classe 3 — Stocks": {"301":"Marchandises A","302":"Marchandises B","311":"Matières premières","321":"Matières consommables","331":"Produits en cours","341":"Produits intermédiaires","351":"Produits finis","361":"Produits résiduels","391":"Dépréciations stocks marchandises","392":"Dépréciations stocks matières premières","395":"Dépréciations stocks produits finis"},
-  "Classe 4 — Tiers": {"401":"Fournisseurs","4011":"Fournisseurs ordinaires","404":"Fournisseurs d'immobilisations","405":"Fournisseurs, retenues de garantie","408":"Fournisseurs, factures non parvenues","409":"Fournisseurs débiteurs, avances","411":"Clients","4111":"Clients ordinaires","412":"Clients — Effets à recevoir","413":"Clients — Retenues de garantie","414":"Clients — Avances et acomptes reçus","416":"Clients douteux","418":"Clients — Produits à recevoir","419":"Clients créditeurs","421":"Personnel, avances","422":"Personnel, rémunérations dues","431":"Sécurité sociale","432":"Caisses de retraites","441":"État, impôts sur les bénéfices","442":"État, impôts et taxes sur le CA","4421":"TVA collectée","4451":"TVA récupérable sur immobilisations","4452":"TVA récupérable sur achats de biens","4453":"TVA récupérable sur services","447":"État, impôts retenus à la source","461":"Débiteurs divers","462":"Créditeurs divers","487":"Produits constatés d'avance","491":"Dépréciations comptes clients"},
-  "Classe 5 — Trésorerie": {"511":"Valeurs à l'encaissement","512":"Banques — comptes courants","516":"Comptes courants postaux","571":"Caisses en monnaies nationales","5711":"Caisse principale","581":"Virements internes"},
-  "Classe 6 — Charges": {"601":"Achats de marchandises","602":"Achats de matières premières","604":"Achats matières et fournitures consommables","6091":"Variation stocks marchandises","6092":"Variation stocks matières premières","611":"Transports sur achats","612":"Transports sur ventes","613":"Autres transports","621":"Sous-traitance générale","622":"Locations et charges locatives","624":"Entretien, réparations","625":"Primes d'assurance","627":"Publicité","628":"Frais de télécommunications","629":"Transports et déplacements","631":"Frais bancaires","632":"Rémunérations intermédiaires","651":"Rémunérations du personnel","6511":"Appointements et salaires bruts","661":"Cotisations organismes sociaux","6611":"Cotisations patronales CNPS/CNSS","681":"Dotations aux amortissements corporels","6817":"Dotation amortissements matériel transport","6844":"Dotation amortissements matériel bureau","691":"Dotations aux provisions","6972":"Dépréciations créances clients"},
-  "Classe 7 — Produits": {"701":"Ventes de marchandises","702":"Ventes de produits finis","703":"Ventes de produits intermédiaires","705":"Travaux facturés","706":"Services vendus","707":"Produits accessoires","708":"Revenus activités annexes","7091":"Variation stocks produits finis","741":"Subventions d'exploitation","751":"Revenus immeubles non affectés","771":"Escomptes obtenus","772":"Gains de change","781":"Reprises amortissements et provisions"},
-  "Classe 8 — Autres charges et produits": {"811":"Charges exercices antérieurs","821":"Produits exercices antérieurs","831":"Charges HAO","841":"Produits cessions immobilisations","861":"Participation travailleurs","871":"Impôts sur le résultat"}
+=================================================== */
+var PLAN_COMPTABLE = {
+  "Classe 1 — Ressources durables": {"101":"Capital social","106":"Reserves","121":"Resultat net : benefice","129":"Resultat net : perte","131":"Subventions d'equipement","141":"Emprunts et dettes financieres","161":"Emprunts ordinaires etablissements de credit","165":"Depots et cautionnements recus","166":"Interets courus"},
+  "Classe 2 — Actif immobilise": {"211":"Terrains nus","221":"Batiments industriels","231":"Materiel et outillage industriel","232":"Materiel agricole","241":"Materiel de transport","2411":"Vehicules de tourisme","2412":"Camions et vehicules utilitaires","244":"Materiel de bureau et informatique","2441":"Mobilier de bureau","2442":"Materiel de bureau","2443":"Materiel informatique","245":"Materiel medical","251":"Titres de participation","272":"Prets","281":"Amortissements immobilisations corporelles","2813":"Amortissements batiments","2816":"Amortissements materiel et outillage","2817":"Amortissements materiel de transport","2844":"Amortissements materiel bureau et informatique","291":"Depreciations immobilisations incorporelles"},
+  "Classe 3 — Stocks": {"301":"Marchandises A","302":"Marchandises B","311":"Matieres premieres","321":"Matieres consommables","331":"Produits en cours","341":"Produits intermediaires","351":"Produits finis","361":"Produits residuels","391":"Depreciations stocks marchandises","392":"Depreciations stocks matieres premieres","395":"Depreciations stocks produits finis"},
+  "Classe 4 — Tiers": {"401":"Fournisseurs","4011":"Fournisseurs ordinaires","404":"Fournisseurs d'immobilisations","405":"Fournisseurs, retenues de garantie","408":"Fournisseurs, factures non parvenues","409":"Fournisseurs debiteurs, avances","411":"Clients","4111":"Clients ordinaires","412":"Clients - Effets a recevoir","413":"Clients - Retenues de garantie","414":"Clients - Avances et acomptes recus","416":"Clients douteux","418":"Clients - Produits a recevoir","419":"Clients crediteurs","421":"Personnel, avances","422":"Personnel, remunerations dues","431":"Securite sociale","432":"Caisses de retraites","441":"Etat, impots sur les benefices","442":"Etat, impots et taxes sur le CA","4421":"TVA collectee","4451":"TVA recuperable sur immobilisations","4452":"TVA recuperable sur achats de biens","4453":"TVA recuperable sur services","447":"Etat, impots retenus a la source","461":"Debiteurs divers","462":"Crediteurs divers","487":"Produits constates d'avance","491":"Depreciations comptes clients"},
+  "Classe 5 — Tresorerie": {"511":"Valeurs a l'encaissement","512":"Banques - comptes courants","516":"Comptes courants postaux","571":"Caisses en monnaies nationales","5711":"Caisse principale","581":"Virements internes"},
+  "Classe 6 — Charges": {"601":"Achats de marchandises","602":"Achats de matieres premieres","604":"Achats matieres et fournitures consommables","6091":"Variation stocks marchandises","6092":"Variation stocks matieres premieres","611":"Transports sur achats","612":"Transports sur ventes","613":"Autres transports","621":"Sous-traitance generale","622":"Locations et charges locatives","624":"Entretien, reparations","625":"Primes d'assurance","627":"Publicite","628":"Frais de telecommunications","629":"Transports et deplacements","631":"Frais bancaires","632":"Remunerations intermediaires","651":"Remunerations du personnel","6511":"Appointements et salaires bruts","661":"Cotisations organismes sociaux","6611":"Cotisations patronales CNPS/CNSS","681":"Dotations aux amortissements corporels","6817":"Dotation amortissements materiel transport","6844":"Dotation amortissements materiel bureau","691":"Dotations aux provisions","6972":"Depreciations creances clients"},
+  "Classe 7 — Produits": {"701":"Ventes de marchandises","702":"Ventes de produits finis","703":"Ventes de produits intermediaires","705":"Travaux factures","706":"Services vendus","707":"Produits accessoires","708":"Revenus activites annexes","7091":"Variation stocks produits finis","741":"Subventions d'exploitation","751":"Revenus immeubles non affectes","771":"Escomptes obtenus","772":"Gains de change","781":"Reprises amortissements et provisions"},
+  "Classe 8 — Autres charges et produits": {"811":"Charges exercices anterieurs","821":"Produits exercices anterieurs","831":"Charges HAO","841":"Produits cessions immobilisations","861":"Participation travailleurs","871":"Impots sur le resultat"}
 };
-
-function renderPlan(filter = '') {
-  const body = document.getElementById('plan-body');
-  const fl = filter.toLowerCase();
-  let html = '';
-  for (const [classe, comptes] of Object.entries(PLAN_COMPTABLE)) {
-    const items = Object.entries(comptes).filter(([n,l]) => !fl || n.includes(fl) || l.toLowerCase().includes(fl));
+ 
+function renderPlan(filter) {
+  filter = filter || '';
+  var body = document.getElementById('plan-body');
+  var fl = filter.toLowerCase();
+  var html = '';
+  var entries = Object.entries(PLAN_COMPTABLE);
+  for (var ci = 0; ci < entries.length; ci++) {
+    var classe = entries[ci][0];
+    var comptes = entries[ci][1];
+    var items = Object.entries(comptes).filter(function(kv) {
+      return !fl || kv[0].includes(fl) || kv[1].toLowerCase().includes(fl);
+    });
     if (!items.length) continue;
-    html += `<div style="margin-bottom:20px;"><div style="font-family:var(--display);font-weight:700;font-size:14px;color:var(--accent);padding:6px 0;border-bottom:1px solid var(--border);margin-bottom:8px;">${escHtml(classe)}</div><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:5px;">`;
-    items.forEach(([num,lib]) => {
-      html += `<div style="background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:6px 10px;display:flex;align-items:flex-start;gap:8px;"><span style="font-family:var(--mono);font-size:11px;color:var(--accent2);font-weight:500;white-space:nowrap;">${escHtml(num)}</span><span style="font-size:11px;color:var(--text2);">${escHtml(lib)}</span></div>`;
+    html += '<div style="margin-bottom:20px;"><div style="font-family:var(--display);font-weight:700;font-size:14px;color:var(--accent);padding:6px 0;border-bottom:1px solid var(--border);margin-bottom:8px;">' + escHtml(classe) + '</div><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:5px;">';
+    items.forEach(function(kv) {
+      html += '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:6px 10px;display:flex;align-items:flex-start;gap:8px;"><span style="font-family:var(--mono);font-size:11px;color:var(--accent2);font-weight:500;white-space:nowrap;">' + escHtml(kv[0]) + '</span><span style="font-size:11px;color:var(--text2);">' + escHtml(kv[1]) + '</span></div>';
     });
     html += '</div></div>';
   }
-  body.innerHTML = html || '<div style="padding:30px;text-align:center;color:var(--text3)">Aucun compte trouvé</div>';
+  body.innerHTML = html || '<div style="padding:30px;text-align:center;color:var(--text3)">Aucun compte trouve</div>';
 }
 function filterPlan(val) { renderPlan(val); }
-
-/* ═══════════════════════════════════════════════════════
-   GUIDE DES ÉCRITURES
-══════════════════════════════════════════════════════ */
-const GUIDE_DATA = [
-  { section: "🏪 Commerce", ops: [
-    { title: "Vente marchandises crédit (HT + TVA)", entries: [{c:"411",l:"Client",d:"TTC",cr:""},{c:"701",l:"Ventes marchandises",d:"",cr:"HT"},{c:"4421",l:"TVA collectée",d:"",cr:"TVA"}] },
-    { title: "Variation stock marchandises", entries: [{c:"6091",l:"Variation stock",d:"Coût",cr:""},{c:"301",l:"Stock marchandises",d:"",cr:"Coût"}] },
-    { title: "Achat marchandises crédit", entries: [{c:"601",l:"Achats marchandises",d:"HT",cr:""},{c:"4452",l:"TVA récupérable",d:"TVA",cr:""},{c:"401",l:"Fournisseur",d:"",cr:"TTC"}] },
-    { title: "Règlement fournisseur", entries: [{c:"401",l:"Fournisseur",d:"Montant",cr:""},{c:"512",l:"Banque",d:"",cr:"Montant"}] }
+ 
+/* ===================================================
+   GUIDE DES ECRITURES
+=================================================== */
+var GUIDE_DATA = [
+  { section: "Commerce", ops: [
+    { title: "Vente marchandises credit (HT + TVA)", entries: [{c:"411",l:"Client",d:"TTC",cr:""},{c:"701",l:"Ventes marchandises",d:"",cr:"HT"},{c:"4421",l:"TVA collectee",d:"",cr:"TVA"}] },
+    { title: "Variation stock marchandises", entries: [{c:"6091",l:"Variation stock",d:"Cout",cr:""},{c:"301",l:"Stock marchandises",d:"",cr:"Cout"}] },
+    { title: "Achat marchandises credit", entries: [{c:"601",l:"Achats marchandises",d:"HT",cr:""},{c:"4452",l:"TVA recuperable",d:"TVA",cr:""},{c:"401",l:"Fournisseur",d:"",cr:"TTC"}] },
+    { title: "Reglement fournisseur", entries: [{c:"401",l:"Fournisseur",d:"Montant",cr:""},{c:"512",l:"Banque",d:"",cr:"Montant"}] }
   ]},
-  { section: "💼 Services", ops: [
-    { title: "Facturation service", entries: [{c:"411",l:"Client",d:"TTC",cr:""},{c:"706",l:"Services vendus",d:"",cr:"HT"},{c:"4421",l:"TVA collectée",d:"",cr:"TVA"}] },
+  { section: "Services", ops: [
+    { title: "Facturation service", entries: [{c:"411",l:"Client",d:"TTC",cr:""},{c:"706",l:"Services vendus",d:"",cr:"HT"},{c:"4421",l:"TVA collectee",d:"",cr:"TVA"}] },
     { title: "Encaissement", entries: [{c:"512",l:"Banque",d:"Montant",cr:""},{c:"411",l:"Client",d:"",cr:"Montant"}] }
   ]},
   { section: "Salaires & Charges", ops: [
-    { title: "Constatation salaires", entries: [{c:"6511",l:"Salaires bruts",d:"Brut",cr:""},{c:"447",l:"IRPP retenu",d:"",cr:"IRPP"},{c:"431",l:"CNPS salariale",d:"",cr:"CS"},{c:"422",l:"Net à payer",d:"",cr:"Net"}] },
+    { title: "Constatation salaires", entries: [{c:"6511",l:"Salaires bruts",d:"Brut",cr:""},{c:"447",l:"IRPP retenu",d:"",cr:"IRPP"},{c:"431",l:"CNPS salariale",d:"",cr:"CS"},{c:"422",l:"Net a payer",d:"",cr:"Net"}] },
     { title: "Charges patronales", entries: [{c:"6611",l:"Cotisations patronales",d:"CP",cr:""},{c:"431",l:"CNPS",d:"",cr:"CP"}] }
   ]}
 ];
+ 
 function renderGuide() {
-  const body = document.getElementById('guide-body');
-  let html = '';
-  GUIDE_DATA.forEach(sec => {
-    html += `<div style="margin-bottom:24px;"><h3 style="font-family:var(--display);font-size:15px;color:var(--accent);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border);">${escHtml(sec.section)}</h3><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:8px;">`;
-    sec.ops.forEach(op => {
-      html += `<div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;"><div style="font-weight:600;font-size:12px;margin-bottom:6px;">${escHtml(op.title)}</div><div style="display:flex;flex-direction:column;gap:2px;">`;
-      op.entries.forEach(e => {
-        html += `<div style="display:flex;gap:6px;font-size:11px;font-family:var(--mono);"><span style="color:var(--accent2);min-width:36px;">${e.c}</span><span style="color:var(--text3);flex:1;">${escHtml(e.l)}</span><span style="color:${e.d?'var(--debit)':'var(--text3)'};min-width:20px;text-align:right;">${e.d?'D':''}</span><span style="color:${e.cr?'var(--credit)':'var(--text3)'};min-width:20px;text-align:right;">${e.cr?'C':''}</span></div>`;
+  var body = document.getElementById('guide-body');
+  var html = '';
+  GUIDE_DATA.forEach(function(sec) {
+    html += '<div style="margin-bottom:24px;"><h3 style="font-family:var(--display);font-size:15px;color:var(--accent);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border);">' + escHtml(sec.section) + '</h3><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:8px;">';
+    sec.ops.forEach(function(op) {
+      html += '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;"><div style="font-weight:600;font-size:12px;margin-bottom:6px;">' + escHtml(op.title) + '</div><div style="display:flex;flex-direction:column;gap:2px;">';
+      op.entries.forEach(function(e) {
+        html += '<div style="display:flex;gap:6px;font-size:11px;font-family:var(--mono);"><span style="color:var(--accent2);min-width:36px;">' + e.c + '</span><span style="color:var(--text3);flex:1;">' + escHtml(e.l) + '</span><span style="color:' + (e.d ? 'var(--debit)' : 'var(--text3)') + ';min-width:20px;text-align:right;">' + (e.d ? 'D' : '') + '</span><span style="color:' + (e.cr ? 'var(--credit)' : 'var(--text3)') + ';min-width:20px;text-align:right;">' + (e.cr ? 'C' : '') + '</span></div>';
       });
       html += '</div></div>';
     });
@@ -930,206 +984,161 @@ function renderGuide() {
   });
   body.innerHTML = html;
 }
-
-/* ═══════════════════════════════════════════════════════
+ 
+/* ===================================================
    GRAND LIVRE
-══════════════════════════════════════════════════════ */
-function renderGrandLivre(filter = '') {
-  const body = document.getElementById('gl-body');
-  if (!allEcritures.length) { body.innerHTML = '<div class="empty-state"><h3>Aucune écriture</h3><p>Saisissez des écritures dans le Journal pour alimenter le Grand Livre.</p></div>'; return; }
-  const byCompte = {};
-  allEcritures.forEach(e => {
-    (e.lignes || []).forEach(l => {
-      const c = String(l.compte || '');
+=================================================== */
+function renderGrandLivre(filter) {
+  filter = filter || '';
+  var body = document.getElementById('gl-body');
+  if (!allEcritures.length) {
+    body.innerHTML = '<div class="empty-state"><h3>Aucune ecriture</h3><p>Saisissez des ecritures dans le Journal pour alimenter le Grand Livre.</p></div>';
+    return;
+  }
+  var byCompte = {};
+  allEcritures.forEach(function(e) {
+    (e.lignes || []).forEach(function(l) {
+      var c = String(l.compte || '');
       if (!c) return;
       if (filter && !c.includes(filter) && !getPlanLibelle(c).toLowerCase().includes(filter.toLowerCase())) return;
       if (!byCompte[c]) byCompte[c] = { libelle: getPlanLibelle(c) || l.libelle, lignes: [] };
       byCompte[c].lignes.push({ date: e.date, ref: e.reference, desc: e.description || e.titre, debit: l.debit || 0, credit: l.credit || 0 });
     });
   });
-  const comptes = Object.keys(byCompte).sort();
-  if (!comptes.length) { body.innerHTML = '<div style="padding:20px;color:var(--text3)">Aucun compte trouvé.</div>'; return; }
-  let html = '';
-  comptes.forEach(c => {
-    const data = byCompte[c];
-    let solde = 0, td = 0, tc = 0;
-    let rows = '';
-    data.lignes.sort((a,b) => (a.date||'').localeCompare(b.date||'')).forEach(l => {
+  var comptes = Object.keys(byCompte).sort();
+  if (!comptes.length) { body.innerHTML = '<div style="padding:20px;color:var(--text3)">Aucun compte trouve.</div>'; return; }
+  var html = '';
+  comptes.forEach(function(c) {
+    var data = byCompte[c];
+    var solde = 0, td = 0, tc = 0;
+    var rows = '';
+    data.lignes.sort(function(a,b) { return (a.date||'').localeCompare(b.date||''); }).forEach(function(l) {
       solde += (l.debit || 0) - (l.credit || 0);
       td += l.debit || 0; tc += l.credit || 0;
-      rows += `<tr><td>${escHtml(l.date)}</td><td>${escHtml(l.ref)}</td><td>${escHtml(l.desc)}</td><td class="col-debit">${fmtAmount(l.debit)}</td><td class="col-credit">${fmtAmount(l.credit)}</td><td class="col-solde">${fmtAmount(solde)}</td></tr>`;
+      rows += '<tr><td>' + escHtml(l.date) + '</td><td>' + escHtml(l.ref) + '</td><td>' + escHtml(l.desc) + '</td><td class="col-debit">' + fmtAmount(l.debit) + '</td><td class="col-credit">' + fmtAmount(l.credit) + '</td><td class="col-solde">' + fmtAmount(solde) + '</td></tr>';
     });
-    html += `<div class="gl-compte">
-      <div class="gl-compte-header">
-        <span class="gl-compte-num">${escHtml(c)}</span>
-        <span class="gl-compte-lib">${escHtml(data.libelle)}</span>
-        <div class="gl-compte-totals">
-          <span style="color:var(--debit)">D: ${fmtAmount(td)}</span>
-          <span style="color:var(--credit)">C: ${fmtAmount(tc)}</span>
-          <span style="color:var(--text)">Solde: ${fmtAmount(solde)}</span>
-        </div>
-      </div>
-      <table class="data-table"><thead><tr><th>Date</th><th>Réf</th><th>Description</th><th style="text-align:right">Débit</th><th style="text-align:right">Crédit</th><th style="text-align:right">Solde</th></tr></thead><tbody>${rows}</tbody></table>
-    </div>`;
+    html += '<div class="gl-compte"><div class="gl-compte-header"><span class="gl-compte-num">' + escHtml(c) + '</span><span class="gl-compte-lib">' + escHtml(data.libelle) + '</span><div class="gl-compte-totals"><span style="color:var(--debit)">D: ' + fmtAmount(td) + '</span><span style="color:var(--credit)">C: ' + fmtAmount(tc) + '</span><span style="color:var(--text)">Solde: ' + fmtAmount(solde) + '</span></div></div><table class="data-table"><thead><tr><th>Date</th><th>Ref</th><th>Description</th><th style="text-align:right">Debit</th><th style="text-align:right">Credit</th><th style="text-align:right">Solde</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
   });
   body.innerHTML = html;
 }
-
-/* ═══════════════════════════════════════════════════════
+ 
+/* ===================================================
    BALANCE
-══════════════════════════════════════════════════════ */
+=================================================== */
 function renderBalance() {
-  const body = document.getElementById('balance-body');
-  if (!allEcritures.length) { body.innerHTML = '<div class="empty-state"><h3>Aucune écriture</h3><p>Le calcul de la balance nécessite des écritures enregistrées.</p></div>'; return; }
-  const byCompte = {};
-  allEcritures.forEach(e => {
-    (e.lignes || []).forEach(l => {
-      const c = String(l.compte || '');
+  var body = document.getElementById('balance-body');
+  if (!allEcritures.length) {
+    body.innerHTML = '<div class="empty-state"><h3>Aucune ecriture</h3><p>Le calcul de la balance necessite des ecritures enregistrees.</p></div>';
+    return;
+  }
+  var byCompte = {};
+  allEcritures.forEach(function(e) {
+    (e.lignes || []).forEach(function(l) {
+      var c = String(l.compte || '');
       if (!c) return;
       if (!byCompte[c]) byCompte[c] = { libelle: getPlanLibelle(c) || l.libelle, td: 0, tc: 0 };
       byCompte[c].td += l.debit || 0;
       byCompte[c].tc += l.credit || 0;
     });
   });
-  const comptes = Object.keys(byCompte).sort();
-  let totalTD = 0, totalTC = 0;
-  let rows = '';
-  comptes.forEach(c => {
-    const d = byCompte[c];
+  var comptes = Object.keys(byCompte).sort();
+  var totalTD = 0, totalTC = 0;
+  var rows = '';
+  comptes.forEach(function(c) {
+    var d = byCompte[c];
     totalTD += d.td; totalTC += d.tc;
-    const solde = d.td - d.tc;
-    rows += `<tr><td class="col-compte">${escHtml(c)}</td><td class="col-libelle">${escHtml(d.libelle)}<span class="col-sub"></span></td><td class="col-debit">${fmtAmount(d.td)}</td><td class="col-credit">${fmtAmount(d.tc)}</td><td class="col-solde">${solde >= 0 ? fmtAmount(solde) : ''}</td><td class="col-solde">${solde < 0 ? fmtAmount(-solde) : ''}</td></tr>`;
+    var solde = d.td - d.tc;
+    rows += '<tr><td class="col-compte">' + escHtml(c) + '</td><td class="col-libelle">' + escHtml(d.libelle) + '</td><td class="col-debit">' + fmtAmount(d.td) + '</td><td class="col-credit">' + fmtAmount(d.tc) + '</td><td class="col-solde">' + (solde >= 0 ? fmtAmount(solde) : '') + '</td><td class="col-solde">' + (solde < 0 ? fmtAmount(-solde) : '') + '</td></tr>';
   });
-  body.innerHTML = `<table class="data-table"><thead><tr><th>Compte</th><th>Libellé</th><th style="text-align:right">Total Débit</th><th style="text-align:right">Total Crédit</th><th style="text-align:right">Solde D</th><th style="text-align:right">Solde C</th></tr></thead><tbody>${rows}</tbody>
-    <tfoot><tr style="border-top:2px solid var(--border);font-weight:700;"><td colspan="2">TOTAL GÉNÉRAL</td><td class="col-debit">${fmtAmount(totalTD)}</td><td class="col-credit">${fmtAmount(totalTC)}</td><td class="col-solde">${totalTD >= totalTC ? fmtAmount(totalTD-totalTC) : ''}</td><td class="col-solde">${totalTC > totalTD ? fmtAmount(totalTC-totalTD) : ''}</td></tr></tfoot></table>`;
+  body.innerHTML = '<table class="data-table"><thead><tr><th>Compte</th><th>Libelle</th><th style="text-align:right">Total Debit</th><th style="text-align:right">Total Credit</th><th style="text-align:right">Solde D</th><th style="text-align:right">Solde C</th></tr></thead><tbody>' + rows + '</tbody><tfoot><tr style="border-top:2px solid var(--border);font-weight:700;"><td colspan="2">TOTAL GENERAL</td><td class="col-debit">' + fmtAmount(totalTD) + '</td><td class="col-credit">' + fmtAmount(totalTC) + '</td><td class="col-solde">' + (totalTD >= totalTC ? fmtAmount(totalTD-totalTC) : '') + '</td><td class="col-solde">' + (totalTC > totalTD ? fmtAmount(totalTC-totalTD) : '') + '</td></tr></tfoot></table>';
 }
+ 
 function exportBalanceCSV() {
-  let csv = 'Compte;Libelle;Total Debit;Total Credit;Solde D;Solde C\n';
-  const byCompte = {};
-  allEcritures.forEach(e => {
-    (e.lignes || []).forEach(l => {
-      const c = String(l.compte || '');
+  var csv = 'Compte;Libelle;Total Debit;Total Credit;Solde D;Solde C\n';
+  var byCompte = {};
+  allEcritures.forEach(function(e) {
+    (e.lignes || []).forEach(function(l) {
+      var c = String(l.compte || '');
       if (!c) return;
       if (!byCompte[c]) byCompte[c] = { libelle: getPlanLibelle(c) || l.libelle, td: 0, tc: 0 };
-      byCompte[c].td += l.debit || 0; byCompte[c].tc += l.credit || 0;
+      byCompte[c].td += l.debit || 0;
+      byCompte[c].tc += l.credit || 0;
     });
   });
-  Object.keys(byCompte).sort().forEach(c => {
-    const d = byCompte[c]; const sd = d.td - d.tc;
-    csv += `${c};"${d.libelle}";${d.td};${d.tc};${sd >= 0 ? sd : ''};${sd < 0 ? -sd : ''}\n`;
+  Object.keys(byCompte).sort().forEach(function(c) {
+    var d = byCompte[c];
+    var sd = d.td - d.tc;
+    csv += c + ';"' + d.libelle + '";' + d.td + ';' + d.tc + ';' + (sd >= 0 ? sd : '') + ';' + (sd < 0 ? -sd : '') + '\n';
   });
   downloadCSV(csv, 'balance.csv');
 }
-
-/* ═══════════════════════════════════════════════════════
-   TRÉSORERIE
-══════════════════════════════════════════════════════ */
+ 
+/* ===================================================
+   TRESORERIE
+=================================================== */
 function renderTresorerie() {
-  const body = document.getElementById('tresorerie-body');
-  const tresoComptes = allEcritures.flatMap(e => (e.lignes || []).map(l => String(l.compte || ''))).filter(c => c.startsWith('5'));
-  const unique = [...new Set(tresoComptes)].sort();
-  if (!unique.length) { body.innerHTML = '<div class="empty-state"><h3>Aucune écriture de trésorerie</h3><p>Les écritures sur les comptes de la classe 5 apparaissent ici.</p></div>'; return; }
-  let html = '';
-  unique.forEach(c => {
-    let td = 0, tc = 0, solde = 0, rows = '';
-    const lib = getPlanLibelle(c) || 'Compte ' + c;
-    allEcritures.forEach(e => {
-      (e.lignes || []).forEach(l => {
+  var body = document.getElementById('tresorerie-body');
+  var tresoComptes = [];
+  allEcritures.forEach(function(e) {
+    (e.lignes || []).forEach(function(l) {
+      var c = String(l.compte || '');
+      if (c.startsWith('5')) tresoComptes.push(c);
+    });
+  });
+  var unique = tresoComptes.filter(function(v, i, a) { return a.indexOf(v) === i; }).sort();
+  if (!unique.length) {
+    body.innerHTML = '<div class="empty-state"><h3>Aucune ecriture de tresorerie</h3><p>Les ecritures sur les comptes de la classe 5 apparaissent ici.</p></div>';
+    return;
+  }
+  var html = '';
+  unique.forEach(function(c) {
+    var td = 0, tc = 0, solde = 0, rows = '';
+    var lib = getPlanLibelle(c) || 'Compte ' + c;
+    allEcritures.forEach(function(e) {
+      (e.lignes || []).forEach(function(l) {
         if (String(l.compte || '') !== c) return;
         td += l.debit || 0; tc += l.credit || 0; solde += (l.debit || 0) - (l.credit || 0);
-        rows += `<tr><td>${escHtml(e.date)}</td><td>${escHtml(e.reference)}</td><td>${escHtml(e.description || e.titre)}</td><td class="col-debit">${fmtAmount(l.debit)}</td><td class="col-credit">${fmtAmount(l.credit)}</td><td class="col-solde">${fmtAmount(solde)}</td></tr>`;
+        rows += '<tr><td>' + escHtml(e.date) + '</td><td>' + escHtml(e.reference) + '</td><td>' + escHtml(e.description || e.titre) + '</td><td class="col-debit">' + fmtAmount(l.debit) + '</td><td class="col-credit">' + fmtAmount(l.credit) + '</td><td class="col-solde">' + fmtAmount(solde) + '</td></tr>';
       });
     });
-    html += `<div class="gl-compte"><div class="gl-compte-header"><span class="gl-compte-num">${escHtml(c)}</span><span class="gl-compte-lib">${escHtml(lib)}</span><div class="gl-compte-totals"><span style="color:var(--debit)">D: ${fmtAmount(td)}</span><span style="color:var(--credit)">C: ${fmtAmount(tc)}</span><span style="color:var(--text)">Solde: ${fmtAmount(solde)}</span></div></div><table class="data-table"><thead><tr><th>Date</th><th>Réf</th><th>Description</th><th style="text-align:right">Débit</th><th style="text-align:right">Crédit</th><th style="text-align:right">Solde</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+    html += '<div class="gl-compte"><div class="gl-compte-header"><span class="gl-compte-num">' + escHtml(c) + '</span><span class="gl-compte-lib">' + escHtml(lib) + '</span><div class="gl-compte-totals"><span style="color:var(--debit)">D: ' + fmtAmount(td) + '</span><span style="color:var(--credit)">C: ' + fmtAmount(tc) + '</span><span style="color:var(--text)">Solde: ' + fmtAmount(solde) + '</span></div></div><table class="data-table"><thead><tr><th>Date</th><th>Ref</th><th>Description</th><th style="text-align:right">Debit</th><th style="text-align:right">Credit</th><th style="text-align:right">Solde</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
   });
   body.innerHTML = html;
 }
+ 
 function exportTresorerieCSV() {
-  let csv = 'Date;Reference;Description;Compte;Debit;Credit\n';
-  allEcritures.forEach(e => {
-    (e.lignes || []).forEach(l => {
-      const c = String(l.compte || '');
+  var csv = 'Date;Reference;Description;Compte;Debit;Credit\n';
+  allEcritures.forEach(function(e) {
+    (e.lignes || []).forEach(function(l) {
+      var c = String(l.compte || '');
       if (!c.startsWith('5')) return;
-      csv += `${e.date};"${e.reference || ''}";"${(e.description || e.titre || '').replace(/"/g,'""')}";${c};${l.debit || 0};${l.credit || 0}\n`;
+      csv += e.date + ';"' + (e.reference || '') + '";"' + (e.description || e.titre || '').replace(/"/g, '""') + '";' + c + ';' + (l.debit || 0) + ';' + (l.credit || 0) + '\n';
     });
   });
   downloadCSV(csv, 'tresorerie.csv');
 }
-
+ 
 function downloadCSV(csv, filename) {
-  const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
+  var blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
   a.href = url; a.download = filename; a.click();
   URL.revokeObjectURL(url);
-  showToast('Export CSV effectué');
+  showToast('Export CSV effectue');
 }
-
-
-/* ═══════════════════════════════════════════════════════
+ 
+/* ===================================================
    IA — Anthropic Claude
-══════════════════════════════════════════════════════ */
-const ANTHROPIC_URL = 'https://api.anthropic.com/v1/messages';
-const CLAUDE_MODEL  = 'claude-sonnet-4-20250514';
-
-const SYSTEM_PREANALYSE = `Tu es un expert-comptable OHADA certifié, spécialisé SYSCOHADA Révisé 2017.
-On te donne une opération comptable avec le TYPE D'ENTREPRISE. Tu dois effectuer une PRÉ-ANALYSE complète.
-
-TABLE DE COMPTES OBLIGATOIRE :
-IMMOBILISATIONS : informatique→2443, mobilier→2441, bureau→2442, voiture→2411, camion→2412, industriel→231, agricole→232, médical→245, bâtiments→221
-TVA : immobilisations→4451 | achats biens→4452 | services→4453 | collectée→4421
-FOURNISSEURS : ordinaire→401 | immobilisations→404
-CLIENTS : ordinaire→411 | douteux→416
-TRESORERIE : banque→512 | caisse→571
-CHARGES : marchandises→601 | matières→602 | fournitures→604 | salaires→6511 | cotisations→6611 | loyers→622 | entretien→624 | téléphone→628 | honoraires→632 | transports→613 | amort. transport→6817 | amort. info→6844
-PRODUITS : marchandises→701 | produits finis→702 | travaux→705 | services→706 | subventions→741 | équipement→131
-STOCKS : marchandises→301 | matières→311 | en-cours→331 | produits finis→351
-VARIATION STOCK : marchandises→6091/301 | produits finis→7091/351
-
-TVA zone OHADA = 18%. Si TTC donné → HT = ARRONDI(TTC/1.18) | TVA = TTC - HT
-Réponds UNIQUEMENT en JSON pur :
-{
-  "nature": "type",
-  "operations_requises": ["liste"],
-  "compte_principal": "numéro",
-  "compte_principal_libelle": "libellé",
-  "compte_tva": "4451|4452|4453|null",
-  "compte_contrepartie": "512|571|401|404|411|...",
-  "tva_applicable": true,
-  "montant_ttc": 0,
-  "montant_ht": 0,
-  "montant_tva": 0,
-  "calcul_tva": "explication",
-  "mode_reglement": "banque|caisse|credit_fournisseur|credit_client",
-  "necessite_variation_stock": true,
-  "avertissements": "hypothèses"
-}`;
-
-const SYSTEM_GENERATE = `Tu es Comeo AI, expert-comptable OHADA, SYSCOHADA Révisé 2017.
-Tu reçois une opération, le type d'entreprise, et une pré-analyse avec les comptes EXACTS.
-RÈGLE ABSOLUE : Utilise EXACTEMENT les comptes et montants de la pré-analyse.
-Ne jamais enregistrer un montant TTC directement en immobilisation ou charge.
-Vérification finale : Débit total = Crédit total pour CHAQUE écriture.
-FORMAT JSON pur uniquement :
-{
-  "titre": "Titre court",
-  "date": "date",
-  "reference": "ref",
-  "type_entreprise": "type",
-  "ecritures": [
-    {
-      "etape": "Écriture 1",
-      "lignes": [
-        { "compte": "num", "libelle": "lib", "debit": 0, "credit": 0 }
-      ]
-    }
-  ],
-  "analyse": "Explication",
-  "notes": "Vigilance"
-}`;
-
-async function groqCall(systemPrompt, userMessage, temperature = 0.1, maxTokens = 2000) {
-  const res = await fetch(ANTHROPIC_URL, {
+=================================================== */
+var ANTHROPIC_URL = 'https://api.anthropic.com/v1/messages';
+var CLAUDE_MODEL  = 'claude-sonnet-4-20250514';
+ 
+var SYSTEM_PREANALYSE = "Tu es un expert-comptable OHADA certifie, specialise SYSCOHADA Revise 2017.\nOn te donne une operation comptable avec le TYPE D'ENTREPRISE. Tu dois effectuer une PRE-ANALYSE complete.\n\nTABLE DE COMPTES OBLIGATOIRE :\nIMMOBILISATIONS : informatique->2443, mobilier->2441, bureau->2442, voiture->2411, camion->2412, industriel->231, agricole->232, medical->245, batiments->221\nTVA : immobilisations->4451 | achats biens->4452 | services->4453 | collectee->4421\nFOURNISSEURS : ordinaire->401 | immobilisations->404\nCLIENTS : ordinaire->411 | douteux->416\nTRESOREIE : banque->512 | caisse->571\nCHARGES : marchandises->601 | matieres->602 | fournitures->604 | salaires->6511 | cotisations->6611 | loyers->622 | entretien->624 | telephone->628 | honoraires->632 | transports->613 | amort. transport->6817 | amort. info->6844\nPRODUITS : marchandises->701 | produits finis->702 | travaux->705 | services->706 | subventions->741 | equipement->131\nSTOCKS : marchandises->301 | matieres->311 | en-cours->331 | produits finis->351\nVARIATION STOCK : marchandises->6091/301 | produits finis->7091/351\n\nTVA zone OHADA = 18%. Si TTC donne -> HT = ARRONDI(TTC/1.18) | TVA = TTC - HT\nReponds UNIQUEMENT en JSON pur :\n{\n  \"nature\": \"type\",\n  \"operations_requises\": [\"liste\"],\n  \"compte_principal\": \"numero\",\n  \"compte_principal_libelle\": \"libelle\",\n  \"compte_tva\": \"4451|4452|4453|null\",\n  \"compte_contrepartie\": \"512|571|401|404|411|...\",\n  \"tva_applicable\": true,\n  \"montant_ttc\": 0,\n  \"montant_ht\": 0,\n  \"montant_tva\": 0,\n  \"calcul_tva\": \"explication\",\n  \"mode_reglement\": \"banque|caisse|credit_fournisseur|credit_client\",\n  \"necessite_variation_stock\": true,\n  \"avertissements\": \"hypotheses\"\n}";
+ 
+var SYSTEM_GENERATE = "Tu es Comeo AI, expert-comptable OHADA, SYSCOHADA Revise 2017.\nTu recois une operation, le type d'entreprise, et une pre-analyse avec les comptes EXACTS.\nREGLE ABSOLUE : Utilise EXACTEMENT les comptes et montants de la pre-analyse.\nNe jamais enregistrer un montant TTC directement en immobilisation ou charge.\nVerification finale : Debit total = Credit total pour CHAQUE ecriture.\nFORMAT JSON pur uniquement :\n{\n  \"titre\": \"Titre court\",\n  \"date\": \"date\",\n  \"reference\": \"ref\",\n  \"type_entreprise\": \"type\",\n  \"ecritures\": [\n    {\n      \"etape\": \"Ecriture 1\",\n      \"lignes\": [\n        { \"compte\": \"num\", \"libelle\": \"lib\", \"debit\": 0, \"credit\": 0 }\n      ]\n    }\n  ],\n  \"analyse\": \"Explication\",\n  \"notes\": \"Vigilance\"\n}";
+ 
+function claudeCall(systemPrompt, userMessage) {
+  return fetch(ANTHROPIC_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -1138,148 +1147,169 @@ async function groqCall(systemPrompt, userMessage, temperature = 0.1, maxTokens 
       system: systemPrompt,
       messages: [{ role: 'user', content: userMessage }]
     })
+  }).then(function(res) {
+    return res.json();
+  }).then(function(data) {
+    if (data.error) throw new Error(data.error.message || 'Erreur API Claude');
+    if (!data.content || !data.content[0] || !data.content[0].text) throw new Error('Reponse API invalide');
+    return data.content[0].text.trim();
   });
-  const data = await res.json();
-  if (data.error) throw new Error(data.error.message || 'Erreur API Claude');
-  if (!data.content?.[0]?.text) throw new Error('Réponse API invalide');
-  return data.content[0].text.trim();
 }
-
-async function preAnalyse(desc, type, montant, extra, entrepriseType) {
-  const cfg = ENTREPRISE_CONFIG[entrepriseType];
-  const prompt = `TYPE : ${cfg.label}
-Opération : ${desc}${montant ? '\nMontant : ' + montant + ' FCFA' : ''}${type ? '\nType : ' + type : ''}${extra ? '\nDétails : ' + extra : ''}
-Effectue la pré-analyse et retourne le JSON.`;
-  const raw = await groqCall(SYSTEM_PREANALYSE, prompt, 0.0, 800);
-  let clean = raw.replace(/```json\s*/gi,'').replace(/```\s*/gi,'').trim();
-  const js = clean.indexOf('{'), je = clean.lastIndexOf('}');
-  if (js === -1) throw new Error('Pré-analyse JSON invalide');
-  return JSON.parse(clean.slice(js, je+1));
+ 
+function preAnalyse(desc, type, montant, extra, entrepriseType) {
+  var cfg = ENTREPRISE_CONFIG[entrepriseType];
+  var prompt = 'TYPE : ' + cfg.label + '\nOperation : ' + desc;
+  if (montant) prompt += '\nMontant : ' + montant + ' FCFA';
+  if (type) prompt += '\nType : ' + type;
+  if (extra) prompt += '\nDetails : ' + extra;
+  prompt += '\nEffectue la pre-analyse et retourne le JSON.';
+  return claudeCall(SYSTEM_PREANALYSE, prompt).then(function(raw) {
+    var clean = raw.replace(/```json\s*/gi,'').replace(/```\s*/gi,'').trim();
+    var js = clean.indexOf('{');
+    var je = clean.lastIndexOf('}');
+    if (js === -1) throw new Error('Pre-analyse JSON invalide');
+    return JSON.parse(clean.slice(js, je+1));
+  });
 }
-
-let isGenerating = false;
-async function generateJournal() {
+ 
+var isGenerating = false;
+ 
+function generateJournal() {
   if (isGenerating) return;
-  const desc = document.getElementById('op-description').value.trim();
-  const date = document.getElementById('op-date').value || todayDate();
-  const ref = document.getElementById('op-ref').value.trim() || genRef();
-  const montant = document.getElementById('op-montant').value.trim();
-  const type = document.getElementById('op-type').value;
-  const extra = document.getElementById('op-extra').value.trim();
-  if (!desc) { showToast('Décrivez l\'opération'); return; }
-
+  var desc = document.getElementById('op-description').value.trim();
+  var date = document.getElementById('op-date').value || todayDate();
+  var ref = document.getElementById('op-ref').value.trim() || genRef();
+  var montant = document.getElementById('op-montant').value.trim();
+  var type = document.getElementById('op-type').value;
+  var extra = document.getElementById('op-extra').value.trim();
+  if (!desc) { showToast("Decrivez l'operation"); return; }
+ 
   isGenerating = true;
   document.getElementById('btn-generate').disabled = true;
-  const cfg = ENTREPRISE_CONFIG[currentEntrepriseType];
-  let analyse = null;
-
-  try {
-    document.getElementById('output-content').innerHTML = '<div class="loading-state"><div class="spinner"></div><div class="loading-text">Analyse IA en cours...</div></div>';
-    try { analyse = await preAnalyse(desc, type, montant, extra, currentEntrepriseType); } catch(e) { console.warn('Pré-analyse échouée', e); }
-
-    let userMsg = `TYPE : ${cfg.label}\nOPÉRATION : ${desc}`;
-    if (montant) userMsg += `\nMontant : ${montant} FCFA`;
-    if (type) userMsg += `\nType : ${type}`;
-    if (extra) userMsg += `\nDétails : ${extra}`;
-    userMsg += `\nDate : ${date} | Réf : ${ref}`;
+  var cfg = ENTREPRISE_CONFIG[currentEntrepriseType];
+ 
+  document.getElementById('output-content').innerHTML = '<div class="loading-state"><div class="spinner"></div><div>Analyse IA en cours...</div></div>';
+ 
+  preAnalyse(desc, type, montant, extra, currentEntrepriseType).catch(function(e) {
+    console.warn('Pre-analyse echouee', e);
+    return null;
+  }).then(function(analyse) {
+    var userMsg = 'TYPE : ' + cfg.label + '\nOPERATION : ' + desc;
+    if (montant) userMsg += '\nMontant : ' + montant + ' FCFA';
+    if (type) userMsg += '\nType : ' + type;
+    if (extra) userMsg += '\nDetails : ' + extra;
+    userMsg += '\nDate : ' + date + ' | Ref : ' + ref;
     if (analyse) {
-      userMsg += `\n\nPRÉ-ANALYSE :\nOpérations : ${(analyse.operations_requises||[]).join(' → ')}\nCompte principal : ${analyse.compte_principal}\nTVA : ${analyse.compte_tva||'aucun'}\nContrepartie : ${analyse.compte_contrepartie}\nTVA applicable : ${analyse.tva_applicable}\nTTC : ${analyse.montant_ttc} | HT : ${analyse.montant_ht} | TVA : ${analyse.montant_tva}\nMode : ${analyse.mode_reglement}\nVariation stock : ${analyse.necessite_variation_stock}`;
+      userMsg += '\n\nPRE-ANALYSE :\nOperations : ' + (analyse.operations_requises || []).join(' -> ');
+      userMsg += '\nCompte principal : ' + analyse.compte_principal;
+      userMsg += '\nTVA : ' + (analyse.compte_tva || 'aucun');
+      userMsg += '\nContrepartie : ' + analyse.compte_contrepartie;
+      userMsg += '\nTVA applicable : ' + analyse.tva_applicable;
+      userMsg += '\nTTC : ' + analyse.montant_ttc + ' | HT : ' + analyse.montant_ht + ' | TVA : ' + analyse.montant_tva;
+      userMsg += '\nMode : ' + analyse.mode_reglement;
+      userMsg += '\nVariation stock : ' + analyse.necessite_variation_stock;
     }
-
-    const rawJson = await groqCall(SYSTEM_GENERATE, userMsg, 0.0, 3500);
-    let clean = rawJson.replace(/```json\s*/gi,'').replace(/```\s*/gi,'').trim();
-    const js = clean.indexOf('{'), je = clean.lastIndexOf('}');
-    if (js === -1) throw new Error('Format JSON non trouvé');
-    const result = JSON.parse(clean.slice(js, je+1));
+    return claudeCall(SYSTEM_GENERATE, userMsg);
+  }).then(function(rawJson) {
+    var clean = rawJson.replace(/```json\s*/gi,'').replace(/```\s*/gi,'').trim();
+    var js = clean.indexOf('{');
+    var je = clean.lastIndexOf('}');
+    if (js === -1) throw new Error('Format JSON non trouve');
+    var result = JSON.parse(clean.slice(js, je+1));
     result.type_entreprise = cfg.label;
-    result.date = date; result.reference = ref; result.description = desc;
-
+    result.date = date;
+    result.reference = ref;
+    result.description = desc;
     renderJournal(result, desc, date, ref);
-    await saveEcriture(result);
-  } catch(err) {
-    document.getElementById('output-content').innerHTML = `<div class="empty-state"><div class="empty-icon" style="border-color:rgba(248,113,113,0.3);background:rgba(248,113,113,0.06)"><svg viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div><h3 style="color:var(--credit)">Erreur</h3><p>${err.message}</p></div>`;
-    showToast('❌ ' + err.message);
-  }
-  isGenerating = false;
-  document.getElementById('btn-generate').disabled = false;
+    return saveEcriture(result);
+  }).catch(function(err) {
+    document.getElementById('output-content').innerHTML = '<div class="empty-state"><div class="empty-icon" style="border-color:rgba(248,113,113,0.3);background:rgba(248,113,113,0.06)"><svg viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div><h3 style="color:var(--credit)">Erreur</h3><p>' + escHtml(err.message) + '</p></div>';
+    showToast('Erreur : ' + err.message);
+  }).finally(function() {
+    isGenerating = false;
+    document.getElementById('btn-generate').disabled = false;
+  });
 }
-
+ 
 function renderJournal(result, opDesc, date, ref) {
-  const ecritures = result.ecritures || [];
-  const isMulti = ecritures.length > 0 && Array.isArray(ecritures[0]?.lignes);
-  let cardsHTML = '';
+  var ecritures = result.ecritures || [];
+  var isMulti = ecritures.length > 0 && Array.isArray(ecritures[0] && ecritures[0].lignes);
+  var cardsHTML = '';
+ 
   if (isMulti) {
-    ecritures.forEach((ec, idx) => {
-      const lignes = ec.lignes || [];
-      const totD = lignes.reduce((s,l) => s + (l.debit||0), 0);
-      const totC = lignes.reduce((s,l) => s + (l.credit||0), 0);
-      const eq = Math.abs(totD - totC) < 1;
-      let rows = '';
-      lignes.forEach(e => {
-        rows += `<tr><td class="col-compte">${escHtml(e.compte||'')}</td><td class="col-libelle">${escHtml(e.libelle||'')}<span class="col-sub">${getPlanLibelle(e.compte)}</span></td><td class="col-debit">${e.debit?fmtAmount(e.debit):'<span class="col-empty">—</span>'}</td><td class="col-credit">${e.credit?fmtAmount(e.credit):'<span class="col-empty">—</span>'}</td></tr>`;
+    ecritures.forEach(function(ec, idx) {
+      var lignes = ec.lignes || [];
+      var totD = lignes.reduce(function(s,l) { return s + (l.debit||0); }, 0);
+      var totC = lignes.reduce(function(s,l) { return s + (l.credit||0); }, 0);
+      var eq = Math.abs(totD - totC) < 1;
+      var rows = '';
+      lignes.forEach(function(e) {
+        rows += '<tr><td class="col-compte">' + escHtml(e.compte||'') + '</td><td class="col-libelle">' + escHtml(e.libelle||'') + '<span class="col-sub">' + getPlanLibelle(e.compte) + '</span></td><td class="col-debit">' + (e.debit ? fmtAmount(e.debit) : '<span class="col-empty">-</span>') + '</td><td class="col-credit">' + (e.credit ? fmtAmount(e.credit) : '<span class="col-empty">-</span>') + '</td></tr>';
       });
-      cardsHTML += `<div class="journal-card"><div class="journal-card-header"><div class="journal-card-title"><span style="background:rgba(240,165,0,0.1);border:1px solid rgba(240,165,0,0.2);color:var(--accent3);font-family:var(--mono);font-size:10px;padding:2px 8px;border-radius:4px;margin-right:6px;">Écriture ${idx+1}</span>${escHtml(ec.etape||'')}</div><div class="${eq?'equilibre-ok':'equilibre-err'}">${eq?'✓ Équilibré':'⚠ Déséquilibré'}</div></div><table class="data-table"><thead><tr><th style="width:80px">Compte</th><th>Libellé</th><th style="text-align:right;width:120px">Débit</th><th style="text-align:right;width:120px">Crédit</th></tr></thead><tbody>${rows}</tbody></table><div class="journal-totals"><div class="total-item"><span class="total-label">Total Débit</span><span class="total-debit">${fmtAmount(totD)}</span></div><div class="total-item"><span class="total-label">Total Crédit</span><span class="total-credit">${fmtAmount(totC)}</span></div></div></div>`;
+      cardsHTML += '<div class="journal-card"><div class="journal-card-header"><div class="journal-card-title"><span style="background:rgba(240,165,0,0.1);border:1px solid rgba(240,165,0,0.2);color:var(--accent3);font-family:var(--mono);font-size:10px;padding:2px 8px;border-radius:4px;margin-right:6px;">Ecriture ' + (idx+1) + '</span>' + escHtml(ec.etape||'') + '</div><div class="' + (eq ? 'equilibre-ok' : 'equilibre-err') + '">' + (eq ? 'OK Equilibre' : 'Desequilibre') + '</div></div><table class="data-table"><thead><tr><th style="width:80px">Compte</th><th>Libelle</th><th style="text-align:right;width:120px">Debit</th><th style="text-align:right;width:120px">Credit</th></tr></thead><tbody>' + rows + '</tbody></table><div class="journal-totals"><div class="total-item"><span class="total-label">Total Debit</span><span class="total-debit">' + fmtAmount(totD) + '</span></div><div class="total-item"><span class="total-label">Total Credit</span><span class="total-credit">' + fmtAmount(totC) + '</span></div></div></div>';
     });
     if (ecritures.length > 1) {
-      cardsHTML = `<div style="background:linear-gradient(135deg,rgba(240,165,0,0.07),rgba(0,136,255,0.05));border:1px solid rgba(240,165,0,0.15);border-radius:10px;padding:10px 14px;margin-bottom:12px;font-size:12px;color:var(--text2);"><strong style="color:var(--accent3);font-family:var(--display);font-size:13px;display:block;margin-bottom:4px;">${ecritures.length} écriture(s) comptable(s)</strong>Selon SYSCOHADA, cette opération génère ${ecritures.length} écriture(s) distincte(s).</div>` + cardsHTML;
+      cardsHTML = '<div style="background:linear-gradient(135deg,rgba(240,165,0,0.07),rgba(0,136,255,0.05));border:1px solid rgba(240,165,0,0.15);border-radius:10px;padding:10px 14px;margin-bottom:12px;font-size:12px;color:var(--text2);"><strong style="color:var(--accent3);font-family:var(--display);font-size:13px;display:block;margin-bottom:4px;">' + ecritures.length + ' ecriture(s) comptable(s)</strong>Selon SYSCOHADA, cette operation genere ' + ecritures.length + ' ecriture(s) distincte(s).</div>' + cardsHTML;
     }
   } else {
-    const lignes = ecritures;
-    const totD = lignes.reduce((s,l) => s + (l.debit||0), 0);
-    const totC = lignes.reduce((s,l) => s + (l.credit||0), 0);
-    const eq = Math.abs(totD - totC) < 1;
-    let rows = '';
-    lignes.forEach(e => {
-      rows += `<tr><td class="col-compte">${escHtml(e.compte||'')}</td><td class="col-libelle">${escHtml(e.libelle||'')}<span class="col-sub">${getPlanLibelle(e.compte)}</span></td><td class="col-debit">${e.debit?fmtAmount(e.debit):'<span class="col-empty">—</span>'}</td><td class="col-credit">${e.credit?fmtAmount(e.credit):'<span class="col-empty">—</span>'}</td></tr>`;
+    var lignes = ecritures;
+    var totD = lignes.reduce(function(s,l) { return s + (l.debit||0); }, 0);
+    var totC = lignes.reduce(function(s,l) { return s + (l.credit||0); }, 0);
+    var eq = Math.abs(totD - totC) < 1;
+    var rows = '';
+    lignes.forEach(function(e) {
+      rows += '<tr><td class="col-compte">' + escHtml(e.compte||'') + '</td><td class="col-libelle">' + escHtml(e.libelle||'') + '<span class="col-sub">' + getPlanLibelle(e.compte) + '</span></td><td class="col-debit">' + (e.debit ? fmtAmount(e.debit) : '<span class="col-empty">-</span>') + '</td><td class="col-credit">' + (e.credit ? fmtAmount(e.credit) : '<span class="col-empty">-</span>') + '</td></tr>';
     });
-    cardsHTML = `<div class="journal-card"><div class="journal-card-header"><div class="journal-card-title">${escHtml(result.titre||opDesc)}</div><div class="journal-card-date">${result.date||date}</div><div class="journal-card-ref">${escHtml(result.reference||ref)}</div><div class="${eq?'equilibre-ok':'equilibre-err'}">${eq?'✓ Équilibré':'⚠ Déséquilibré'}</div></div><table class="data-table"><thead><tr><th style="width:80px">Compte</th><th>Libellé</th><th style="text-align:right;width:120px">Débit</th><th style="text-align:right;width:120px">Crédit</th></tr></thead><tbody>${rows}</tbody></table><div class="journal-totals"><div class="total-item"><span class="total-label">Total Débit</span><span class="total-debit">${fmtAmount(totD)}</span></div><div class="total-item"><span class="total-label">Total Crédit</span><span class="total-credit">${fmtAmount(totC)}</span></div></div></div>`;
+    cardsHTML = '<div class="journal-card"><div class="journal-card-header"><div class="journal-card-title">' + escHtml(result.titre||opDesc) + '</div><div class="journal-card-date">' + (result.date||date) + '</div><div class="journal-card-ref">' + escHtml(result.reference||ref) + '</div><div class="' + (eq ? 'equilibre-ok' : 'equilibre-err') + '">' + (eq ? 'OK Equilibre' : 'Desequilibre') + '</div></div><table class="data-table"><thead><tr><th style="width:80px">Compte</th><th>Libelle</th><th style="text-align:right;width:120px">Debit</th><th style="text-align:right;width:120px">Credit</th></tr></thead><tbody>' + rows + '</tbody></table><div class="journal-totals"><div class="total-item"><span class="total-label">Total Debit</span><span class="total-debit">' + fmtAmount(totD) + '</span></div><div class="total-item"><span class="total-label">Total Credit</span><span class="total-credit">' + fmtAmount(totC) + '</span></div></div></div>';
   }
-
-  const jsonForExport = JSON.stringify(result);
-  const html = `<div class="journal-result">
-    <div class="ai-analysis"><div class="ai-analysis-header"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>Analyse — ${escHtml(result.type_entreprise||'SYSCOHADA')}</div><div class="ai-analysis-text">${escHtml(result.analyse||'').replace(/\n/g,'<br>')}</div>${result.notes?`<div style="margin-top:8px;font-size:12px;color:var(--text3)">📌 ${escHtml(result.notes)}</div>`:''}</div>
-    ${cardsHTML}
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;">
-      <button class="btn-action" onclick="window.print()">🖨️ Imprimer</button>
-      <button class="btn-action" onclick="navigator.clipboard.writeText('${escHtml(jsonForExport).replace(/'/g,'\\\'')}');showToast('JSON copié')">📋 Copier JSON</button>
-      <button class="btn-action" onclick="exportJournalCSV('${escHtml(jsonForExport).replace(/'/g,'\\\'')}')">📄 Export CSV</button>
-    </div>
-  </div>`;
+ 
+  var resultJson = JSON.stringify(result);
+  var html = '<div class="journal-result">'
+    + '<div class="ai-analysis"><div class="ai-analysis-header"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>Analyse — ' + escHtml(result.type_entreprise||'SYSCOHADA') + '</div><div class="ai-analysis-text">' + escHtml(result.analyse||'').replace(/\n/g,'<br>') + '</div>' + (result.notes ? '<div style="margin-top:8px;font-size:12px;color:var(--text3)">Note : ' + escHtml(result.notes) + '</div>' : '') + '</div>'
+    + cardsHTML
+    + '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;">'
+    + '<button class="btn-action" onclick="window.print()">Imprimer</button>'
+    + '<button class="btn-action" onclick="exportCurrentJournalCSV()">Export CSV</button>'
+    + '</div></div>';
   document.getElementById('output-content').innerHTML = html;
+  window._lastJournalResult = result;
 }
-
-function exportJournalCSV(jsonStr) {
-  try {
-    const result = JSON.parse(jsonStr);
-    const ecritures = result.ecritures || [];
-    let csv = 'Ecriture;Compte;Libelle;Debit;Credit\n';
-    if (ecritures.length > 0 && Array.isArray(ecritures[0]?.lignes)) {
-      ecritures.forEach((ec, idx) => {
-        (ec.lignes || []).forEach(l => {
-          csv += `"${ec.etape||'Ecriture '+(idx+1)}";${l.compte};"${(l.libelle||'').replace(/"/g,'""')}";${l.debit||0};${l.credit||0}\n`;
-        });
-      });
-    } else {
-      ecritures.forEach(l => {
-        csv += `"";${l.compte};"${(l.libelle||'').replace(/"/g,'""')}";${l.debit||0};${l.credit||0}\n`;
-      });
-    }
-    downloadCSV(csv, `journal_${result.reference||'export'}.csv`);
-  } catch(e) { showToast('Erreur export'); }
+ 
+function exportCurrentJournalCSV() {
+  if (!window._lastJournalResult) return;
+  exportJournalCSV(window._lastJournalResult);
 }
-
-/* ═══════════════════════════════════════════════════════
+ 
+function exportJournalCSV(result) {
+  var ecritures = result.ecritures || [];
+  var csv = 'Ecriture;Compte;Libelle;Debit;Credit\n';
+  if (ecritures.length > 0 && ecritures[0] && Array.isArray(ecritures[0].lignes)) {
+    ecritures.forEach(function(ec, idx) {
+      (ec.lignes || []).forEach(function(l) {
+        csv += '"' + (ec.etape || 'Ecriture ' + (idx+1)) + '";' + l.compte + ';"' + (l.libelle||'').replace(/"/g,'""') + '";' + (l.debit||0) + ';' + (l.credit||0) + '\n';
+      });
+    });
+  } else {
+    ecritures.forEach(function(l) {
+      csv += '"";' + l.compte + ';"' + (l.libelle||'').replace(/"/g,'""') + '";' + (l.debit||0) + ';' + (l.credit||0) + '\n';
+    });
+  }
+  downloadCSV(csv, 'journal_' + (result.reference || 'export') + '.csv');
+}
+ 
+/* ===================================================
    INIT
-══════════════════════════════════════════════════════ */
+=================================================== */
 document.getElementById('op-date').value = todayDate();
 renderQuickOps();
 renderTypeSelect();
 renderPlan();
 renderGuide();
-
+ 
 document.getElementById('op-description').addEventListener('keydown', function(e) {
   if (e.key === 'Enter' && e.ctrlKey) { e.preventDefault(); generateJournal(); }
 });
 </script>
 </body>
 </html>
+ 
