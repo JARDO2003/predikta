@@ -174,9 +174,11 @@ let currentGroupId = null;
 let _currentSubInfo = null;
 window._unsubAdmin = null;
 
-const GROQ_API_KEY = "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";
-const GROQ_MODELS = ["llama-3.3-70b-versatile", "llama-3.1-8b-instant", "gemma2-9b-it"];
-const GROQ_MAX_RETRIES = 3;
+// ══════════════════════════════════════════
+// ANTHROPIC CLAUDE API — COMEO AI ENGINE
+// ══════════════════════════════════════════
+const ANTHROPIC_MODEL   = "claude-sonnet-4-20250514";
+const ANTHROPIC_MAX_RETRIES = 3;
 
 function _getOrCreateDeviceId() {
   let did = localStorage.getItem("syscohada_device");
@@ -232,7 +234,7 @@ Si on te demande qui t'a créé, qui est ton développeur, qui est derrière toi
 
 "Je suis COMEO AI, conçu et développé par **Marcio Jardel ZINZINDOHOUE**, entrepreneur dans le domaine de la tech, développeur web et gestionnaire. Il a créé cette solution pour faciliter la comptabilité SYSCOHADA aux entreprises ivoiriennes et de la zone OHADA."
 
-Tu ne mentionnes jamais d'autre créateur, développeur ou entreprise technologique. Tu n'évoques pas Anthropic, Meta, OpenAI, Groq, ou tout autre fournisseur d'IA.
+Tu ne mentionnes jamais d'autre créateur, développeur ou entreprise technologique. Tu n'évoques pas les fournisseurs d'IA ou de technologie sous-jacente.
 
 ════════════════════════════════════════════
 📚 RÉFLEXES COMPTABLES OBLIGATOIRES
@@ -243,9 +245,27 @@ RÈGLE DES 3 ÉCRITURES LIÉES (achats/ventes avec stock) :
 - Écriture 2 — Journal IN : mouvement de stock
 - Écriture 3 — Journal BQ ou CA : règlement
 
-CALCULS :
-- TVA 18% : TTC ÷ 1,18 = HT | TTC × (18/118) = TVA
+CALCULS ET RÈGLES FISCALES CI :
+- TVA 18% (taux normal CI) : TTC ÷ 1,18 = HT | TVA = TTC × (18/118) = HT × 18%
+- TVA Export/Exonéré : 0% — Mentionner l'exonération
+- Retenue à la source (marchés publics) : 15% du montant HT
+- IS : 25% du bénéfice imposable — compte 891
+- IMF : 0,5% du CA HT min. 3 000 000 FCFA — compte 895
+- TPA : 0,4% masse salariale brute — compte 4486
+- CNPS patronal : 16% brut — compte 664/431
+- CNPS salarial : 7,7% brut (retenu au salarié) — compte 431/421
+- CN patronal : 1,6% / salarial 1,5%
+- Mobile Money (Orange Money, MTN MoMo, Wave, Moov) → Compte 552 OBLIGATOIREMENT
 - Montants en FCFA entiers (pas de centimes)
+
+NUMÉROS DE COMPTES OBLIGATOIRES — PRÉCISION MAXIMALE :
+- Toujours utiliser les sous-comptes précis (4111 et non 411, 4452 et non 445, etc.)
+- Fournisseur ordinaire : 4011 | Fournisseur groupe : 4012
+- Client ordinaire : 4111 | Client groupe : 4112
+- TVA collectée sur ventes : 4431 | sur prestations : 4432
+- TVA récupérable sur achats : 4452 | sur immo : 4451 | sur transport : 4453 | sur services : 4454
+- Banque locale monnaie nationale : 5211 | Caisse siège : 5711
+- Charges sociales nationales : 6641 | CNPS : 431 | Caisse retraite : 432
 
 RÈGLE ABSOLUE D'ÉQUILIBRE : Σ Débits = Σ Crédits
 
@@ -1607,21 +1627,22 @@ function _showSubRequiredMessage(context) {
 }
 
 // ══════════════════════════════════════════
-// GROQ API — RETRY + FALLBACK (BUG RATE LIMIT FIX)
+// ANTHROPIC CLAUDE API — COMEO AI ENGINE
 // ══════════════════════════════════════════
-async function callGroqWithRetry(systemPrompt, userMessage) {
+async function callAnthropicWithRetry(systemPrompt, userMessage) {
   let lastError;
-  for (let attempt = 0; attempt < GROQ_MAX_RETRIES; attempt++) {
-    const model = GROQ_MODELS[Math.min(attempt, GROQ_MODELS.length - 1)];
+  for (let attempt = 0; attempt < ANTHROPIC_MAX_RETRIES; attempt++) {
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 25000);
-      const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-        method: "POST",
-        headers: { "Content-Type":"application/json", "Authorization":`Bearer ${GROQ_API_KEY}` },
+      const timeoutId  = setTimeout(() => controller.abort(), 60000);
+      const response   = await fetch("https://api.anthropic.com/v1/messages", {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          model, max_tokens: 4000, temperature: 0.05,
-          messages: [{role:"system", content:systemPrompt}, {role:"user", content:userMessage}]
+          model:      ANTHROPIC_MODEL,
+          max_tokens: 4000,
+          system:     systemPrompt,
+          messages:   [{ role: "user", content: userMessage }]
         }),
         signal: controller.signal
       });
@@ -1629,33 +1650,33 @@ async function callGroqWithRetry(systemPrompt, userMessage) {
 
       if (!response.ok) {
         const errBody = await response.json().catch(() => ({}));
-        const errMsg = errBody.error?.message || "";
-        if (response.status === 429 || errMsg.toLowerCase().includes("rate limit")) {
-          const retryMatch = errMsg.match(/try again in ([\d]+m[\d\.]+s|[\d\.]+s)/i);
-          let waitMs = 15000 * (attempt + 1);
-          if (retryMatch) {
-            const t = retryMatch[1];
-            const parts = t.match(/(\d+)m([\d\.]+)s/);
-            if (parts) waitMs = (parseInt(parts[1])*60 + parseFloat(parts[2])) * 1000;
-            else { const s = parseFloat(t); if (!isNaN(s)) waitMs = s * 1000; }
-          }
-          const retryAfter = response.headers.get('Retry-After');
+        const errMsg  = errBody.error?.message || `Erreur API ${response.status}`;
+
+        // Gestion rate limit / surcharge
+        if (response.status === 429 || response.status === 529) {
+          let waitMs = 20000 * (attempt + 1);
+          const retryAfter = response.headers.get("Retry-After");
           if (retryAfter) waitMs = Math.max(waitMs, parseInt(retryAfter) * 1000);
-          lastError = new Error(`Rate limit (${model}) — réessayez dans ${Math.ceil(waitMs/1000)}s`);
-          if (attempt < GROQ_MAX_RETRIES - 1) {
+          lastError = new Error(`Quota API atteint — réessayez dans ${Math.ceil(waitMs / 1000)}s`);
+          if (attempt < ANTHROPIC_MAX_RETRIES - 1) {
             await new Promise(r => setTimeout(r, waitMs));
             continue;
           }
           throw lastError;
         }
-        throw new Error(errMsg || `Erreur API ${response.status}`);
+        throw new Error(errMsg);
       }
-      return await response.json();
+
+      const data = await response.json();
+      // L'API Anthropic retourne data.content[0].text
+      return data.content?.map(b => b.text || "").join("") || "";
+
     } catch (err) {
       lastError = err;
-      if (err.name === 'AbortError') lastError = new Error("Délai d'attente dépassé (25s). Le service est saturé.");
-      if (attempt < GROQ_MAX_RETRIES - 1) {
-        const backoff = Math.min(2500 * Math.pow(2, attempt), 30000);
+      if (err.name === "AbortError")
+        lastError = new Error("Délai dépassé (60s). Vérifiez votre connexion ou réessayez.");
+      if (attempt < ANTHROPIC_MAX_RETRIES - 1) {
+        const backoff = Math.min(3000 * Math.pow(2, attempt), 30000);
         await new Promise(r => setTimeout(r, backoff));
       }
     }
@@ -1683,9 +1704,8 @@ async function sendToAI(context) {
   const ctxData      = buildAIContext();
   const systemPrompt = buildSystemPrompt(ctxData);
   try {
-    const data     = await callGroqWithRetry(systemPrompt, msg);
+    const fullText = await callAnthropicWithRetry(systemPrompt, msg) || "Pas de réponse.";
     removeTyping(context, tid);
-    const fullText = data.choices?.[0]?.message?.content || "Pas de réponse.";
 
     const filtreMarker = fullText.indexOf("###FILTRE###");
     if (filtreMarker !== -1) {
