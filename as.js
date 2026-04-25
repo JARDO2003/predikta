@@ -149,12 +149,14 @@ let ecritures = [], lignes = [], pieceCounter = 1, currentProfile = null, isAILo
 let exportFormat = "pdf";
 let ecrQueue = [], ecrQueueIdx = 0;
 let currentGroupId = null;
+
+// ── État abonnement global (accessible partout) ──
 let _currentSubInfo = null;
 
 const GROQ_API_KEY = "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";
 
 // ══════════════════════════════════════════
-// DEVICE ID
+// DEVICE ID — PERSISTANCE SESSION
 // ══════════════════════════════════════════
 function _getOrCreateDeviceId() {
   let did = localStorage.getItem("syscohada_device");
@@ -178,648 +180,122 @@ function closeMobileSidebar() {
 }
 
 // ══════════════════════════════════════════
-// SYSTEM PROMPT — EXPERT-COMPTABLE IVOIRIEN
+// SYSTEM PROMPT
 // ══════════════════════════════════════════
 function buildSystemPrompt(ctx) {
-  const {
-    nbEcritures, companyName, exercice,
-    totalDebit, totalCredit, comptesSoldes,
-    allDates, ecrituresResume
-  } = ctx;
- 
-  const today = new Date().toLocaleDateString("fr-FR", {
-    weekday: "long", year: "numeric", month: "long", day: "numeric"
-  });
- 
-  return `Tu es COMEO AI — Expert-Comptable Diplômé, spécialiste du SYSCOHADA Révisé 2017, basé en Côte d'Ivoire.
- 
+  const { nbEcritures, companyName, exercice, totalDebit, totalCredit, comptesSoldes, allDates, ecrituresResume } = ctx;
+  const today = new Date().toLocaleDateString("fr-FR", { weekday:"long", year:"numeric", month:"long", day:"numeric" });
+  return `Tu es COMEO AI — Expert-Comptable Diplômé de Côte d'Ivoire, membre de l'ONECCA-CI. Tu as 20 ans d'expérience dans les cabinets d'expertise comptable à Abidjan. Tu appliques le référentiel SYSCOHADA Révisé 2017 dans toutes tes réponses.
+
 ════════════════════════════════════════════
-🇨🇮 IDENTITÉ ET POSTURE
+🇨🇮 IDENTITÉ ET POSTURE PROFESSIONNELLE
 ════════════════════════════════════════════
- 
-Tu es un professionnel rigoureux. Tu ne génères JAMAIS un résultat sans avoir les données nécessaires.
-Si une information manque (valeur brute, date mise en service, durée, taux TVA), tu la demandes AVANT de passer l'écriture.
-Tu montres TOUJOURS le détail de tes calculs avant de passer l'écriture.
-Tu ne mentionnes jamais Anthropic, Meta, OpenAI, Groq, ni aucun fournisseur IA.
-Si on te demande qui t'a créé : "Je suis COMEO AI, développé par Marcio Jardel ZINZINDOHOUE, entrepreneur tech basé en Côte d'Ivoire."
- 
+
+Tu penses, raisonnes et t'exprimes EXACTEMENT comme un comptable ivorien chevronné :
+
+1. Tu maîtrises le SYSCOHADA Révisé 2017 (Acte Uniforme OHADA du 26/01/2017, applicable en CI depuis le 01/01/2018).
+
+2. Tu connais la fiscalité ivoirienne :
+   - TVA en CI : 18% (taux normal)
+   - Retenue à la source sur marchés publics : 15%
+   - IMF : 0,5% du CA HT, minimum 3 millions FCFA
+   - IS : 25% en CI
+   - TPA : 0,4% masse salariale brute
+   - CN : 1,5% salarié + 1,6% patronat
+   - CNPS : 7,7% salarié + 16% patronat
+   - Compte 552 pour Mobile Money (Orange Money, MTN MoMo, Wave, Moov)
+
+3. Terminologie SYSCOHADA exacte :
+   - "Journaux auxiliaires", "Livre-journal", "Grand livre", "Balance générale"
+   - "États financiers annuels" (Bilan, Compte de résultat, TAFIRE, Notes annexes)
+   - Exercice social = 01/01/N au 31/12/N
+
 ════════════════════════════════════════════
-📐 FISCALITÉ IVOIRIENNE — TAUX OFFICIELS 2024
+👤 INFORMATIONS SUR TON CRÉATEUR
 ════════════════════════════════════════════
- 
-TVA :
-- Taux normal    : 18% (la grande majorité des opérations)
-- Taux réduit    : 9%  (hôtellerie, restauration touristique agréée)
-- Taux zéro      : 0%  (exportations, produits de première nécessité exonérés)
-- Calcul HT depuis TTC  : HT  = TTC ÷ 1,18
-- Calcul TVA depuis TTC : TVA = TTC × 18 ÷ 118  (arrondi au franc FCFA, jamais de centimes)
- 
-IS (Impôt sur les Sociétés) :
-- PME (CA < 1 milliard FCFA) : 25%
-- Grandes entreprises         : 30%
-- Base : Résultat fiscal = Résultat comptable ± réintégrations/déductions
- 
-IMF (Impôt Minimum Forfaitaire) :
-- Taux : 0,5% du CA HT de l'exercice précédent
-- Minimum absolu : 3 000 000 FCFA
-- Règle : L'entreprise paie le MAX entre IS calculé et IMF
-- Si IS > IMF → on paie l'IS
-- Si IS < IMF → on paie l'IMF
- 
-Retenue à la source :
-- Marchés publics : 15% sur le montant HT
-- Dividendes versés à des non-résidents : 15%
-- Prestataires non domiciliés en CI : 20%
- 
-Charges salariales et patronales (CNPS + État) :
-- Cotisation salariale CNPS        : 6,3% du salaire brut plafonné (plafond mensuel : 1 647 315 FCFA)
-- Cotisation patronale retraite     : 7,7% du salaire brut plafonné
-- Prestations familiales patronales : 5,75% du salaire brut plafonné
-- AT/MP (Accidents du Travail)      : 2% à 5% selon secteur (taux moyen : 3%)
-- Contribution Nationale (CN)       : 1,5% salarié + 1,6% patronal sur salaire brut
-- TPA (Taxe Patronale Apprentissage): 0,4% de la masse salariale brute totale
-- FDFP (Formation professionnelle)  : 0,4% masse salariale brute (entreprises ≥ 10 salariés)
-- IS sur salaires : retenue IRPP selon barème progressif de la DGI
- 
-Calcul net à payer :
-  Net = Salaire brut − Cotisation salariale CNPS − CN salarié − IRPP retenu
- 
-Mobile Money (compte 552) :
-- Orange Money, MTN MoMo, Wave, Moov Money
-- Traité exactement comme un compte bancaire (521)
-- Débit 552 = encaissement, Crédit 552 = décaissement
- 
+
+Si on te demande qui t'a créé, qui est ton développeur, qui est derrière toi, ou toute question similaire sur ton origine ou ton auteur, tu réponds TOUJOURS et UNIQUEMENT :
+
+"Je suis COMEO AI, conçu et développé par **Marcio Jardel ZINZINDOHOUE**, entrepreneur dans le domaine de la tech, développeur web et gestionnaire. Il a créé cette solution pour faciliter la comptabilité SYSCOHADA aux entreprises ivoiriennes et de la zone OHADA."
+
+Tu ne mentionnes jamais d'autre créateur, développeur ou entreprise technologique. Tu n'évoques pas Anthropic, Meta, OpenAI, Groq, ou tout autre fournisseur d'IA.
+
 ════════════════════════════════════════════
-📚 COMPTES SYSCOHADA RÉVISÉ 2017 — LISTE OFFICIELLE ET EXHAUSTIVE
-(Seuls ces comptes existent. Tout autre compte est INTERDIT.)
+📚 RÉFLEXES COMPTABLES OBLIGATOIRES
 ════════════════════════════════════════════
- 
-CLASSE 1 — CAPITAUX
-  101  Capital social
-  102  Capital par dotation
-  103  Capital personnel (entreprise individuelle)
-  104  Compte de l'exploitant
-  105  Primes liées au capital
-  106  Écarts de réévaluation
-  111  Réserve légale
-  112  Réserves statutaires
-  118  Autres réserves
-  121  Report à nouveau (créditeur)
-  129  Report à nouveau (débiteur)
-  131  Résultat net — Bénéfice
-  139  Résultat net — Perte
-  141  Subventions d'équipement
-  151  Amortissements dérogatoires
-  161  Emprunts obligataires
-  162  Emprunts auprès des établissements de crédit
-  163  Avances reçues de l'État et organismes publics
-  164  Avances reçues des associés (comptes courants)
-  165  Dépôts et cautionnements reçus
-  166  Intérêts courus sur emprunts
-  168  Autres emprunts et dettes assimilées
-  191  Provisions pour litiges et amendes
-  192  Provisions pour garanties données aux clients
-  194  Provisions pour pertes de change
-  195  Provisions pour impôts
-  196  Provisions pour retraites et obligations similaires
-  198  Autres provisions financières pour risques et charges
- 
-CLASSE 2 — IMMOBILISATIONS
-  211  Frais de développement (immobilisés)
-  212  Brevets, licences, concessions
-  213  Logiciels et sites informatiques
-  215  Marques
-  216  Fonds commercial
-  221  Terrains nus
-  222  Terrains bâtis (terrain + construction indissociables)
-  223  Terrains de gisement
-  224  Terrains aménagés
-  228  Autres terrains
-  231  Bâtiments industriels et agricoles sur sol propre
-  232  Bâtiments commerciaux et administratifs sur sol propre
-  233  Bâtiments industriels et agricoles sur sol d'autrui
-  234  Bâtiments commerciaux et administratifs sur sol d'autrui
-  237  Agencements et aménagements de terrains
-  238  Autres agencements et aménagements de bâtiments
-  241  Matériel et outillage industriel et agricole
-  242  Matériel et outillage d'atelier et de service après-vente
-  244  Matériel et mobilier de bureau et logement
-  2441 Matériel de bureau
-  2442 Matériel informatique
-  2443 Matériel bureautique
-  2444 Mobilier de bureau
-  245  Matériel de transport
-  2451 Matériel automobile
-  2452 Matériel de transport aérien
-  246  Emballages récupérables
-  247  Actifs biologiques immobilisés
-  248  Autres immobilisations corporelles
-  261  Titres de participation
-  262  Autres immobilisations financières
-  271  Prêts et créances non commerciales
-  272  Prêts au personnel
-  273  Avances et acomptes versés sur immobilisations
- 
-  — AMORTISSEMENTS (comptes 28xx) — LISTE OFFICIELLE —
-  2812  Amortissements des charges immobilisées et immobilisations incorporelles
-          (brevets 212, logiciels 213, marques 215, frais développement 211)
-  2813  Amortissements des bâtiments (231, 232, 233, 234)
-  2814  Amortissements des ouvrages d'infrastructure
-  2817  Amortissements des agencements et aménagements de terrains et bâtiments (237, 238)
-  2841  Amortissements du matériel et outillage (241, 242)
-  2844  Amortissements du matériel et mobilier de bureau (244, 2441, 2442, 2443, 2444)
-  2845  Amortissements du matériel de transport (245, 2451)
-  2848  Amortissements des autres immobilisations corporelles (248)
- 
-  ⛔ COMPTES INEXISTANTS (NE JAMAIS UTILISER) :
-  6811, 2281, 2282, 2283, 2284, 2285 → N'EXISTENT PAS EN SYSCOHADA
- 
-  — DÉPRÉCIATIONS (comptes 29xx) —
-  2912  Dépréciations des immobilisations incorporelles (216 fonds commercial)
-  2913  Dépréciations des immobilisations corporelles
-  2961  Dépréciations des titres de participation
-  2971  Dépréciations des prêts et créances
- 
-CLASSE 3 — STOCKS
-  311  Marchandises A (négoce principal)
-  312  Marchandises B (négoce secondaire)
-  321  Matières premières et fournitures liées
-  322  Autres approvisionnements
-  331  Matières consommables
-  332  Fournitures d'atelier et d'usine
-  333  Fournitures de magasin
-  334  Fournitures de bureau
-  335  Emballages commerciaux
-  361  Produits finis
-  362  Produits intermédiaires
-  371  Produits en cours
-  381  Marchandises en cours de route
-  391  Dépréciations des stocks de marchandises
-  392  Dépréciations des autres approvisionnements
-  396  Dépréciations des produits
- 
-CLASSE 4 — TIERS
-  401  Fournisseurs, dettes en compte
-  4011 Fournisseurs locaux
-  4012 Fournisseurs groupe
-  402  Fournisseurs — Effets à payer
-  404  Fournisseurs d'immobilisations
-  408  Fournisseurs — Factures non parvenues
-  4082 Fournisseurs groupe — FNP
-  4091 Fournisseurs — Avances et acomptes versés
-  4098 Fournisseurs — RRR à obtenir
-  411  Clients
-  4111 Clients ordinaires
-  4112 Clients groupe
-  412  Clients — Effets à recevoir
-  413  Clients — Effets escomptés non échus
-  418  Clients — Produits à recevoir (factures à établir)
-  4181 Clients — Factures à établir
-  4191 Clients — Avances et acomptes reçus
-  4198 Clients — RRR à accorder
-  421  Personnel — Avances et acomptes
-  4212 Personnel — Acomptes sur salaires
-  422  Personnel — Rémunérations dues (net à payer)
-  423  Personnel — Participation aux bénéfices
-  424  Personnel — Dépôts et cautionnements
-  425  Personnel — Oppositions et saisies-arrêts
-  431  Sécurité sociale — CNPS (cotisations salariales + patronales)
-  432  Caisses de retraite complémentaire
-  433  Autres organismes sociaux
-  441  État — Impôts sur les bénéfices (IS/IBP/IMF)
-  442  État — Autres impôts et taxes
-  4431 TVA facturée sur ventes de marchandises
-  4432 TVA facturée sur prestations de services
-  4433 TVA facturée sur travaux
-  4434 TVA facturée sur produits accessoires
-  4441 État — TVA due (4431+4432-4451-4452)
-  4449 État — Crédit de TVA (TVA récupérable > TVA collectée)
-  4451 TVA récupérable sur immobilisations
-  4452 TVA récupérable sur achats de biens et services
-  4453 TVA récupérable sur transports
-  4454 TVA récupérable sur autres services extérieurs
-  447  État — Impôts retenus à la source
-  4486 État — Charges à payer (IS à régulariser)
-  4492 État — Acomptes provisionnels versés
-  4495 État — Subventions d'exploitation à recevoir
-  476  Charges constatées d'avance
-  477  Produits constatés d'avance
-  481  Fournisseurs d'investissements — Dettes
-  491  Dépréciation des comptes clients
-  4912 Dépréciation des clients ordinaires
- 
-CLASSE 5 — TRÉSORERIE
-  501  Titres de placement (actions, obligations)
-  511  Valeurs à l'encaissement
-  512  Effets à l'encaissement
-  513  Chèques à encaisser
-  521  Banques locales — Comptes courants
-  5211 Banques — Monnaie nationale (FCFA)
-  5215 Banques — Devises
-  531  Chèques postaux (CCP)
-  552  Monnaie électronique — Mobile Money (Orange Money, MTN MoMo, Wave, Moov)
-  561  Crédits de trésorerie (découverts bancaires)
-  563  Billets de trésorerie
-  571  Caisse — Siège social
-  5711 Caisse — Monnaie nationale
-  5712 Caisse — Devises
-  572  Caisse — Établissements et succursales
-  585  Virements de fonds (compte de passage, soldé à chaque virement)
-  590  Dépréciations des titres de placement
- 
-CLASSE 6 — CHARGES
-  601  Achats de marchandises
-  6011 Achats dans la zone UEMOA
-  6012 Achats hors zone UEMOA (importation)
-  6015 Frais accessoires sur achats (transport, douane)
-  6019 RRR obtenus sur achats (à déduire — créditeur)
-  602  Achats de matières premières et fournitures liées
-  604  Achats de matières et fournitures consommables
-  605  Autres achats (petits matériels, fournitures diverses)
-  6055 Fournitures de bureau non stockables
-  608  Achats d'emballages
-  6031 Variation de stocks de marchandises (Δ = SI − SF ; débit si SI > SF)
-  6032 Variation de stocks de matières premières
-  6033 Variation de stocks de matières consommables
-  612  Transports sur ventes (transport facturé au client, refacturé)
-  613  Transports pour le compte de tiers
-  614  Transports du personnel (navette, mission)
-  616  Transports de biens (fret, messagerie)
-  621  Sous-traitance générale
-  622  Locations et charges locatives (loyer, charges)
-  623  Redevances de crédit-bail et locations financières
-  624  Entretien, réparations et maintenance
-  625  Primes d'assurance
-  626  Études, recherches et documentation
-  627  Publicité, publications, relations publiques
-  628  Télécommunications (téléphone, internet, courrier)
-  631  Frais bancaires et assimilés
-  632  Rémunérations d'intermédiaires et honoraires
-  633  Frais de formation du personnel
-  634  Redevances pour brevets, licences, marques
-  635  Cotisations professionnelles
-  638  Autres charges externes
-  641  Impôts et taxes directs (patente, contribution foncière, TOM)
-  645  Impôts et taxes indirects (droits de timbre, droits d'enregistrement)
-  651  Pertes sur créances irrécouvrables
-  654  Valeur comptable nette des cessions d'immobilisations
-  656  Pertes de change sur opérations commerciales
-  658  Charges diverses (pénalités contractuelles, dons, cadeaux d'affaires)
-  661  Rémunérations du personnel national
-  6611 Appointements et salaires (salaire brut)
-  6612 Primes et gratifications
-  6613 Congés payés (provision ou paiement)
-  6614 Indemnités et avantages divers
-  662  Rémunérations du personnel non national (expatriés)
-  663  Indemnités forfaitaires (représentation, responsabilité)
-  664  Charges sociales sur rémunérations
-  6641 Charges sociales — CNPS part patronale
-  6642 Charges sociales — Autres organismes
-  671  Intérêts des emprunts et dettes (charges financières)
-  672  Intérêts des comptes courants créditeurs
-  673  Escomptes accordés (accordés aux clients)
-  674  Autres intérêts et charges assimilées
-  676  Pertes de change sur opérations financières
-  677  Charges nettes sur cessions de titres de placement
- 
-  — DOTATIONS AUX AMORTISSEMENTS ET DÉPRÉCIATIONS —
-  6812  DAP sur immobilisations incorporelles
-          → Contrepartie : 2812
-          → Concerne : brevets (212), logiciels (213), marques (215), frais de développement (211), fonds commercial (216)
-  6813  DAP sur immobilisations corporelles
-          → Contrepartie : 2813 (bâtiments), 2817 (agencements), 2841 (matériel outillage), 2844 (mobilier bureau), 2845 (transport)
-  6814  DAP sur actifs biologiques
-  6971  Dotations aux provisions pour dépréciation des stocks
-          → Contrepartie : 391
-  6972  Dotations aux provisions pour dépréciation des créances
-          → Contrepartie : 491 / 4912
- 
-  ⛔ COMPTE 6811 N'EXISTE PAS EN SYSCOHADA — UTILISER 6812 OU 6813
- 
-CLASSE 7 — PRODUITS
-  701  Ventes de marchandises
-  7011 Ventes dans la zone UEMOA
-  7012 Ventes hors zone UEMOA
-  7019 RRR accordés sur ventes (à déduire — débiteur)
-  702  Ventes de produits finis
-  703  Ventes de produits intermédiaires
-  704  Travaux facturés
-  705  Services vendus (prestations)
-  706  Produits des activités annexes
-  707  Produits accessoires
-  711  Subventions d'exploitation reçues
-  718  Autres subventions d'exploitation
-  721  Immobilisations incorporelles produites par l'entreprise
-  722  Immobilisations corporelles produites par l'entreprise
-  731  Variations de stocks de produits finis
-  732  Variations de stocks de produits intermédiaires
-  741  Produits des activités accessoires
-  751  Profits sur créances (recouvrements sur créances soldées)
-  754  Produits des cessions d'immobilisations
-  756  Gains de change sur opérations commerciales
-  758  Produits divers (indemnités d'assurance, pénalités reçues)
-  759  Reprises de provisions et dépréciations d'exploitation
-  771  Intérêts et produits assimilés (placements, prêts accordés)
-  772  Revenus de participations (dividendes reçus)
-  773  Escomptes obtenus (obtenus des fournisseurs)
-  774  Revenus de placement de trésorerie
-  776  Gains de change sur opérations financières
-  777  Produits nets sur cessions de titres de placement
-  781  Transferts de charges d'exploitation
-  791  Reprises de provisions et dépréciations financières
-  7971 Reprises de provisions pour dépréciation des stocks
-  7972 Reprises de provisions pour dépréciation des créances
- 
-CLASSE 8 — COMPTES SPÉCIAUX (HAO)
-  811  Valeurs comptables des cessions d'immobilisations incorporelles
-  812  Valeurs comptables des cessions d'immobilisations corporelles
-  821  Produits des cessions d'immobilisations incorporelles
-  822  Produits des cessions d'immobilisations corporelles
-  831  Charges HAO constatées (charges hors exploitation ordinaire)
-  834  Pertes sur créances HAO
-  851  Dotations aux provisions réglementées
-  852  Dotations aux amortissements dérogatoires HAO
-  854  Dotations aux provisions pour risques et charges HAO
-  861  Reprises de provisions réglementées
-  871  Participation des travailleurs aux bénéfices
-  881  Subventions d'équilibre reçues
-  891  Impôts sur les bénéfices (IS / IBP)
-  895  Impôt Minimum Forfaitaire (IMF)
- 
+
+RÈGLE DES 3 ÉCRITURES LIÉES (achats/ventes avec stock) :
+- Écriture 1 — Journal AC ou VE : constatation de la facture
+- Écriture 2 — Journal IN : mouvement de stock
+- Écriture 3 — Journal BQ ou CA : règlement
+
+CALCULS :
+- TVA 18% : TTC ÷ 1,18 = HT | TTC × (18/118) = TVA
+- Montants en FCFA entiers (pas de centimes)
+
+RÈGLE ABSOLUE D'ÉQUILIBRE : Σ Débits = Σ Crédits
+
 ════════════════════════════════════════════
-📏 DURÉES D'AMORTISSEMENT STANDARD EN CÔTE D'IVOIRE
-(Méthode linéaire, sauf mention contraire)
+ORDRE DES LIGNES DANS LE JOURNAL — RÈGLE OBLIGATOIRE
 ════════════════════════════════════════════
- 
-Immobilisations incorporelles :
-  Frais de développement (211)    : 3 à 5 ans (souvent 5 ans)
-  Brevets, licences (212)         : Durée légale du brevet, max 20 ans (souvent 5 à 10 ans)
-  Logiciels (213)                 : 3 ans (norme DGI CI)
-  Marques (215)                   : 10 ans
-  Fonds commercial (216)          : Non amortissable (dépréciation si perte de valeur)
- 
-Immobilisations corporelles :
-  Bâtiments industriels (231)     : 20 à 40 ans (taux : 2,5% à 5%)
-  Bâtiments administratifs (232)  : 20 à 40 ans
-  Agencements, aménagements (237/238) : 5 à 10 ans (taux : 10% à 20%)
-  Matériel et outillage (241/242) : 5 à 10 ans (taux : 10% à 20%)
-  Matériel informatique (2442)    : 3 ans (taux : 33,33%)
-  Matériel bureautique (2443)     : 5 ans (taux : 20%)
-  Mobilier de bureau (2444)       : 10 ans (taux : 10%)
-  Véhicules de tourisme (2451)    : 4 à 5 ans (taux : 20% à 25%) — plafond fiscal 5 000 000 FCFA
-  Véhicules utilitaires (2451)    : 5 à 10 ans
-  Matériel électrique             : 10 ans
- 
+
+⚠️ RÈGLE FONDAMENTALE SYSCOHADA — ORDRE D'ÉCRITURE :
+Les lignes DÉBITRICES doivent TOUJOURS apparaître EN PREMIER,
+suivies des lignes CRÉDITRICES. Cette règle est ABSOLUE et sans exception.
+
+Dans chaque tableau "lignes" du JSON, placez TOUJOURS les objets
+avec debit > 0 AVANT les objets avec credit > 0.
+
 ════════════════════════════════════════════
-🔢 MÉTHODE DE CALCUL DES AMORTISSEMENTS — OBLIGATOIRE
+CONTEXTE DE L'ENTREPRISE
 ════════════════════════════════════════════
- 
-Tu DOIS TOUJOURS afficher le calcul complet avant l'écriture :
- 
-MODÈLE OBLIGATOIRE :
-  ┌─────────────────────────────────────────────────────┐
-  │ CALCUL AMORTISSEMENT                                │
-  │ Bien         : [Nom du bien]                        │
-  │ Compte       : [2xxx]                               │
-  │ Valeur brute : [X] FCFA                             │
-  │ Durée        : [N] ans — Méthode linéaire           │
-  │ Taux         : [100/N]%                             │
-  │ Base annuelle: [X ÷ N] = [Y] FCFA/an                │
-  │ Dotation     : [période] = [Y ÷ 12 × mois] FCFA     │
-  │                                                     │
-  │ Écriture : Débit 6812 ou 6813 / Crédit 28xx         │
-  └─────────────────────────────────────────────────────┘
- 
-Si l'utilisateur ne donne pas la valeur brute et la durée → DEMANDER avant de calculer.
-Ne jamais inventer un montant d'amortissement.
- 
+Entreprise : ${companyName}
+Exercice : ${exercice}
+Date du jour : ${today}
+Écritures passées : ${nbEcritures}
+Débit cumulé : ${totalDebit} FCFA | Crédit cumulé : ${totalCredit} FCFA
+${comptesSoldes ? `Soldes principaux : ${comptesSoldes}` : ""}
+${ecrituresResume ? `Dernières opérations : ${ecrituresResume}` : ""}
+${allDates ? `Dates couvertes : ${allDates}` : ""}
+
 ════════════════════════════════════════════
-🔢 MÉTHODE DE CALCUL TVA — OBLIGATOIRE
+FORMAT TECHNIQUE DES ÉCRITURES (JSON)
 ════════════════════════════════════════════
- 
-MODÈLE OBLIGATOIRE :
-  ┌─────────────────────────────────────────────────────┐
-  │ CALCUL TVA (Taux 18%)                               │
-  │ Montant TTC  : [X] FCFA                             │
-  │ HT           : X ÷ 1,18 = [Y] FCFA (arrondi)       │
-  │ TVA          : X × 18 ÷ 118 = [Z] FCFA (arrondi)   │
-  │ Vérification : HT + TVA = TTC → [Y + Z = X] ✓      │
-  └─────────────────────────────────────────────────────┘
- 
-Arrondi : toujours à l'unité FCFA (pas de centimes). En cas d'arrondi, ajuster la TVA.
- 
+
+Pour achat/vente avec stock, 3 écritures séparées obligatoires :
+
+**Écriture 1 — Constatation facture (Journal AC ou VE)**
+###ECRITURE###{"journal":"AC","libelle":"Achat de [bien] — Facture N° XX","lignes":[{"compte":"601","libelle":"Achats marchandises","debit":100000,"credit":0},{"compte":"4452","libelle":"TVA récupérable","debit":18000,"credit":0},{"compte":"4011","libelle":"Fournisseur","debit":0,"credit":118000}]}
+
+**Écriture 2 — Mouvement de stock (Journal IN)**
+###ECRITURE###{"journal":"IN","libelle":"Entrée en stock — [désignation]","lignes":[...]}
+
+**Écriture 3 — Règlement (Journal BQ ou CA)**
+###ECRITURE###{"journal":"BQ","libelle":"Règlement fournisseur","lignes":[...]}
+
+RÈGLES JSON ABSOLUES :
+- Montants en FCFA entiers uniquement
+- Chaque écriture ÉQUILIBRÉE (Débit = Crédit)
+- Comptes SYSCOHADA officiels uniquement
+- Lignes DÉBITRICES (debit > 0) TOUJOURS EN PREMIER dans le tableau "lignes"
+
 ════════════════════════════════════════════
-🔢 MÉTHODE DE CALCUL SALAIRES — OBLIGATOIRE
+FILTRAGE ET INTERROGATION DES DONNÉES
 ════════════════════════════════════════════
- 
-MODÈLE OBLIGATOIRE :
-  ┌─────────────────────────────────────────────────────┐
-  │ CALCUL PAIE — [Mois/Année]                          │
-  │ Salaire brut             : [A] FCFA                 │
-  │ Cotisation CNPS salarié  : A × 6,3% = [B] FCFA     │
-  │ CN salarié               : A × 1,5% = [C] FCFA     │
-  │ IRPP retenu              : [D] FCFA (barème DGI)    │
-  │ Net à payer (422)        : A − B − C − D = [E] FCFA │
-  │                                                     │
-  │ Part patronale CNPS      : A × 16% = [F] FCFA       │
-  │   dont retraite          : A × 7,7%                 │
-  │   dont presta. familiales: A × 5,75%                │
-  │   dont AT/MP             : A × 2% à 5%              │
-  │ CN patronale             : A × 1,6% = [G] FCFA      │
-  │ TPA                      : A × 0,4% = [H] FCFA      │
-  │                                                     │
-  │ Charge totale entreprise : A + F + G + H = [I] FCFA │
-  └─────────────────────────────────────────────────────┘
- 
-════════════════════════════════════════════
-⚖️ RÈGLES SYSCOHADA ABSOLUES — NE JAMAIS VIOLER
-════════════════════════════════════════════
- 
-RÈGLE 1 — DÉBIT AVANT CRÉDIT
-  Dans chaque écriture, toutes les lignes débitrices (debit > 0) TOUJOURS EN PREMIER,
-  puis les lignes créditrices. C'est une norme graphique SYSCOHADA obligatoire.
- 
-RÈGLE 2 — ÉQUILIBRE ABSOLU
-  Σ Débits = Σ Crédits dans CHAQUE écriture. Tolérance zéro.
-  Si Σ Débits ≠ Σ Crédits → l'écriture est NULLE. Trouver et corriger l'erreur.
- 
-RÈGLE 3 — INTANGIBILITÉ DU BILAN D'OUVERTURE
-  Le bilan de clôture N-1 = bilan d'ouverture N (même à la virgule).
-  Les écritures d'à-nouveau (journal AN) doivent reproduire exactement les soldes.
- 
-RÈGLE 4 — PERMANENCE DES MÉTHODES
-  La méthode d'amortissement choisie (linéaire/dégressif) ne peut pas changer d'exercice en exercice
-  sans justification et mention dans l'annexe.
- 
-RÈGLE 5 — COMPTES DE PASSAGE (585)
-  Le compte 585 (Virements de fonds) est un compte de passage, toujours soldé.
-  Débit 585 au moment de l'ordre de virement, Crédit 521 à la réception.
- 
-RÈGLE 6 — 3 ÉCRITURES POUR ACHAT/VENTE AVEC STOCK
-  Écriture 1 [AC ou VE] : Constatation de la facture
-  Écriture 2 [IN]       : Mouvement physique de stock (entrée ou sortie)
-  Écriture 3 [BQ ou CA] : Règlement de la facture (si différé)
-  Si règlement immédiat au comptant : Écriture 1 et Écriture 3 fusionnées, mais Écriture 2 séparée.
- 
-RÈGLE 7 — COMPTES D'AMORTISSEMENT (TABLEAU DE CORRESPONDANCE OFFICIEL)
- 
-  CHARGE (débit)  →  AMORTISSEMENT (crédit)  →  BIEN AMORTI
-  ─────────────────────────────────────────────────────────────
-  6812            →  2812                    →  212 Brevets
-  6812            →  2812                    →  213 Logiciels
-  6812            →  2812                    →  215 Marques
-  6812            →  2812                    →  211 Frais de développement
-  6813            →  2813                    →  231 Bâtiments industriels
-  6813            →  2813                    →  232 Bâtiments administratifs
-  6813            →  2817                    →  237 Agencements terrains
-  6813            →  2817                    →  238 Agencements bâtiments
-  6813            →  2841                    →  241 Matériel industriel
-  6813            →  2841                    →  242 Matériel d'atelier
-  6813            →  2844                    →  244 Matériel et mobilier bureau
-  6813            →  2844                    →  2441/2442/2443/2444
-  6813            →  2845                    →  245 Matériel de transport
-  6813            →  2845                    →  2451 Véhicules automobiles
-  6813            →  2848                    →  248 Autres immobilisations corp.
- 
-  ⛔ COMPTES STRICTEMENT INTERDITS (n'existent pas en SYSCOHADA 2017) :
-     6811 — 2281 — 2282 — 2283 — 2284 — 2285
-     Toute utilisation de ces comptes = erreur grave.
- 
-RÈGLE 8 — TVA : ACHAT vs VENTE
-  Achat  → Débit  4452 (TVA récupérable sur achats)
-  Achat immo → Débit 4451 (TVA récupérable sur immobilisations)
-  Vente de marchandises → Crédit 4431 (TVA collectée)
-  Prestation de services → Crédit 4432 (TVA collectée)
-  Travaux → Crédit 4433
- 
-RÈGLE 9 — CESSION D'IMMOBILISATION
-  Étape 1 : Comptabilisation du prix de cession
-    Débit 481 ou 521 (prix de cession TTC)
-    Crédit 4431 (TVA si assujetti)
-    Crédit 754 (produit de cession HT)
-  Étape 2 : Sortie du bien du bilan
-    Débit 28xx (amortissements cumulés)
-    Débit 654 (VCN = Valeur comptable nette résiduelle)
-    Crédit 2xxx (valeur brute d'origine)
-  Résultat de cession = 754 − 654
- 
-RÈGLE 10 — PROVISIONS POUR CRÉANCES DOUTEUSES
-  Constatation  : Débit 6972 / Crédit 4912 (Dépréciation clients)
-  Reprise (partielle ou totale) : Débit 4912 / Crédit 7972
-  Annulation définitive (perte) : Débit 651 / Crédit 411
- 
-════════════════════════════════════════════
-🧠 RAISONNEMENT OBLIGATOIRE AVANT TOUTE ÉCRITURE
-════════════════════════════════════════════
- 
-Pour CHAQUE demande, tu suis IMPÉRATIVEMENT ces étapes et tu les montres à l'utilisateur :
- 
-ÉTAPE 1 — IDENTIFICATION
-  "De quelle nature est cette opération ?"
-  → Achat, vente, charge, investissement, paie, TVA, amortissement, provision, cession ?
- 
-ÉTAPE 2 — INFORMATIONS NÉCESSAIRES
-  "Est-ce que j'ai TOUTES les données pour calculer ?"
-  → Si non → DEMANDER avant de générer l'écriture.
-  Pour un amortissement : valeur brute, date mise en service, durée, méthode.
-  Pour une facture : montant HT ou TTC, taux TVA applicable, mode de règlement.
-  Pour un salaire : salaire brut, nombre de salariés, secteur d'activité.
- 
-ÉTAPE 3 — CALCUL DÉTAILLÉ
-  → Montrer chaque calcul intermédiaire (HT, TVA, amortissement, cotisations...).
-  → Arrondir au franc FCFA.
-  → Vérifier l'équilibre avant de générer le JSON.
- 
-ÉTAPE 4 — COMPTES SYSCOHADA
-  → Vérifier que chaque compte existe bien dans la liste officielle ci-dessus.
-  → Vérifier que le sens (débit/crédit) est correct selon la nature du compte.
- 
-ÉTAPE 5 — ÉQUILIBRE
-  → Σ Débits = Σ Crédits ?
-  → Si écart > 0 FCFA → recommencer.
- 
-ÉTAPE 6 — NOMBRE D'ÉCRITURES
-  → Une opération nécessite-t-elle 1, 2 ou 3 écritures ?
-  → Toujours expliquer pourquoi avant de passer les écritures.
- 
-════════════════════════════════════════════
-📋 FORMAT JSON — RÈGLES ABSOLUES
-════════════════════════════════════════════
- 
-Chaque écriture = un bloc ###ECRITURE### suivi d'un JSON strictement valide.
- 
-RÈGLES JSON CRITIQUES :
-1. Pas de commentaires (// ou /* */) à l'intérieur du JSON
-2. Pas de virgule après le dernier élément d'un tableau ou d'un objet
-3. Tous les montants = nombres entiers (jamais de guillemets autour des nombres)
-4. debit et credit toujours présents (mettre 0 si absent)
-5. Les lignes débitrices (debit > 0) TOUJOURS EN PREMIER
-6. Le JSON doit être parsable avec JSON.parse() sans aucune modification
- 
-FORMAT EXACT :
-###ECRITURE###{"journal":"OD","libelle":"Dotation aux amortissements — Logiciel X — Exercice 2024","lignes":[{"compte":"6812","libelle":"DAP immobilisations incorporelles — Logiciel X","debit":500000,"credit":0},{"compte":"2812","libelle":"Amortissements des immobilisations incorporelles — Logiciel X","debit":0,"credit":500000}]}
- 
-CODES JOURNAUX VALIDES :
-  AC = Journal des Achats
-  VE = Journal des Ventes
-  BQ = Journal de Banque
-  CA = Journal de Caisse
-  OD = Journal des Opérations Diverses
-  IN = Journal d'Inventaire (mouvements de stocks)
-  AN = Journal des À-Nouveaux
- 
-POUR UNE OPÉRATION EN 2 OU 3 ÉCRITURES :
-  Générer 2 ou 3 blocs ###ECRITURE### distincts et consécutifs.
-  Chaque bloc est indépendant et équilibré.
- 
-════════════════════════════════════════════
-🗂️ FILTRAGE ET NAVIGATION
-════════════════════════════════════════════
- 
-Pour afficher le journal :
+
+Pour afficher le journal d'une période :
 ###FILTRE###{"type":"journal","dateDebut":"YYYY-MM-DD","dateFin":"YYYY-MM-DD","journal":"","compte":""}
- 
+
 Pour la balance :
 ###FILTRE###{"type":"balance","dateDebut":"","dateFin":"","journal":"","compte":""}
- 
+
 Pour le grand livre d'un compte :
 ###FILTRE###{"type":"grandlivre","dateDebut":"","dateFin":"","journal":"","compte":"XXX"}
- 
+
 Pour le bilan :
-###FILTRE###{"type":"bilan","dateDebut":"","dateFin":"YYYY-MM-DD","journal":"","compte":""}
- 
-════════════════════════════════════════════
-🏢 CONTEXTE ENTREPRISE
-════════════════════════════════════════════
-Entreprise    : ${companyName}
-Exercice      : ${exercice}
-Date du jour  : ${today}
-Monnaie       : Franc CFA (XOF / FCFA)
-Référentiel   : SYSCOHADA Révisé 2017
-Écritures     : ${nbEcritures}
-Total débit   : ${totalDebit} FCFA
-Total crédit  : ${totalCredit} FCFA
-${comptesSoldes   ? `Soldes comptes  : ${comptesSoldes}`    : ""}
-${ecrituresResume ? `Dernières op.   : ${ecrituresResume}`  : ""}
-${allDates        ? `Période couverte: ${allDates}`         : ""}`;
+###FILTRE###{"type":"bilan","dateDebut":"","dateFin":"YYYY-MM-DD","journal":"","compte":""}`;
 }
 
-
-function deduplicateEcritures(liste) {
-  const seen = new Set();
-  return liste.filter(e => {
-    const totalD = (e.lignes || []).reduce((s, l) => s + (l.debit || 0), 0);
-    const totalC = (e.lignes || []).reduce((s, l) => s + (l.credit || 0), 0);
-    // Empreinte unique : journal + libellé + total débit + total crédit
-    const hash = `${e.journal}|${(e.libelle || "").trim().toLowerCase()}|${totalD}|${totalC}`;
-    if (seen.has(hash)) {
-      console.warn("[COMEO] Doublon détecté et ignoré :", e.libelle, totalD);
-      return false;
-    }
-    seen.add(hash);
-    return true;
-  });
-}
 // ══════════════════════════════════════════
 // AUTH
 // ══════════════════════════════════════════
@@ -867,9 +343,13 @@ async function doLogin() {
     const profile = snap.data();
     if (atob(profile.password) !== pass) { err.textContent = "Mot de passe incorrect"; err.classList.add("show"); return; }
     currentProfile = { ...profile, id: profileId };
+    // ── Persistance permanente sur ce navigateur (pas d'expiration) ──
     localStorage.setItem("syscohada_session", JSON.stringify({
-      profileId, company, savedAt: Date.now(),
-      deviceId: _getOrCreateDeviceId(), persistent: true
+      profileId,
+      company,
+      savedAt:  Date.now(),
+      deviceId: _getOrCreateDeviceId(),
+      persistent: true   // ← marqueur : session persistante
     }));
     await loadApp();
   } catch (e) { err.textContent = "Erreur : " + e.message; err.classList.add("show"); }
@@ -877,6 +357,7 @@ async function doLogin() {
 
 function doLogout() {
   if (!confirm("Se déconnecter ?")) return;
+  // On efface TOUTE la session y compris le deviceId pour forcer reconnexion
   localStorage.removeItem("syscohada_session");
   localStorage.removeItem("syscohada_device");
   currentProfile = null; ecritures = []; _currentSubInfo = null;
@@ -901,28 +382,42 @@ async function loadApp() {
   document.getElementById("exerciceYear").value = currentProfile.exercice || "2024";
   await loadEcrituresFromFirestore();
   updateStats(); renderPlanComptable(); initSaisie();
+
+  // ══ VÉRIFICATION ABONNEMENT ══
   await initSubscription();
 }
 
 async function initSubscription() {
   try {
     const subInfo = await checkSubscription(currentProfile.id, window._db);
-    _currentSubInfo = subInfo;
+    _currentSubInfo = subInfo; // ← stocker globalement pour le chatbot
+
     window._showSubModal = () => {
       showSubscriptionModal(subInfo, currentProfile.id, window._db, currentProfile.company);
     };
+
     if (!subInfo.valid) {
       showExpiredBlock(currentProfile.id, window._db, currentProfile.company);
-      _blockAppUI(); return;
+      _blockAppUI();
+      return;
     }
+
     showTrialBanner(subInfo);
     _renderSubWidget(subInfo);
+
+    // Vérification périodique toutes les heures
     setInterval(async () => {
       const fresh = await checkSubscription(currentProfile.id, window._db);
       _currentSubInfo = fresh;
-      if (!fresh.valid) { showExpiredBlock(currentProfile.id, window._db, currentProfile.company); _blockAppUI(); }
+      if (!fresh.valid) {
+        showExpiredBlock(currentProfile.id, window._db, currentProfile.company);
+        _blockAppUI();
+      }
     }, 3_600_000);
-  } catch (e) { console.warn("[COMEO] initSubscription:", e); }
+
+  } catch (e) {
+    console.warn("[COMEO] initSubscription:", e);
+  }
 }
 
 function _blockAppUI() {
@@ -937,18 +432,32 @@ function _renderSubWidget(subInfo) {
   const sections = document.querySelectorAll(".sb-section");
   const target   = sections[sections.length - 1];
   if (!target) return;
+
   const isPaid = subInfo.plan === "paid";
   const h      = subInfo.hoursLeft || 0;
   const isLow  = !isPaid && h <= 12;
+
   const color  = isPaid ? "#4ade80" : isLow ? "#f87171" : "#d4a853";
-  const border = isPaid ? "rgba(74,222,128,.22)" : isLow ? "rgba(220,38,38,.25)" : "rgba(212,168,83,.2)";
-  const bg     = isPaid ? "rgba(74,222,128,.07)" : isLow ? "rgba(220,38,38,.08)" : "rgba(212,168,83,.07)";
-  const label  = isPaid ? "Plan Professionnel" : `Essai — ${h}h restantes`;
-  const sub    = isPaid ? "Accès complet actif ✓" : "Cliquer pour souscrire";
+  const border = isPaid ? "rgba(74,222,128,.22)"  : isLow ? "rgba(220,38,38,.25)"  : "rgba(212,168,83,.2)";
+  const bg     = isPaid ? "rgba(74,222,128,.07)"  : isLow ? "rgba(220,38,38,.08)"  : "rgba(212,168,83,.07)";
+  const label  = isPaid ? "Plan Professionnel"     : `Essai — ${h}h restantes`;
+  const sub    = isPaid ? "Accès complet actif ✓"  : "Cliquer pour souscrire";
+
   const w = document.createElement("div");
-  w.id = "subWidget";
-  w.style.cssText = `margin:12px 10px 0;background:${bg};border:1px solid ${border};border-radius:8px;padding:10px 12px;cursor:pointer;transition:background .18s;`;
-  w.innerHTML = `<div style="display:flex;align-items:center;gap:7px;margin-bottom:3px"><span style="font-size:11px;color:${color}">${isPaid ? "✓" : "⏳"}</span><span style="font-size:11px;font-weight:600;color:${color}">${label}</span></div><div style="font-size:9px;color:rgba(255,255,255,.28);font-family:'JetBrains Mono',monospace;letter-spacing:.07em">${sub}</div>`;
+  w.id    = "subWidget";
+  w.style.cssText = `
+    margin: 12px 10px 0;
+    background: ${bg}; border: 1px solid ${border};
+    border-radius: 8px; padding: 10px 12px;
+    cursor: pointer; transition: background .18s;
+  `;
+  w.innerHTML = `
+    <div style="display:flex;align-items:center;gap:7px;margin-bottom:3px">
+      <span style="font-size:11px;color:${color}">${isPaid ? "✓" : "⏳"}</span>
+      <span style="font-size:11px;font-weight:600;color:${color}">${label}</span>
+    </div>
+    <div style="font-size:9px;color:rgba(255,255,255,.28);font-family:'JetBrains Mono',monospace;letter-spacing:.07em">${sub}</div>
+  `;
   w.onmouseenter = () => { w.style.background = isPaid ? "rgba(74,222,128,.12)" : "rgba(212,168,83,.13)"; };
   w.onmouseleave = () => { w.style.background = bg; };
   w.onclick = () => window._showSubModal?.();
@@ -989,7 +498,7 @@ async function deleteEcritureFromFirestore(docId) {
 // ══════════════════════════════════════════
 const VIEW_KEYS = {
   dashboard:"tableau", saisie:"saisie", journal:"journal",
-  grandlivre:"grand", balance:"balance", bilan:"bilan",
+  grandlivre:"grand",  balance:"balance", bilan:"bilan",
   resultat:"résultat", tresorerie:"trésor", plancomptable:"plan"
 };
 const RENDERERS = {
@@ -1975,10 +1484,10 @@ function exportWord() {
 }
 
 // ══════════════════════════════════════════
-// COMEO AI — MOTEUR IA ROBUSTE v3
+// COMEO AI — MOTEUR IA
 // ══════════════════════════════════════════
-
 function handleAiKey(e, ctx) { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendToAI(ctx); } }
+
 function quickAI(text) {
   const input = document.getElementById("aiInput");
   if (input) input.value = text;
@@ -2008,270 +1517,11 @@ function buildAIContext() {
   };
 }
 
-// ════════════════════════════════════════════════════════
-// PARSEUR JSON ULTRA-ROBUSTE — Coeur du système
-// ════════════════════════════════════════════════════════
-
-/**
- * Nettoie et répare un fragment JSON potentiellement mal formé.
- * Gère les commentaires, virgules traînantes, apostrophes, etc.
- */
-function repairJson(raw) {
-  if (!raw || typeof raw !== "string") return null;
-
-  let s = raw.trim();
-
-  // Extraire le premier objet JSON complet avec accolades équilibrées
-  let depth = 0, start = -1, end = -1;
-  for (let i = 0; i < s.length; i++) {
-    if (s[i] === "{") {
-      if (start === -1) start = i;
-      depth++;
-    } else if (s[i] === "}") {
-      depth--;
-      if (depth === 0 && start !== -1) { end = i; break; }
-    }
-  }
-  if (start !== -1 && end !== -1) s = s.slice(start, end + 1);
-
-  // 1. Supprimer les commentaires // et /* */
-  s = s.replace(/\/\/[^\n]*/g, "").replace(/\/\*[\s\S]*?\*\//g, "");
-
-  // 2. Supprimer les virgules traînantes avant } et ]
-  s = s.replace(/,\s*([}\]])/g, "$1");
-
-  // 3. Remplacer les apostrophes simples par des doubles (si clés/valeurs)
-  // Attention : ne pas casser les vrais strings
-  s = s.replace(/:\s*'([^']*)'/g, ': "$1"');
-  s = s.replace(/'([^']*)'\s*:/g, '"$1":');
-
-  // 4. Assurer que les clés sont entre guillemets doubles
-  s = s.replace(/([{,]\s*)([a-zA-Z_][a-zA-Z0-9_]*)\s*:/g, '$1"$2":');
-
-  // 5. Convertir les nombres avec espaces (ex: "100 000") → entiers
-  s = s.replace(/"debit"\s*:\s*"?([\d\s]+)"?/g, (_, n) => `"debit":${n.replace(/\s/g, "")}`);
-  s = s.replace(/"credit"\s*:\s*"?([\d\s]+)"?/g, (_, n) => `"credit":${n.replace(/\s/g, "")}`);
-
-  // 6. Remplacer les NaN, undefined, null mal placés
-  s = s.replace(/:\s*undefined/g, ":0").replace(/:\s*NaN/g, ":0");
-
-  // 7. Tenter le parse
-  try {
-    return JSON.parse(s);
-  } catch (e) {
-    // Dernière tentative : extraire avec eval sécurisé (Function)
-    try {
-      return (new Function("return " + s))();
-    } catch (e2) {
-      return null;
-    }
-  }
-}
-
-/**
- * Valide et normalise une écriture extraite de l'IA.
- * Retourne { ecriture, desequilibre, delta } ou null si invalide.
- */
-function validerEcritureAI(raw) {
-  if (!raw || !Array.isArray(raw.lignes)) return null;
-
-  // Normaliser les lignes
-  const lignesNorm = raw.lignes
-    .filter(l => l && l.compte)
-    .map(l => {
-      const compte  = String(l.compte || "").trim().replace(/[^0-9]/g, "");
-      const debit   = Math.round(Math.abs(parseFloat(String(l.debit  || "0").replace(/[^0-9.]/g, "")) || 0));
-      const credit  = Math.round(Math.abs(parseFloat(String(l.credit || "0").replace(/[^0-9.]/g, "")) || 0));
-      const libelle = String(l.libelle || PC[compte] || "").substring(0, 80);
-      return { compte, libelle, debit, credit };
-    })
-    .filter(l => l.compte.length >= 3 && (l.debit > 0 || l.credit > 0));
-
-  if (lignesNorm.length < 2) return null;
-
-  let totalD = 0, totalC = 0;
-  lignesNorm.forEach(l => { totalD += l.debit; totalC += l.credit; });
-  const delta = Math.abs(totalD - totalC);
-
-  // Journal normalisé
-  const journaux = ["AC","VE","BQ","CA","OD","IN","AN"];
-  let journal = String(raw.journal || "OD").toUpperCase().trim();
-  if (!journaux.includes(journal)) journal = "OD";
-
-  return {
-    ecriture: {
-      journal,
-      libelle:  String(raw.libelle || "Écriture COMEO AI").substring(0, 100),
-      lignes:   sortLignesDebitAvantCredit(lignesNorm)
-    },
-    totalDebit:  totalD,
-    totalCredit: totalC,
-    delta,
-    equilibree:  delta <= 1
-  };
-}
-
-/**
- * Extrait toutes les écritures d'un texte brut retourné par l'IA.
- * Stratégie multi-passes :
- * 1. Découper sur ###ECRITURE###
- * 2. Pour chaque segment : extraire JSON avec repairJson
- * 3. Valider chaque écriture
- * 4. Retourner {equilibrees, desequilibrees, toutes}
- */
-function extraireEcrituresDepuisTexte(fullText) {
-  const equilibrees    = [];
-  const desequilibrees = [];
-
-  if (!fullText.includes("###ECRITURE###")) {
-    return { equilibrees, desequilibrees, toutes: [] };
-  }
-
-  const parts = fullText.split("###ECRITURE###");
-
-  for (let i = 1; i < parts.length; i++) {
-    const segment = parts[i].trim();
-    if (!segment) continue;
-
-    // Tenter d'extraire le JSON de ce segment
-    const obj = repairJson(segment);
-
-    if (!obj) {
-      console.warn(`[COMEO] Segment ${i} : JSON non parsable :`, segment.substring(0, 200));
-      continue;
-    }
-
-    const validation = validerEcritureAI(obj);
-    if (!validation) {
-      console.warn(`[COMEO] Segment ${i} : écriture invalide (moins de 2 lignes ou comptes manquants)`);
-      continue;
-    }
-
-    if (validation.equilibree) {
-      equilibrees.push(validation.ecriture);
-    } else {
-      // Écriture déséquilibrée — on la conserve avec les métadonnées
-      desequilibrees.push({
-        ...validation.ecriture,
-        _desequilibre: true,
-        _delta:        validation.delta,
-        _totalDebit:   validation.totalDebit,
-        _totalCredit:  validation.totalCredit
-      });
-    }
-  }
-
-  return {
-    equilibrees,
-    desequilibrees,
-    toutes: [...equilibrees, ...desequilibrees]
-  };
-}
-
 // ══════════════════════════════════════════
-// MODAL CONFIRMATION ÉCRITURES DÉSÉQUILIBRÉES
-// ══════════════════════════════════════════
-
-/**
- * Affiche un modal de confirmation pour les écritures déséquilibrées.
- * L'utilisateur peut choisir de les forcer ou les ignorer.
- */
-function showDesequilibreModal(desequilibrees, onConfirm, onIgnore) {
-  // Supprimer un éventuel modal précédent
-  document.getElementById("desequModal")?.remove();
-
-  const modal = document.createElement("div");
-  modal.id = "desequModal";
-  modal.style.cssText = `
-    position:fixed;inset:0;z-index:9999;
-    background:rgba(0,0,0,.82);backdrop-filter:blur(6px);
-    display:flex;align-items:center;justify-content:center;padding:20px;
-  `;
-
-  const rows = desequilibrees.map((e, i) => {
-    const delta = fn(e._delta || 0);
-    const tD    = fn(e._totalDebit || 0);
-    const tC    = fn(e._totalCredit || 0);
-    return `<div style="background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.3);border-radius:8px;padding:12px 14px;margin-bottom:10px;">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
-        <span style="background:#f87171;color:#0a0b10;font-size:10px;font-weight:800;padding:2px 6px;border-radius:4px;">${e.journal}</span>
-        <span style="font-size:12px;font-weight:600;color:#fff">${e.libelle}</span>
-      </div>
-      <div style="font-size:11px;color:rgba(255,255,255,.6);font-family:'JetBrains Mono',monospace;">
-        Débit : <span style="color:#60a5fa">${tD} FCFA</span> |
-        Crédit : <span style="color:#4ade80">${tC} FCFA</span> |
-        Écart : <span style="color:#f87171;font-weight:700">Δ ${delta} FCFA</span>
-      </div>
-      <div style="margin-top:6px;">
-        ${e.lignes.map(l => `
-          <div style="font-size:10px;color:rgba(255,255,255,.5);display:flex;gap:8px;padding:2px 0;">
-            <span style="font-family:monospace;min-width:50px;color:#d4a853">${l.compte}</span>
-            <span style="flex:1">${l.libelle}</span>
-            <span style="color:#60a5fa">${l.debit ? fn(l.debit) : ""}</span>
-            <span style="color:#4ade80">${l.credit ? fn(l.credit) : ""}</span>
-          </div>`).join("")}
-      </div>
-    </div>`;
-  }).join("");
-
-  modal.innerHTML = `
-    <div style="background:#0f1117;border:1px solid rgba(248,113,113,.4);border-radius:14px;
-      max-width:600px;width:100%;max-height:80vh;overflow-y:auto;padding:28px 26px;
-      box-shadow:0 24px 64px rgba(0,0,0,.8);">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
-        <span style="font-size:22px">⚠️</span>
-        <h3 style="color:#f87171;font-size:15px;font-weight:800;margin:0;">
-          ${desequilibrees.length} écriture${desequilibrees.length>1?"s":""} déséquilibrée${desequilibrees.length>1?"s":""}
-        </h3>
-      </div>
-      <p style="color:rgba(255,255,255,.55);font-size:12px;margin:0 0 18px;line-height:1.6;">
-        COMEO AI a détecté que les écritures suivantes ne respectent pas la règle d'équilibre SYSCOHADA
-        (<strong style="color:#fff">Σ Débits = Σ Crédits</strong>).
-        En tant qu'expert, je vous déconseille de les enregistrer telles quelles.
-        <br><br>
-        Vous pouvez les <strong style="color:#4ade80">forcer</strong> (à vos risques) ou les <strong style="color:#d4a853">ignorer</strong>.
-      </p>
-      ${rows}
-      <div style="display:flex;gap:10px;margin-top:20px;flex-wrap:wrap;">
-        <button id="deseqIgnoreBtn" style="
-          flex:1;padding:11px 16px;border-radius:8px;border:1px solid rgba(212,168,83,.4);
-          background:transparent;color:#d4a853;font-size:12px;font-weight:700;cursor:pointer;
-          transition:background .15s;" onmouseover="this.style.background='rgba(212,168,83,.1)'"
-          onmouseout="this.style.background='transparent'">
-          ✗ Ignorer les écritures déséquilibrées
-        </button>
-        <button id="deseqForceBtn" style="
-          flex:1;padding:11px 16px;border-radius:8px;border:none;
-          background:rgba(248,113,113,.15);color:#f87171;font-size:12px;font-weight:700;cursor:pointer;
-          border:1px solid rgba(248,113,113,.4);transition:background .15s;"
-          onmouseover="this.style.background='rgba(248,113,113,.28)'"
-          onmouseout="this.style.background='rgba(248,113,113,.15)'">
-          ⚡ Forcer l'enregistrement quand même
-        </button>
-      </div>
-      <p style="color:rgba(255,255,255,.25);font-size:10px;margin-top:12px;text-align:center;">
-        Les écritures équilibrées seront toujours enregistrées normalement.
-      </p>
-    </div>`;
-
-  document.body.appendChild(modal);
-
-  document.getElementById("deseqIgnoreBtn").onclick = () => {
-    modal.remove();
-    if (onIgnore) onIgnore();
-  };
-  document.getElementById("deseqForceBtn").onclick = () => {
-    modal.remove();
-    if (onConfirm) onConfirm();
-  };
-  // Fermer en cliquant dehors
-  modal.onclick = (ev) => { if (ev.target === modal) { modal.remove(); if (onIgnore) onIgnore(); } };
-}
-
-// ══════════════════════════════════════════
-// VÉRIFICATION ABONNEMENT
+// VÉRIFICATION ABONNEMENT AVANT IA
 // ══════════════════════════════════════════
 function _isSubscriptionValid() {
+  // Si on n'a pas encore chargé l'info abonnement, on autorise (fail-open)
   if (!_currentSubInfo) return true;
   return _currentSubInfo.valid === true;
 }
@@ -2289,9 +1539,9 @@ function _showSubRequiredMessage(context) {
         <div style="font-weight:700;color:#f87171;margin-bottom:8px;font-size:13px">🔒 Abonnement requis</div>
         <div style="color:rgba(255,255,255,.7);font-size:12px;line-height:1.6">
           Votre période d'essai gratuit est <strong>expirée</strong>.<br>
-          Pour continuer à utiliser <strong>COMEO AI</strong>, veuillez activer votre abonnement.<br><br>
+          Pour continuer à utiliser <strong>COMEO AI</strong> et accéder à toutes les fonctionnalités, veuillez activer votre abonnement.<br><br>
           <span style="color:#d4a853;cursor:pointer;text-decoration:underline" onclick="window._showSubModal?.()">
-            👉 Cliquez ici pour souscrire
+            👉 Cliquez ici pour souscrire et débloquer l'accès complet
           </span>
         </div>
       </div>
@@ -2300,39 +1550,34 @@ function _showSubRequiredMessage(context) {
   c.scrollTop = c.scrollHeight;
 }
 
-// ══════════════════════════════════════════
-// sendToAI — VERSION ROBUSTE v3
-// ══════════════════════════════════════════
 async function sendToAI(context) {
   if (isAILoading) return;
 
+  // ── VÉRIFICATION ABONNEMENT ──────────────────────────────────
   if (!_isSubscriptionValid()) {
     _showSubRequiredMessage(context);
     return;
   }
+  // ────────────────────────────────────────────────────────────
 
   const inputId = context === "dashboard" ? "aiInput" : `aiInput-${context}`;
   const input   = document.getElementById(inputId);
   const msg     = input?.value?.trim();
   if (!msg) return;
-
-  isAILoading = true;
-  input.value = "";
+  isAILoading = true; input.value = "";
   const sendBtnId = context === "dashboard" ? "aiSendBtn" : null;
   if (sendBtnId) { const btn = document.getElementById(sendBtnId); if (btn) btn.disabled = true; }
-
   appendMsg(context, "user", msg);
   const tid          = appendTyping(context);
   const ctxData      = buildAIContext();
   const systemPrompt = buildSystemPrompt(ctxData);
-
   try {
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: { "Content-Type":"application/json", "Authorization":`Bearer ${GROQ_API_KEY}` },
       body: JSON.stringify({
-        model:       "llama-3.3-70b-versatile",
-        max_tokens:  6000,
+        model: "llama-3.3-70b-versatile",
+        max_tokens: 4000,
         temperature: 0.05,
         messages: [
           { role:"system", content: systemPrompt },
@@ -2340,132 +1585,75 @@ async function sendToAI(context) {
         ]
       })
     });
-
     removeTyping(context, tid);
-
     if (!response.ok) {
       const e2 = await response.json().catch(() => ({}));
       throw new Error(e2.error?.message || "Erreur API " + response.status);
     }
-
     const data     = await response.json();
     const fullText = data.choices?.[0]?.message?.content || "Pas de réponse.";
 
-    // ── Cas 1 : FILTRE (navigation/rapport) ─────────────────────
     const filtreMarker = fullText.indexOf("###FILTRE###");
     if (filtreMarker !== -1) {
       const displayText = fullText.substring(0, filtreMarker).trim();
       const jsonStr     = fullText.substring(filtreMarker + 12).trim();
       if (displayText) appendMsg(context, "ai", displayText);
-      const filtre = repairJson(jsonStr);
-      if (filtre) applyFiltreAndNavigate(filtre, context);
-      isAILoading = false;
-      if (sendBtnId) { const btn = document.getElementById(sendBtnId); if (btn) btn.disabled = false; }
-      return;
-    }
+      try {
+        const clean     = jsonStr.replace(/```json|```/g, "").trim();
+        const jsonMatch = clean.match(/(\{[\s\S]*?\})/);
+        if (jsonMatch) { const filtre = JSON.parse(jsonMatch[1]); applyFiltreAndNavigate(filtre, context); }
+      } catch (pe) { console.warn("Filtre parse error:", pe); }
 
-    // ── Cas 2 : ÉCRITURES ────────────────────────────────────────
-    if (fullText.includes("###ECRITURE###")) {
-
-      // Texte explicatif avant les écritures
-      const premierMarqueur = fullText.indexOf("###ECRITURE###");
-      const textAvant       = fullText.substring(0, premierMarqueur).trim();
-      if (textAvant) appendMsg(context, "ai", textAvant);
-
-      // Extraction robuste
-      const { equilibrees, desequilibrees } = extraireEcrituresDepuisTexte(fullText);
-
-      console.log(`[COMEO] Extraction : ${equilibrees.length} équilibrée(s), ${desequilibrees.length} déséquilibrée(s)`);
-
-      const _finaliserEnregistrement = (ecrituresAEnregistrer) => {
-        if (!ecrituresAEnregistrer || ecrituresAEnregistrer.length === 0) {
-          appendMsg(context, "ai",
-            "⚠️ Aucune écriture à enregistrer après vérification. Veuillez reformuler votre demande ou vérifier les montants."
-          );
-          return;
-        }
-
-        // Nettoyer les métadonnées de déséquilibre avant envoi
-        const propres = ecrituresAEnregistrer.map(e => {
-          const { _desequilibre, _delta, _totalDebit, _totalCredit, ...rest } = e;
-          return rest;
-        });
-
-        currentGroupId = "grp_" + Date.now();
-        const confirmMsg = `✅ <strong>${propres.length} écriture${propres.length > 1 ? "s" : ""} liées</strong> préparées :<br>` +
-          propres.map((e, i) => `<br><strong>${i + 1}. [${e.journal}]</strong> ${e.libelle}`).join("") +
-          `<br><br>⚡ Cliquez <strong>"Tout enregistrer"</strong> pour valider toutes les écritures.`;
-
-        appendMsg(context, "ai", confirmMsg);
-        setEcritureQueue(propres);
-
-        if (context === "saisie") {
-          toast(`✨ ${propres.length} écriture${propres.length > 1 ? "s" : ""} préparée${propres.length > 1 ? "s" : ""} et liées`, "info");
-        } else {
-          showMultiEcrBanner(propres);
-          showSaisieNotif(propres[0]?.libelle || msg.substring(0, 40), propres.length);
-        }
-      };
-
-      // Cas A : tout est équilibré
-      if (desequilibrees.length === 0) {
-        if (equilibrees.length === 0) {
-          appendMsg(context, "ai",
-            "⚠️ Je n'ai pas réussi à extraire des écritures valides. Essayez de reformuler votre demande en précisant les montants et les comptes."
-          );
-        } else {
-          _finaliserEnregistrement(equilibrees);
-        }
-      }
-
-      // Cas B : des déséquilibres existent
-      else {
-        // Si on a aussi des écritures équilibrées, on les affiche d'abord
-        const msgDeseq = desequilibrees.length === 1
-          ? `⚠️ <strong>1 écriture déséquilibrée</strong> détectée — Écart de <strong>${fn(desequilibrees[0]._delta || 0)} FCFA</strong>.`
-          : `⚠️ <strong>${desequilibrees.length} écritures déséquilibrées</strong> détectées. Consultez le détail ci-dessous.`;
-
-        appendMsg(context, "ai", msgDeseq);
-
-        showDesequilibreModal(
-          desequilibrees,
-          // onConfirm : forcer toutes les écritures (équilibrées + déséquilibrées)
-          () => {
-            _finaliserEnregistrement([...equilibrees, ...desequilibrees]);
-          },
-          // onIgnore : seulement les équilibrées
-          () => {
-            if (equilibrees.length > 0) {
-              appendMsg(context, "ai",
-                `✅ Les ${equilibrees.length} écriture${equilibrees.length>1?"s":""} équilibrée${equilibrees.length>1?"s":""} ont été conservées. Les ${desequilibrees.length} déséquilibrée${desequilibrees.length>1?"s":""} ont été ignorées.`
+    } else if (fullText.includes("###ECRITURE###")) {
+      const parts           = fullText.split("###ECRITURE###");
+      const textBeforeFirst = parts[0].trim();
+      const ecrituresAI     = [];
+      for (let i = 1; i < parts.length; i++) {
+        const segment   = parts[i].trim();
+        const jsonMatch = segment.match(/(\{[\s\S]*\})/);
+        if (jsonMatch) {
+          try {
+            const cleanJson = jsonMatch[1].replace(/```json|```/g, "").trim();
+            const ecr       = JSON.parse(cleanJson);
+            if (ecr.lignes && ecr.lignes.length >= 2) {
+              let d = 0, c = 0;
+              ecr.lignes.forEach(l => { d += Math.round(parseFloat(l.debit)||0); c += Math.round(parseFloat(l.credit)||0); });
+              ecr.lignes = sortLignesDebitAvantCredit(
+                ecr.lignes.map(l => ({ ...l, debit:Math.round(parseFloat(l.debit)||0), credit:Math.round(parseFloat(l.credit)||0) }))
               );
-              _finaliserEnregistrement(equilibrees);
-            } else {
-              appendMsg(context, "ai",
-                "Toutes les écritures étaient déséquilibrées et ont été ignorées. Veuillez reformuler votre demande."
-              );
+              if (Math.abs(d - c) <= 2) ecrituresAI.push(ecr);
             }
-          }
-        );
+          } catch (pe) { console.warn("JSON parse error écriture", i, ":", pe.message); }
+        }
       }
-
+      if (textBeforeFirst) appendMsg(context, "ai", textBeforeFirst);
+      if (ecrituresAI.length === 0) {
+        appendMsg(context, "ai", "⚠️ Aucune écriture équilibrée extraite. Veuillez reformuler votre demande.");
+      } else {
+        currentGroupId = "grp_" + Date.now();
+        const confirmMsg = `✅ <strong>${ecrituresAI.length} écriture${ecrituresAI.length > 1 ? "s" : ""} liées</strong> préparées et groupées :<br>` +
+          ecrituresAI.map((e, i) => `<br><strong>${i + 1}. [${e.journal}]</strong> ${e.libelle}`).join("") +
+          `<br><br>⚡ Cliquez <strong>"Tout enregistrer"</strong> pour valider toutes les écritures.`;
+        appendMsg(context, "ai", confirmMsg);
+        setEcritureQueue(ecrituresAI);
+        if (context === "saisie") {
+          toast(`✨ ${ecrituresAI.length} écriture${ecrituresAI.length > 1 ? "s" : ""} préparée${ecrituresAI.length > 1 ? "s" : ""} et liées`, "info");
+        } else {
+          showMultiEcrBanner(ecrituresAI);
+          showSaisieNotif(ecrituresAI[0]?.libelle || msg.substring(0, 40), ecrituresAI.length);
+        }
+      }
     } else {
-      // ── Cas 3 : Réponse textuelle simple ──────────────────────
       appendMsg(context, "ai", fullText);
     }
-
   } catch (err) {
     removeTyping(context, tid);
     appendMsg(context, "ai", `⚠️ Incident technique : ${err.message} — Veuillez réessayer.`);
   }
-
   isAILoading = false;
   if (sendBtnId) { const btn = document.getElementById(sendBtnId); if (btn) btn.disabled = false; }
 }
 
-// ──────────────────────────────────────────
-// FILTRE ET NAVIGATION
-// ──────────────────────────────────────────
 function applyFiltreAndNavigate(filtre, context) {
   const { type, dateDebut, dateFin, journal, compte } = filtre;
   if (type === "journal") {
@@ -2500,9 +1688,7 @@ function applyFiltreAndNavigate(filtre, context) {
   }
 }
 
-// ══════════════════════════════════════════
-// MESSAGES IA
-// ══════════════════════════════════════════
+// ── Messages ──
 function appendMsg(context, role, text) {
   const msgId = context === "dashboard" ? "aiMessages" : `aiMessages-${context}`;
   const c = document.getElementById(msgId);
@@ -2512,7 +1698,6 @@ function appendMsg(context, role, text) {
   d.innerHTML = `<div class="msg-av">${role === "ai" ? "CA" : "U"}</div><div class="msg-body">${fmt(text)}</div>`;
   c.appendChild(d); c.scrollTop = c.scrollHeight;
 }
-
 function appendTyping(context) {
   const id    = "t" + Date.now();
   const msgId = context === "dashboard" ? "aiMessages" : `aiMessages-${context}`;
@@ -2524,7 +1709,6 @@ function appendTyping(context) {
   c.appendChild(d); c.scrollTop = c.scrollHeight;
   return id;
 }
-
 function removeTyping(context, id) { const el = document.getElementById(id); if (el) el.remove(); }
 
 function fmt(text) {
@@ -2566,7 +1750,7 @@ function toast(message, type = "info") {
 }
 
 // ══════════════════════════════════════════
-// INIT SESSION — RECONNEXION AUTOMATIQUE
+// INIT SESSION — RECONNEXION AUTOMATIQUE PERMANENTE
 // ══════════════════════════════════════════
 document.addEventListener("firebase-ready", async () => {
   const raw = localStorage.getItem("syscohada_session");
@@ -2574,15 +1758,20 @@ document.addEventListener("firebase-ready", async () => {
     try {
       const session = JSON.parse(raw);
       const { profileId } = session;
+      // ── Pas de vérification de deviceId : session permanente sur ce navigateur ──
       const ref  = window._fbDoc(window._db, "profiles", profileId);
       const snap = await window._fbGetDoc(ref);
       if (snap.exists()) {
         currentProfile = { ...snap.data(), id: profileId };
+        // Rafraîchir le timestamp de session sans changer le reste
         localStorage.setItem("syscohada_session", JSON.stringify({
-          ...session, savedAt: Date.now(), deviceId: _getOrCreateDeviceId()
+          ...session,
+          savedAt:  Date.now(),
+          deviceId: _getOrCreateDeviceId()
         }));
         await loadApp();
       } else {
+        // Profil supprimé de Firestore → nettoyer
         localStorage.removeItem("syscohada_session");
       }
     } catch (e) {
@@ -2636,5 +1825,3 @@ window.resetBalanceFiltre   = resetBalanceFiltre;
 window.updateStats          = updateStats;
 window.toggleMobileSidebar  = toggleMobileSidebar;
 window.closeMobileSidebar   = closeMobileSidebar;
-
-
