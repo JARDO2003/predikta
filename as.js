@@ -1,6 +1,5 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-import { checkSubscription, showSubscriptionModal, showTrialBanner, showExpiredBlock, markPaymentPending } from "./subscription.js";
+import { initializeApp, getApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCPGgtXoDUycykLaTSee0S0yY0tkeJpqKI",
@@ -13,12 +12,36 @@ const firebaseConfig = {
   measurementId: "G-FYQCWY5G4S"
 };
 
+const adminFirebaseConfig = {
+  apiKey: "AIzaSyCGsq9aN-DKPuzsoBFAgEdfNfrzb-__RRo",
+  authDomain: "jardo-26efc.firebaseapp.com",
+  databaseURL: "https://jardo-26efc-default-rtdb.firebaseio.com",
+  projectId: "jardo-26efc",
+  storageBucket: "jardo-26efc.firebasestorage.app",
+  messagingSenderId: "1062237964287",
+  appId: "1:1062237964287:web:fef58a549cd08d6c0a89ca",
+  measurementId: "G-4DB71EL12P"
+};
+
 const app = initializeApp(firebaseConfig);
 const db  = getFirestore(app);
+
+// ══════════════════════════════════════════
+// FIREBASE ADMIN (Z.html) — SYNC TEMPS RÉEL
+// ══════════════════════════════════════════
+let adminDb = null;
+try {
+  const adminApp = initializeApp(adminFirebaseConfig, "adminApp");
+  adminDb = getFirestore(adminApp);
+} catch(e) {
+  try { adminDb = getFirestore(getApp("adminApp")); } catch(e2) { console.warn("[COMEO] adminDb non initialisé", e2); }
+}
+
 window._db = db; window._fbCollection = collection; window._fbAddDoc = addDoc;
 window._fbGetDocs = getDocs; window._fbDeleteDoc = deleteDoc; window._fbDoc = doc;
 window._fbQuery = query; window._fbOrderBy = orderBy; window._fbSetDoc = setDoc;
 window._fbGetDoc = getDoc; window._fbReady = true;
+window._adminDb = adminDb;
 document.dispatchEvent(new Event("firebase-ready"));
 
 // ══════════════════════════════════════════
@@ -121,7 +144,6 @@ const NATURE_MAP    = { "1":"Passif","2":"Actif","3":"Actif","4":"Mixte","5":"Ac
 const JOURNAL_NAMES = { "AC":"Achats","VE":"Ventes","BQ":"Banque","CA":"Caisse","OD":"Opérations Diverses","IN":"Inventaire","AN":"À Nouveau" };
 const JOURNAL_ICONS = { "AC":"🛒","VE":"💰","BQ":"🏦","CA":"💵","OD":"📋","IN":"📦","AN":"📂" };
 
-// Tri débit avant crédit — norme SYSCOHADA
 function sortLignesDebitAvantCredit(lignes) {
   return [...lignes].sort((a, b) => {
     const aD = (parseFloat(a.debit)  || 0) > 0;
@@ -144,20 +166,18 @@ function getStepLabel(ecr) {
   return ecr.libelle || "Écriture";
 }
 
-// ── État global ──
 let ecritures = [], lignes = [], pieceCounter = 1, currentProfile = null, isAILoading = false;
 let exportFormat = "pdf";
 let ecrQueue = [], ecrQueueIdx = 0;
 let currentGroupId = null;
 
-// ── État abonnement global (accessible partout) ──
 let _currentSubInfo = null;
+window._unsubAdmin = null;
 
 const GROQ_API_KEY = "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";
+const GROQ_MODELS  = ["llama-3.3-70b-versatile", "llama-3.1-70b-versatile", "mixtral-8x7b-32768"];
+const GROQ_MAX_RETRIES = 3;
 
-// ══════════════════════════════════════════
-// DEVICE ID — PERSISTANCE SESSION
-// ══════════════════════════════════════════
 function _getOrCreateDeviceId() {
   let did = localStorage.getItem("syscohada_device");
   if (!did) {
@@ -167,9 +187,6 @@ function _getOrCreateDeviceId() {
   return did;
 }
 
-// ══════════════════════════════════════════
-// SIDEBAR MOBILE
-// ══════════════════════════════════════════
 function toggleMobileSidebar() {
   document.getElementById("mainSidebar").classList.toggle("open");
   document.getElementById("sidebarOverlay").classList.toggle("show");
@@ -179,9 +196,6 @@ function closeMobileSidebar() {
   document.getElementById("sidebarOverlay").classList.remove("show");
 }
 
-// ══════════════════════════════════════════
-// SYSTEM PROMPT
-// ══════════════════════════════════════════
 function buildSystemPrompt(ctx) {
   const { nbEcritures, companyName, exercice, totalDebit, totalCredit, comptesSoldes, allDates, ecrituresResume } = ctx;
   const today = new Date().toLocaleDateString("fr-FR", { weekday:"long", year:"numeric", month:"long", day:"numeric" });
@@ -296,9 +310,6 @@ Pour le bilan :
 ###FILTRE###{"type":"bilan","dateDebut":"","dateFin":"YYYY-MM-DD","journal":"","compte":""}`;
 }
 
-// ══════════════════════════════════════════
-// AUTH
-// ══════════════════════════════════════════
 function switchTab(t) {
   document.getElementById("tab-login").classList.toggle("active", t === "login");
   document.getElementById("tab-register").classList.toggle("active", t === "register");
@@ -343,13 +354,8 @@ async function doLogin() {
     const profile = snap.data();
     if (atob(profile.password) !== pass) { err.textContent = "Mot de passe incorrect"; err.classList.add("show"); return; }
     currentProfile = { ...profile, id: profileId };
-    // ── Persistance permanente sur ce navigateur (pas d'expiration) ──
     localStorage.setItem("syscohada_session", JSON.stringify({
-      profileId,
-      company,
-      savedAt:  Date.now(),
-      deviceId: _getOrCreateDeviceId(),
-      persistent: true   // ← marqueur : session persistante
+      profileId, company, savedAt: Date.now(), deviceId: _getOrCreateDeviceId(), persistent: true
     }));
     await loadApp();
   } catch (e) { err.textContent = "Erreur : " + e.message; err.classList.add("show"); }
@@ -357,10 +363,10 @@ async function doLogin() {
 
 function doLogout() {
   if (!confirm("Se déconnecter ?")) return;
-  // On efface TOUTE la session y compris le deviceId pour forcer reconnexion
   localStorage.removeItem("syscohada_session");
   localStorage.removeItem("syscohada_device");
   currentProfile = null; ecritures = []; _currentSubInfo = null;
+  if (window._unsubAdmin) { try { window._unsubAdmin(); } catch(e) {} window._unsubAdmin = null; }
   document.getElementById("appShell").style.display   = "none";
   document.getElementById("authOverlay").style.display = "flex";
 }
@@ -372,9 +378,6 @@ function waitForFirebase() {
   });
 }
 
-// ══════════════════════════════════════════
-// CHARGEMENT APP + ABONNEMENT
-// ══════════════════════════════════════════
 async function loadApp() {
   document.getElementById("authOverlay").style.display = "none";
   document.getElementById("appShell").style.display    = "grid";
@@ -382,39 +385,150 @@ async function loadApp() {
   document.getElementById("exerciceYear").value = currentProfile.exercice || "2024";
   await loadEcrituresFromFirestore();
   updateStats(); renderPlanComptable(); initSaisie();
-
-  // ══ VÉRIFICATION ABONNEMENT ══
   await initSubscription();
+}
+
+// ══════════════════════════════════════════
+// ABONNEMENT — SYNC TEMPS RÉEL AVEC Z.html
+// ══════════════════════════════════════════
+async function checkSubscription(profileId, localDb) {
+  if (adminDb) {
+    try {
+      const snap = await getDoc(doc(adminDb, "subscriptions", profileId));
+      if (snap.exists()) {
+        const data = snap.data();
+        const now = Date.now();
+        const expires = data.expiresAt ? new Date(data.expiresAt).getTime() : Infinity;
+        const valid = data.valid !== false && (expires > now || data.plan === "free");
+        const hoursLeft = data.hoursLeft || (expires > now && expires !== Infinity ? Math.floor((expires - now) / 3600000) : (data.plan === "free" ? 99999 : 0));
+        return { ...data, valid, hoursLeft, source: "admin" };
+      }
+    } catch (e) { console.warn("[COMEO] checkSubscription adminDb:", e); }
+  }
+  try {
+    const snap = await getDoc(doc(localDb, "subscriptions", profileId));
+    if (snap.exists()) {
+      const data = snap.data();
+      const now = Date.now();
+      const expires = data.expiresAt ? new Date(data.expiresAt).getTime() : Infinity;
+      const valid = data.valid !== false && (expires > now || data.plan === "free");
+      const hoursLeft = data.hoursLeft || (expires > now && expires !== Infinity ? Math.floor((expires - now) / 3600000) : (data.plan === "free" ? 99999 : 0));
+      return { ...data, valid, hoursLeft, source: "local" };
+    }
+  } catch (e) { console.warn("[COMEO] checkSubscription local:", e); }
+  return { plan: "trial", valid: true, hoursLeft: 72, status: "trial", source: "default" };
+}
+
+function showTrialBanner(subInfo) {
+  const el = document.getElementById("trialBanner");
+  if (!el) return;
+  if (subInfo.plan === "paid") { el.style.display = "none"; return; }
+  const h = subInfo.hoursLeft || 0;
+  el.style.display = "flex";
+  el.innerHTML = `<span>⏳ Essai gratuit — <strong>${Math.floor(h)}h</strong> restantes</span><button onclick="window._showSubModal?.()">Activer</button>`;
+  if (h <= 12) el.style.background = "rgba(220,38,38,.12)";
+}
+
+function showExpiredBlock(profileId, localDb, company) {
+  const overlay = document.getElementById("expiredOverlay");
+  if (!overlay) {
+    const div = document.createElement("div");
+    div.id = "expiredOverlay";
+    div.style.cssText = "position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(11,13,18,.92);backdrop-filter:blur(4px)";
+    div.innerHTML = `
+      <div style="background:var(--card,#11131a);border:1px solid rgba(220,38,38,.3);border-radius:14px;padding:32px;max-width:420px;width:90%;text-align:center">
+        <div style="font-size:36px;margin-bottom:10px">🔒</div>
+        <h2 style="margin:0 0 8px;color:#f87171;font-size:17px">Abonnement expiré</h2>
+        <p style="color:rgba(255,255,255,.6);font-size:13px;line-height:1.6;margin-bottom:18px">
+          Votre accès <strong>COMEO AI</strong> est suspendu.<br>Contactez l'administrateur ou activez un abonnement pour reprendre.
+        </p>
+        <button onclick="window._showSubModal?.()" style="background:#d4a853;color:#0b0d12;border:none;padding:10px 18px;border-radius:8px;font-weight:700;cursor:pointer">Voir les offres</button>
+      </div>`;
+    document.body.appendChild(div);
+  } else { overlay.style.display = "flex"; }
+}
+
+function showSubscriptionModal(subInfo, profileId, localDb, company) {
+  const modal = document.getElementById("subModal");
+  if (modal) { modal.style.display = "flex"; return; }
+  const div = document.createElement("div");
+  div.id = "subModal";
+  div.style.cssText = "position:fixed;inset:0;z-index:9998;display:none;align-items:center;justify-content:center;background:rgba(11,13,18,.85);backdrop-filter:blur(3px)";
+  div.innerHTML = `
+    <div style="background:var(--card,#11131a);border:1px solid rgba(212,168,83,.25);border-radius:14px;padding:28px;max-width:440px;width:90%">
+      <h2 style="margin:0 0 10px;color:#d4a853;font-size:16px">Gérer l'abonnement</h2>
+      <p style="color:rgba(255,255,255,.55);font-size:12px;margin-bottom:16px">
+        Profil : <strong>${company}</strong><br>Plan actuel : <span style="color:${subInfo.plan==="paid"?"#4ade80":"#f87171"}">${subInfo.plan || "—"}</span>
+      </p>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <button onclick="window._markPaymentPending('${profileId}')" style="background:rgba(212,168,83,.12);border:1px solid rgba(212,168,83,.25);color:#d4a853;padding:10px;border-radius:8px;cursor:pointer;font-weight:600">
+          📨 Demander activation Pro (admin via Z.html)
+        </button>
+        <button onclick="document.getElementById('subModal').style.display='none'" style="background:transparent;border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.6);padding:10px;border-radius:8px;cursor:pointer;margin-top:6px">Fermer</button>
+      </div>
+    </div>`;
+  document.body.appendChild(div);
+  div.style.display = "flex";
+}
+
+async function markPaymentPending(profileId, localDb) {
+  try {
+    await setDoc(doc(localDb, "subscriptions", profileId), {
+      profileId, plan: "pending", valid: false, status: "pending", updatedAt: new Date().toISOString()
+    }, { merge: true });
+    toast("Demande envoyée à l'administrateur (Z.html).", "success");
+    const subModal = document.getElementById("subModal");
+    if (subModal) subModal.style.display = "none";
+  } catch (e) { toast("Erreur : " + e.message, "error"); }
 }
 
 async function initSubscription() {
   try {
-    const subInfo = await checkSubscription(currentProfile.id, window._db);
-    _currentSubInfo = subInfo; // ← stocker globalement pour le chatbot
-
-    window._showSubModal = () => {
-      showSubscriptionModal(subInfo, currentProfile.id, window._db, currentProfile.company);
+    const profileId = currentProfile.id;
+    const applySubInfo = (subInfo) => {
+      _currentSubInfo = subInfo;
+      window._showSubModal = () => showSubscriptionModal(subInfo, profileId, window._db, currentProfile.company);
+      if (!subInfo.valid) {
+        showExpiredBlock(profileId, window._db, currentProfile.company);
+        _blockAppUI();
+        return;
+      }
+      showTrialBanner(subInfo);
+      _renderSubWidget(subInfo);
+      const overlay = document.getElementById("expiredOverlay");
+      if (overlay) overlay.style.display = "none";
     };
 
-    if (!subInfo.valid) {
-      showExpiredBlock(currentProfile.id, window._db, currentProfile.company);
-      _blockAppUI();
-      return;
+    // Listener temps réel base admin (Z.html)
+    if (adminDb) {
+      window._unsubAdmin = onSnapshot(doc(adminDb, "subscriptions", profileId), (snap) => {
+        if (snap.exists()) {
+          const data = snap.data();
+          const now = Date.now();
+          const expires = data.expiresAt ? new Date(data.expiresAt).getTime() : Infinity;
+          const valid = data.valid !== false && (expires > now || data.plan === "free");
+          const hoursLeft = data.hoursLeft || (expires > now && expires !== Infinity ? Math.floor((expires - now) / 3600000) : (data.plan === "free" ? 99999 : 0));
+          applySubInfo({ ...data, valid, hoursLeft });
+        } else {
+          applySubInfo({ plan: "trial", valid: true, hoursLeft: 72, status: "trial" });
+        }
+      }, (err) => {
+        console.warn("[COMEO] onSnapshot admin:", err);
+        checkSubscription(profileId, window._db).then(applySubInfo);
+      });
+    } else {
+      const subInfo = await checkSubscription(profileId, window._db);
+      applySubInfo(subInfo);
     }
 
-    showTrialBanner(subInfo);
-    _renderSubWidget(subInfo);
-
-    // Vérification périodique toutes les heures
     setInterval(async () => {
-      const fresh = await checkSubscription(currentProfile.id, window._db);
+      const fresh = await checkSubscription(profileId, window._db);
       _currentSubInfo = fresh;
       if (!fresh.valid) {
-        showExpiredBlock(currentProfile.id, window._db, currentProfile.company);
+        showExpiredBlock(profileId, window._db, currentProfile.company);
         _blockAppUI();
       }
     }, 3_600_000);
-
   } catch (e) {
     console.warn("[COMEO] initSubscription:", e);
   }
@@ -432,41 +546,29 @@ function _renderSubWidget(subInfo) {
   const sections = document.querySelectorAll(".sb-section");
   const target   = sections[sections.length - 1];
   if (!target) return;
-
   const isPaid = subInfo.plan === "paid";
   const h      = subInfo.hoursLeft || 0;
   const isLow  = !isPaid && h <= 12;
-
   const color  = isPaid ? "#4ade80" : isLow ? "#f87171" : "#d4a853";
   const border = isPaid ? "rgba(74,222,128,.22)"  : isLow ? "rgba(220,38,38,.25)"  : "rgba(212,168,83,.2)";
   const bg     = isPaid ? "rgba(74,222,128,.07)"  : isLow ? "rgba(220,38,38,.08)"  : "rgba(212,168,83,.07)";
-  const label  = isPaid ? "Plan Professionnel"     : `Essai — ${h}h restantes`;
+  const label  = isPaid ? "Plan Professionnel"     : `Essai — ${Math.floor(h)}h restantes`;
   const sub    = isPaid ? "Accès complet actif ✓"  : "Cliquer pour souscrire";
-
   const w = document.createElement("div");
   w.id    = "subWidget";
-  w.style.cssText = `
-    margin: 12px 10px 0;
-    background: ${bg}; border: 1px solid ${border};
-    border-radius: 8px; padding: 10px 12px;
-    cursor: pointer; transition: background .18s;
-  `;
+  w.style.cssText = `margin:12px 10px 0;background:${bg};border:1px solid ${border};border-radius:8px;padding:10px 12px;cursor:pointer;transition:background .18s;`;
   w.innerHTML = `
     <div style="display:flex;align-items:center;gap:7px;margin-bottom:3px">
       <span style="font-size:11px;color:${color}">${isPaid ? "✓" : "⏳"}</span>
       <span style="font-size:11px;font-weight:600;color:${color}">${label}</span>
     </div>
-    <div style="font-size:9px;color:rgba(255,255,255,.28);font-family:'JetBrains Mono',monospace;letter-spacing:.07em">${sub}</div>
-  `;
+    <div style="font-size:9px;color:rgba(255,255,255,.28);font-family:'JetBrains Mono',monospace;letter-spacing:.07em">${sub}</div>`;
   w.onmouseenter = () => { w.style.background = isPaid ? "rgba(74,222,128,.12)" : "rgba(212,168,83,.13)"; };
   w.onmouseleave = () => { w.style.background = bg; };
   w.onclick = () => window._showSubModal?.();
   target.appendChild(w);
 }
 
-// ══════════════════════════════════════════
-// FIRESTORE
-// ══════════════════════════════════════════
 async function loadEcrituresFromFirestore() {
   try {
     const col  = window._fbCollection(window._db, "profiles", currentProfile.id, "ecritures");
@@ -493,9 +595,6 @@ async function deleteEcritureFromFirestore(docId) {
   } catch (e) { toast("Erreur suppression : " + e.message, "error"); }
 }
 
-// ══════════════════════════════════════════
-// NAVIGATION
-// ══════════════════════════════════════════
 const VIEW_KEYS = {
   dashboard:"tableau", saisie:"saisie", journal:"journal",
   grandlivre:"grand",  balance:"balance", bilan:"bilan",
@@ -518,9 +617,6 @@ function navigate(view) {
   if (RENDERERS[view]) RENDERERS[view]();
 }
 
-// ══════════════════════════════════════════
-// STATS
-// ══════════════════════════════════════════
 function updateStats() {
   let tD = 0, tC = 0;
   ecritures.forEach(e => e.lignes.forEach(l => { tD += l.debit || 0; tC += l.credit || 0; }));
@@ -557,9 +653,6 @@ function fs(n) {
   return (n || 0).toFixed(0) + " FCFA";
 }
 
-// ══════════════════════════════════════════
-// SAISIE
-// ══════════════════════════════════════════
 function initSaisie() {
   document.getElementById("ecr-date").value = new Date().toISOString().split("T")[0];
   document.getElementById("ecr-piece").placeholder = "N°" + String(pieceCounter).padStart(5, "0");
@@ -572,9 +665,6 @@ function addLigne(compte = "", libelle = "", debit = "", credit = "") {
 }
 function removeLigne(i) { lignes.splice(i, 1); renderLignes(); }
 
-// ══════════════════════════════════════════
-// AUTO SAVE
-// ══════════════════════════════════════════
 async function autoSaveAllEcritures() {
   if (ecrQueue.length === 0) { toast("Aucune écriture en file d'attente", "error"); return; }
   const total = ecrQueue.length;
@@ -727,9 +817,6 @@ function goToSaisie() {
   }, 200);
 }
 
-// ══════════════════════════════════════════
-// RENDER LIGNES
-// ══════════════════════════════════════════
 function renderLignes() {
   const tbody = document.getElementById("lignesBody");
   if (!tbody) return;
@@ -830,9 +917,6 @@ function updateBalance() {
   if (el)  { el.textContent = fn(Math.abs(s)); el.className = "val " + (Math.abs(s) < 0.01 ? "bok" : "bbad"); }
 }
 
-// ══════════════════════════════════════════
-// VALIDATION MANUELLE
-// ══════════════════════════════════════════
 async function saveEcriture() {
   const date    = document.getElementById("ecr-date").value;
   const journal = document.getElementById("ecr-journal").value;
@@ -878,9 +962,6 @@ async function saveEcriture() {
   }
 }
 
-// ══════════════════════════════════════════
-// FILTRAGE COMMUN
-// ══════════════════════════════════════════
 function getEcrituresFiltrees(opts = {}) {
   const { dateDebut, dateFin, journal, compte } = opts;
   return ecritures.filter(e => {
@@ -892,9 +973,6 @@ function getEcrituresFiltrees(opts = {}) {
   });
 }
 
-// ══════════════════════════════════════════
-// JOURNAL
-// ══════════════════════════════════════════
 function resetJournalFiltre() {
   document.getElementById("jnl-date-debut").value = "";
   document.getElementById("jnl-date-fin").value   = "";
@@ -1107,9 +1185,6 @@ async function deleteEcriture(docId, id) {
   updateStats(); renderJournal(); toast("Écriture supprimée", "info");
 }
 
-// ══════════════════════════════════════════
-// GRAND LIVRE
-// ══════════════════════════════════════════
 function getMap(opts = {}) {
   const ecFiltrees = opts.filtrer ? getEcrituresFiltrees(opts) : ecritures;
   const map = {};
@@ -1185,9 +1260,6 @@ function renderGrandLivre() {
 }
 function toggleGL(id) { const el = document.getElementById(id); if (el) el.style.display = el.style.display === "none" ? "block" : "none"; }
 
-// ══════════════════════════════════════════
-// BALANCE
-// ══════════════════════════════════════════
 function resetBalanceFiltre() {
   document.getElementById("bal-date-debut").value = "";
   document.getElementById("bal-date-fin").value   = "";
@@ -1234,9 +1306,6 @@ function renderBalance() {
   tbody.innerHTML = rows.join("");
 }
 
-// ══════════════════════════════════════════
-// BILAN
-// ══════════════════════════════════════════
 function renderBilan() {
   const dateArrete = document.getElementById("bilan-date-arrete")?.value;
   const opts       = dateArrete ? { filtrer:true, dateFin:dateArrete } : {};
@@ -1278,9 +1347,6 @@ function renderBilan() {
     <div class="bilan-col"><div class="bilan-col-header passif">PASSIF — ${label}</div>${rc(Object.values(passif))}<div class="bilan-total"><span>TOTAL PASSIF</span><span>${fn(tP)} FCFA</span></div></div>`;
 }
 
-// ══════════════════════════════════════════
-// RÉSULTAT
-// ══════════════════════════════════════════
 function renderResultat() {
   const map     = getMap();
   const content = document.getElementById("resultatContent");
@@ -1345,9 +1411,6 @@ function renderResultat() {
   </div>`;
 }
 
-// ══════════════════════════════════════════
-// TRÉSORERIE
-// ══════════════════════════════════════════
 function renderTresorerie() {
   const map     = getMap();
   const content = document.getElementById("tresorerieContent");
@@ -1366,9 +1429,6 @@ function renderTresorerie() {
   </div>`;
 }
 
-// ══════════════════════════════════════════
-// PLAN COMPTABLE
-// ══════════════════════════════════════════
 function renderPlanComptable() {
   const search = document.getElementById("pcSearch")?.value?.toLowerCase() || "";
   const cls    = document.getElementById("pcClass")?.value || "";
@@ -1391,9 +1451,6 @@ function renderPlanComptable() {
   }).join("");
 }
 
-// ══════════════════════════════════════════
-// EXPORT PDF / WORD
-// ══════════════════════════════════════════
 function openExportModal()  { const m = document.getElementById("exportModal"); if (m) m.style.display = "flex"; selectExport("pdf"); }
 function closeExportModal() { const m = document.getElementById("exportModal"); if (m) m.style.display = "none"; }
 function selectExport(fmt) {
@@ -1483,9 +1540,6 @@ function exportWord() {
   toast("✓ Document Word exporté", "success");
 }
 
-// ══════════════════════════════════════════
-// COMEO AI — MOTEUR IA
-// ══════════════════════════════════════════
 function handleAiKey(e, ctx) { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendToAI(ctx); } }
 
 function quickAI(text) {
@@ -1517,11 +1571,7 @@ function buildAIContext() {
   };
 }
 
-// ══════════════════════════════════════════
-// VÉRIFICATION ABONNEMENT AVANT IA
-// ══════════════════════════════════════════
 function _isSubscriptionValid() {
-  // Si on n'a pas encore chargé l'info abonnement, on autorise (fail-open)
   if (!_currentSubInfo) return true;
   return _currentSubInfo.valid === true;
 }
@@ -1550,15 +1600,70 @@ function _showSubRequiredMessage(context) {
   c.scrollTop = c.scrollHeight;
 }
 
+// ══════════════════════════════════════════
+// GROQ API — RETRY + FALLBACK (BUG RATE LIMIT FIX)
+// ══════════════════════════════════════════
+async function callGroqWithRetry(systemPrompt, userMessage) {
+  let lastError;
+  for (let attempt = 0; attempt < GROQ_MAX_RETRIES; attempt++) {
+    const model = GROQ_MODELS[Math.min(attempt, GROQ_MODELS.length - 1)];
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 25000);
+      const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: { "Content-Type":"application/json", "Authorization":`Bearer ${GROQ_API_KEY}` },
+        body: JSON.stringify({
+          model, max_tokens: 4000, temperature: 0.05,
+          messages: [{role:"system", content:systemPrompt}, {role:"user", content:userMessage}]
+        }),
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        const errBody = await response.json().catch(() => ({}));
+        const errMsg = errBody.error?.message || "";
+        if (response.status === 429 || errMsg.toLowerCase().includes("rate limit")) {
+          const retryMatch = errMsg.match(/try again in ([\d]+m[\d\.]+s|[\d\.]+s)/i);
+          let waitMs = 15000 * (attempt + 1);
+          if (retryMatch) {
+            const t = retryMatch[1];
+            const parts = t.match(/(\d+)m([\d\.]+)s/);
+            if (parts) waitMs = (parseInt(parts[1])*60 + parseFloat(parts[2])) * 1000;
+            else { const s = parseFloat(t); if (!isNaN(s)) waitMs = s * 1000; }
+          }
+          const retryAfter = response.headers.get('Retry-After');
+          if (retryAfter) waitMs = Math.max(waitMs, parseInt(retryAfter) * 1000);
+          lastError = new Error(`Rate limit (${model}) — réessayez dans ${Math.ceil(waitMs/1000)}s`);
+          if (attempt < GROQ_MAX_RETRIES - 1) {
+            await new Promise(r => setTimeout(r, waitMs));
+            continue;
+          }
+          throw lastError;
+        }
+        throw new Error(errMsg || `Erreur API ${response.status}`);
+      }
+      return await response.json();
+    } catch (err) {
+      lastError = err;
+      if (err.name === 'AbortError') lastError = new Error("Délai d'attente dépassé (25s). Le service est saturé.");
+      if (attempt < GROQ_MAX_RETRIES - 1) {
+        const backoff = Math.min(2500 * Math.pow(2, attempt), 30000);
+        await new Promise(r => setTimeout(r, backoff));
+      }
+    }
+  }
+  throw lastError;
+}
+
 async function sendToAI(context) {
   if (isAILoading) return;
 
-  // ── VÉRIFICATION ABONNEMENT ──────────────────────────────────
   if (!_isSubscriptionValid()) {
     _showSubRequiredMessage(context);
     return;
   }
-  // ────────────────────────────────────────────────────────────
 
   const inputId = context === "dashboard" ? "aiInput" : `aiInput-${context}`;
   const input   = document.getElementById(inputId);
@@ -1572,25 +1677,8 @@ async function sendToAI(context) {
   const ctxData      = buildAIContext();
   const systemPrompt = buildSystemPrompt(ctxData);
   try {
-    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-      method: "POST",
-      headers: { "Content-Type":"application/json", "Authorization":`Bearer ${GROQ_API_KEY}` },
-      body: JSON.stringify({
-        model: "llama-3.3-70b-versatile",
-        max_tokens: 4000,
-        temperature: 0.05,
-        messages: [
-          { role:"system", content: systemPrompt },
-          { role:"user",   content: msg }
-        ]
-      })
-    });
+    const data     = await callGroqWithRetry(systemPrompt, msg);
     removeTyping(context, tid);
-    if (!response.ok) {
-      const e2 = await response.json().catch(() => ({}));
-      throw new Error(e2.error?.message || "Erreur API " + response.status);
-    }
-    const data     = await response.json();
     const fullText = data.choices?.[0]?.message?.content || "Pas de réponse.";
 
     const filtreMarker = fullText.indexOf("###FILTRE###");
@@ -1648,7 +1736,11 @@ async function sendToAI(context) {
     }
   } catch (err) {
     removeTyping(context, tid);
-    appendMsg(context, "ai", `⚠️ Incident technique : ${err.message} — Veuillez réessayer.`);
+    const isRateLimit = err.message?.toLowerCase().includes("rate limit");
+    const friendly = isRateLimit
+      ? `⏳ <strong>Quota API atteint.</strong><br>${err.message}<br>Veuillez patienter quelques instants avant de réessayer.`
+      : `⚠️ Incident technique : ${err.message} — Veuillez réessayer.`;
+    appendMsg(context, "ai", friendly);
   }
   isAILoading = false;
   if (sendBtnId) { const btn = document.getElementById(sendBtnId); if (btn) btn.disabled = false; }
@@ -1688,7 +1780,6 @@ function applyFiltreAndNavigate(filtre, context) {
   }
 }
 
-// ── Messages ──
 function appendMsg(context, role, text) {
   const msgId = context === "dashboard" ? "aiMessages" : `aiMessages-${context}`;
   const c = document.getElementById(msgId);
@@ -1733,9 +1824,6 @@ function fmt(text) {
     .replace(/&lt;br&gt;/gi,"<br>").replace(/&lt;br\/&gt;/gi,"<br>");
 }
 
-// ══════════════════════════════════════════
-// TOAST
-// ══════════════════════════════════════════
 function toast(message, type = "info") {
   const c = document.getElementById("toastContainer");
   if (!c) return;
@@ -1749,21 +1837,16 @@ function toast(message, type = "info") {
   setTimeout(() => d.remove(), 4100);
 }
 
-// ══════════════════════════════════════════
-// INIT SESSION — RECONNEXION AUTOMATIQUE PERMANENTE
-// ══════════════════════════════════════════
 document.addEventListener("firebase-ready", async () => {
   const raw = localStorage.getItem("syscohada_session");
   if (raw) {
     try {
       const session = JSON.parse(raw);
       const { profileId } = session;
-      // ── Pas de vérification de deviceId : session permanente sur ce navigateur ──
       const ref  = window._fbDoc(window._db, "profiles", profileId);
       const snap = await window._fbGetDoc(ref);
       if (snap.exists()) {
         currentProfile = { ...snap.data(), id: profileId };
-        // Rafraîchir le timestamp de session sans changer le reste
         localStorage.setItem("syscohada_session", JSON.stringify({
           ...session,
           savedAt:  Date.now(),
@@ -1771,7 +1854,6 @@ document.addEventListener("firebase-ready", async () => {
         }));
         await loadApp();
       } else {
-        // Profil supprimé de Firestore → nettoyer
         localStorage.removeItem("syscohada_session");
       }
     } catch (e) {
@@ -1780,9 +1862,6 @@ document.addEventListener("firebase-ready", async () => {
   }
 });
 
-// ══════════════════════════════════════════
-// EXPOSITION GLOBALE
-// ══════════════════════════════════════════
 window.sendToAI             = sendToAI;
 window.handleAiKey          = handleAiKey;
 window.quickAI              = quickAI;
@@ -1825,3 +1904,4 @@ window.resetBalanceFiltre   = resetBalanceFiltre;
 window.updateStats          = updateStats;
 window.toggleMobileSidebar  = toggleMobileSidebar;
 window.closeMobileSidebar   = closeMobileSidebar;
+window._markPaymentPending  = markPaymentPending;
