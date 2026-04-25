@@ -177,9 +177,8 @@ window._unsubAdmin = null;
 // ══════════════════════════════════════════
 // ANTHROPIC CLAUDE API — COMEO AI ENGINE
 // ══════════════════════════════════════════
-const ANTHROPIC_MODEL   = "claude-sonnet-4-20250514";
+const ANTHROPIC_MODEL       = "llama-3.3-70b-versatile"; // Modèle Groq
 const ANTHROPIC_MAX_RETRIES = 3;
-
 function _getOrCreateDeviceId() {
   let did = localStorage.getItem("syscohada_device");
   if (!did) {
@@ -1630,7 +1629,6 @@ function _showSubRequiredMessage(context) {
 // GROQ API — APPEL DIRECT NAVIGATEUR
 // ══════════════════════════════════════════
 const GROQ_API_KEY    = "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"; // ⚠️ Remplacez par votre vraie clé Groq
-const ANTHROPIC_MODEL = "llama-3.3-70b-versatile"; // Modèle Groq — changez selon besoin
 
 async function callAnthropicWithRetry(systemPrompt, userMessage) {
   let lastError;
