@@ -174,7 +174,7 @@ let currentGroupId = null;
 let _currentSubInfo = null;
 window._unsubAdmin = null;
 
-const GROQ_API_KEY = "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";
+const GROQ_API_KEY = "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";
 const GROQ_MODELS = ["llama-3.3-70b-versatile", "llama-3.1-8b-instant", "gemma2-9b-it"];
 const GROQ_MAX_RETRIES = 3;
 
