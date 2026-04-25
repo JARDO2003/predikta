@@ -1627,29 +1627,32 @@ function _showSubRequiredMessage(context) {
 }
 
 // ══════════════════════════════════════════
-// ANTHROPIC CLAUDE API — VIA PROXY VERCEL
+// GROQ API — APPEL DIRECT NAVIGATEUR
 // ══════════════════════════════════════════
-// Le proxy /api/chat.js évite le blocage CORS du navigateur.
-// Déployez api/chat.js à la racine Vercel et ajoutez ANTHROPIC_API_KEY
-// dans vos variables d'environnement Vercel.
+const GROQ_API_KEY    = "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"; // ⚠️ Remplacez par votre vraie clé Groq
+const ANTHROPIC_MODEL = "llama-3.3-70b-versatile"; // Modèle Groq — changez selon besoin
+
 async function callAnthropicWithRetry(systemPrompt, userMessage) {
   let lastError;
-  // Détection automatique de l'URL du proxy (même domaine Vercel)
-  const PROXY_URL = "/api/chat";
 
   for (let attempt = 0; attempt < ANTHROPIC_MAX_RETRIES; attempt++) {
     try {
       const controller = new AbortController();
       const timeoutId  = setTimeout(() => controller.abort(), 60000);
 
-      const response = await fetch(PROXY_URL, {
-        method:  "POST",
-        headers: { "Content-Type": "application/json" },
+      const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type":  "application/json",
+          "Authorization": `Bearer ${GROQ_API_KEY}`
+        },
         body: JSON.stringify({
-          system:     systemPrompt,
-          message:    userMessage,
           model:      ANTHROPIC_MODEL,
-          max_tokens: 4000
+          max_tokens: 4000,
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user",   content: userMessage }
+          ]
         }),
         signal: controller.signal
       });
@@ -1657,14 +1660,13 @@ async function callAnthropicWithRetry(systemPrompt, userMessage) {
 
       if (!response.ok) {
         const errBody = await response.json().catch(() => ({}));
-        const errMsg  = errBody.error || `Erreur proxy ${response.status}`;
+        const errMsg  = errBody.error?.message || `Erreur API Groq ${response.status}`;
 
-        // Gestion rate limit / surcharge
-        if (response.status === 429 || response.status === 529) {
+        if (response.status === 429) {
           let waitMs = 20000 * (attempt + 1);
           const retryAfter = response.headers.get("Retry-After");
           if (retryAfter) waitMs = Math.max(waitMs, parseInt(retryAfter) * 1000);
-          lastError = new Error(`Quota API atteint — réessayez dans ${Math.ceil(waitMs / 1000)}s`);
+          lastError = new Error(`Quota Groq atteint — réessayez dans ${Math.ceil(waitMs / 1000)}s`);
           if (attempt < ANTHROPIC_MAX_RETRIES - 1) {
             await new Promise(r => setTimeout(r, waitMs));
             continue;
@@ -1675,7 +1677,7 @@ async function callAnthropicWithRetry(systemPrompt, userMessage) {
       }
 
       const data = await response.json();
-      return data.text || "";
+      return data.choices?.[0]?.message?.content || "";
 
     } catch (err) {
       lastError = err;
@@ -1689,7 +1691,6 @@ async function callAnthropicWithRetry(systemPrompt, userMessage) {
   }
   throw lastError;
 }
-
 async function sendToAI(context) {
   if (isAILoading) return;
 
