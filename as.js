@@ -423,7 +423,7 @@ async function checkSubscription(profileId, localDb) {
 const hoursLeft = data.plan === "paid" ? 720 : (data.hoursLeft || (expires > now && expires !== Infinity ? Math.floor((expires - now) / 3600000) : (data.plan === "free" ? 99999 : 0)));
         return { ...data, valid, hoursLeft, source: "admin" };
       }
-    } catch (e) { console.warn("[COMEO] checkSubscription adminDb:", e); }
+    } catch (e) { /* adminDb optionnel — permissions non configurées, fallback local */ }
   }
   try {
     const snap = await getDoc(doc(localDb, "subscriptions", profileId));
@@ -539,7 +539,7 @@ async function initSubscription() {
           applySubInfo({ plan: "trial", valid: true, hoursLeft: 72, status: "trial" });
         }
       }, (err) => {
-        console.warn("[COMEO] onSnapshot admin:", err);
+        /* adminDb snapshot non disponible, fallback local */
         checkSubscription(profileId, window._db).then(applySubInfo);
       });
     } else {
