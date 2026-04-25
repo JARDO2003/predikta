@@ -1868,6 +1868,59 @@ document.addEventListener("firebase-ready", async () => {
   }
 });
 
+function clearAbnFilters() {
+  // Réinitialise tous les filtres de la vue "À nouveau" / journal AN
+  const fields = [
+    "abn-date-debut", "abn-date-fin",
+    "abnFilter", "abnSearch"
+  ];
+  fields.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = "";
+  });
+  // Re-render si la fonction existe
+  if (typeof renderANJournal === "function") renderANJournal();
+  else renderJournal();
+}
+
+function openResetModal() {
+  if (!confirm("⚠️ Voulez-vous vraiment réinitialiser TOUTES les écritures de cet exercice ?\n\nCette action est IRRÉVERSIBLE.")) return;
+  resetAllEcritures();
+}
+
+async function resetAllEcritures() {
+  try {
+    toast("Suppression en cours...", "info");
+    const col  = window._fbCollection(window._db, "profiles", currentProfile.id, "ecritures");
+    const snap = await window._fbGetDocs(col);
+    const dels = [];
+    snap.forEach(d => dels.push(window._fbDeleteDoc(window._fbDoc(window._db, "profiles", currentProfile.id, "ecritures", d.id))));
+    await Promise.all(dels);
+    ecritures    = [];
+    pieceCounter = 1;
+    lignes       = [];
+    updateStats();
+    renderJournal();
+    initSaisie();
+    toast(`✅ ${dels.length} écriture${dels.length > 1 ? "s" : ""} supprimée${dels.length > 1 ? "s" : ""} — Base réinitialisée`, "success");
+  } catch (e) {
+    toast("Erreur réinitialisation : " + e.message, "error");
+  }
+}
+
+Puis ajouter les exports window correspondants
+Ancien code (bloc window exports) :
+javascriptwindow.toggleMobileSidebar  = toggleMobileSidebar;
+window.closeMobileSidebar   = closeMobileSidebar;
+window._markPaymentPending  = markPaymentPending;
+Nouveau code :
+javascriptwindow.toggleMobileSidebar  = toggleMobileSidebar;
+window.closeMobileSidebar   = closeMobileSidebar;
+window._markPaymentPending  = markPaymentPending;
+window.clearAbnFilters      = clearAbnFilters;
+window.openResetModal       = openResetModal;
+window.resetAllEcritures    = resetAllEcritures;
+
 window.sendToAI             = sendToAI;
 window.handleAiKey          = handleAiKey;
 window.quickAI              = quickAI;
