@@ -1869,7 +1869,6 @@ document.addEventListener("firebase-ready", async () => {
 });
 
 function clearAbnFilters() {
-  // Réinitialise tous les filtres de la vue "À nouveau" / journal AN
   const fields = [
     "abn-date-debut", "abn-date-fin",
     "abnFilter", "abnSearch"
@@ -1878,7 +1877,6 @@ function clearAbnFilters() {
     const el = document.getElementById(id);
     if (el) el.value = "";
   });
-  // Re-render si la fonction existe
   if (typeof renderANJournal === "function") renderANJournal();
   else renderJournal();
 }
@@ -1908,19 +1906,9 @@ async function resetAllEcritures() {
   }
 }
 
-Puis ajouter les exports window correspondants
-Ancien code (bloc window exports) :
-javascriptwindow.toggleMobileSidebar  = toggleMobileSidebar;
-window.closeMobileSidebar   = closeMobileSidebar;
-window._markPaymentPending  = markPaymentPending;
-Nouveau code :
-javascriptwindow.toggleMobileSidebar  = toggleMobileSidebar;
-window.closeMobileSidebar   = closeMobileSidebar;
-window._markPaymentPending  = markPaymentPending;
-window.clearAbnFilters      = clearAbnFilters;
-window.openResetModal       = openResetModal;
-window.resetAllEcritures    = resetAllEcritures;
-
+window.clearAbnFilters  = clearAbnFilters;
+window.openResetModal   = openResetModal;
+window.resetAllEcritures = resetAllEcritures;
 window.sendToAI             = sendToAI;
 window.handleAiKey          = handleAiKey;
 window.quickAI              = quickAI;
