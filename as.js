@@ -175,7 +175,7 @@ let _currentSubInfo = null;
 window._unsubAdmin = null;
 
 const GROQ_API_KEY = "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";
-const GROQ_MODELS = ["llama-3.3-70b-versatile", "llama-3.1-70b-versatile", "llama3-70b-8192"];
+const GROQ_MODELS = ["llama-3.3-70b-versatile", "llama-3.1-8b-instant", "gemma2-9b-it"];
 const GROQ_MAX_RETRIES = 3;
 
 function _getOrCreateDeviceId() {
