@@ -8,8 +8,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <link rel="stylesheet" href="as.css">
-<base target="_blank">
 <base target="_blank">
 <base target="_blank">
 </head>
@@ -47,7 +47,7 @@
 <div id="exportModal" class="modal-overlay" style="display:none">
   <div class="modal-box">
     <div class="modal-title">Exporter le document</div>
-    <div class="modal-sub">Choisissez le format d'export souhaité</div>
+    <div class="modal-sub" id="exportModalSub">Choisissez le format d'export pour la vue actuelle</div>
     <div class="export-options">
       <div class="export-opt selected" id="opt-pdf" onclick="selectExport('pdf')">
         <div class="opt-icon">📄</div><div class="opt-label">PDF</div>
@@ -57,10 +57,72 @@
         <div class="opt-icon">📝</div><div class="opt-label">Word (.doc)</div>
         <div class="opt-sub">Éditable dans Microsoft Word</div>
       </div>
+      <div class="export-opt" id="opt-excel" onclick="selectExport('excel')">
+        <div class="opt-icon">📊</div><div class="opt-label">Excel (.xlsx)</div>
+        <div class="opt-sub">Tableur avec données structurées</div>
+      </div>
     </div>
     <div class="modal-actions">
       <button class="btn-modal-cancel" onclick="closeExportModal()">Annuler</button>
       <button class="btn-modal-ok" onclick="doExport()">↓ Télécharger</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL REINITIALISATION -->
+<div id="resetModal" class="modal-overlay" style="display:none">
+  <div class="modal-box">
+    <div class="modal-title" style="color:var(--red)">⚠️ Réinitialisation complète</div>
+    <div class="modal-sub">Cette action est irréversible. Toutes les écritures seront supprimées définitivement.</div>
+    <div style="background:rgba(220,38,38,.05);border:1px solid rgba(220,38,38,.2);border-radius:8px;padding:14px;margin-bottom:18px">
+      <div style="font-size:11px;color:var(--red);margin-bottom:8px;font-weight:700">Pour confirmer, tapez <strong>SUPPRIMER</strong> ci-dessous :</div>
+      <input type="text" id="resetConfirmInput" placeholder="SUPPRIMER" style="width:100%;padding:8px 12px;border:1.5px solid rgba(220,38,38,.3);border-radius:6px;font-size:13px;font-family:var(--font-body);outline:none;background:rgba(220,38,38,.03);color:var(--ink)">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-modal-cancel" onclick="closeResetModal()">Annuler</button>
+      <button class="btn-modal-ok" style="background:var(--red);color:#fff" onclick="doResetAll()">⚠️ Tout réinitialiser</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL MODIFICATION ECRITURE -->
+<div id="editModal" class="modal-overlay" style="display:none">
+  <div class="modal-box" style="max-width:640px;width:100%">
+    <div class="modal-title">✎ Modifier l'écriture</div>
+    <div class="modal-sub">Modifiez les informations de l'écriture sélectionnée</div>
+    <input type="hidden" id="editDocId">
+    <input type="hidden" id="editEcrId">
+    <div class="fg c4" style="margin-bottom:14px">
+      <div class="field"><label>Date</label><input type="date" id="edit-date"></div>
+      <div class="field"><label>Journal</label>
+        <select id="edit-journal">
+          <option value="AC">AC — Achats</option><option value="VE">VE — Ventes</option>
+          <option value="BQ">BQ — Banque</option><option value="CA">CA — Caisse</option>
+          <option value="OD">OD — Opérations Diverses</option><option value="AN">AN — À Nouveau</option>
+          <option value="IN">IN — Inventaire</option>
+        </select>
+      </div>
+      <div class="field"><label>N° Pièce</label><input type="text" id="edit-piece" placeholder="Auto"></div>
+      <div class="field"><label>Libellé général</label><input type="text" id="edit-libelle" placeholder="Description…"></div>
+    </div>
+    <div class="card" style="margin-bottom:14px">
+      <div class="card-title">Lignes d'écriture</div>
+      <div class="et-wrapper">
+        <table class="et">
+          <thead><tr><th style="min-width:120px">Compte</th><th>Libellé</th><th style="min-width:110px;text-align:right">Débit (FCFA)</th><th style="min-width:110px;text-align:right">Crédit (FCFA)</th><th style="width:36px"></th></tr></thead>
+          <tbody id="editLignesBody"></tbody>
+        </table>
+      </div>
+      <button class="add-line-btn" onclick="addEditLigne()">＋ Ajouter une ligne</button>
+      <div class="bal-bar">
+        <div class="bal-item"><label>Débit</label><span class="val" id="editTotalDebit" style="color:#60a5fa">0</span></div>
+        <div class="bal-item"><label>Crédit</label><span class="val" id="editTotalCredit" style="color:#4ade80">0</span></div>
+        <div class="bal-item" style="margin-left:auto"><label>Solde</label><span class="val bok" id="editSoldeDisplay">0</span></div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-modal-cancel" onclick="closeEditModal()">Annuler</button>
+      <button class="btn-modal-ok" onclick="saveEditEcriture()">💾 Enregistrer les modifications</button>
     </div>
   </div>
 </div>
@@ -92,7 +154,7 @@
     <div class="topbar-right">
       <div class="ex-pill">Exercice <input type="text" id="exerciceYear" value="2024" maxlength="4" onchange="updateStats()"></div>
       <div class="chip-badge">OHADA 2023</div>
-      <button class="btn btn-outline" onclick="openExportModal()">↓</button>
+      <button class="btn btn-outline" onclick="openExportModal()">⎙</button>
       <button class="btn btn-danger-outline" onclick="doLogout()">⏻</button>
     </div>
   </div>
@@ -116,13 +178,17 @@
       <div class="sb-title">Référentiel</div>
       <div class="nav-item" onclick="navigate('plancomptable');closeMobileSidebar()"><span class="nav-icon">⊙</span> Plan SYSCOHADA</div>
     </div>
+    <div class="sb-section">
+      <div class="sb-title">Gestion comptable</div>
+      <div class="nav-item" onclick="navigate('comptable');closeMobileSidebar()"><span class="nav-icon">⚙</span> Outils comptable</div>
+      <div class="nav-item" onclick="navigate('abonnements');closeMobileSidebar()"><span class="nav-icon">◉</span> Abonnements</div>
+    </div>
     <div class="sb-stats-card">
       <div class="stat-row"><span class="lbl">Écritures</span><span class="val" id="s-ecritures">0</span></div>
       <div class="stat-row"><span class="lbl">Total débit</span><span class="val" id="s-debit">0</span></div>
       <div class="stat-row"><span class="lbl">Total crédit</span><span class="val" id="s-credit">0</span></div>
       <div class="stat-row"><span class="lbl">Équilibre</span><span class="val g" id="s-equil">✓</span></div>
     </div>
-    <!-- WIDGET ABONNEMENT INJECTÉ ICI PAR JS -->
   </div>
 
   <div class="main">
@@ -132,7 +198,7 @@
       <div class="ph">
         <div><h1>Tableau de bord</h1><p>SYSCOHADA Révisé 2023 — Assistant comptable expert</p></div>
         <div class="ph-actions">
-          <button class="btn btn-sm-wire" onclick="openExportModal()">↓ Exporter</button>
+          <button class="btn btn-sm-wire" onclick="openExportModal()">⎙ Exporter</button>
           <button class="btn btn-ink" onclick="navigate('saisie')">✎ Nouvelle écriture</button>
         </div>
       </div>
@@ -258,6 +324,7 @@
         <div><h1>Journal général</h1><p>Opérations regroupées — 3 écritures liées par opération</p></div>
         <div class="ph-actions">
           <button class="btn btn-sm-wire" onclick="openExportModal()">⎙ Exporter</button>
+          <button class="btn btn-sm-wire" onclick="window.print()">🖨️ Imprimer</button>
           <button class="btn btn-ink" onclick="navigate('saisie')">+ Nouvelle</button>
         </div>
       </div>
@@ -292,7 +359,10 @@
     <div class="view" id="view-grandlivre">
       <div class="ph">
         <div><h1>Grand Livre</h1><p>Mouvements détaillés par compte</p></div>
-        <div class="ph-actions"><button class="btn btn-sm-wire" onclick="openExportModal()">⎙ Exporter</button></div>
+        <div class="ph-actions">
+          <button class="btn btn-sm-wire" onclick="openExportModal()">⎙ Exporter</button>
+          <button class="btn btn-sm-wire" onclick="window.print()">🖨️ Imprimer</button>
+        </div>
       </div>
       <div class="filtre-periode-bar">
         <label>Du</label><input type="date" id="gl-date-debut" onchange="renderGrandLivre()">
@@ -307,7 +377,10 @@
     <div class="view" id="view-balance">
       <div class="ph">
         <div><h1>Balance générale</h1><p>Synthèse des mouvements et soldes par compte</p></div>
-        <div class="ph-actions"><button class="btn btn-sm-wire" onclick="openExportModal()">⎙ Exporter</button></div>
+        <div class="ph-actions">
+          <button class="btn btn-sm-wire" onclick="openExportModal()">⎙ Exporter</button>
+          <button class="btn btn-sm-wire" onclick="window.print()">🖨️ Imprimer</button>
+        </div>
       </div>
       <div class="filtre-periode-bar">
         <label>Du</label><input type="date" id="bal-date-debut" onchange="renderBalance()">
@@ -342,7 +415,10 @@
     <div class="view" id="view-bilan">
       <div class="ph">
         <div><h1>Bilan</h1><p>Situation au <span id="bilanDate">31/12/2024</span></p></div>
-        <div class="ph-actions"><button class="btn btn-sm-wire" onclick="openExportModal()">⎙ Exporter</button></div>
+        <div class="ph-actions">
+          <button class="btn btn-sm-wire" onclick="openExportModal()">⎙ Exporter</button>
+          <button class="btn btn-sm-wire" onclick="window.print()">🖨️ Imprimer</button>
+        </div>
       </div>
       <div class="filtre-periode-bar">
         <label>Arrêté au</label>
@@ -358,7 +434,10 @@
     <div class="view" id="view-resultat">
       <div class="ph">
         <div><h1>Compte de résultat</h1><p>Exercice <span id="resultatYear">2024</span></p></div>
-        <div class="ph-actions"><button class="btn btn-sm-wire" onclick="openExportModal()">⎙ Exporter</button></div>
+        <div class="ph-actions">
+          <button class="btn btn-sm-wire" onclick="openExportModal()">⎙ Exporter</button>
+          <button class="btn btn-sm-wire" onclick="window.print()">🖨️ Imprimer</button>
+        </div>
       </div>
       <div class="card" id="resultatContent"><div class="empty-state"><div class="icon">↗</div><p>Aucune donnée</p></div></div>
     </div>
@@ -367,7 +446,10 @@
     <div class="view" id="view-tresorerie">
       <div class="ph">
         <div><h1>Trésorerie</h1><p>Flux de trésorerie — Classe 5</p></div>
-        <div class="ph-actions"><button class="btn btn-sm-wire" onclick="openExportModal()">⎙ Exporter</button></div>
+        <div class="ph-actions">
+          <button class="btn btn-sm-wire" onclick="openExportModal()">⎙ Exporter</button>
+          <button class="btn btn-sm-wire" onclick="window.print()">🖨️ Imprimer</button>
+        </div>
       </div>
       <div class="card" id="tresorerieContent"><div class="empty-state"><div class="icon">◎</div><p>Comptes de trésorerie (5xxx)</p></div></div>
     </div>
@@ -390,6 +472,146 @@
           <thead><tr><th style="width:80px">Code</th><th>Libellé</th><th style="width:100px">Classe</th><th style="width:80px">Nature</th></tr></thead>
           <tbody id="pcBody"></tbody>
         </table>
+      </div>
+    </div>
+
+    <!-- OUTILS COMPTABLE -->
+    <div class="view" id="view-comptable">
+      <div class="ph">
+        <div><h1>Outils comptable</h1><p>Gestion avancée des écritures et opérations</p></div>
+      </div>
+      <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr)">
+        <div class="kpi">
+          <div class="kpi-label">Écritures totales</div>
+          <div class="kpi-value" id="cmp-nb">0</div>
+          <div class="kpi-sub">Enregistrées</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Dernière écriture</div>
+          <div class="kpi-value" id="cmp-last" style="font-size:14px">—</div>
+          <div class="kpi-sub">Date</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Équilibre général</div>
+          <div class="kpi-value" id="cmp-eq">✓</div>
+          <div class="kpi-sub">Débit = Crédit</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Zone dangereuse — Réinitialisation</div>
+        <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+          <div style="flex:1;min-width:200px">
+            <div style="font-size:13px;font-weight:600;margin-bottom:4px">Réinitialiser toutes les écritures</div>
+            <div style="font-size:11px;color:var(--muted)">Supprime définitivement toutes les écritures de l'exercice. Cette action est irréversible.</div>
+          </div>
+          <button class="btn btn-danger-outline" style="font-size:12px;padding:8px 16px" onclick="openResetModal()">⚠️ Tout réinitialiser</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Opérations récentes — Actions rapides</div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:10px">Cliquez sur ✎ pour modifier ou ✕ pour supprimer une écriture individuelle.</div>
+        <div class="dtw">
+          <table class="dt">
+            <thead><tr><th>Date</th><th>Jnl</th><th>Pièce</th><th>Libellé</th><th style="text-align:right">Débit</th><th style="text-align:right">Crédit</th><th style="width:80px">Actions</th></tr></thead>
+            <tbody id="comptableOpsBody"><tr><td colspan="7"><div class="empty-state"><p>Aucune opération</p></div></td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Recherche et suppression avancée</div>
+        <div class="fg c3" style="margin-bottom:12px">
+          <div class="field">
+            <label>Compte</label>
+            <input type="text" id="cmp-search-compte" placeholder="ex: 601" style="font-family:var(--font-mono)">
+          </div>
+          <div class="field">
+            <label>Date début</label>
+            <input type="date" id="cmp-search-dateDebut">
+          </div>
+          <div class="field">
+            <label>Date fin</label>
+            <input type="date" id="cmp-search-dateFin">
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-ink" onclick="searchAndDeleteEcritures()">🔍 Rechercher pour suppression</button>
+          <button class="btn btn-sm-wire" onclick="clearCmpSearch()">Effacer</button>
+        </div>
+        <div id="cmp-search-results" style="margin-top:12px"></div>
+      </div>
+    </div>
+
+    <!-- ABONNEMENTS -->
+    <div class="view" id="view-abonnements">
+      <div class="ph">
+        <div><h1>Gestion des abonnements</h1><p>Administration des comptes clients et abonnements COMEO AI</p></div>
+        <div class="ph-actions">
+          <button class="btn btn-sm-wire" onclick="refreshAbonnements()">🔄 Actualiser</button>
+        </div>
+      </div>
+
+      <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr)">
+        <div class="kpi"><div class="kpi-label">Comptes total</div><div class="kpi-value" id="abn-total">0</div></div>
+        <div class="kpi"><div class="kpi-label">Abonnement actif</div><div class="kpi-value" id="abn-actifs" style="color:var(--green)">0</div></div>
+        <div class="kpi"><div class="kpi-label">Essai / Gratuit</div><div class="kpi-value" id="abn-essai" style="color:var(--warm)">0</div></div>
+        <div class="kpi"><div class="kpi-label">Expirés</div><div class="kpi-value" id="abn-expires" style="color:var(--red)">0</div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Filtres</div>
+        <div class="fg c4" style="margin-bottom:0">
+          <div class="field">
+            <label>Rechercher</label>
+            <input type="text" id="abn-search" placeholder="Entreprise, email…" oninput="renderAbonnements()">
+          </div>
+          <div class="field">
+            <label>Statut</label>
+            <select id="abn-statut" onchange="renderAbonnements()">
+              <option value="">Tous</option>
+              <option value="actif">Actif</option>
+              <option value="essai">Essai</option>
+              <option value="expire">Expiré</option>
+              <option value="desactive">Désactivé</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Plan</label>
+            <select id="abn-plan" onchange="renderAbonnements()">
+              <option value="">Tous</option>
+              <option value="professionnel">Professionnel</option>
+              <option value="essai">Essai gratuit</option>
+            </select>
+          </div>
+          <div class="field" style="display:flex;align-items:flex-end">
+            <button class="btn btn-sm-wire" style="width:100%" onclick="clearAbnFilters()">✕ Effacer filtres</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Liste des comptes</div>
+        <div class="dtw">
+          <table class="dt">
+            <thead>
+              <tr>
+                <th>Entreprise</th>
+                <th>Contact</th>
+                <th>Plan</th>
+                <th>Statut</th>
+                <th>Début</th>
+                <th>Fin / Expiration</th>
+                <th style="text-align:right">Montant</th>
+                <th style="width:120px">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="abonnementsBody">
+              <tr><td colspan="8"><div class="fb-loading">Chargement des abonnements…</div></td></tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
 
