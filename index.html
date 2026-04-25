@@ -1,625 +1,1285 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SYSCOHADA Pro — COMEO AI v4</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<link rel="stylesheet" href="as.css">
-<base target="_blank">
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<title>Comeo AI — Comptabilité SYSCOHADA</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+<style>
+:root {
+  --bg: #0b0e14; --bg2: #111520; --bg3: #171d2b; --bg4: #1a2233;
+  --border: rgba(255,255,255,0.07); --border2: rgba(255,255,255,0.12);
+  --accent: #00d4aa; --accent2: #0088ff; --accent3: #f0a500; --accent4: #ff3366;
+  --text: #e8ecf4; --text2: #8a93a8; --text3: #5a6275;
+  --debit: #4ade80; --credit: #f87171; --warn: #f0a500;
+  --mono: 'IBM Plex Mono', monospace; --sans: 'Lato', sans-serif; --display: 'Syne', sans-serif;
+  --shadow: 0 8px 32px rgba(0,0,0,0.4); --glow: 0 0 20px rgba(0,212,170,0.15);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 14px; line-height: 1.6; overflow: hidden; }
+
+/* ══ AUTH OVERLAY ══ */
+#auth-overlay { position: fixed; inset: 0; background: var(--bg); z-index: 10000; display: flex; align-items: center; justify-content: center; overflow-y: auto; }
+.auth-box { width: 100%; max-width: 440px; padding: 32px; }
+.auth-logo { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
+.auth-logo-mark { width: 40px; height: 40px; background: linear-gradient(135deg, var(--accent), var(--accent2)); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-family: var(--display); font-weight: 800; font-size: 16px; color: #000; }
+.auth-logo-text { font-family: var(--display); font-weight: 700; font-size: 22px; letter-spacing: -0.5px; }
+.auth-logo-text span { color: var(--accent); }
+.auth-sub { font-size: 13px; color: var(--text2); margin-bottom: 28px; line-height: 1.5; }
+.auth-tabs { display: flex; gap: 8px; margin-bottom: 20px; }
+.auth-tab { flex: 1; background: var(--bg3); border: 1px solid var(--border); color: var(--text2); border-radius: 8px; padding: 10px; font-family: var(--sans); font-size: 13px; cursor: pointer; transition: all 0.15s; text-align: center; }
+.auth-tab.active { background: rgba(0,212,170,0.1); border-color: var(--accent); color: var(--accent); font-weight: 700; }
+.auth-form { display: none; }
+.auth-form.active { display: block; }
+.form-group { margin-bottom: 14px; }
+.form-group label { display: block; font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text3); margin-bottom: 6px; }
+.form-group input { width: 100%; background: var(--bg3); border: 1px solid var(--border2); border-radius: 8px; color: var(--text); font-family: var(--sans); font-size: 13px; padding: 10px 12px; outline: none; transition: border-color 0.2s, box-shadow 0.2s; }
+.form-group input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,212,170,0.1); }
+.btn-primary { background: linear-gradient(135deg, var(--accent), #00b890); color: #000; border: none; border-radius: 10px; padding: 11px 24px; font-family: var(--display); font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; letter-spacing: 0.3px; }
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(0,212,170,0.3); }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+.btn-link { background: none; border: none; color: var(--accent2); font-size: 12px; cursor: pointer; text-decoration: underline; padding: 0; margin-top: 10px; }
+.btn-link:hover { color: var(--accent); }
+.auth-footer { margin-top: 16px; text-align: center; font-size: 12px; color: var(--text3); }
+.auth-error { background: rgba(248,113,113,0.08); border: 1px solid rgba(248,113,113,0.2); color: var(--credit); font-size: 12px; padding: 8px 12px; border-radius: 6px; margin-bottom: 14px; display: none; }
+.auth-success { background: rgba(74,222,128,0.08); border: 1px solid rgba(74,222,128,0.2); color: var(--debit); font-size: 12px; padding: 8px 12px; border-radius: 6px; margin-bottom: 14px; display: none; }
+
+/* ══ PAYWALL OVERLAY ══ */
+#paywall-overlay { position: fixed; inset: 0; background: rgba(11,14,20,0.96); z-index: 9999; display: none; align-items: center; justify-content: center; backdrop-filter: blur(6px); }
+.paywall-box { max-width: 520px; padding: 32px; text-align: center; }
+.paywall-icon { width: 64px; height: 64px; background: rgba(240,165,0,0.08); border: 1px solid rgba(240,165,0,0.2); border-radius: 16px; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; font-size: 28px; }
+.paywall-title { font-family: var(--display); font-size: 22px; font-weight: 700; margin-bottom: 10px; }
+.paywall-text { font-size: 13px; color: var(--text2); margin-bottom: 24px; line-height: 1.6; }
+.paywall-btns { display: flex; flex-direction: column; gap: 10px; }
+.btn-wave { background: linear-gradient(135deg, #1ba5e8, #0d8bc9); color: #fff; border: none; border-radius: 10px; padding: 12px 24px; font-family: var(--display); font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; }
+.btn-wave:hover { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(27,165,232,0.3); }
+.btn-whatsapp { background: linear-gradient(135deg, #25d366, #128c7e); color: #fff; border: none; border-radius: 10px; padding: 12px 24px; font-family: var(--display); font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; }
+.btn-whatsapp:hover { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(37,211,102,0.3); }
+
+/* ══ APP LAYOUT ══ */
+#app { display: none; grid-template-rows: 60px 1fr; grid-template-columns: 260px 1fr; height: 100vh; width: 100vw; }
+#app.active { display: grid; }
+
+/* HEADER */
+#header { grid-column: 1 / -1; background: var(--bg2); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 20px; gap: 14px; position: relative; z-index: 100; }
+.logo-mark { width: 32px; height: 32px; background: linear-gradient(135deg, var(--accent), var(--accent2)); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-family: var(--display); font-weight: 800; font-size: 12px; color: #000; flex-shrink: 0; }
+.logo-text { font-family: var(--display); font-weight: 700; font-size: 16px; letter-spacing: -0.5px; }
+.logo-text span { color: var(--accent); }
+.header-sub { font-size: 11px; color: var(--text3); font-family: var(--mono); letter-spacing: 0.5px; text-transform: uppercase; }
+.header-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+.badge { background: rgba(0,212,170,0.1); border: 1px solid rgba(0,212,170,0.25); color: var(--accent); font-family: var(--mono); font-size: 10px; padding: 3px 10px; border-radius: 100px; letter-spacing: 0.5px; text-transform: uppercase; }
+.badge-warn { background: rgba(240,165,0,0.1); border: 1px solid rgba(240,165,0,0.25); color: var(--accent3); font-family: var(--mono); font-size: 10px; padding: 3px 10px; border-radius: 100px; }
+.badge-org { background: rgba(240,165,0,0.1); border: 1px solid rgba(240,165,0,0.25); color: var(--accent3); font-family: var(--mono); font-size: 10px; padding: 3px 10px; border-radius: 100px; }
+.btn-header { background: var(--bg3); border: 1px solid var(--border); color: var(--text2); border-radius: 6px; padding: 5px 10px; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 5px; }
+.btn-header:hover { border-color: var(--credit); color: var(--credit); }
+
+/* SIDEBAR */
+#sidebar { background: var(--bg2); border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; }
+.sidebar-section { padding: 14px 14px 6px; font-family: var(--mono); font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 1px; }
+.sidebar-item { display: flex; align-items: center; gap: 10px; padding: 9px 14px; cursor: pointer; border-left: 3px solid transparent; color: var(--text2); font-size: 12px; transition: all 0.15s; }
+.sidebar-item:hover { background: rgba(255,255,255,0.04); color: var(--text); }
+.sidebar-item.active { background: rgba(0,212,170,0.07); border-left-color: var(--accent); color: var(--accent); }
+.sidebar-item svg { width: 15px; height: 15px; flex-shrink: 0; }
+.sidebar-divider { height: 1px; background: var(--border); margin: 6px 0; }
+
+/* MAIN */
+#main { display: flex; flex-direction: column; overflow: hidden; background: var(--bg); }
+.view { display: none; flex-direction: column; height: 100%; overflow: hidden; }
+.view.active { display: flex; }
+
+/* PANELS */
+.panel-top { padding: 14px 20px 12px; border-bottom: 1px solid var(--border); background: var(--bg2); flex-shrink: 0; display: flex; align-items: center; gap: 12px; }
+.panel-top h2 { font-family: var(--display); font-size: 18px; font-weight: 700; letter-spacing: -0.5px; flex: 1; }
+.panel-body { flex: 1; overflow-y: auto; padding: 16px 20px; }
+.panel-header { padding: 10px 16px; font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--text3); border-bottom: 1px solid var(--border); flex-shrink: 0; display: flex; align-items: center; gap: 8px; }
+.dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
+
+/* FORMS */
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.form-group textarea { width: 100%; background: var(--bg3); border: 1px solid var(--border2); border-radius: 8px; color: var(--text); font-family: var(--sans); font-size: 13px; padding: 9px 12px; outline: none; transition: border-color 0.2s, box-shadow 0.2s; resize: none; }
+.form-group textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,212,170,0.1); }
+.form-group select { width: 100%; background: var(--bg3); border: 1px solid var(--border2); border-radius: 8px; color: var(--text); font-family: var(--sans); font-size: 13px; padding: 9px 12px; outline: none; }
+.form-group select option { background: var(--bg3); }
+
+/* BUTTONS */
+.btn-secondary { background: transparent; border: 1px solid var(--border2); color: var(--text2); border-radius: 10px; padding: 9px 20px; font-family: var(--sans); font-size: 13px; cursor: pointer; transition: all 0.2s; }
+.btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+.btn-row { display: flex; gap: 10px; }
+.btn-action { background: var(--bg3); border: 1px solid var(--border2); color: var(--text2); border-radius: 8px; padding: 7px 14px; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s; }
+.btn-action:hover { border-color: var(--accent); color: var(--accent); }
+
+/* JOURNAL */
+.journal-body { display: grid; grid-template-columns: 1fr 1.3fr; gap: 0; flex: 1; overflow: hidden; }
+.input-panel { border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; background: var(--bg2); }
+.input-content { padding: 14px; flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
+.output-panel { display: flex; flex-direction: column; overflow: hidden; background: var(--bg); }
+.output-content { flex: 1; overflow-y: auto; padding: 16px; }
+
+/* CHIPS */
+.entreprise-bar { padding: 8px 16px; background: rgba(0,212,170,0.03); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; flex-shrink: 0; flex-wrap: wrap; }
+.entreprise-bar label { font-family: var(--mono); font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.8px; white-space: nowrap; }
+.entreprise-chips { display: flex; gap: 5px; flex-wrap: wrap; flex: 1; }
+.e-chip { background: var(--bg3); border: 1.5px solid var(--border); color: var(--text2); border-radius: 100px; padding: 3px 10px; font-size: 11px; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+.e-chip:hover { border-color: var(--accent2); color: var(--text); }
+.e-chip.active { background: rgba(0,212,170,0.12); border-color: var(--accent); color: var(--accent); font-weight: 600; }
+.quick-ops { display: flex; flex-wrap: wrap; gap: 5px; }
+.quick-chip { background: var(--bg3); border: 1px solid var(--border); color: var(--text2); border-radius: 100px; padding: 3px 11px; font-size: 11px; cursor: pointer; transition: all 0.15s; }
+.quick-chip:hover { border-color: var(--accent); color: var(--accent); background: rgba(0,212,170,0.06); }
+
+/* TABLES */
+table.data-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+table.data-table thead tr th { background: rgba(255,255,255,0.03); padding: 8px 12px; text-align: left; font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text3); border-bottom: 1px solid var(--border); }
+table.data-table tbody tr { border-bottom: 1px solid rgba(255,255,255,0.04); transition: background 0.1s; }
+table.data-table tbody tr:hover { background: rgba(255,255,255,0.02); }
+table.data-table td { padding: 8px 12px; vertical-align: middle; }
+.col-compte { font-family: var(--mono); font-size: 12px; color: var(--accent2); font-weight: 500; white-space: nowrap; }
+.col-libelle { color: var(--text); font-size: 12px; }
+.col-sub { font-size: 10px; color: var(--text3); display: block; }
+.col-debit { font-family: var(--mono); font-size: 12px; color: var(--debit); text-align: right; font-weight: 500; white-space: nowrap; }
+.col-credit { font-family: var(--mono); font-size: 12px; color: var(--credit); text-align: right; font-weight: 500; white-space: nowrap; }
+.col-solde { font-family: var(--mono); font-size: 12px; color: var(--text); text-align: right; font-weight: 500; white-space: nowrap; }
+.col-empty { color: var(--text3); font-family: var(--mono); font-size: 11px; text-align: right; }
+
+/* CARDS */
+.journal-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 14px; }
+.journal-card-header { padding: 10px 14px; background: rgba(255,255,255,0.02); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.journal-card-title { font-family: var(--display); font-weight: 700; font-size: 13px; color: var(--text); flex: 1; }
+.journal-card-date { font-family: var(--mono); font-size: 11px; color: var(--text3); }
+.journal-card-ref { font-family: var(--mono); font-size: 10px; background: rgba(0,136,255,0.1); border: 1px solid rgba(0,136,255,0.2); color: var(--accent2); padding: 2px 8px; border-radius: 4px; }
+.journal-totals { background: rgba(255,255,255,0.03); border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 24px; padding: 8px 14px; font-family: var(--mono); font-size: 12px; }
+.total-item { display: flex; gap: 8px; align-items: center; }
+.total-label { color: var(--text3); font-size: 10px; text-transform: uppercase; }
+.total-debit { color: var(--debit); font-weight: 500; }
+.total-credit { color: var(--credit); font-weight: 500; }
+.equilibre-ok { background: rgba(74,222,128,0.06); border: 1px solid rgba(74,222,128,0.15); color: var(--debit); font-family: var(--mono); font-size: 11px; padding: 3px 10px; border-radius: 4px; }
+.equilibre-err { background: rgba(248,113,113,0.06); border: 1px solid rgba(248,113,113,0.15); color: var(--credit); font-family: var(--mono); font-size: 11px; padding: 3px 10px; border-radius: 4px; }
+
+/* AI ANALYSIS */
+.ai-analysis { background: linear-gradient(135deg, rgba(0,212,170,0.05), rgba(0,136,255,0.05)); border: 1px solid rgba(0,212,170,0.12); border-radius: 12px; padding: 12px 14px; margin-bottom: 14px; }
+.ai-analysis-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-family: var(--display); font-weight: 700; font-size: 13px; color: var(--accent); }
+.ai-analysis-text { font-size: 13px; color: var(--text2); line-height: 1.7; }
+.ai-analysis-text strong { color: var(--text); }
+.ai-analysis-text .rule { display: inline-block; background: rgba(240,165,0,0.1); border: 1px solid rgba(240,165,0,0.2); color: var(--accent3); font-family: var(--mono); font-size: 10px; padding: 1px 7px; border-radius: 3px; margin: 0 2px; }
+
+/* DASHBOARD */
+.dashboard-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; margin-bottom: 20px; }
+.stat-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
+.stat-label { font-family: var(--mono); font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; }
+.stat-value { font-family: var(--display); font-size: 22px; font-weight: 700; color: var(--text); }
+.stat-value.pos { color: var(--debit); }
+.stat-value.neg { color: var(--credit); }
+.stat-sub { font-size: 11px; color: var(--text3); margin-top: 4px; }
+
+/* GRAND LIVRE / BALANCE */
+.gl-compte { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 12px; }
+.gl-compte-header { padding: 10px 14px; background: rgba(255,255,255,0.02); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; cursor: pointer; }
+.gl-compte-num { font-family: var(--mono); font-size: 13px; color: var(--accent2); font-weight: 600; }
+.gl-compte-lib { font-size: 13px; color: var(--text); flex: 1; }
+.gl-compte-totals { font-family: var(--mono); font-size: 11px; color: var(--text3); display: flex; gap: 14px; }
+
+/* LOADING & EMPTY */
+.loading-state { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: 14px; color: var(--text3); }
+.spinner { width: 36px; height: 36px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: 12px; color: var(--text3); text-align: center; padding: 40px; }
+.empty-icon { width: 48px; height: 48px; background: rgba(0,212,170,0.08); border: 1px solid rgba(0,212,170,0.15); border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+.empty-icon svg { width: 22px; height: 22px; color: var(--accent); opacity: 0.6; }
+.empty-state h3 { font-family: var(--display); font-size: 15px; color: var(--text2); }
+.empty-state p { font-size: 12px; line-height: 1.6; max-width: 280px; }
+
+/* TOAST */
+#toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--bg2); border: 1px solid var(--border2); color: var(--text); font-size: 13px; padding: 10px 18px; border-radius: 100px; opacity: 0; transition: all 0.3s; pointer-events: none; z-index: 9999; white-space: nowrap; }
+#toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text3); }
+
+@media print {
+  #sidebar, #header, .input-panel, .panel-header, .action-bar, .ai-analysis, .entreprise-bar, .btn-header { display: none !important; }
+  #main { grid-column: 1 / -1; }
+  .journal-card { border: 1px solid #ccc; }
+}
+@media (max-width: 900px) {
+  #app { grid-template-columns: 1fr; grid-template-rows: 60px auto 1fr; }
+  #sidebar { display: none; }
+  .journal-body { grid-template-columns: 1fr; }
+  .input-panel { max-height: 400px; }
+}
+</style>
 <base target="_blank">
 </head>
 <body>
 
-<!-- AUTH OVERLAY -->
-<div id="authOverlay">
-  <div class="auth-box">
-    <div class="auth-emblem">
-      <div class="logo-big">COMEO AI V4</div>
-      <div class="ai-badge">Expert Comptable SYSCOHADA · Conforme OHADA 2023</div>
+<!-- ════════════════════════════════════════════
+     AUTH OVERLAY
+════════════════════════════════════════════ -->
+<div id="auth-overlay">
+<div class="auth-box">
+  <div class="auth-logo">
+    <div class="auth-logo-mark">C</div>
+    <div class="auth-logo-text">Comeo <span>AI</span></div>
+  </div>
+  <div class="auth-sub">Comptabilité SYSCOHADA automatisée — Journal, Grand Livre, Balance & Trésorerie.<br>Essai gratuit 24h, puis abonnement mensuel.</div>
+
+  <div class="auth-tabs">
+    <div class="auth-tab active" onclick="switchAuth('login')">Connexion</div>
+    <div class="auth-tab" onclick="switchAuth('register')">Nouveau compte</div>
+  </div>
+
+  <!-- Login -->
+  <form id="form-login" class="auth-form active" onsubmit="event.preventDefault(); doLogin();">
+    <div class="auth-error" id="login-error"></div>
+    <div class="form-group">
+      <label>Nom de l'entreprise</label>
+      <input type="text" id="login-entreprise" placeholder="Ex: SARL ABC" required>
     </div>
-    <div class="auth-tabs">
-      <div class="auth-tab active" id="tab-login" onclick="switchTab('login')">Connexion</div>
-      <div class="auth-tab" id="tab-register" onclick="switchTab('register')">Créer un profil</div>
+    <div class="form-group">
+      <label>Mot de passe</label>
+      <input type="password" id="login-password" placeholder="Votre mot de passe" required>
     </div>
-    <div id="form-login" class="auth-form">
-      <div class="af-field"><label class="af-label">Nom d'entreprise</label><input class="af-input" type="text" id="l-company" placeholder="ex: SOTRA SARL"></div>
-      <div class="af-field"><label class="af-label">Mot de passe</label><input class="af-input" type="password" id="l-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
-      <div class="auth-err" id="l-err"></div>
-      <button class="auth-btn" onclick="doLogin()">⚡ Se connecter</button>
+    <button type="submit" class="btn-primary" id="btn-login">Se connecter</button>
+    <div style="text-align:center;margin-top:10px;">
+      <button type="button" class="btn-link" onclick="forgotPassword()">Mot de passe oublié ?</button>
     </div>
-    <div id="form-register" class="auth-form" style="display:none">
-      <div class="af-field"><label class="af-label">Nom de l'entreprise</label><input class="af-input" type="text" id="r-company" placeholder="ex: SOTRA SARL"></div>
-      <div class="af-field"><label class="af-label">N° Compte ventes</label><input class="af-input" type="text" id="r-compte701" placeholder="701" value="701"></div>
-      <div class="af-field"><label class="af-label">Exercice comptable</label><input class="af-input" type="text" id="r-exercice" placeholder="2024" value="2024" maxlength="4"></div>
-      <div class="af-field"><label class="af-label">Mot de passe (min 4 car.)</label><input class="af-input" type="password" id="r-pass" placeholder="Minimum 4 caractères"></div>
-      <div class="auth-err" id="r-err"></div>
-      <button class="auth-btn" onclick="doRegister()">✓ Créer mon profil</button>
+  </form>
+
+  <!-- Register -->
+  <form id="form-register" class="auth-form" onsubmit="event.preventDefault(); doRegister();">
+    <div class="auth-error" id="register-error"></div>
+    <div class="auth-success" id="register-success"></div>
+    <div class="form-group">
+      <label>Nom de l'entreprise *</label>
+      <input type="text" id="reg-entreprise" placeholder="Ex: SARL ABC" required>
     </div>
+    <div class="form-group">
+      <label>Contact (email ou téléphone) *</label>
+      <input type="text" id="reg-contact" placeholder="contact@entreprise.ci" required>
+    </div>
+    <div class="form-group">
+      <label>Mot de passe *</label>
+      <input type="password" id="reg-password" placeholder="Min. 6 caractères" required minlength="6">
+    </div>
+    <div class="form-group">
+      <label>Confirmer le mot de passe *</label>
+      <input type="password" id="reg-password2" placeholder="Répétez le mot de passe" required minlength="6">
+    </div>
+    <button type="submit" class="btn-primary" id="btn-register">Créer mon compte (24h gratuit)</button>
+    <div class="auth-footer">En créant un compte, vous acceptez les conditions. Essai gratuit de 24h puis 2 000 FCFA/mois.</div>
+  </form>
+</div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     PAYWALL OVERLAY
+════════════════════════════════════════════ -->
+<div id="paywall-overlay">
+<div class="paywall-box">
+  <div class="paywall-icon">⏳</div>
+  <div class="paywall-title">Votre essai gratuit est terminé</div>
+  <div class="paywall-text">
+    Merci d'avoir testé <strong>Comeo AI</strong>.<br>
+    Pour continuer à utiliser le Journal, le Grand Livre, la Balance et la Trésorerie, souscrivez un abonnement mensuel à <strong>2 000 FCFA</strong>.<br>
+    L'activation est manuelle après validation du paiement.
+  </div>
+  <div class="paywall-btns">
+    <a class="btn-wave" href="https://pay.wave.com/m/M_ci_iqMcg8KwRE-W/c/ci/?amount=2000" target="_blank">
+      💳 Payer avec Wave (2 000 FCFA)
+    </a>
+    <a class="btn-whatsapp" href="https://wa.me/2250508463003?text=Bonjour%2C%20j%27ai%20effectu%C3%A9%20mon%20paiement%20Comeo%20AI.%20Mon%20entreprise%20%3A%20" target="_blank">
+      📲 Confirmer mon paiement sur WhatsApp
+    </a>
+    <button class="btn-secondary" style="width:100%;" onclick="logout()">Se déconnecter</button>
+  </div>
+</div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     MAIN APP
+════════════════════════════════════════════ -->
+<div id="app">
+
+<!-- HEADER -->
+<div id="header">
+  <div class="logo-mark">C</div>
+  <div>
+    <div class="logo-text">Comeo <span>AI</span></div>
+    <div class="header-sub">Comptabilité · SYSCOHADA</div>
+  </div>
+  <div class="header-right">
+    <span class="badge-org" id="header-org">🏢 Entreprise</span>
+    <span class="badge" id="header-status">🟢 Actif</span>
+    <button class="btn-header" onclick="logout()" title="Déconnexion">
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Quitter
+    </button>
   </div>
 </div>
 
-<!-- EXPORT MODAL -->
-<div id="exportModal" class="modal-overlay" style="display:none">
-  <div class="modal-box">
-    <div class="modal-title">Exporter le document</div>
-    <div class="modal-sub" id="exportModalSub">Choisissez le format d'export pour la vue actuelle</div>
-    <div class="export-options">
-      <div class="export-opt selected" id="opt-pdf" onclick="selectExport('pdf')">
-        <div class="opt-icon">📄</div><div class="opt-label">PDF</div>
-        <div class="opt-sub">Document imprimable professionnel</div>
-      </div>
-      <div class="export-opt" id="opt-word" onclick="selectExport('word')">
-        <div class="opt-icon">📝</div><div class="opt-label">Word (.doc)</div>
-        <div class="opt-sub">Éditable dans Microsoft Word</div>
-      </div>
-      <div class="export-opt" id="opt-excel" onclick="selectExport('excel')">
-        <div class="opt-icon">📊</div><div class="opt-label">Excel (.xlsx)</div>
-        <div class="opt-sub">Tableur avec données structurées</div>
-      </div>
-    </div>
-    <div class="modal-actions">
-      <button class="btn-modal-cancel" onclick="closeExportModal()">Annuler</button>
-      <button class="btn-modal-ok" onclick="doExport()">↓ Télécharger</button>
-    </div>
+<!-- SIDEBAR -->
+<div id="sidebar">
+  <div class="sidebar-section">Général</div>
+  <div class="sidebar-item active" onclick="showView('dashboard', this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+    Tableau de bord
+  </div>
+  <div class="sidebar-item" onclick="showView('journal', this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+    Journal
+  </div>
+  <div class="sidebar-item" onclick="showView('grandlivre', this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+    Grand Livre
+  </div>
+  <div class="sidebar-item" onclick="showView('balance', this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>
+    Balance
+  </div>
+  <div class="sidebar-item" onclick="showView('tresorerie', this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+    Trésorerie
+  </div>
+  <div class="sidebar-divider"></div>
+  <div class="sidebar-section">Référence</div>
+  <div class="sidebar-item" onclick="showView('plan', this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+    Plan Comptable
+  </div>
+  <div class="sidebar-item" onclick="showView('guide', this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    Guide des Opérations
   </div>
 </div>
 
-<!-- MODAL REINITIALISATION -->
-<div id="resetModal" class="modal-overlay" style="display:none">
-  <div class="modal-box">
-    <div class="modal-title" style="color:var(--red)">⚠️ Réinitialisation complète</div>
-    <div class="modal-sub">Cette action est irréversible. Toutes les écritures seront supprimées définitivement.</div>
-    <div style="background:rgba(220,38,38,.05);border:1px solid rgba(220,38,38,.2);border-radius:8px;padding:14px;margin-bottom:18px">
-      <div style="font-size:11px;color:var(--red);margin-bottom:8px;font-weight:700">Pour confirmer, tapez <strong>SUPPRIMER</strong> ci-dessous :</div>
-      <input type="text" id="resetConfirmInput" placeholder="SUPPRIMER" style="width:100%;padding:8px 12px;border:1.5px solid rgba(220,38,38,.3);border-radius:6px;font-size:13px;font-family:var(--font-body);outline:none;background:rgba(220,38,38,.03);color:var(--ink)">
-    </div>
-    <div class="modal-actions">
-      <button class="btn-modal-cancel" onclick="closeResetModal()">Annuler</button>
-      <button class="btn-modal-ok" style="background:var(--red);color:#fff" onclick="doResetAll()">⚠️ Tout réinitialiser</button>
+<!-- MAIN -->
+<div id="main">
+
+  <!-- ═══ DASHBOARD ═══ -->
+  <div id="view-dashboard" class="view active">
+    <div class="panel-top"><h2>📊 Tableau de bord</h2><span style="color:var(--text3);font-size:12px;">Vue synthétique de votre comptabilité</span></div>
+    <div class="panel-body" id="dashboard-body">
+      <div class="dashboard-grid">
+        <div class="stat-card"><div class="stat-label">Écritures ce mois</div><div class="stat-value" id="dash-nb-ecritures">0</div></div>
+        <div class="stat-card"><div class="stat-label">Total Débit</div><div class="stat-value pos" id="dash-total-debit">0 FCFA</div></div>
+        <div class="stat-card"><div class="stat-label">Total Crédit</div><div class="stat-value neg" id="dash-total-credit">0 FCFA</div></div>
+        <div class="stat-card"><div class="stat-label">Solde Trésorerie</div><div class="stat-value" id="dash-solde-treso">0 FCFA</div></div>
+      </div>
+      <h3 style="font-family:var(--display);font-size:14px;color:var(--accent);margin-bottom:10px;">Dernières écritures</h3>
+      <div id="dash-last-ecritures"></div>
     </div>
   </div>
+
+  <!-- ═══ JOURNAL ═══ -->
+  <div id="view-journal" class="view">
+    <div class="journal-top" style="padding:14px 20px 12px;border-bottom:1px solid var(--border);background:var(--bg2);flex-shrink:0;">
+      <h2>🧾 Journal Comptable</h2>
+      <p style="font-size:12px;color:var(--text3);margin-top:2px;">Saisissez manuellement ou générez automatiquement par IA</p>
+    </div>
+    <div class="entreprise-bar">
+      <label>Type :</label>
+      <div class="entreprise-chips">
+        <div class="e-chip active" data-type="commerce" onclick="selectEntreprise(this)">🏪 Commerce</div>
+        <div class="e-chip" data-type="service" onclick="selectEntreprise(this)">💼 Services</div>
+        <div class="e-chip" data-type="industrie" onclick="selectEntreprise(this)">🏭 Industrie</div>
+        <div class="e-chip" data-type="banque" onclick="selectEntreprise(this)">🏦 Banque</div>
+        <div class="e-chip" data-type="sante" onclick="selectEntreprise(this)">🏥 Santé</div>
+        <div class="e-chip" data-type="education" onclick="selectEntreprise(this)">🎓 Éducation</div>
+        <div class="e-chip" data-type="ong" onclick="selectEntreprise(this)">🌍 ONG</div>
+        <div class="e-chip" data-type="agri" onclick="selectEntreprise(this)">🌾 Agriculture</div>
+        <div class="e-chip" data-type="immo" onclick="selectEntreprise(this)">🏗️ Immobilier</div>
+        <div class="e-chip" data-type="transport" onclick="selectEntreprise(this)">🚚 Transport</div>
+      </div>
+      <div class="context-badge" id="context-badge">🏪 Commerce</div>
+    </div>
+    <div class="journal-body">
+      <div class="input-panel">
+        <div class="panel-header"><div class="dot"></div>Saisie</div>
+        <div class="input-content">
+          <div class="form-group">
+            <label>Opérations rapides</label>
+            <div class="quick-ops" id="quick-ops-container"></div>
+          </div>
+          <div class="form-group">
+            <label>Description de l'opération *</label>
+            <textarea id="op-description" placeholder="Décrivez l'opération..."></textarea>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Date</label><input type="date" id="op-date"/></div>
+            <div class="form-group"><label>Référence</label><input type="text" id="op-ref" placeholder="FAC-001"/></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Montant (FCFA)</label><input type="text" id="op-montant" placeholder="1 500 000"/></div>
+            <div class="form-group"><label>Type</label><select id="op-type"><option value="">Détection auto IA</option></select></div>
+          </div>
+          <div class="form-group"><label>Informations complémentaires</label><input type="text" id="op-extra" placeholder="TVA 18%, escompte..."/></div>
+          <div class="btn-row">
+            <button class="btn-primary" id="btn-generate" onclick="generateJournal()">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              Générer IA
+            </button>
+            <button class="btn-secondary" onclick="saveManualEntry()">💾 Saisie manuelle</button>
+          </div>
+        </div>
+      </div>
+      <div class="output-panel">
+        <div class="panel-header">Résultat</div>
+        <div class="output-content" id="output-content">
+          <div class="empty-state"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div><h3>Prêt à générer</h3><p>Décrivez l'opération et cliquez sur Générer ou enregistrez manuellement.</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ GRAND LIVRE ═══ -->
+  <div id="view-grandlivre" class="view">
+    <div class="panel-top"><h2>📖 Grand Livre</h2>
+      <input type="text" id="gl-search" placeholder="Rechercher un compte..." oninput="renderGrandLivre(this.value)" style="background:var(--bg3);border:1px solid var(--border2);border-radius:8px;color:var(--text);padding:7px 12px;outline:none;width:220px;font-size:13px;">
+      <button class="btn-action" onclick="window.print()">🖨️ Imprimer</button>
+    </div>
+    <div class="panel-body" id="gl-body"></div>
+  </div>
+
+  <!-- ═══ BALANCE ═══ -->
+  <div id="view-balance" class="view">
+    <div class="panel-top"><h2>⚖️ Balance des Comptes</h2>
+      <button class="btn-action" onclick="window.print()">🖨️ Imprimer</button>
+      <button class="btn-action" onclick="exportBalanceCSV()">📄 Export CSV</button>
+    </div>
+    <div class="panel-body" id="balance-body"></div>
+  </div>
+
+  <!-- ═══ TRÉSORERIE ═══ -->
+  <div id="view-tresorerie" class="view">
+    <div class="panel-top"><h2>💰 Trésorerie</h2>
+      <button class="btn-action" onclick="window.print()">🖨️ Imprimer</button>
+      <button class="btn-action" onclick="exportTresorerieCSV()">📄 Export CSV</button>
+    </div>
+    <div class="panel-body" id="tresorerie-body"></div>
+  </div>
+
+  <!-- ═══ PLAN COMPTABLE ═══ -->
+  <div id="view-plan" class="view">
+    <div class="panel-top"><h2>📚 Plan Comptable SYSCOHADA</h2>
+      <input type="text" id="plan-search" placeholder="Rechercher un compte..." oninput="filterPlan(this.value)" style="background:var(--bg3);border:1px solid var(--border2);border-radius:8px;color:var(--text);padding:7px 12px;outline:none;width:220px;font-size:13px;">
+    </div>
+    <div class="panel-body" id="plan-body"></div>
+  </div>
+
+  <!-- ═══ GUIDE ═══ -->
+  <div id="view-guide" class="view">
+    <div class="panel-top"><h2>📖 Guide des Écritures Courantes</h2></div>
+    <div class="panel-body" id="guide-body"></div>
+  </div>
+
+</div>
 </div>
 
-<!-- MODAL MODIFICATION ECRITURE -->
-<div id="editModal" class="modal-overlay" style="display:none">
-  <div class="modal-box" style="max-width:640px;width:100%">
-    <div class="modal-title">✎ Modifier l'écriture</div>
-    <div class="modal-sub">Modifiez les informations de l'écriture sélectionnée</div>
-    <input type="hidden" id="editDocId">
-    <input type="hidden" id="editEcrId">
-    <div class="fg c4" style="margin-bottom:14px">
-      <div class="field"><label>Date</label><input type="date" id="edit-date"></div>
-      <div class="field"><label>Journal</label>
-        <select id="edit-journal">
-          <option value="AC">AC — Achats</option><option value="VE">VE — Ventes</option>
-          <option value="BQ">BQ — Banque</option><option value="CA">CA — Caisse</option>
-          <option value="OD">OD — Opérations Diverses</option><option value="AN">AN — À Nouveau</option>
-          <option value="IN">IN — Inventaire</option>
-        </select>
+<div id="toast"></div>
+
+<script>
+/* ═══════════════════════════════════════════════════════
+   FIREBASE CONFIG
+══════════════════════════════════════════════════════ */
+const firebaseConfig = {
+  apiKey: "AIzaSyCPGgtXoDUycykLaTSee0S0yY0tkeJpqKI",
+  authDomain: "data-com-a94a8.firebaseapp.com",
+  databaseURL: "https://data-com-a94a8-default-rtdb.firebaseio.com",
+  projectId: "data-com-a94a8",
+  storageBucket: "data-com-a94a8.appspot.com",
+  messagingSenderId: "276904640935",
+  appId: "1:276904640935:web:9cd805aeba6c34c767f682",
+  measurementId: "G-FYQCWY5G4S"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+/* ═══════════════════════════════════════════════════════
+   UTILS
+══════════════════════════════════════════════════════ */
+function fmtAmount(n) {
+  if (n === undefined || n === null || n === 0) return '';
+  return new Intl.NumberFormat('fr-FR').format(Math.round(n)) + ' FCFA';
+}
+function parseAmount(v) {
+  if (!v) return 0;
+  return parseInt(String(v).replace(/[^0-9]/g, '')) || 0;
+}
+function todayDate() { return new Date().toISOString().split('T')[0]; }
+function showToast(msg, dur = 3000) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._tid);
+  t._tid = setTimeout(() => t.classList.remove('show'), dur);
+}
+function genRef() {
+  const now = new Date();
+  return 'JNL-' + now.getFullYear() + String(now.getMonth()+1).padStart(2,'0') + String(now.getDate()).padStart(2,'0') + '-' + String(Math.floor(Math.random()*900)+100);
+}
+function escHtml(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function getPlanLibelle(compte) {
+  if (!compte) return '';
+  for (const cl of Object.values(PLAN_COMPTABLE)) { if (cl[compte]) return cl[compte]; }
+  return '';
+}
+function hashPassword(str) {
+  let h = 0;
+  for (let i = 0; i < str.length; i++) { h = ((h << 5) - h) + str.charCodeAt(i); h |= 0; }
+  return String(Math.abs(h));
+}
+
+/* ═══════════════════════════════════════════════════════
+   AUTH STATE
+══════════════════════════════════════════════════════ */
+let currentUser = null;
+let currentEntrepriseType = 'commerce';
+let allEcritures = [];
+
+function switchAuth(tab) {
+  document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('form-' + tab).classList.add('active');
+}
+
+async function doRegister() {
+  const err = document.getElementById('register-error');
+  const suc = document.getElementById('register-success');
+  err.style.display = 'none'; suc.style.display = 'none';
+  const nom = document.getElementById('reg-entreprise').value.trim();
+  const contact = document.getElementById('reg-contact').value.trim();
+  const pass = document.getElementById('reg-password').value;
+  const pass2 = document.getElementById('reg-password2').value;
+  if (!nom || !contact || !pass) { err.textContent = 'Tous les champs sont requis.'; err.style.display = 'block'; return; }
+  if (pass.length < 6) { err.textContent = 'Mot de passe trop court (min 6).'; err.style.display = 'block'; return; }
+  if (pass !== pass2) { err.textContent = 'Les mots de passe ne correspondent pas.'; err.style.display = 'block'; return; }
+
+  const btn = document.getElementById('btn-register');
+  btn.disabled = true; btn.textContent = 'Création...';
+  try {
+    const snap = await db.collection('users').where('nom_entreprise', '==', nom).get();
+    if (!snap.empty) { err.textContent = 'Cette entreprise existe déjà. Connectez-vous.'; err.style.display = 'block'; btn.disabled = false; btn.textContent = 'Créer mon compte (24h gratuit)'; return; }
+    const now = Date.now();
+    const trialEnd = now + 24 * 60 * 60 * 1000;
+    await db.collection('users').add({
+      nom_entreprise: nom,
+      contact: contact,
+      password_hash: hashPassword(pass),
+      created_at: now,
+      trial_ends_at: trialEnd,
+      is_subscribed: false,
+      subscription_ends_at: 0,
+      last_payment_date: 0,
+      payment_amount: 0,
+      type_entreprise: 'commerce'
+    });
+    suc.textContent = 'Compte créé ! Essai gratuit de 24h activé. Connectez-vous.';
+    suc.style.display = 'block';
+    setTimeout(() => switchAuth('login'), 1500);
+  } catch(e) {
+    err.textContent = 'Erreur : ' + e.message;
+    err.style.display = 'block';
+  }
+  btn.disabled = false; btn.textContent = 'Créer mon compte (24h gratuit)';
+}
+
+async function doLogin() {
+  const err = document.getElementById('login-error');
+  err.style.display = 'none';
+  const nom = document.getElementById('login-entreprise').value.trim();
+  const pass = document.getElementById('login-password').value;
+  if (!nom || !pass) { err.textContent = 'Remplissez tous les champs.'; err.style.display = 'block'; return; }
+
+  const btn = document.getElementById('btn-login');
+  btn.disabled = true; btn.textContent = 'Connexion...';
+  try {
+    const snap = await db.collection('users').where('nom_entreprise', '==', nom).limit(1).get();
+    if (snap.empty) { err.textContent = 'Entreprise non trouvée.'; err.style.display = 'block'; btn.disabled = false; btn.textContent = 'Se connecter'; return; }
+    const doc = snap.docs[0];
+    const data = doc.data();
+    if (data.password_hash !== hashPassword(pass)) { err.textContent = 'Mot de passe incorrect.'; err.style.display = 'block'; btn.disabled = false; btn.textContent = 'Se connecter'; return; }
+    currentUser = { id: doc.id, ...data };
+    afterLogin();
+  } catch(e) {
+    err.textContent = 'Erreur : ' + e.message;
+    err.style.display = 'block';
+  }
+  btn.disabled = false; btn.textContent = 'Se connecter';
+}
+
+function forgotPassword() {
+  const nom = document.getElementById('login-entreprise').value.trim();
+  const url = 'https://wa.me/2250508463003?text=' + encodeURIComponent('Bonjour, j'ai oublié mon mot de passe Comeo AI. Mon entreprise : ' + (nom || '____'));
+  window.open(url, '_blank');
+}
+
+function logout() {
+  currentUser = null;
+  allEcritures = [];
+  document.getElementById('app').classList.remove('active');
+  document.getElementById('auth-overlay').style.display = 'flex';
+  document.getElementById('paywall-overlay').style.display = 'none';
+  document.getElementById('login-password').value = '';
+}
+
+function afterLogin() {
+  document.getElementById('auth-overlay').style.display = 'none';
+  document.getElementById('app').classList.add('active');
+  document.getElementById('header-org').textContent = '🏢 ' + currentUser.nom_entreprise;
+  currentEntrepriseType = currentUser.type_entreprise || 'commerce';
+  updateSubscriptionStatus();
+  loadEcritures();
+}
+
+function updateSubscriptionStatus() {
+  const now = Date.now();
+  const trialActive = now < currentUser.trial_ends_at;
+  const subActive = currentUser.is_subscribed && now < currentUser.subscription_ends_at;
+  const badge = document.getElementById('header-status');
+  if (trialActive) {
+    const h = Math.ceil((currentUser.trial_ends_at - now) / 3600000);
+    badge.className = 'badge-warn';
+    badge.textContent = `⏳ Essai : ${h}h restantes`;
+  } else if (subActive) {
+    const j = Math.ceil((currentUser.subscription_ends_at - now) / 86400000);
+    badge.className = 'badge';
+    badge.textContent = `✅ Abonné (${j}j)`;
+  } else {
+    badge.className = 'badge-warn';
+    badge.textContent = '🔒 Essai terminé';
+    showPaywall();
+  }
+}
+
+function showPaywall() {
+  document.getElementById('paywall-overlay').style.display = 'flex';
+}
+function hidePaywall() {
+  document.getElementById('paywall-overlay').style.display = 'none';
+}
+
+/* check subscription every minute */
+setInterval(() => { if (currentUser) updateSubscriptionStatus(); }, 60000);
+
+/* ═══════════════════════════════════════════════════════
+   DATA — ÉCRITURES
+══════════════════════════════════════════════════════ */
+async function loadEcritures() {
+  if (!currentUser) return;
+  try {
+    const snap = await db.collection('ecritures').where('user_id', '==', currentUser.id).orderBy('date', 'desc').get();
+    allEcritures = snap.docs.map(d => {
+      const data = d.data();
+      // Normaliser anciens docs qui n'ont que ecritures
+      if (data.ecritures && Array.isArray(data.ecritures) && (!data.lignes || !data.lignes.length)) {
+        data.lignes = [];
+        data.ecritures.forEach(ec => {
+          (ec.lignes || []).forEach(l => data.lignes.push(l));
+        });
+      }
+      return { id: d.id, ...data };
+    });
+    renderDashboard();
+    renderGrandLivre();
+    renderBalance();
+    renderTresorerie();
+  } catch(e) {
+    console.warn('loadEcritures', e);
+    showToast('Erreur chargement données');
+  }
+}
+
+async function saveEcriture(data) {
+  if (!currentUser) return;
+  // Normaliser : si format multi-ecritures (IA), aplatir en lignes
+  const payload = { ...data };
+  if (payload.ecritures && Array.isArray(payload.ecritures)) {
+    payload.lignes = [];
+    payload.ecritures.forEach(ec => {
+      (ec.lignes || []).forEach(l => payload.lignes.push(l));
+    });
+  }
+  const doc = { ...payload, user_id: currentUser.id, created_at: Date.now() };
+  const ref = await db.collection('ecritures').add(doc);
+  doc.id = ref.id;
+  allEcritures.unshift(doc);
+  renderDashboard();
+  renderGrandLivre();
+  renderBalance();
+  renderTresorerie();
+  showToast('Écriture enregistrée');
+  return doc;
+}
+
+/* ═══════════════════════════════════════════════════════
+   DASHBOARD
+══════════════════════════════════════════════════════ */
+function renderDashboard() {
+  const now = new Date();
+  const ym = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0');
+  const thisMonth = allEcritures.filter(e => e.date && e.date.startsWith(ym));
+  let totalDebit = 0, totalCredit = 0;
+  thisMonth.forEach(e => {
+    (e.lignes || []).forEach(l => { totalDebit += l.debit || 0; totalCredit += l.credit || 0; });
+  });
+  let soldeTreso = 0;
+  allEcritures.forEach(e => {
+    (e.lignes || []).forEach(l => {
+      const c = String(l.compte || '');
+      if (c.startsWith('5') || c.startsWith('57') || c.startsWith('51') || c.startsWith('52') || c.startsWith('53') || c.startsWith('54') || c.startsWith('58')) {
+        soldeTreso += (l.debit || 0) - (l.credit || 0);
+      }
+    });
+  });
+  document.getElementById('dash-nb-ecritures').textContent = thisMonth.length;
+  document.getElementById('dash-total-debit').textContent = fmtAmount(totalDebit);
+  document.getElementById('dash-total-credit').textContent = fmtAmount(totalCredit);
+  document.getElementById('dash-solde-treso').textContent = fmtAmount(soldeTreso);
+
+  const last = allEcritures.slice(0, 5);
+  if (!last.length) {
+    document.getElementById('dash-last-ecritures').innerHTML = '<div style="color:var(--text3);font-size:12px;padding:10px;">Aucune écriture ce mois.</div>';
+    return;
+  }
+  let html = '<table class="data-table"><thead><tr><th>Date</th><th>Réf</th><th>Description</th><th style="text-align:right">Débit</th><th style="text-align:right">Crédit</th></tr></thead><tbody>';
+  last.forEach(e => {
+    let td = 0, tc = 0;
+    (e.lignes || []).forEach(l => { td += l.debit || 0; tc += l.credit || 0; });
+    html += `<tr><td>${escHtml(e.date)}</td><td>${escHtml(e.reference)}</td><td>${escHtml(e.description)}</td><td class="col-debit">${fmtAmount(td)}</td><td class="col-credit">${fmtAmount(tc)}</td></tr>`;
+  });
+  html += '</tbody></table>';
+  document.getElementById('dash-last-ecritures').innerHTML = html;
+}
+
+
+/* ═══════════════════════════════════════════════════════
+   NAVIGATION
+══════════════════════════════════════════════════════ */
+function showView(id, el) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.sidebar-item').forEach(s => s.classList.remove('active'));
+  document.getElementById('view-' + id).classList.add('active');
+  if (el) el.classList.add('active');
+  if (id === 'plan') renderPlan();
+  if (id === 'guide') renderGuide();
+  if (id === 'grandlivre') renderGrandLivre();
+  if (id === 'balance') renderBalance();
+  if (id === 'tresorerie') renderTresorerie();
+  if (id === 'dashboard') renderDashboard();
+}
+
+/* ═══════════════════════════════════════════════════════
+   JOURNAL — Saisie manuelle rapide
+══════════════════════════════════════════════════════ */
+function saveManualEntry() {
+  const desc = document.getElementById('op-description').value.trim();
+  const date = document.getElementById('op-date').value || todayDate();
+  const ref = document.getElementById('op-ref').value.trim() || genRef();
+  const montant = parseAmount(document.getElementById('op-montant').value);
+  if (!desc || !montant) { showToast('Veuillez remplir la description et le montant'); return; }
+  const ecriture = {
+    titre: desc,
+    date: date,
+    reference: ref,
+    description: desc,
+    type_entreprise: currentEntrepriseType,
+    lignes: [
+      { compte: '601', libelle: 'Charge / Achat', debit: montant, credit: 0 },
+      { compte: '512', libelle: 'Banque / Règlement', debit: 0, credit: montant }
+    ]
+  };
+  saveEcriture(ecriture);
+  document.getElementById('output-content').innerHTML = `<div class="journal-result"><div class="journal-card"><div class="journal-card-header"><div class="journal-card-title">Écriture manuelle enregistrée</div></div><div style="padding:12px;color:var(--text2);font-size:13px;">${escHtml(desc)} — ${fmtAmount(montant)}</div></div></div>`;
+}
+
+/* ═══════════════════════════════════════════════════════
+   ENTREPRISE TYPE
+══════════════════════════════════════════════════════ */
+const ENTREPRISE_CONFIG = {
+  commerce: {
+    label: '🏪 Commerce', quickOps: ['Vente marchandises crédit','Achat marchandises crédit','Encaissement client','Règlement fournisseur','Variation stock','Salaires','Amortissement','TVA','Immobilisation','Emprunt'],
+    types: [{value:'',label:'Auto IA'},{value:'vente',label:'Vente'},{value:'achat',label:'Achat'},{value:'reglement_client',label:'Encaissement'},{value:'reglement_fourn',label:'Règlement'},{value:'stock',label:'Stock'},{value:'salaire',label:'Salaires'},{value:'amortissement',label:'Amortissement'},{value:'tva',label:'TVA'},{value:'immobilisation',label:'Immobilisation'},{value:'emprunt',label:'Emprunt'}]
+  },
+  service: {
+    label: '💼 Services', quickOps: ['Facturation service','Encaissement honoraires','Achat fournitures','Salaires','Loyer','Amortissement','TVA','Acompte'],
+    types: [{value:'',label:'Auto IA'},{value:'facturation',label:'Facturation'},{value:'encaissement',label:'Encaissement'},{value:'achat_fourniture',label:'Fournitures'},{value:'salaire',label:'Salaires'},{value:'loyer',label:'Loyer'},{value:'amortissement',label:'Amortissement'},{value:'tva',label:'TVA'}]
+  },
+  industrie: {
+    label: '🏭 Industrie', quickOps: ['Achat MP','Consommation MP','Constatation produits finis','Vente produits finis','Variation stock PF','Sous-traitance','Amortissement industriel','Salaires ouvriers','Énergie usine'],
+    types: [{value:'',label:'Auto IA'},{value:'achat_mp',label:'Achat MP'},{value:'production',label:'Production'},{value:'vente_pf',label:'Vente PF'},{value:'stock_mp',label:'Stock MP'},{value:'stock_pf',label:'Stock PF'},{value:'salaire',label:'Salaires'},{value:'amortissement',label:'Amortissement'}]
+  },
+  banque: {
+    label: '🏦 Banque', quickOps: ['Dépôt client','Crédit court terme','Intérêts prêts','Commissions bancaires','Remboursement crédit','Dotation provisions','Opération change','Salaires personnel'],
+    types: [{value:'',label:'Auto IA'},{value:'depot',label:'Dépôts'},{value:'credit',label:'Crédits'},{value:'interets',label:'Intérêts'},{value:'commission',label:'Commissions'},{value:'change',label:'Change'},{value:'provision_creance',label:'Provisions'}]
+  },
+  sante: {
+    label: '🏥 Santé', quickOps: ['Recettes consultations','Facturation hospitalisation','Achat médicaments','Achat matériel médical','Salaires médical','Charges CNPS','Règlement patient','Subvention État','Amortissement médical'],
+    types: [{value:'',label:'Auto IA'},{value:'recette_soins',label:'Recettes soins'},{value:'achat_medicaments',label:'Médicaments'},{value:'hospitalisation',label:'Hospitalisation'},{value:'salaire',label:'Salaires'},{value:'subvention',label:'Subvention'},{value:'amortissement_medical',label:'Amortissement'}]
+  },
+  education: {
+    label: '🎓 Éducation', quickOps: ['Frais scolarité caisse','Scolarité avance','Facturation scolarité','Subvention État','Salaires enseignants','Achat fournitures','Achat matériel info','Amortissement','Inscription'],
+    types: [{value:'',label:'Auto IA'},{value:'frais_scolarite',label:'Scolarité'},{value:'subvention',label:'Subvention'},{value:'salaire_enseignant',label:'Salaires'},{value:'achat_fournitures',label:'Fournitures'},{value:'immobilisation',label:'Équipements'},{value:'amortissement',label:'Amortissement'}]
+  },
+  ong: {
+    label: '🌍 ONG', quickOps: ['Subvention bailleur','Dépenses projet','Frais siège','Salaires équipe','Achat équipements','Mission terrain','Don en espèces','Cotisations membres'],
+    types: [{value:'',label:'Auto IA'},{value:'subvention_projet',label:'Subvention'},{value:'depense_projet',label:'Dépenses projet'},{value:'salaire',label:'Salaires'},{value:'cotisation',label:'Cotisations'},{value:'mission',label:'Mission'}]
+  },
+  agri: {
+    label: '🌾 Agriculture', quickOps: ['Achat intrants','Vente récoltes','Variation stock','Salaires saisonniers','Amortissement tracteur','Subvention agricole','Carburant','Achat irrigation'],
+    types: [{value:'',label:'Auto IA'},{value:'achat_intrants',label:'Intrants'},{value:'vente_recolte',label:'Vente'},{value:'stock_agri',label:'Stock'},{value:'salaire_ouvrier',label:'Main-d'œuvre'},{value:'subvention_agri',label:'Subvention'}]
+  },
+  immo: {
+    label: '🏗️ Immobilier', quickOps: ['Facture avancement','Achat matériaux','Sous-traitance','Acompte reçu','Retenue garantie','Salaires chantier','Location engins','Immobilisation BTP','Travaux en cours'],
+    types: [{value:'',label:'Auto IA'},{value:'facturation_travaux',label:'Facturation'},{value:'achat_materiaux',label:'Matériaux'},{value:'sous_traitance',label:'Sous-traitance'},{value:'acompte_chantier',label:'Acomptes'},{value:'wip',label:'WIP'},{value:'salaire',label:'Main-d'œuvre'}]
+  },
+  transport: {
+    label: '🚚 Transport', quickOps: ['Facturation transport','Achat carburant','Entretien véhicule','Amortissement véhicules','Assurance flotte','Salaires chauffeurs','Achat pièces','Péage','Achat camion'],
+    types: [{value:'',label:'Auto IA'},{value:'facturation_transport',label:'Facturation'},{value:'achat_carburant',label:'Carburant'},{value:'entretien_vehicule',label:'Entretien'},{value:'salaire_chauffeur',label:'Salaires'},{value:'achat_vehicule',label:'Acquisition'},{value:'amortissement',label:'Amortissement'}]
+  }
+};
+
+function selectEntreprise(el) {
+  document.querySelectorAll('.e-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  currentEntrepriseType = el.dataset.type;
+  document.getElementById('context-badge').textContent = ENTREPRISE_CONFIG[currentEntrepriseType].label;
+  renderQuickOps();
+  renderTypeSelect();
+}
+function renderQuickOps() {
+  const cfg = ENTREPRISE_CONFIG[currentEntrepriseType];
+  document.getElementById('quick-ops-container').innerHTML = cfg.quickOps.map(op => `<span class="quick-chip" onclick="setQuick('${op.replace(/'/g, "\'")}')">${op}</span>`).join('');
+}
+function renderTypeSelect() {
+  const cfg = ENTREPRISE_CONFIG[currentEntrepriseType];
+  const sel = document.getElementById('op-type');
+  sel.innerHTML = cfg.types.map(t => `<option value="${t.value}">${t.label}</option>`).join('');
+}
+function setQuick(text) { document.getElementById('op-description').value = text; }
+
+/* ═══════════════════════════════════════════════════════
+   PLAN COMPTABLE
+══════════════════════════════════════════════════════ */
+const PLAN_COMPTABLE = {
+  "Classe 1 — Ressources durables": {"101":"Capital social","106":"Réserves","121":"Résultat net : bénéfice","129":"Résultat net : perte","131":"Subventions d'équipement","141":"Emprunts et dettes financières","161":"Emprunts ordinaires établissements de crédit","165":"Dépôts et cautionnements reçus","166":"Intérêts courus"},
+  "Classe 2 — Actif immobilisé": {"211":"Terrains nus","221":"Bâtiments industriels","231":"Matériel et outillage industriel","232":"Matériel agricole","241":"Matériel de transport","2411":"Véhicules de tourisme","2412":"Camions et véhicules utilitaires","244":"Matériel de bureau et informatique","2441":"Mobilier de bureau","2442":"Matériel de bureau","2443":"Matériel informatique","245":"Matériel médical","251":"Titres de participation","272":"Prêts","281":"Amortissements immobilisations corporelles","2813":"Amortissements bâtiments","2816":"Amortissements matériel et outillage","2817":"Amortissements matériel de transport","2844":"Amortissements matériel bureau et informatique","291":"Dépréciations immobilisations incorporelles"},
+  "Classe 3 — Stocks": {"301":"Marchandises A","302":"Marchandises B","311":"Matières premières","321":"Matières consommables","331":"Produits en cours","341":"Produits intermédiaires","351":"Produits finis","361":"Produits résiduels","391":"Dépréciations stocks marchandises","392":"Dépréciations stocks matières premières","395":"Dépréciations stocks produits finis"},
+  "Classe 4 — Tiers": {"401":"Fournisseurs","4011":"Fournisseurs ordinaires","404":"Fournisseurs d'immobilisations","405":"Fournisseurs, retenues de garantie","408":"Fournisseurs, factures non parvenues","409":"Fournisseurs débiteurs, avances","411":"Clients","4111":"Clients ordinaires","412":"Clients — Effets à recevoir","413":"Clients — Retenues de garantie","414":"Clients — Avances et acomptes reçus","416":"Clients douteux","418":"Clients — Produits à recevoir","419":"Clients créditeurs","421":"Personnel, avances","422":"Personnel, rémunérations dues","431":"Sécurité sociale","432":"Caisses de retraites","441":"État, impôts sur les bénéfices","442":"État, impôts et taxes sur le CA","4421":"TVA collectée","4451":"TVA récupérable sur immobilisations","4452":"TVA récupérable sur achats de biens","4453":"TVA récupérable sur services","447":"État, impôts retenus à la source","461":"Débiteurs divers","462":"Créditeurs divers","487":"Produits constatés d'avance","491":"Dépréciations comptes clients"},
+  "Classe 5 — Trésorerie": {"511":"Valeurs à l'encaissement","512":"Banques — comptes courants","516":"Comptes courants postaux","571":"Caisses en monnaies nationales","5711":"Caisse principale","581":"Virements internes"},
+  "Classe 6 — Charges": {"601":"Achats de marchandises","602":"Achats de matières premières","604":"Achats matières et fournitures consommables","6091":"Variation stocks marchandises","6092":"Variation stocks matières premières","611":"Transports sur achats","612":"Transports sur ventes","613":"Autres transports","621":"Sous-traitance générale","622":"Locations et charges locatives","624":"Entretien, réparations","625":"Primes d'assurance","627":"Publicité","628":"Frais de télécommunications","629":"Transports et déplacements","631":"Frais bancaires","632":"Rémunérations intermédiaires","651":"Rémunérations du personnel","6511":"Appointements et salaires bruts","661":"Cotisations organismes sociaux","6611":"Cotisations patronales CNPS/CNSS","681":"Dotations aux amortissements corporels","6817":"Dotation amortissements matériel transport","6844":"Dotation amortissements matériel bureau","691":"Dotations aux provisions","6972":"Dépréciations créances clients"},
+  "Classe 7 — Produits": {"701":"Ventes de marchandises","702":"Ventes de produits finis","703":"Ventes de produits intermédiaires","705":"Travaux facturés","706":"Services vendus","707":"Produits accessoires","708":"Revenus activités annexes","7091":"Variation stocks produits finis","741":"Subventions d'exploitation","751":"Revenus immeubles non affectés","771":"Escomptes obtenus","772":"Gains de change","781":"Reprises amortissements et provisions"},
+  "Classe 8 — Autres charges et produits": {"811":"Charges exercices antérieurs","821":"Produits exercices antérieurs","831":"Charges HAO","841":"Produits cessions immobilisations","861":"Participation travailleurs","871":"Impôts sur le résultat"}
+};
+
+function renderPlan(filter = '') {
+  const body = document.getElementById('plan-body');
+  const fl = filter.toLowerCase();
+  let html = '';
+  for (const [classe, comptes] of Object.entries(PLAN_COMPTABLE)) {
+    const items = Object.entries(comptes).filter(([n,l]) => !fl || n.includes(fl) || l.toLowerCase().includes(fl));
+    if (!items.length) continue;
+    html += `<div style="margin-bottom:20px;"><div style="font-family:var(--display);font-weight:700;font-size:14px;color:var(--accent);padding:6px 0;border-bottom:1px solid var(--border);margin-bottom:8px;">${escHtml(classe)}</div><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:5px;">`;
+    items.forEach(([num,lib]) => {
+      html += `<div style="background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:6px 10px;display:flex;align-items:flex-start;gap:8px;"><span style="font-family:var(--mono);font-size:11px;color:var(--accent2);font-weight:500;white-space:nowrap;">${escHtml(num)}</span><span style="font-size:11px;color:var(--text2);">${escHtml(lib)}</span></div>`;
+    });
+    html += '</div></div>';
+  }
+  body.innerHTML = html || '<div style="padding:30px;text-align:center;color:var(--text3)">Aucun compte trouvé</div>';
+}
+function filterPlan(val) { renderPlan(val); }
+
+/* ═══════════════════════════════════════════════════════
+   GUIDE DES ÉCRITURES
+══════════════════════════════════════════════════════ */
+const GUIDE_DATA = [
+  { section: "🏪 Commerce", ops: [
+    { title: "Vente marchandises crédit (HT + TVA)", entries: [{c:"411",l:"Client",d:"TTC",cr:""},{c:"701",l:"Ventes marchandises",d:"",cr:"HT"},{c:"4421",l:"TVA collectée",d:"",cr:"TVA"}] },
+    { title: "Variation stock marchandises", entries: [{c:"6091",l:"Variation stock",d:"Coût",cr:""},{c:"301",l:"Stock marchandises",d:"",cr:"Coût"}] },
+    { title: "Achat marchandises crédit", entries: [{c:"601",l:"Achats marchandises",d:"HT",cr:""},{c:"4452",l:"TVA récupérable",d:"TVA",cr:""},{c:"401",l:"Fournisseur",d:"",cr:"TTC"}] },
+    { title: "Règlement fournisseur", entries: [{c:"401",l:"Fournisseur",d:"Montant",cr:""},{c:"512",l:"Banque",d:"",cr:"Montant"}] }
+  ]},
+  { section: "💼 Services", ops: [
+    { title: "Facturation service", entries: [{c:"411",l:"Client",d:"TTC",cr:""},{c:"706",l:"Services vendus",d:"",cr:"HT"},{c:"4421",l:"TVA collectée",d:"",cr:"TVA"}] },
+    { title: "Encaissement", entries: [{c:"512",l:"Banque",d:"Montant",cr:""},{c:"411",l:"Client",d:"",cr:"Montant"}] }
+  ]},
+  { section: "Salaires & Charges", ops: [
+    { title: "Constatation salaires", entries: [{c:"6511",l:"Salaires bruts",d:"Brut",cr:""},{c:"447",l:"IRPP retenu",d:"",cr:"IRPP"},{c:"431",l:"CNPS salariale",d:"",cr:"CS"},{c:"422",l:"Net à payer",d:"",cr:"Net"}] },
+    { title: "Charges patronales", entries: [{c:"6611",l:"Cotisations patronales",d:"CP",cr:""},{c:"431",l:"CNPS",d:"",cr:"CP"}] }
+  ]}
+];
+function renderGuide() {
+  const body = document.getElementById('guide-body');
+  let html = '';
+  GUIDE_DATA.forEach(sec => {
+    html += `<div style="margin-bottom:24px;"><h3 style="font-family:var(--display);font-size:15px;color:var(--accent);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border);">${escHtml(sec.section)}</h3><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:8px;">`;
+    sec.ops.forEach(op => {
+      html += `<div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;"><div style="font-weight:600;font-size:12px;margin-bottom:6px;">${escHtml(op.title)}</div><div style="display:flex;flex-direction:column;gap:2px;">`;
+      op.entries.forEach(e => {
+        html += `<div style="display:flex;gap:6px;font-size:11px;font-family:var(--mono);"><span style="color:var(--accent2);min-width:36px;">${e.c}</span><span style="color:var(--text3);flex:1;">${escHtml(e.l)}</span><span style="color:${e.d?'var(--debit)':'var(--text3)'};min-width:20px;text-align:right;">${e.d?'D':''}</span><span style="color:${e.cr?'var(--credit)':'var(--text3)'};min-width:20px;text-align:right;">${e.cr?'C':''}</span></div>`;
+      });
+      html += '</div></div>';
+    });
+    html += '</div></div>';
+  });
+  body.innerHTML = html;
+}
+
+/* ═══════════════════════════════════════════════════════
+   GRAND LIVRE
+══════════════════════════════════════════════════════ */
+function renderGrandLivre(filter = '') {
+  const body = document.getElementById('gl-body');
+  if (!allEcritures.length) { body.innerHTML = '<div class="empty-state"><h3>Aucune écriture</h3><p>Saisissez des écritures dans le Journal pour alimenter le Grand Livre.</p></div>'; return; }
+  const byCompte = {};
+  allEcritures.forEach(e => {
+    (e.lignes || []).forEach(l => {
+      const c = String(l.compte || '');
+      if (!c) return;
+      if (filter && !c.includes(filter) && !getPlanLibelle(c).toLowerCase().includes(filter.toLowerCase())) return;
+      if (!byCompte[c]) byCompte[c] = { libelle: getPlanLibelle(c) || l.libelle, lignes: [] };
+      byCompte[c].lignes.push({ date: e.date, ref: e.reference, desc: e.description || e.titre, debit: l.debit || 0, credit: l.credit || 0 });
+    });
+  });
+  const comptes = Object.keys(byCompte).sort();
+  if (!comptes.length) { body.innerHTML = '<div style="padding:20px;color:var(--text3)">Aucun compte trouvé.</div>'; return; }
+  let html = '';
+  comptes.forEach(c => {
+    const data = byCompte[c];
+    let solde = 0, td = 0, tc = 0;
+    let rows = '';
+    data.lignes.sort((a,b) => (a.date||'').localeCompare(b.date||'')).forEach(l => {
+      solde += (l.debit || 0) - (l.credit || 0);
+      td += l.debit || 0; tc += l.credit || 0;
+      rows += `<tr><td>${escHtml(l.date)}</td><td>${escHtml(l.ref)}</td><td>${escHtml(l.desc)}</td><td class="col-debit">${fmtAmount(l.debit)}</td><td class="col-credit">${fmtAmount(l.credit)}</td><td class="col-solde">${fmtAmount(solde)}</td></tr>`;
+    });
+    html += `<div class="gl-compte">
+      <div class="gl-compte-header">
+        <span class="gl-compte-num">${escHtml(c)}</span>
+        <span class="gl-compte-lib">${escHtml(data.libelle)}</span>
+        <div class="gl-compte-totals">
+          <span style="color:var(--debit)">D: ${fmtAmount(td)}</span>
+          <span style="color:var(--credit)">C: ${fmtAmount(tc)}</span>
+          <span style="color:var(--text)">Solde: ${fmtAmount(solde)}</span>
+        </div>
       </div>
-      <div class="field"><label>N° Pièce</label><input type="text" id="edit-piece" placeholder="Auto"></div>
-      <div class="field"><label>Libellé général</label><input type="text" id="edit-libelle" placeholder="Description…"></div>
+      <table class="data-table"><thead><tr><th>Date</th><th>Réf</th><th>Description</th><th style="text-align:right">Débit</th><th style="text-align:right">Crédit</th><th style="text-align:right">Solde</th></tr></thead><tbody>${rows}</tbody></table>
+    </div>`;
+  });
+  body.innerHTML = html;
+}
+
+/* ═══════════════════════════════════════════════════════
+   BALANCE
+══════════════════════════════════════════════════════ */
+function renderBalance() {
+  const body = document.getElementById('balance-body');
+  if (!allEcritures.length) { body.innerHTML = '<div class="empty-state"><h3>Aucune écriture</h3><p>Le calcul de la balance nécessite des écritures enregistrées.</p></div>'; return; }
+  const byCompte = {};
+  allEcritures.forEach(e => {
+    (e.lignes || []).forEach(l => {
+      const c = String(l.compte || '');
+      if (!c) return;
+      if (!byCompte[c]) byCompte[c] = { libelle: getPlanLibelle(c) || l.libelle, td: 0, tc: 0 };
+      byCompte[c].td += l.debit || 0;
+      byCompte[c].tc += l.credit || 0;
+    });
+  });
+  const comptes = Object.keys(byCompte).sort();
+  let totalTD = 0, totalTC = 0;
+  let rows = '';
+  comptes.forEach(c => {
+    const d = byCompte[c];
+    totalTD += d.td; totalTC += d.tc;
+    const solde = d.td - d.tc;
+    rows += `<tr><td class="col-compte">${escHtml(c)}</td><td class="col-libelle">${escHtml(d.libelle)}<span class="col-sub"></span></td><td class="col-debit">${fmtAmount(d.td)}</td><td class="col-credit">${fmtAmount(d.tc)}</td><td class="col-solde">${solde >= 0 ? fmtAmount(solde) : ''}</td><td class="col-solde">${solde < 0 ? fmtAmount(-solde) : ''}</td></tr>`;
+  });
+  body.innerHTML = `<table class="data-table"><thead><tr><th>Compte</th><th>Libellé</th><th style="text-align:right">Total Débit</th><th style="text-align:right">Total Crédit</th><th style="text-align:right">Solde D</th><th style="text-align:right">Solde C</th></tr></thead><tbody>${rows}</tbody>
+    <tfoot><tr style="border-top:2px solid var(--border);font-weight:700;"><td colspan="2">TOTAL GÉNÉRAL</td><td class="col-debit">${fmtAmount(totalTD)}</td><td class="col-credit">${fmtAmount(totalTC)}</td><td class="col-solde">${totalTD >= totalTC ? fmtAmount(totalTD-totalTC) : ''}</td><td class="col-solde">${totalTC > totalTD ? fmtAmount(totalTC-totalTD) : ''}</td></tr></tfoot></table>`;
+}
+function exportBalanceCSV() {
+  let csv = 'Compte;Libelle;Total Debit;Total Credit;Solde D;Solde C\n';
+  const byCompte = {};
+  allEcritures.forEach(e => {
+    (e.lignes || []).forEach(l => {
+      const c = String(l.compte || '');
+      if (!c) return;
+      if (!byCompte[c]) byCompte[c] = { libelle: getPlanLibelle(c) || l.libelle, td: 0, tc: 0 };
+      byCompte[c].td += l.debit || 0; byCompte[c].tc += l.credit || 0;
+    });
+  });
+  Object.keys(byCompte).sort().forEach(c => {
+    const d = byCompte[c]; const sd = d.td - d.tc;
+    csv += `${c};"${d.libelle}";${d.td};${d.tc};${sd >= 0 ? sd : ''};${sd < 0 ? -sd : ''}\n`;
+  });
+  downloadCSV(csv, 'balance.csv');
+}
+
+/* ═══════════════════════════════════════════════════════
+   TRÉSORERIE
+══════════════════════════════════════════════════════ */
+function renderTresorerie() {
+  const body = document.getElementById('tresorerie-body');
+  const tresoComptes = allEcritures.flatMap(e => (e.lignes || []).map(l => String(l.compte || ''))).filter(c => c.startsWith('5'));
+  const unique = [...new Set(tresoComptes)].sort();
+  if (!unique.length) { body.innerHTML = '<div class="empty-state"><h3>Aucune écriture de trésorerie</h3><p>Les écritures sur les comptes de la classe 5 apparaissent ici.</p></div>'; return; }
+  let html = '';
+  unique.forEach(c => {
+    let td = 0, tc = 0, solde = 0, rows = '';
+    const lib = getPlanLibelle(c) || 'Compte ' + c;
+    allEcritures.forEach(e => {
+      (e.lignes || []).forEach(l => {
+        if (String(l.compte || '') !== c) return;
+        td += l.debit || 0; tc += l.credit || 0; solde += (l.debit || 0) - (l.credit || 0);
+        rows += `<tr><td>${escHtml(e.date)}</td><td>${escHtml(e.reference)}</td><td>${escHtml(e.description || e.titre)}</td><td class="col-debit">${fmtAmount(l.debit)}</td><td class="col-credit">${fmtAmount(l.credit)}</td><td class="col-solde">${fmtAmount(solde)}</td></tr>`;
+      });
+    });
+    html += `<div class="gl-compte"><div class="gl-compte-header"><span class="gl-compte-num">${escHtml(c)}</span><span class="gl-compte-lib">${escHtml(lib)}</span><div class="gl-compte-totals"><span style="color:var(--debit)">D: ${fmtAmount(td)}</span><span style="color:var(--credit)">C: ${fmtAmount(tc)}</span><span style="color:var(--text)">Solde: ${fmtAmount(solde)}</span></div></div><table class="data-table"><thead><tr><th>Date</th><th>Réf</th><th>Description</th><th style="text-align:right">Débit</th><th style="text-align:right">Crédit</th><th style="text-align:right">Solde</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+  });
+  body.innerHTML = html;
+}
+function exportTresorerieCSV() {
+  let csv = 'Date;Reference;Description;Compte;Debit;Credit\n';
+  allEcritures.forEach(e => {
+    (e.lignes || []).forEach(l => {
+      const c = String(l.compte || '');
+      if (!c.startsWith('5')) return;
+      csv += `${e.date};"${e.reference || ''}";"${(e.description || e.titre || '').replace(/"/g,'""')}";${c};${l.debit || 0};${l.credit || 0}\n`;
+    });
+  });
+  downloadCSV(csv, 'tresorerie.csv');
+}
+
+function downloadCSV(csv, filename) {
+  const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename; a.click();
+  URL.revokeObjectURL(url);
+  showToast('Export CSV effectué');
+}
+
+
+/* ═══════════════════════════════════════════════════════
+   IA — Anthropic Claude
+══════════════════════════════════════════════════════ */
+const ANTHROPIC_URL = 'https://api.anthropic.com/v1/messages';
+const CLAUDE_MODEL  = 'claude-sonnet-4-20250514';
+
+const SYSTEM_PREANALYSE = `Tu es un expert-comptable OHADA certifié, spécialisé SYSCOHADA Révisé 2017.
+On te donne une opération comptable avec le TYPE D'ENTREPRISE. Tu dois effectuer une PRÉ-ANALYSE complète.
+
+TABLE DE COMPTES OBLIGATOIRE :
+IMMOBILISATIONS : informatique→2443, mobilier→2441, bureau→2442, voiture→2411, camion→2412, industriel→231, agricole→232, médical→245, bâtiments→221
+TVA : immobilisations→4451 | achats biens→4452 | services→4453 | collectée→4421
+FOURNISSEURS : ordinaire→401 | immobilisations→404
+CLIENTS : ordinaire→411 | douteux→416
+TRESORERIE : banque→512 | caisse→571
+CHARGES : marchandises→601 | matières→602 | fournitures→604 | salaires→6511 | cotisations→6611 | loyers→622 | entretien→624 | téléphone→628 | honoraires→632 | transports→613 | amort. transport→6817 | amort. info→6844
+PRODUITS : marchandises→701 | produits finis→702 | travaux→705 | services→706 | subventions→741 | équipement→131
+STOCKS : marchandises→301 | matières→311 | en-cours→331 | produits finis→351
+VARIATION STOCK : marchandises→6091/301 | produits finis→7091/351
+
+TVA zone OHADA = 18%. Si TTC donné → HT = ARRONDI(TTC/1.18) | TVA = TTC - HT
+Réponds UNIQUEMENT en JSON pur :
+{
+  "nature": "type",
+  "operations_requises": ["liste"],
+  "compte_principal": "numéro",
+  "compte_principal_libelle": "libellé",
+  "compte_tva": "4451|4452|4453|null",
+  "compte_contrepartie": "512|571|401|404|411|...",
+  "tva_applicable": true,
+  "montant_ttc": 0,
+  "montant_ht": 0,
+  "montant_tva": 0,
+  "calcul_tva": "explication",
+  "mode_reglement": "banque|caisse|credit_fournisseur|credit_client",
+  "necessite_variation_stock": true,
+  "avertissements": "hypothèses"
+}`;
+
+const SYSTEM_GENERATE = `Tu es Comeo AI, expert-comptable OHADA, SYSCOHADA Révisé 2017.
+Tu reçois une opération, le type d'entreprise, et une pré-analyse avec les comptes EXACTS.
+RÈGLE ABSOLUE : Utilise EXACTEMENT les comptes et montants de la pré-analyse.
+Ne jamais enregistrer un montant TTC directement en immobilisation ou charge.
+Vérification finale : Débit total = Crédit total pour CHAQUE écriture.
+FORMAT JSON pur uniquement :
+{
+  "titre": "Titre court",
+  "date": "date",
+  "reference": "ref",
+  "type_entreprise": "type",
+  "ecritures": [
+    {
+      "etape": "Écriture 1",
+      "lignes": [
+        { "compte": "num", "libelle": "lib", "debit": 0, "credit": 0 }
+      ]
+    }
+  ],
+  "analyse": "Explication",
+  "notes": "Vigilance"
+}`;
+
+async function groqCall(systemPrompt, userMessage, temperature = 0.1, maxTokens = 2000) {
+  const res = await fetch(ANTHROPIC_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: CLAUDE_MODEL,
+      max_tokens: 1000,
+      system: systemPrompt,
+      messages: [{ role: 'user', content: userMessage }]
+    })
+  });
+  const data = await res.json();
+  if (data.error) throw new Error(data.error.message || 'Erreur API Claude');
+  if (!data.content?.[0]?.text) throw new Error('Réponse API invalide');
+  return data.content[0].text.trim();
+}
+
+async function preAnalyse(desc, type, montant, extra, entrepriseType) {
+  const cfg = ENTREPRISE_CONFIG[entrepriseType];
+  const prompt = `TYPE : ${cfg.label}
+Opération : ${desc}${montant ? '\nMontant : ' + montant + ' FCFA' : ''}${type ? '\nType : ' + type : ''}${extra ? '\nDétails : ' + extra : ''}
+Effectue la pré-analyse et retourne le JSON.`;
+  const raw = await groqCall(SYSTEM_PREANALYSE, prompt, 0.0, 800);
+  let clean = raw.replace(/```json\s*/gi,'').replace(/```\s*/gi,'').trim();
+  const js = clean.indexOf('{'), je = clean.lastIndexOf('}');
+  if (js === -1) throw new Error('Pré-analyse JSON invalide');
+  return JSON.parse(clean.slice(js, je+1));
+}
+
+let isGenerating = false;
+async function generateJournal() {
+  if (isGenerating) return;
+  const desc = document.getElementById('op-description').value.trim();
+  const date = document.getElementById('op-date').value || todayDate();
+  const ref = document.getElementById('op-ref').value.trim() || genRef();
+  const montant = document.getElementById('op-montant').value.trim();
+  const type = document.getElementById('op-type').value;
+  const extra = document.getElementById('op-extra').value.trim();
+  if (!desc) { showToast('Décrivez l\'opération'); return; }
+
+  isGenerating = true;
+  document.getElementById('btn-generate').disabled = true;
+  const cfg = ENTREPRISE_CONFIG[currentEntrepriseType];
+  let analyse = null;
+
+  try {
+    document.getElementById('output-content').innerHTML = '<div class="loading-state"><div class="spinner"></div><div class="loading-text">Analyse IA en cours...</div></div>';
+    try { analyse = await preAnalyse(desc, type, montant, extra, currentEntrepriseType); } catch(e) { console.warn('Pré-analyse échouée', e); }
+
+    let userMsg = `TYPE : ${cfg.label}\nOPÉRATION : ${desc}`;
+    if (montant) userMsg += `\nMontant : ${montant} FCFA`;
+    if (type) userMsg += `\nType : ${type}`;
+    if (extra) userMsg += `\nDétails : ${extra}`;
+    userMsg += `\nDate : ${date} | Réf : ${ref}`;
+    if (analyse) {
+      userMsg += `\n\nPRÉ-ANALYSE :\nOpérations : ${(analyse.operations_requises||[]).join(' → ')}\nCompte principal : ${analyse.compte_principal}\nTVA : ${analyse.compte_tva||'aucun'}\nContrepartie : ${analyse.compte_contrepartie}\nTVA applicable : ${analyse.tva_applicable}\nTTC : ${analyse.montant_ttc} | HT : ${analyse.montant_ht} | TVA : ${analyse.montant_tva}\nMode : ${analyse.mode_reglement}\nVariation stock : ${analyse.necessite_variation_stock}`;
+    }
+
+    const rawJson = await groqCall(SYSTEM_GENERATE, userMsg, 0.0, 3500);
+    let clean = rawJson.replace(/```json\s*/gi,'').replace(/```\s*/gi,'').trim();
+    const js = clean.indexOf('{'), je = clean.lastIndexOf('}');
+    if (js === -1) throw new Error('Format JSON non trouvé');
+    const result = JSON.parse(clean.slice(js, je+1));
+    result.type_entreprise = cfg.label;
+    result.date = date; result.reference = ref; result.description = desc;
+
+    renderJournal(result, desc, date, ref);
+    await saveEcriture(result);
+  } catch(err) {
+    document.getElementById('output-content').innerHTML = `<div class="empty-state"><div class="empty-icon" style="border-color:rgba(248,113,113,0.3);background:rgba(248,113,113,0.06)"><svg viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div><h3 style="color:var(--credit)">Erreur</h3><p>${err.message}</p></div>`;
+    showToast('❌ ' + err.message);
+  }
+  isGenerating = false;
+  document.getElementById('btn-generate').disabled = false;
+}
+
+function renderJournal(result, opDesc, date, ref) {
+  const ecritures = result.ecritures || [];
+  const isMulti = ecritures.length > 0 && Array.isArray(ecritures[0]?.lignes);
+  let cardsHTML = '';
+  if (isMulti) {
+    ecritures.forEach((ec, idx) => {
+      const lignes = ec.lignes || [];
+      const totD = lignes.reduce((s,l) => s + (l.debit||0), 0);
+      const totC = lignes.reduce((s,l) => s + (l.credit||0), 0);
+      const eq = Math.abs(totD - totC) < 1;
+      let rows = '';
+      lignes.forEach(e => {
+        rows += `<tr><td class="col-compte">${escHtml(e.compte||'')}</td><td class="col-libelle">${escHtml(e.libelle||'')}<span class="col-sub">${getPlanLibelle(e.compte)}</span></td><td class="col-debit">${e.debit?fmtAmount(e.debit):'<span class="col-empty">—</span>'}</td><td class="col-credit">${e.credit?fmtAmount(e.credit):'<span class="col-empty">—</span>'}</td></tr>`;
+      });
+      cardsHTML += `<div class="journal-card"><div class="journal-card-header"><div class="journal-card-title"><span style="background:rgba(240,165,0,0.1);border:1px solid rgba(240,165,0,0.2);color:var(--accent3);font-family:var(--mono);font-size:10px;padding:2px 8px;border-radius:4px;margin-right:6px;">Écriture ${idx+1}</span>${escHtml(ec.etape||'')}</div><div class="${eq?'equilibre-ok':'equilibre-err'}">${eq?'✓ Équilibré':'⚠ Déséquilibré'}</div></div><table class="data-table"><thead><tr><th style="width:80px">Compte</th><th>Libellé</th><th style="text-align:right;width:120px">Débit</th><th style="text-align:right;width:120px">Crédit</th></tr></thead><tbody>${rows}</tbody></table><div class="journal-totals"><div class="total-item"><span class="total-label">Total Débit</span><span class="total-debit">${fmtAmount(totD)}</span></div><div class="total-item"><span class="total-label">Total Crédit</span><span class="total-credit">${fmtAmount(totC)}</span></div></div></div>`;
+    });
+    if (ecritures.length > 1) {
+      cardsHTML = `<div style="background:linear-gradient(135deg,rgba(240,165,0,0.07),rgba(0,136,255,0.05));border:1px solid rgba(240,165,0,0.15);border-radius:10px;padding:10px 14px;margin-bottom:12px;font-size:12px;color:var(--text2);"><strong style="color:var(--accent3);font-family:var(--display);font-size:13px;display:block;margin-bottom:4px;">${ecritures.length} écriture(s) comptable(s)</strong>Selon SYSCOHADA, cette opération génère ${ecritures.length} écriture(s) distincte(s).</div>` + cardsHTML;
+    }
+  } else {
+    const lignes = ecritures;
+    const totD = lignes.reduce((s,l) => s + (l.debit||0), 0);
+    const totC = lignes.reduce((s,l) => s + (l.credit||0), 0);
+    const eq = Math.abs(totD - totC) < 1;
+    let rows = '';
+    lignes.forEach(e => {
+      rows += `<tr><td class="col-compte">${escHtml(e.compte||'')}</td><td class="col-libelle">${escHtml(e.libelle||'')}<span class="col-sub">${getPlanLibelle(e.compte)}</span></td><td class="col-debit">${e.debit?fmtAmount(e.debit):'<span class="col-empty">—</span>'}</td><td class="col-credit">${e.credit?fmtAmount(e.credit):'<span class="col-empty">—</span>'}</td></tr>`;
+    });
+    cardsHTML = `<div class="journal-card"><div class="journal-card-header"><div class="journal-card-title">${escHtml(result.titre||opDesc)}</div><div class="journal-card-date">${result.date||date}</div><div class="journal-card-ref">${escHtml(result.reference||ref)}</div><div class="${eq?'equilibre-ok':'equilibre-err'}">${eq?'✓ Équilibré':'⚠ Déséquilibré'}</div></div><table class="data-table"><thead><tr><th style="width:80px">Compte</th><th>Libellé</th><th style="text-align:right;width:120px">Débit</th><th style="text-align:right;width:120px">Crédit</th></tr></thead><tbody>${rows}</tbody></table><div class="journal-totals"><div class="total-item"><span class="total-label">Total Débit</span><span class="total-debit">${fmtAmount(totD)}</span></div><div class="total-item"><span class="total-label">Total Crédit</span><span class="total-credit">${fmtAmount(totC)}</span></div></div></div>`;
+  }
+
+  const jsonForExport = JSON.stringify(result);
+  const html = `<div class="journal-result">
+    <div class="ai-analysis"><div class="ai-analysis-header"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>Analyse — ${escHtml(result.type_entreprise||'SYSCOHADA')}</div><div class="ai-analysis-text">${escHtml(result.analyse||'').replace(/\n/g,'<br>')}</div>${result.notes?`<div style="margin-top:8px;font-size:12px;color:var(--text3)">📌 ${escHtml(result.notes)}</div>`:''}</div>
+    ${cardsHTML}
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;">
+      <button class="btn-action" onclick="window.print()">🖨️ Imprimer</button>
+      <button class="btn-action" onclick="navigator.clipboard.writeText('${escHtml(jsonForExport).replace(/'/g,'\\\'')}');showToast('JSON copié')">📋 Copier JSON</button>
+      <button class="btn-action" onclick="exportJournalCSV('${escHtml(jsonForExport).replace(/'/g,'\\\'')}')">📄 Export CSV</button>
     </div>
-    <div class="card" style="margin-bottom:14px">
-      <div class="card-title">Lignes d'écriture</div>
-      <div class="et-wrapper">
-        <table class="et">
-          <thead><tr><th style="min-width:120px">Compte</th><th>Libellé</th><th style="min-width:110px;text-align:right">Débit (FCFA)</th><th style="min-width:110px;text-align:right">Crédit (FCFA)</th><th style="width:36px"></th></tr></thead>
-          <tbody id="editLignesBody"></tbody>
-        </table>
-      </div>
-      <button class="add-line-btn" onclick="addEditLigne()">＋ Ajouter une ligne</button>
-      <div class="bal-bar">
-        <div class="bal-item"><label>Débit</label><span class="val" id="editTotalDebit" style="color:#60a5fa">0</span></div>
-        <div class="bal-item"><label>Crédit</label><span class="val" id="editTotalCredit" style="color:#4ade80">0</span></div>
-        <div class="bal-item" style="margin-left:auto"><label>Solde</label><span class="val bok" id="editSoldeDisplay">0</span></div>
-      </div>
-    </div>
-    <div class="modal-actions">
-      <button class="btn-modal-cancel" onclick="closeEditModal()">Annuler</button>
-      <button class="btn-modal-ok" onclick="saveEditEcriture()">💾 Enregistrer les modifications</button>
-    </div>
-  </div>
-</div>
+  </div>`;
+  document.getElementById('output-content').innerHTML = html;
+}
 
-<!-- NOTIFICATION SAISIE IA -->
-<div id="saisieNotif" class="saisie-notification">
-  <div class="sn-title">✨ COMEO AI a préparé des écritures</div>
-  <div class="sn-body" id="saisieNotifBody">Les lignes sont prêtes dans la vue Saisie.</div>
-  <div class="sn-actions">
-    <button class="sn-btn-auto" onclick="autoSaveAllFromNotif()">⚡ Tout enregistrer</button>
-    <button class="sn-btn-go" onclick="goToSaisie()">→ Saisie manuelle</button>
-    <button class="sn-btn-dismiss" onclick="hideSaisieNotif()">Ignorer</button>
-  </div>
-</div>
+function exportJournalCSV(jsonStr) {
+  try {
+    const result = JSON.parse(jsonStr);
+    const ecritures = result.ecritures || [];
+    let csv = 'Ecriture;Compte;Libelle;Debit;Credit\n';
+    if (ecritures.length > 0 && Array.isArray(ecritures[0]?.lignes)) {
+      ecritures.forEach((ec, idx) => {
+        (ec.lignes || []).forEach(l => {
+          csv += `"${ec.etape||'Ecriture '+(idx+1)}";${l.compte};"${(l.libelle||'').replace(/"/g,'""')}";${l.debit||0};${l.credit||0}\n`;
+        });
+      });
+    } else {
+      ecritures.forEach(l => {
+        csv += `"";${l.compte};"${(l.libelle||'').replace(/"/g,'""')}";${l.debit||0};${l.credit||0}\n`;
+      });
+    }
+    downloadCSV(csv, `journal_${result.reference||'export'}.csv`);
+  } catch(e) { showToast('Erreur export'); }
+}
 
-<!-- SIDEBAR OVERLAY (mobile) -->
-<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeMobileSidebar()"></div>
+/* ═══════════════════════════════════════════════════════
+   INIT
+══════════════════════════════════════════════════════ */
+document.getElementById('op-date').value = todayDate();
+renderQuickOps();
+renderTypeSelect();
+renderPlan();
+renderGuide();
 
-<!-- APP -->
-<div class="shell" id="appShell" style="display:none">
-  <div class="topbar">
-    <button class="mobile-menu-btn" onclick="toggleMobileSidebar()" aria-label="Menu">☰</button>
-    <div class="logo-wrap">
-      <div class="logo">comeo AI</div>
-      <div class="logo-sub">Pro v4</div>
-    </div>
-    <div class="tb-sep"></div>
-    <div class="company-pill"><span>🏢</span><strong id="topCompanyName">—</strong></div>
-    <div class="topbar-right">
-      <div class="ex-pill">Exercice <input type="text" id="exerciceYear" value="2024" maxlength="4" onchange="updateStats()"></div>
-      <div class="chip-badge">OHADA 2023</div>
-      <button class="btn btn-outline" onclick="openExportModal()">⎙</button>
-      <button class="btn btn-danger-outline" onclick="doLogout()">⏻</button>
-    </div>
-  </div>
-
-  <div class="sidebar" id="mainSidebar">
-    <div class="sb-section">
-      <div class="sb-title">Navigation</div>
-      <div class="nav-item active" onclick="navigate('dashboard');closeMobileSidebar()"><span class="nav-icon">◈</span> Tableau de bord</div>
-      <div class="nav-item" onclick="navigate('saisie');closeMobileSidebar()"><span class="nav-icon">✎</span> Saisie</div>
-      <div class="nav-item" onclick="navigate('journal');closeMobileSidebar()"><span class="nav-icon">≡</span> Journal</div>
-      <div class="nav-item" onclick="navigate('grandlivre');closeMobileSidebar()"><span class="nav-icon">⊞</span> Grand Livre</div>
-      <div class="nav-item" onclick="navigate('balance');closeMobileSidebar()"><span class="nav-icon">⊟</span> Balance</div>
-    </div>
-    <div class="sb-section">
-      <div class="sb-title">États financiers</div>
-      <div class="nav-item" onclick="navigate('bilan');closeMobileSidebar()"><span class="nav-icon">⊠</span> Bilan</div>
-      <div class="nav-item" onclick="navigate('resultat');closeMobileSidebar()"><span class="nav-icon">↗</span> Compte de résultat</div>
-      <div class="nav-item" onclick="navigate('tresorerie');closeMobileSidebar()"><span class="nav-icon">◎</span> Trésorerie</div>
-    </div>
-    <div class="sb-section">
-      <div class="sb-title">Référentiel</div>
-      <div class="nav-item" onclick="navigate('plancomptable');closeMobileSidebar()"><span class="nav-icon">⊙</span> Plan SYSCOHADA</div>
-    </div>
-    <div class="sb-section">
-      <div class="sb-title">Gestion comptable</div>
-      <div class="nav-item" onclick="navigate('comptable');closeMobileSidebar()"><span class="nav-icon">⚙</span> Outils comptable</div>
-      <div class="nav-item" onclick="navigate('abonnements');closeMobileSidebar()"><span class="nav-icon"></span></div>
-    </div>
-    <div class="sb-stats-card">
-      <div class="stat-row"><span class="lbl">Écritures</span><span class="val" id="s-ecritures">0</span></div>
-      <div class="stat-row"><span class="lbl">Total débit</span><span class="val" id="s-debit">0</span></div>
-      <div class="stat-row"><span class="lbl">Total crédit</span><span class="val" id="s-credit">0</span></div>
-      <div class="stat-row"><span class="lbl">Équilibre</span><span class="val g" id="s-equil">✓</span></div>
-    </div>
-  </div>
-
-  <div class="main">
-
-    <!-- DASHBOARD -->
-    <div class="view active" id="view-dashboard">
-      <div class="ph">
-        <div><h1>Tableau de bord</h1><p>SYSCOHADA Révisé 2023 — Assistant comptable expert</p></div>
-        <div class="ph-actions">
-          <button class="btn btn-sm-wire" onclick="openExportModal()">⎙ Exporter</button>
-          <button class="btn btn-ink" onclick="navigate('saisie')">✎ Nouvelle écriture</button>
-        </div>
-      </div>
-      <div class="kpi-grid">
-        <div class="kpi"><div class="kpi-label">Écritures</div><div class="kpi-value" id="dash-nb">0</div><div class="kpi-sub">Exercice en cours</div></div>
-        <div class="kpi"><div class="kpi-label">Total débit</div><div class="kpi-value" id="dash-debit" style="color:var(--blue)">0</div><div class="kpi-sub">FCFA</div></div>
-        <div class="kpi"><div class="kpi-label">Total crédit</div><div class="kpi-value" id="dash-credit" style="color:var(--green)">0</div><div class="kpi-sub">FCFA</div></div>
-        <div class="kpi"><div class="kpi-label">Résultat provisoire</div><div class="kpi-value" id="dash-res" style="color:var(--warm)">0</div><div class="kpi-sub">Produits – Charges</div></div>
-      </div>
-      <div class="multi-ecr-banner" id="multiEcrBanner">
-        <div class="meb-icon">✅</div>
-        <div class="meb-text">
-          <strong id="mebTitle">COMEO AI a préparé les écritures</strong>
-          <ul class="meb-list" id="mebList"></ul>
-          <div class="meb-actions">
-            <button class="meb-btn-auto" onclick="autoSaveAllEcritures()">⚡ Tout enregistrer automatiquement</button>
-            <button class="meb-btn-nav" onclick="goToSaisie()">→ Saisie manuelle</button>
-            <button class="meb-btn-dismiss" onclick="hideMultiEcrBanner()">✕ Fermer</button>
-          </div>
-        </div>
-      </div>
-      <div class="auto-save-bar" id="autoSaveBar">
-        <div class="asb-icon">⚡</div>
-        <div class="asb-text">
-          <strong id="autoSaveMsg">Enregistrement en cours…</strong>
-          <div class="asb-progress"><div class="asb-progress-bar" id="autoSaveProgress" style="width:0%"></div></div>
-        </div>
-      </div>
-      <div class="comeo-box">
-        <div class="comeo-header"><div class="comeo-dot"></div><span class="comeo-title">COMEO AI v4 — Expert Comptable SYSCOHADA</span><span class="comeo-sub">Journal groupé · Balance · Grand Livre · États financiers</span></div>
-        <div class="comeo-messages" id="aiMessages">
-          <div class="msg ai"><div class="msg-av">C</div><div class="msg-body">Bonjour ! Je suis <strong>COMEO AI v4</strong>, votre expert-comptable SYSCOHADA.<br><br>
-          Dans le <strong>Journal</strong>, les 3 écritures d'une même opération sont maintenant <strong>regroupées visuellement</strong> — achat, variation de stock et règlement apparaissent ensemble sous un même en-tête.<br><br>
-          Que puis-je faire pour vous aujourd'hui ?
-          </div></div>
-        </div>
-        <div class="comeo-input-row">
-          <textarea class="comeo-input" id="aiInput" placeholder="Ex: Achat marchandises 500 000 FCFA espèces, TVA 18%…" onkeydown="handleAiKey(event,'dashboard')"></textarea>
-          <button class="btn btn-ink" id="aiSendBtn" onclick="sendToAI('dashboard')">⚡</button>
-        </div>
-      </div>
-      <div class="chips">
-        <div class="chip" onclick="quickAI('Montre-moi les opérations du 16 avril 2026')">Opérations du 16/04/2026</div>
-        <div class="chip" onclick="quickAI('Achat de marchandises 500000 FCFA TTC payé en espèces, TVA 18%, coût achat = montant HT. Passer les 3 écritures obligatoires.')">Achat m/ses espèces (3 écritures)</div>
-        <div class="chip" onclick="quickAI('Vente de marchandises 1200000 FCFA TTC par virement, TVA 18%, coût d\'achat 700000. Passer les 3 écritures obligatoires.')">Vente m/ses (3 écritures)</div>
-        <div class="chip" onclick="quickAI('Achat de marchandises à crédit 800000 FCFA HT, TVA 18%, fournisseur HOLALI. Passer les 3 écritures.')">Achat à crédit (3 écritures)</div>
-        <div class="chip" onclick="quickAI('Règlement salaires: brut 800000 FCFA, cotisations salariales 160000, impôts retenus 50000, acompte versé 200000')">Paie du personnel</div>
-        <div class="chip" onclick="quickAI('Dotation amortissement linéaire matériel informatique valeur 2400000 FCFA durée 4 ans valeur résiduelle 0')">Amortissement linéaire</div>
-        <div class="chip" onclick="quickAI('Analyser mon bilan actuel et donner les ratios de liquidité, solvabilité et rentabilité')">Analyser mon bilan</div>
-      </div>
-    </div>
-
-    <!-- SAISIE -->
-    <div class="view" id="view-saisie">
-      <div class="ph">
-        <div><h1>Saisie des écritures</h1><p>Saisie manuelle ou assistée par COMEO AI</p></div>
-        <div class="ph-actions">
-          <button class="btn btn-ink" onclick="saveEcriture()">↳ Valider l'écriture</button>
-        </div>
-      </div>
-      <div class="saisie-queue-bar" id="saisieQueueBar">
-        <span class="sqb-label">ÉCRITURES EN FILE</span>
-        <span class="sqb-counter" id="sqbCounter">0</span>
-        <span style="color:rgba(255,255,255,.4);font-size:11px;flex:1">Validez cette écriture pour passer à la suivante</span>
-        <button class="btn-validate-all" id="btnValidateAll" onclick="autoSaveAllEcritures()">⚡ Tout enregistrer</button>
-        <button class="sqb-skip" onclick="skipToNextEcriture()">Ignorer →</button>
-      </div>
-      <div class="comeo-box">
-        <div class="comeo-header"><div class="comeo-dot"></div><span class="comeo-title">COMEO AI — Saisie assistée</span><span class="comeo-sub">Décrivez → COMEO remplit les lignes automatiquement</span></div>
-        <div class="comeo-messages" id="aiMessages-saisie" style="height:130px">
-          <div class="msg ai"><div class="msg-av">C</div><div class="msg-body">Décrivez l'opération et je prépare les lignes. Pour un achat ou vente, je génère les <strong>3 écritures</strong> — cliquez <strong>"Tout enregistrer"</strong> pour les valider toutes en une fois.</div></div>
-        </div>
-        <div class="comeo-input-row">
-          <textarea class="comeo-input" id="aiInput-saisie" placeholder="ex: Achat matériel bureau 250000 FCFA HT par chèque, TVA 18%..." onkeydown="handleAiKey(event,'saisie')"></textarea>
-          <button class="btn btn-ink" onclick="sendToAI('saisie')">⚡</button>
-        </div>
-      </div>
-      <div class="ai-fill-banner" id="aiFillBanner">
-        <div class="afi-icon">✨</div>
-        <div class="afi-text">
-          <strong>COMEO AI — Écriture <span id="aiFillNum"></span></strong> — <span id="aiFillDesc">—</span><br>
-          <span style="font-size:11px;color:var(--muted)">Vérifiez les lignes ci-dessous avant de valider</span>
-        </div>
-        <button class="btn-dismiss" onclick="dismissFillBanner()">✕</button>
-      </div>
-      <div class="card">
-        <div class="card-title">En-tête de l'écriture</div>
-        <div class="fg c4">
-          <div class="field"><label>Date</label><input type="date" id="ecr-date"></div>
-          <div class="field"><label>Journal</label>
-            <select id="ecr-journal">
-              <option value="AC">AC — Achats</option><option value="VE">VE — Ventes</option>
-              <option value="BQ">BQ — Banque</option><option value="CA">CA — Caisse</option>
-              <option value="OD">OD — Opérations Diverses</option><option value="AN">AN — À Nouveau</option>
-              <option value="IN">IN — Inventaire</option>
-            </select>
-          </div>
-          <div class="field"><label>N° Pièce</label><input type="text" id="ecr-piece" placeholder="Auto"></div>
-          <div class="field"><label>Libellé général</label><input type="text" id="ecr-libelle" placeholder="Description…"></div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-title">Lignes d'écriture</div>
-        <div class="et-wrapper">
-          <table class="et">
-            <thead><tr><th style="min-width:120px">Compte</th><th>Libellé</th><th style="min-width:110px;text-align:right">Débit (FCFA)</th><th style="min-width:110px;text-align:right">Crédit (FCFA)</th><th style="width:36px"></th></tr></thead>
-            <tbody id="lignesBody"></tbody>
-          </table>
-        </div>
-        <div id="lignesCardContainer"></div>
-        <button class="add-line-btn" onclick="addLigne()">＋ Ajouter une ligne</button>
-        <div class="bal-bar">
-          <div class="bal-item"><label>Débit</label><span class="val" id="totalDebitDisplay" style="color:#60a5fa">0</span></div>
-          <div class="bal-item"><label>Crédit</label><span class="val" id="totalCreditDisplay" style="color:#4ade80">0</span></div>
-          <div class="bal-item" style="margin-left:auto"><label>Solde</label><span class="val bok" id="soldeDisplay">0</span></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- JOURNAL -->
-    <div class="view" id="view-journal">
-      <div class="ph">
-        <div><h1>Journal général</h1><p>Opérations regroupées — 3 écritures liées par opération</p></div>
-        <div class="ph-actions">
-          <button class="btn btn-sm-wire" onclick="openExportModal()">⎙ Exporter</button>
-          <button class="btn btn-sm-wire" onclick="window.print()">🖨️ Imprimer</button>
-          <button class="btn btn-ink" onclick="navigate('saisie')">+ Nouvelle</button>
-        </div>
-      </div>
-      <div class="filtre-periode-bar">
-        <label>Du</label><input type="date" id="jnl-date-debut" onchange="renderJournal()">
-        <label>Au</label><input type="date" id="jnl-date-fin" onchange="renderJournal()">
-        <label>Journal</label>
-        <select id="journalFilter" onchange="renderJournal()">
-          <option value="">Tous</option>
-          <option value="AC">Achats</option><option value="VE">Ventes</option>
-          <option value="BQ">Banque</option><option value="CA">Caisse</option>
-          <option value="OD">OD</option><option value="IN">Inventaire</option>
-        </select>
-        <input type="text" class="search-input" placeholder="Rechercher compte / libellé…" id="journalSearch" oninput="renderJournal()" style="min-width:160px;flex:1">
-        <button class="btn-filtre-reset" onclick="resetJournalFiltre()">✕ Effacer</button>
-      </div>
-      <div id="journal-analyse" style="display:none" class="analyse-card"></div>
-      <div id="journalContent"></div>
-      <div id="journal-totaux-footer" style="display:none">
-        <div class="jnl-footer-totaux">
-          <div class="jnl-footer-item"><span class="jnl-footer-label">Opérations</span><span class="jnl-footer-val" id="jnl-nb-groupes" style="color:var(--warm)">0</span></div>
-          <div class="jnl-footer-item"><span class="jnl-footer-label">Écritures</span><span class="jnl-footer-val" id="jnl-nb-ecr" style="color:rgba(255,255,255,.5)">0</span></div>
-          <div class="jnl-footer-item"><span class="jnl-footer-label">Lignes</span><span class="jnl-footer-val" id="jnl-nb-lignes" style="color:rgba(255,255,255,.3)">0</span></div>
-          <div class="jnl-footer-item"><span class="jnl-footer-label">Total Débit</span><span class="jnl-footer-val d" id="jnl-total-debit">0</span></div>
-          <div class="jnl-footer-item"><span class="jnl-footer-label">Total Crédit</span><span class="jnl-footer-val c" id="jnl-total-credit">0</span></div>
-          <div class="jnl-footer-item"><span id="jnl-equil-label" class="jnl-footer-val eq">✓ Équilibré</span></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- GRAND LIVRE -->
-    <div class="view" id="view-grandlivre">
-      <div class="ph">
-        <div><h1>Grand Livre</h1><p>Mouvements détaillés par compte</p></div>
-        <div class="ph-actions">
-          <button class="btn btn-sm-wire" onclick="openExportModal()">⎙ Exporter</button>
-          <button class="btn btn-sm-wire" onclick="window.print()">🖨️ Imprimer</button>
-        </div>
-      </div>
-      <div class="filtre-periode-bar">
-        <label>Du</label><input type="date" id="gl-date-debut" onchange="renderGrandLivre()">
-        <label>Au</label><input type="date" id="gl-date-fin" onchange="renderGrandLivre()">
-        <input type="text" class="search-input" placeholder="Compte ou libellé…" id="glSearch" oninput="renderGrandLivre()" style="min-width:160px">
-        <button class="btn-filtre-reset" onclick="resetGLFiltre()">✕</button>
-      </div>
-      <div id="grandLivreContent"><div class="empty-state"><div class="icon">⊞</div><p>Aucun mouvement</p></div></div>
-    </div>
-
-    <!-- BALANCE -->
-    <div class="view" id="view-balance">
-      <div class="ph">
-        <div><h1>Balance générale</h1><p>Synthèse des mouvements et soldes par compte</p></div>
-        <div class="ph-actions">
-          <button class="btn btn-sm-wire" onclick="openExportModal()">⎙ Exporter</button>
-          <button class="btn btn-sm-wire" onclick="window.print()">🖨️ Imprimer</button>
-        </div>
-      </div>
-      <div class="filtre-periode-bar">
-        <label>Du</label><input type="date" id="bal-date-debut" onchange="renderBalance()">
-        <label>Au</label><input type="date" id="bal-date-fin" onchange="renderBalance()">
-        <label>Journal</label>
-        <select id="bal-journal" onchange="renderBalance()">
-          <option value="">Tous</option>
-          <option value="AC">Achats</option><option value="VE">Ventes</option>
-          <option value="BQ">Banque</option><option value="CA">Caisse</option>
-          <option value="OD">OD</option><option value="IN">Inventaire</option>
-        </select>
-        <label>Classe</label>
-        <select id="bal-classe" onchange="renderBalance()">
-          <option value="">Toutes</option>
-          <option value="1">Classe 1</option><option value="2">Classe 2</option>
-          <option value="3">Classe 3</option><option value="4">Classe 4</option>
-          <option value="5">Classe 5</option><option value="6">Classe 6</option>
-          <option value="7">Classe 7</option>
-        </select>
-        <button class="btn-filtre-reset" onclick="resetBalanceFiltre()">✕</button>
-      </div>
-      <div id="balance-analyse" style="display:none" class="analyse-card"></div>
-      <div class="dtw">
-        <table class="dt">
-          <thead><tr><th>Compte</th><th>Libellé</th><th style="text-align:right">Mvt Débit</th><th style="text-align:right">Mvt Crédit</th><th style="text-align:right">Solde Débiteur</th><th style="text-align:right">Solde Créditeur</th></tr></thead>
-          <tbody id="balanceBody"><tr><td colspan="6"><div class="fb-loading">Chargement…</div></td></tr></tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- BILAN -->
-    <div class="view" id="view-bilan">
-      <div class="ph">
-        <div><h1>Bilan</h1><p>Situation au <span id="bilanDate">31/12/2024</span></p></div>
-        <div class="ph-actions">
-          <button class="btn btn-sm-wire" onclick="openExportModal()">⎙ Exporter</button>
-          <button class="btn btn-sm-wire" onclick="window.print()">🖨️ Imprimer</button>
-        </div>
-      </div>
-      <div class="filtre-periode-bar">
-        <label>Arrêté au</label>
-        <input type="date" id="bilan-date-arrete" onchange="renderBilan()">
-        <button class="btn-filtre-reset" onclick="document.getElementById('bilan-date-arrete').value='';renderBilan()">Tout l'exercice</button>
-      </div>
-      <div class="bilan-grid" id="bilanContent">
-        <div class="empty-state" style="grid-column:1/-1"><div class="icon">⊠</div><p>Saisissez des écritures pour générer le bilan</p></div>
-      </div>
-    </div>
-
-    <!-- RESULTAT -->
-    <div class="view" id="view-resultat">
-      <div class="ph">
-        <div><h1>Compte de résultat</h1><p>Exercice <span id="resultatYear">2024</span></p></div>
-        <div class="ph-actions">
-          <button class="btn btn-sm-wire" onclick="openExportModal()">⎙ Exporter</button>
-          <button class="btn btn-sm-wire" onclick="window.print()">🖨️ Imprimer</button>
-        </div>
-      </div>
-      <div class="card" id="resultatContent"><div class="empty-state"><div class="icon">↗</div><p>Aucune donnée</p></div></div>
-    </div>
-
-    <!-- TRESORERIE -->
-    <div class="view" id="view-tresorerie">
-      <div class="ph">
-        <div><h1>Trésorerie</h1><p>Flux de trésorerie — Classe 5</p></div>
-        <div class="ph-actions">
-          <button class="btn btn-sm-wire" onclick="openExportModal()">⎙ Exporter</button>
-          <button class="btn btn-sm-wire" onclick="window.print()">🖨️ Imprimer</button>
-        </div>
-      </div>
-      <div class="card" id="tresorerieContent"><div class="empty-state"><div class="icon">◎</div><p>Comptes de trésorerie (5xxx)</p></div></div>
-    </div>
-
-    <!-- PLAN COMPTABLE -->
-    <div class="view" id="view-plancomptable">
-      <div class="ph"><div><h1>Plan Comptable SYSCOHADA</h1><p>Révisé 2023</p></div></div>
-      <div class="toolbar">
-        <input type="text" class="search-input" placeholder="Code ou libellé…" id="pcSearch" oninput="renderPlanComptable()" style="min-width:200px;flex:1">
-        <select id="pcClass" class="search-input" style="min-width:140px" onchange="renderPlanComptable()">
-          <option value="">Toutes les classes</option>
-          <option value="1">Classe 1 — Capitaux</option><option value="2">Classe 2 — Immobilisations</option>
-          <option value="3">Classe 3 — Stocks</option><option value="4">Classe 4 — Tiers</option>
-          <option value="5">Classe 5 — Trésorerie</option><option value="6">Classe 6 — Charges</option>
-          <option value="7">Classe 7 — Produits</option><option value="8">Classe 8 — Spéciaux</option>
-        </select>
-      </div>
-      <div class="dtw">
-        <table class="dt">
-          <thead><tr><th style="width:80px">Code</th><th>Libellé</th><th style="width:100px">Classe</th><th style="width:80px">Nature</th></tr></thead>
-          <tbody id="pcBody"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- OUTILS COMPTABLE -->
-    <div class="view" id="view-comptable">
-      <div class="ph">
-        <div><h1>Outils comptable</h1><p>Gestion avancée des écritures et opérations</p></div>
-      </div>
-      <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr)">
-        <div class="kpi">
-          <div class="kpi-label">Écritures totales</div>
-          <div class="kpi-value" id="cmp-nb">0</div>
-          <div class="kpi-sub">Enregistrées</div>
-        </div>
-        <div class="kpi">
-          <div class="kpi-label">Dernière écriture</div>
-          <div class="kpi-value" id="cmp-last" style="font-size:14px">—</div>
-          <div class="kpi-sub">Date</div>
-        </div>
-        <div class="kpi">
-          <div class="kpi-label">Équilibre général</div>
-          <div class="kpi-value" id="cmp-eq">✓</div>
-          <div class="kpi-sub">Débit = Crédit</div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-title">Zone dangereuse — Réinitialisation</div>
-        <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
-          <div style="flex:1;min-width:200px">
-            <div style="font-size:13px;font-weight:600;margin-bottom:4px">Réinitialiser toutes les écritures</div>
-            <div style="font-size:11px;color:var(--muted)">Supprime définitivement toutes les écritures de l'exercice. Cette action est irréversible.</div>
-          </div>
-          <button class="btn btn-danger-outline" style="font-size:12px;padding:8px 16px" onclick="openResetModal()">⚠️ Tout réinitialiser</button>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-title">Opérations récentes — Actions rapides</div>
-        <div style="font-size:11px;color:var(--muted);margin-bottom:10px">Cliquez sur ✎ pour modifier ou ✕ pour supprimer une écriture individuelle.</div>
-        <div class="dtw">
-          <table class="dt">
-            <thead><tr><th>Date</th><th>Jnl</th><th>Pièce</th><th>Libellé</th><th style="text-align:right">Débit</th><th style="text-align:right">Crédit</th><th style="width:80px">Actions</th></tr></thead>
-            <tbody id="comptableOpsBody"><tr><td colspan="7"><div class="empty-state"><p>Aucune opération</p></div></td></tr></tbody>
-          </table>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-title">Recherche et suppression avancée</div>
-        <div class="fg c3" style="margin-bottom:12px">
-          <div class="field">
-            <label>Compte</label>
-            <input type="text" id="cmp-search-compte" placeholder="ex: 601" style="font-family:var(--font-mono)">
-          </div>
-          <div class="field">
-            <label>Date début</label>
-            <input type="date" id="cmp-search-dateDebut">
-          </div>
-          <div class="field">
-            <label>Date fin</label>
-            <input type="date" id="cmp-search-dateFin">
-          </div>
-        </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <button class="btn btn-ink" onclick="searchAndDeleteEcritures()">🔍 Rechercher pour suppression</button>
-          <button class="btn btn-sm-wire" onclick="clearCmpSearch()">Effacer</button>
-        </div>
-        <div id="cmp-search-results" style="margin-top:12px"></div>
-      </div>
-    </div>
-
-    <!-- ABONNEMENTS -->
-    <div class="view" id="view-abonnements">
-      <div class="ph">
-        <div><h1>Gestion des abonnements</h1><p>Administration des comptes clients et abonnements COMEO AI</p></div>
-        <div class="ph-actions">
-          <button class="btn btn-sm-wire" onclick="refreshAbonnements()">🔄 Actualiser</button>
-        </div>
-      </div>
-
-      <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr)">
-        <div class="kpi"><div class="kpi-label">Comptes total</div><div class="kpi-value" id="abn-total">0</div></div>
-        <div class="kpi"><div class="kpi-label">Abonnement actif</div><div class="kpi-value" id="abn-actifs" style="color:var(--green)">0</div></div>
-        <div class="kpi"><div class="kpi-label">Essai / Gratuit</div><div class="kpi-value" id="abn-essai" style="color:var(--warm)">0</div></div>
-        <div class="kpi"><div class="kpi-label">Expirés</div><div class="kpi-value" id="abn-expires" style="color:var(--red)">0</div></div>
-      </div>
-
-      <div class="card">
-        <div class="card-title">Filtres</div>
-        <div class="fg c4" style="margin-bottom:0">
-          <div class="field">
-            <label>Rechercher</label>
-            <input type="text" id="abn-search" placeholder="Entreprise, email…" oninput="renderAbonnements()">
-          </div>
-          <div class="field">
-            <label>Statut</label>
-            <select id="abn-statut" onchange="renderAbonnements()">
-              <option value="">Tous</option>
-              <option value="actif">Actif</option>
-              <option value="essai">Essai</option>
-              <option value="expire">Expiré</option>
-              <option value="desactive">Désactivé</option>
-            </select>
-          </div>
-          <div class="field">
-            <label>Plan</label>
-            <select id="abn-plan" onchange="renderAbonnements()">
-              <option value="">Tous</option>
-              <option value="professionnel">Professionnel</option>
-              <option value="essai">Essai gratuit</option>
-            </select>
-          </div>
-          <div class="field" style="display:flex;align-items:flex-end">
-            <button class="btn btn-sm-wire" style="width:100%" onclick="clearAbnFilters()">✕ Effacer filtres</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-title">Liste des comptes</div>
-        <div class="dtw">
-          <table class="dt">
-            <thead>
-              <tr>
-                <th>Entreprise</th>
-                <th>Contact</th>
-                <th>Plan</th>
-                <th>Statut</th>
-                <th>Début</th>
-                <th>Fin / Expiration</th>
-                <th style="text-align:right">Montant</th>
-                <th style="width:120px">Actions</th>
-              </tr>
-            </thead>
-            <tbody id="abonnementsBody">
-              <tr><td colspan="8"><div class="fb-loading">Chargement des abonnements…</div></td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-  </div>
-</div>
-
-<div class="toast-container" id="toastContainer"></div>
-
-<script type="module" src="as.js"></script>
+document.getElementById('op-description').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' && e.ctrlKey) { e.preventDefault(); generateJournal(); }
+});
+</script>
 </body>
 </html>
