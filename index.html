@@ -1158,41 +1158,48 @@ function downloadCSV(csv, filename) {
 =================================================== */
 
 /* ===================================================
-   NOUVEAU CODE — API GROQ
+   NOUVEAU CODE — API GROQ (via proxy CORS)
 =================================================== */
-// ⚙️ CONFIGURATION GROQ — remplacez YOUR_GROQ_API_KEY par votre clé
-var GROQ_API_KEY = '';
-var GROQ_URL     = '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';
-var GROQ_MODEL   = 'llama-3.3-70b-versatile'; // Modèle Groq rapide et puissant
-                                               // Autres options : 'mixtral-8x7b-32768', 'gemma2-9b-it'
+// ⚙️ CONFIGURATION GROQ — remplacez par votre clé API Groq
+var GROQ_API_KEY = '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';
+var GROQ_MODEL   = 'llama-3.3-70b-versatile';
+
+// POURQUOI UN PROXY ?
+// L'API Groq n'autorise pas les appels directs depuis un navigateur (CORS bloqué).
+// On passe par corsproxy.io qui transmet la requête côté serveur.
+// Format : https://corsproxy.io/?url=<URL_CIBLE_ENCODEE>
+var GROQ_URL_DIRECT = 'https://api.groq.com/openai/v1/chat/completions';
+var GROQ_URL_PROXY  = 'https://corsproxy.io/?url=' + encodeURIComponent(GROQ_URL_DIRECT);
 
 /**
- * groqCall — équivalent de claudeCall() mais pour l'API Groq
- * L'API Groq suit le format OpenAI (system + messages).
- * @param {string} systemPrompt  - Le prompt système (même valeur qu'avant)
- * @param {string} userMessage   - Le message utilisateur (même valeur qu'avant)
- * @returns {Promise<string>}    - Le texte de la réponse
+ * groqCall — appel Groq via proxy CORS
+ * Compatible avec le même contrat que l'ancienne claudeCall().
  */
 function groqCall(systemPrompt, userMessage) {
-  return fetch(GROQ_URL, {
+  return fetch(GROQ_URL_PROXY, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': 'Bearer ' + GROQ_API_KEY
+      'Authorization': 'Bearer ' + GROQ_API_KEY,
+      'x-requested-with': 'XMLHttpRequest'   // requis par corsproxy.io
     },
     body: JSON.stringify({
       model: GROQ_MODEL,
-      max_tokens: 1000,
-      temperature: 0.1,          // Faible température pour la comptabilité (précision)
+      max_tokens: 1500,
+      temperature: 0.1,
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user',   content: userMessage  }
       ]
     })
   }).then(function(res) {
+    if (!res.ok) {
+      return res.text().then(function(txt) {
+        throw new Error('Erreur HTTP ' + res.status + ' : ' + txt.slice(0, 200));
+      });
+    }
     return res.json();
   }).then(function(data) {
-    // Gestion d'erreur API Groq
     if (data.error) throw new Error(data.error.message || 'Erreur API Groq');
     if (!data.choices || !data.choices[0] || !data.choices[0].message || !data.choices[0].message.content) {
       throw new Error('Reponse API Groq invalide');
