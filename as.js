@@ -1627,22 +1627,29 @@ function _showSubRequiredMessage(context) {
 }
 
 // ══════════════════════════════════════════
-// ANTHROPIC CLAUDE API — COMEO AI ENGINE
+// ANTHROPIC CLAUDE API — VIA PROXY VERCEL
 // ══════════════════════════════════════════
+// Le proxy /api/chat.js évite le blocage CORS du navigateur.
+// Déployez api/chat.js à la racine Vercel et ajoutez ANTHROPIC_API_KEY
+// dans vos variables d'environnement Vercel.
 async function callAnthropicWithRetry(systemPrompt, userMessage) {
   let lastError;
+  // Détection automatique de l'URL du proxy (même domaine Vercel)
+  const PROXY_URL = "/api/chat";
+
   for (let attempt = 0; attempt < ANTHROPIC_MAX_RETRIES; attempt++) {
     try {
       const controller = new AbortController();
       const timeoutId  = setTimeout(() => controller.abort(), 60000);
-      const response   = await fetch("https://api.anthropic.com/v1/messages", {
+
+      const response = await fetch(PROXY_URL, {
         method:  "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          model:      ANTHROPIC_MODEL,
-          max_tokens: 4000,
           system:     systemPrompt,
-          messages:   [{ role: "user", content: userMessage }]
+          message:    userMessage,
+          model:      ANTHROPIC_MODEL,
+          max_tokens: 4000
         }),
         signal: controller.signal
       });
@@ -1650,7 +1657,7 @@ async function callAnthropicWithRetry(systemPrompt, userMessage) {
 
       if (!response.ok) {
         const errBody = await response.json().catch(() => ({}));
-        const errMsg  = errBody.error?.message || `Erreur API ${response.status}`;
+        const errMsg  = errBody.error || `Erreur proxy ${response.status}`;
 
         // Gestion rate limit / surcharge
         if (response.status === 429 || response.status === 529) {
@@ -1668,8 +1675,7 @@ async function callAnthropicWithRetry(systemPrompt, userMessage) {
       }
 
       const data = await response.json();
-      // L'API Anthropic retourne data.content[0].text
-      return data.content?.map(b => b.text || "").join("") || "";
+      return data.text || "";
 
     } catch (err) {
       lastError = err;
