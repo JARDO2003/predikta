@@ -907,7 +907,6 @@ var GROQ_KEYS = [
   "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",  // Clé 2
   "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"   // Clé 3
 ];
-
 var _groqKeyIndex = 0; // pointeur round-robin
 
 // Prompt système commun
@@ -926,21 +925,29 @@ var SYSTEM_GENERATE = [
 ].join(' ');
 
 // Prompt pour la détection des étapes uniquement
+// Prompt détection des étapes avec règles SYSCOHADA strictes
 var SYSTEM_DETECT = [
-  "Tu es un expert-comptable OHADA. Analyse l'opération et liste les étapes comptables nécessaires.",
+  "Tu es expert-comptable OHADA, SYSCOHADA Révisé 2017. Analyse cette opération commerciale.",
+  "Pour une entreprise commerciale (achat/vente), les étapes OBLIGATOIRES sont :",
+  "VENTE : 1-Constatation vente client (411/701/4421), 2-Variation stock marchandises (6031/310), 3-Règlement client (512 ou 571/411)",
+  "ACHAT : 1-Constatation achat fournisseur (601/4452/401), 2-Variation stock marchandises (6031/310), 3-Règlement fournisseur (401/512 ou 571)",
+  "SALAIRES : 1-Constatation salaires (6511/447/431/422), 2-Charges patronales (6611/431), 3-Paiement net (422/512)",
+  "IMMOBILISATION : 1-Acquisition immo (244x/404), 2-TVA récup immo (4451/404), 3-Règlement (404/512)",
+  "Détermine les étapes exactes selon le type d'opération décrit.",
   "RETOURNE uniquement ce JSON (sans markdown) :",
-  '{"etapes":["étape 1","étape 2"],"titre":"","analyse":"","notes":""}'
+  '{"etapes":["Étape 1 : libellé exact","Étape 2 : libellé exact","Étape 3 : libellé exact"],"titre":"","analyse":"","notes":""}'
 ].join(' ');
 
-// Prompt pour générer UNE seule étape précise
+// Prompt pour générer UNE seule écriture comptable équilibrée
 var SYSTEM_ETAPE = [
   "Tu es Comeo AI, expert-comptable OHADA, SYSCOHADA Révisé 2017.",
-  "Génère UNIQUEMENT l'écriture comptable de l'étape demandée en JSON pur.",
-  "TVA OHADA=18%. RÈGLE: Débit total = Crédit total.",
-  "COMPTES CLÉS: marchandises:601/701, services:706, banque:512, caisse:571,",
-  "clients:411, fourn.ordinaire:401, fourn.immo:404,",
-  "TVA collectée:4421, TVA récup.biens:4452, TVA récup.services:4453, TVA récup.immo:4451,",
-  "salaires:6511, cotis.patronales:6611, amort:681.",
+  "Génère l'écriture comptable COMPLÈTE et ÉQUILIBRÉE pour l'étape demandée.",
+  "TVA OHADA=18%. Si TTC: HT=ARRONDI(TTC/1.18,0), TVA=TTC-HT.",
+  "COMPTES: ventes:701, achats:601, clients:411, fourn:401, fourn.immo:404,",
+  "banque:512, caisse:571, stock:310, variation stock:6031,",
+  "TVA collectée:4421, TVA récup.biens:4452, TVA récup.immo:4451,",
+  "salaires bruts:6511, charges patronales:6611, CNPS:431, IRPP:447, net à payer:422, immo:244x.",
+  "RÈGLE ABSOLUE: somme(debit) = somme(credit). Vérifie l'équilibre avant de répondre.",
   "RETOURNE uniquement ce JSON (sans markdown):",
   '{"etape":"","lignes":[{"compte":"","libelle":"","debit":0,"credit":0}]}'
 ].join(' ');
@@ -954,6 +961,7 @@ function _groqFetch(keyIndex, systemPrompt, userMessage, maxTokens) {
     body: JSON.stringify({
       model: "llama-3.3-70b-versatile",
       max_tokens: maxTokens || 1200,
+      temperature: 0.1,
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user",   content: userMessage  }
@@ -979,48 +987,67 @@ function _parseJSON(raw) {
 
 // Appel principal : détecte les étapes puis les distribue en parallèle
 function groqCall(userMessage) {
-  // Étape 1 — détection sur clé 0
-  return _groqFetch(0, SYSTEM_DETECT, userMessage, 400)
+  // Phase 1 — Détection des étapes (clé 0, léger)
+  return _groqFetch(0, SYSTEM_DETECT, userMessage, 500)
     .then(function(rawDetect) {
       var detect = _parseJSON(rawDetect);
       var etapes = detect.etapes || [];
 
-      // Si 1 seule étape ou pas de décomposition : appel direct classique
+      // Si 0 ou 1 étape détectée : appel classique complet
       if (etapes.length <= 1) {
-        return _groqFetch(0, SYSTEM_GENERATE, userMessage, 1500)
+        return _groqFetch(0, SYSTEM_GENERATE, userMessage, 2000)
           .then(function(raw) { return _parseJSON(raw); });
       }
 
-      // Étape 2 — appels parallèles, une clé par étape (rotation)
-      showToast('Opération multi-étapes — ' + etapes.length + ' appels parallèles...', 4000);
+      // Phase 2 — Appels parallèles, 1 clé par étape en rotation
+      showToast('⚙️ ' + etapes.length + ' étapes en cours...', 5000);
+
       var promises = etapes.map(function(etape, i) {
         var keyIdx = i % GROQ_KEYS.length;
-        var msg = userMessage + '\nGénère UNIQUEMENT l\'écriture pour cette étape : ' + etape;
-        return _groqFetch(keyIdx, SYSTEM_ETAPE, msg, 800)
-          .then(function(raw) {
-            var parsed = _parseJSON(raw);
-            parsed.etape = parsed.etape || etape;
-            return parsed;
-          })
-          .catch(function() {
-            // Fallback sur clé suivante si une clé échoue
-            var fallbackIdx = (keyIdx + 1) % GROQ_KEYS.length;
-            return _groqFetch(fallbackIdx, SYSTEM_ETAPE, msg, 800)
-              .then(function(raw) {
-                var parsed = _parseJSON(raw);
-                parsed.etape = parsed.etape || etape;
-                return parsed;
-              });
-          });
+        var msg = userMessage
+          + '\n\nContexte global : ' + etapes.join(' | ')
+          + '\nGenere UNIQUEMENT l\'ecriture equilibree pour : ' + etape;
+
+        // var expression pour éviter hoisting et problème de closure
+        var tentative = function(kIdx, origIdx) {
+          return _groqFetch(kIdx, SYSTEM_ETAPE, msg, 900)
+            .then(function(raw) {
+              var parsed = _parseJSON(raw);
+              parsed.etape = parsed.etape || etape;
+              var totD = (parsed.lignes||[]).reduce(function(s,l){return s+(l.debit||0);},0);
+              var totC = (parsed.lignes||[]).reduce(function(s,l){return s+(l.credit||0);},0);
+              if (Math.abs(totD - totC) > 1) {
+                var nextK = (kIdx + 1) % GROQ_KEYS.length;
+                if (nextK !== origIdx) return tentative(nextK, origIdx);
+              }
+              return parsed;
+            });
+        };
+
+        return tentative(keyIdx, keyIdx).catch(function() {
+          var fallback = (keyIdx + 1) % GROQ_KEYS.length;
+          return _groqFetch(fallback, SYSTEM_ETAPE, msg, 900)
+            .then(function(raw) {
+              var parsed = _parseJSON(raw);
+              parsed.etape = parsed.etape || etape;
+              return parsed;
+            });
+        });
       });
 
-      // Étape 3 — assemblage des résultats parallèles
+      // Phase 3 — Assemblage + calcul lignes globales pour Firestore
       return Promise.all(promises).then(function(ecrituresParEtape) {
+        // Construire lignes aplaties pour saveEcriture (grand livre, balance, trésorerie)
+        var lignesGlobales = [];
+        ecrituresParEtape.forEach(function(ec) {
+          (ec.lignes || []).forEach(function(l) { lignesGlobales.push(l); });
+        });
         return {
-          titre:           detect.titre   || '',
-          analyse:         detect.analyse || '',
-          notes:           detect.notes   || '',
-          ecritures:       ecrituresParEtape
+          titre:     detect.titre   || '',
+          analyse:   detect.analyse || '',
+          notes:     detect.notes   || '',
+          ecritures: ecrituresParEtape,
+          lignes:    lignesGlobales   // ← indispensable pour Firestore + grand livre
         };
       });
     });
