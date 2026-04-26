@@ -256,14 +256,14 @@ table.data-table td { padding: 8px 10px; vertical-align: middle; color: var(--te
     <div class="auth-tab active" onclick="switchAuth('login')">Connexion</div>
     <div class="auth-tab" onclick="switchAuth('register')">Nouveau compte</div>
   </div>
-  <form id="form-login" class="auth-form active" onsubmit="event.preventDefault(); doLogin();">
+  <form id="form-login" class="auth-form active">
     <div class="auth-error" id="login-error"></div>
     <div class="form-group"><label>Nom de l'entreprise</label><input type="text" id="login-entreprise" placeholder="Ex: SARL ABC" required></div>
     <div class="form-group"><label>Mot de passe</label><input type="password" id="login-password" placeholder="Votre mot de passe" required></div>
     <button type="submit" class="btn-primary" id="btn-login">Se connecter</button>
     <div style="text-align:center;margin-top:10px;"><button type="button" class="btn-link" onclick="forgotPassword()">Mot de passe oublié ?</button></div>
   </form>
-  <form id="form-register" class="auth-form" onsubmit="event.preventDefault(); doRegister();">
+  <form id="form-register" class="auth-form">
     <div class="auth-error" id="register-error"></div>
     <div class="auth-success" id="register-success"></div>
     <div class="form-group"><label>Nom de l'entreprise *</label><input type="text" id="reg-entreprise" placeholder="Ex: SARL ABC" required></div>
@@ -384,8 +384,8 @@ table.data-table td { padding: 8px 10px; vertical-align: middle; color: var(--te
     <div class="journal-body">
       <div class="input-panel">
         <div class="panel-tabs">
-          <div class="panel-tab active" onclick="switchJournalMode('ia')">⚡ Génération IA</div>
-          <div class="panel-tab" onclick="switchJournalMode('manuel')">✏️ Saisie manuelle</div>
+          <div class="panel-tab active" onclick="switchJournalMode('ia', this)">⚡ Génération IA</div>
+          <div class="panel-tab" onclick="switchJournalMode('manuel', this)">✏️ Saisie manuelle</div>
         </div>
         <div id="journal-mode-ia" class="journal-mode active">
           <div class="input-content">
@@ -512,8 +512,6 @@ table.data-table td { padding: 8px 10px; vertical-align: middle; color: var(--te
 
 <div id="toast"></div>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-
 /* ===================================================
    FIREBASE CONFIG
 =================================================== */
@@ -528,13 +526,36 @@ var firebaseConfig = {
   measurementId: "G-FYQCWY5G4S"
 };
 
-if (typeof firebase === 'undefined') {
-  document.getElementById('auth-overlay').innerHTML = '<div style="color:#dc2626;font-family:monospace;padding:40px;text-align:center;"><h2>⚠️ Erreur de chargement</h2><p style="margin-top:12px;">Firebase n\'a pas pu se charger.<br>Vérifiez votre connexion internet et rechargez la page.</p><button onclick="location.reload()" style="margin-top:16px;padding:10px 20px;background:#2563eb;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;">Recharger</button></div>';
-  return;
-}
+var db = null;
 
-if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
-var db = firebase.firestore();
+window.addEventListener('load', function() {
+  if (typeof firebase === 'undefined') {
+    document.getElementById('auth-overlay').innerHTML = '<div style="color:#dc2626;font-family:monospace;padding:40px;text-align:center;"><h2>\u26A0\uFE0F Erreur de chargement</h2><p style="margin-top:12px;">Firebase n\'a pas pu se charger.<br>V\u00E9rifiez votre connexion internet et rechargez la page.</p><button onclick="location.reload()" style="margin-top:16px;padding:10px 20px;background:#2563eb;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;">Recharger</button></div>';
+    return;
+  }
+  if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
+  db = firebase.firestore();
+
+  /* INIT DOM */
+  document.getElementById('op-date').value = todayDate();
+  document.getElementById('manual-date').value = todayDate();
+  renderQuickOps();
+  renderTypeSelect();
+  renderPlan();
+  renderGuide();
+  initManualLines();
+
+  document.getElementById('op-description').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && e.ctrlKey) { e.preventDefault(); generateJournal(); }
+  });
+
+  document.getElementById('form-login').addEventListener('submit', function(e) {
+    e.preventDefault(); doLogin();
+  });
+  document.getElementById('form-register').addEventListener('submit', function(e) {
+    e.preventDefault(); doRegister();
+  });
+});
 
 /* ===================================================
    UTILS
@@ -586,15 +607,12 @@ var allEcritures = [];
 function switchAuth(tab) {
   document.querySelectorAll('.auth-tab').forEach(function(t) { t.classList.remove('active'); });
   document.querySelectorAll('.auth-form').forEach(function(f) { f.classList.remove('active'); });
-  event.target.classList.add('active');
+  var tabs = document.querySelectorAll('.auth-tab');
+  if (tab === 'login') { tabs[0].classList.add('active'); } else { tabs[1].classList.add('active'); }
   document.getElementById('form-' + tab).classList.add('active');
 }
 function switchAuthDirect(tab) {
-  document.querySelectorAll('.auth-tab').forEach(function(t) { t.classList.remove('active'); });
-  document.querySelectorAll('.auth-form').forEach(function(f) { f.classList.remove('active'); });
-  var tabs = document.querySelectorAll('.auth-tab');
-  if (tab === 'login') tabs[0].classList.add('active'); else tabs[1].classList.add('active');
-  document.getElementById('form-' + tab).classList.add('active');
+  switchAuth(tab);
 }
 
 function doRegister() {
@@ -771,10 +789,13 @@ function showView(id, el) {
 /* ===================================================
    JOURNAL MODE SWITCH
 =================================================== */
-function switchJournalMode(mode) {
+function switchJournalMode(mode, el) {
   document.querySelectorAll('.panel-tab').forEach(function(t){ t.classList.remove('active'); });
   document.querySelectorAll('.journal-mode').forEach(function(m){ m.classList.remove('active'); });
-  event.target.classList.add('active');
+  if (el) { el.classList.add('active'); } else {
+    var tabs = document.querySelectorAll('.panel-tab');
+    tabs.forEach(function(t){ if (t.getAttribute('onclick') && t.getAttribute('onclick').indexOf("'" + mode + "'") !== -1) t.classList.add('active'); });
+  }
   document.getElementById('journal-mode-' + mode).classList.add('active');
 }
 
@@ -805,12 +826,12 @@ function renderManualLines() {
   var tbody = document.getElementById('manual-lines-body');
   var html = '';
   manualLines.forEach(function(line, idx) {
-    html += '<tr>'+
-      '<td><input type="text" value="'+escHtml(line.compte)+'" onchange="updateManualLine('+idx+','compte',this.value)" placeholder="512"/></td>'+
-      '<td><input type="text" value="'+escHtml(line.libelle)+'" onchange="updateManualLine('+idx+','libelle',this.value)" placeholder="Libellé"/></td>'+
-      '<td><input type="text" class="mono" value="'+escHtml(line.debit)+'" onchange="updateManualLine('+idx+','debit',this.value)" placeholder="0"/></td>'+
-      '<td><input type="text" class="mono" value="'+escHtml(line.credit)+'" onchange="updateManualLine('+idx+','credit',this.value)" placeholder="0"/></td>'+
-      '<td style="text-align:center"><button class="btn-secondary" style="padding:2px 6px;font-size:11px;" onclick="removeManualLine('+idx+')">×</button></td>'+
+    html += '<tr>' +
+      '<td><input type="text" value="'+escHtml(line.compte)+'" onchange="updateManualLine('+idx+',\'compte\',this.value)" placeholder="512"/></td>' +
+      '<td><input type="text" value="'+escHtml(line.libelle)+'" onchange="updateManualLine('+idx+',\'libelle\',this.value)" placeholder="Libelle"/></td>' +
+      '<td><input type="text" class="mono" value="'+escHtml(line.debit)+'" onchange="updateManualLine('+idx+',\'debit\',this.value)" placeholder="0"/></td>' +
+      '<td><input type="text" class="mono" value="'+escHtml(line.credit)+'" onchange="updateManualLine('+idx+',\'credit\',this.value)" placeholder="0"/></td>' +
+      '<td style="text-align:center"><button class="btn-secondary" style="padding:2px 6px;font-size:11px;" onclick="removeManualLine('+idx+')">x</button></td>' +
       '</tr>';
   });
   tbody.innerHTML = html;
@@ -873,7 +894,7 @@ function selectEntreprise(el) {
 }
 function renderQuickOps() {
   document.getElementById('quick-ops-container').innerHTML = ENTREPRISE_CONFIG[currentEntrepriseType].quickOps.map(function(op) {
-    return '<span class="quick-chip" onclick="setQuick(''+op+'')">'+op+'</span>';
+    return '<span class="quick-chip" onclick="setQuick(\'' + op.replace(/'/g, "\\'") + '\')">' + op + '</span>';
   }).join('');
 }
 function renderTypeSelect() {
@@ -1381,46 +1402,10 @@ function exportJournalCSV(result) {
 }
 
 /* ===================================================
-   INIT
+   INIT — called inside window load above
 =================================================== */
-document.getElementById('op-date').value = todayDate();
-document.getElementById('manual-date').value = todayDate();
-renderQuickOps();
-renderTypeSelect();
-renderPlan();
-renderGuide();
-initManualLines();
 
-document.getElementById('op-description').addEventListener('keydown', function(e) {
-  if (e.key === 'Enter' && e.ctrlKey) { e.preventDefault(); generateJournal(); }
-});
 
-// Exposer globalement
-window.switchAuth       = switchAuth;
-window.doLogin          = doLogin;
-window.doRegister       = doRegister;
-window.forgotPassword   = forgotPassword;
-window.logout           = logout;
-window.showView         = showView;
-window.selectEntreprise = selectEntreprise;
-window.setQuick         = setQuick;
-window.generateJournal  = generateJournal;
-window.saveManualSimple = saveManualSimple;
-window.saveManualMulti  = saveManualMulti;
-window.addManualLine    = addManualLine;
-window.removeManualLine = removeManualLine;
-window.clearManualLines = clearManualLines;
-window.switchJournalMode= switchJournalMode;
-window.renderGrandLivre = renderGrandLivre;
-window.filterPlan       = filterPlan;
-window.exportBalanceCSV = exportBalanceCSV;
-window.exportBilanCSV   = exportBilanCSV;
-window.exportResultatCSV= exportResultatCSV;
-window.exportTiersCSV   = exportTiersCSV;
-window.exportTresorerieCSV = exportTresorerieCSV;
-window.exportCurrentJournalCSV = exportCurrentJournalCSV;
-
-}); // fin DOMContentLoaded
 </script>
 </body>
 </html>
