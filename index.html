@@ -6,17 +6,8 @@
 <title>Comeo AI — Comptabilité SYSCOHADA</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
 
-<!-- ✅ NOUVEAU : CDN jsdelivr plus fiable que gstatic -->
 <script src="https://cdn.jsdelivr.net/npm/firebase@9.22.2/firebase-app-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/firebase@9.22.2/firebase-firestore-compat.js"></script>
-<!-- ❌ ANCIEN (supprimé car causait "Unexpected token '<'") :
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
--->
-
-<!-- ❌ ANCIEN (supprimé car interférait avec le chargement des scripts) :
-<base target="_blank">
--->
 
 <style>
 :root {
@@ -173,7 +164,6 @@ table.data-table td { padding: 8px 12px; vertical-align: middle; }
 .ai-analysis-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-family: var(--display); font-weight: 700; font-size: 13px; color: var(--accent); }
 .ai-analysis-text { font-size: 13px; color: var(--text2); line-height: 1.7; }
 .ai-analysis-text strong { color: var(--text); }
-.ai-analysis-text .rule { display: inline-block; background: rgba(240,165,0,0.1); border: 1px solid rgba(240,165,0,0.2); color: var(--accent3); font-family: var(--mono); font-size: 10px; padding: 1px 7px; border-radius: 3px; margin: 0 2px; }
 
 /* DASHBOARD */
 .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; margin-bottom: 20px; }
@@ -184,7 +174,7 @@ table.data-table td { padding: 8px 12px; vertical-align: middle; }
 .stat-value.neg { color: var(--credit); }
 .stat-sub { font-size: 11px; color: var(--text3); margin-top: 4px; }
 
-/* GRAND LIVRE / BALANCE */
+/* GRAND LIVRE */
 .gl-compte { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 12px; }
 .gl-compte-header { padding: 10px 14px; background: rgba(255,255,255,0.02); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; cursor: pointer; }
 .gl-compte-num { font-family: var(--mono); font-size: 13px; color: var(--accent2); font-weight: 600; }
@@ -200,6 +190,15 @@ table.data-table td { padding: 8px 12px; vertical-align: middle; }
 .empty-icon svg { width: 22px; height: 22px; color: var(--accent); opacity: 0.6; }
 .empty-state h3 { font-family: var(--display); font-size: 15px; color: var(--text2); }
 .empty-state p { font-size: 12px; line-height: 1.6; max-width: 280px; }
+
+/* ══ NOUVEAU : Bandeau moteur IA ══ */
+.ai-engine-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: linear-gradient(135deg, rgba(0,136,255,0.12), rgba(0,212,170,0.08));
+  border: 1px solid rgba(0,136,255,0.25); color: var(--accent2);
+  font-family: var(--mono); font-size: 10px; padding: 3px 10px;
+  border-radius: 100px; letter-spacing: 0.4px;
+}
 
 /* TOAST */
 #toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--bg2); border: 1px solid var(--border2); color: var(--text); font-size: 13px; padding: 10px 18px; border-radius: 100px; opacity: 0; transition: all 0.3s; pointer-events: none; z-index: 9999; white-space: nowrap; }
@@ -232,7 +231,7 @@ table.data-table td { padding: 8px 12px; vertical-align: middle; }
     <div class="auth-logo-mark">C</div>
     <div class="auth-logo-text">Comeo <span>AI</span></div>
   </div>
-  <div class="auth-sub">Comptabilité SYSCOHADA automatisée — Journal, Grand Livre, Balance & Trésorerie.<br>Essai gratuit 24h, puis abonnement mensuel.</div>
+  <div class="auth-sub">Comptabilité SYSCOHADA automatisée — Journal, Grand Livre, Balance &amp; Trésorerie.<br>Essai gratuit 24h, puis abonnement mensuel.</div>
   <div class="auth-tabs">
     <div class="auth-tab active" onclick="switchAuth('login')">Connexion</div>
     <div class="auth-tab" onclick="switchAuth('register')">Nouveau compte</div>
@@ -280,6 +279,8 @@ table.data-table td { padding: 8px 12px; vertical-align: middle; }
     <div class="header-sub">Comptabilité · SYSCOHADA</div>
   </div>
   <div class="header-right">
+    <!-- ✅ NOUVEAU : badge moteur IA -->
+    <span class="ai-engine-badge">⚡ Claude AI</span>
     <span class="badge-org" id="header-org">🏢 Entreprise</span>
     <span class="badge" id="header-status">🟢 Actif</span>
     <button class="btn-header" onclick="logout()">
@@ -433,9 +434,6 @@ table.data-table td { padding: 8px 12px; vertical-align: middle; }
 <div id="toast"></div>
 
 <script>
-/* ✅ NOUVEAU : Tout le JS est dans DOMContentLoaded pour garantir
-   que Firebase et le DOM sont chargés avant l'exécution.
-   ❌ ANCIEN : le JS s'exécutait directement sans attendre Firebase */
 document.addEventListener('DOMContentLoaded', function() {
 
 /* ===================================================
@@ -452,13 +450,11 @@ var firebaseConfig = {
   measurementId: "G-FYQCWY5G4S"
 };
 
-// ✅ NOUVEAU : Vérification que Firebase est bien chargé avant init
 if (typeof firebase === 'undefined') {
   document.getElementById('auth-overlay').innerHTML = '<div style="color:#f87171;font-family:monospace;padding:40px;text-align:center;"><h2>⚠️ Erreur de chargement</h2><p style="margin-top:12px;">Firebase n\'a pas pu se charger.<br>Vérifiez votre connexion internet et rechargez la page.</p><button onclick="location.reload()" style="margin-top:16px;padding:10px 20px;background:#00d4aa;border:none;border-radius:8px;font-weight:700;cursor:pointer;">Recharger</button></div>';
   return;
 }
 
-// ✅ Évite double initialisation si la page est rechargée partiellement
 if (!firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
 }
@@ -898,118 +894,165 @@ function downloadCSV(csv, filename) {
 }
 
 /* ===================================================
-   IA — GROQ API
+   ✅ NOUVEAU : Claude API — 1 seul appel, sans limite TPM Groq
+   ❌ ANCIEN  : Groq avec 2 appels (pré-analyse + génération)
+              → dépassait 12 000 TPM/min sur le plan gratuit
 =================================================== */
-var GROQ_URL   = 'https://api.groq.com/openai/v1/chat/completions';
-var GROQ_KEY   = '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'; /* <-- remplacer par votre clé */
-var GROQ_MODEL = 'llama-3.3-70b-versatile';
 
-var SYSTEM_PREANALYSE = "Tu es un expert-comptable OHADA certifie, specialise SYSCOHADA Revise 2017.\nOn te donne une operation comptable avec le TYPE D'ENTREPRISE. Tu dois effectuer une PRE-ANALYSE complete.\n\nTABLE DE COMPTES OBLIGATOIRE :\nIMMOBILISATIONS : informatique->2443, mobilier->2441, bureau->2442, voiture->2411, camion->2412, industriel->231, agricole->232, medical->245, batiments->221\nTVA : immobilisations->4451 | achats biens->4452 | services->4453 | collectee->4421\nFOURNISSEURS : ordinaire->401 | immobilisations->404\nCLIENTS : ordinaire->411 | douteux->416\nTRESOREIE : banque->512 | caisse->571\nCHARGES : marchandises->601 | matieres->602 | fournitures->604 | salaires->6511 | cotisations->6611 | loyers->622 | entretien->624 | telephone->628 | honoraires->632 | transports->613 | amort. transport->6817 | amort. info->6844\nPRODUITS : marchandises->701 | produits finis->702 | travaux->705 | services->706 | subventions->741 | equipement->131\nSTOCKS : marchandises->301 | matieres->311 | en-cours->331 | produits finis->351\nVARIATION STOCK : marchandises->6091/301 | produits finis->7091/351\n\nTVA zone OHADA = 18%. Si TTC donne -> HT = ARRONDI(TTC/1.18) | TVA = TTC - HT\nReponds UNIQUEMENT en JSON pur :\n{\n  \"nature\": \"type\",\n  \"operations_requises\": [\"liste\"],\n  \"compte_principal\": \"numero\",\n  \"compte_principal_libelle\": \"libelle\",\n  \"compte_tva\": \"4451|4452|4453|null\",\n  \"compte_contrepartie\": \"512|571|401|404|411|...\",\n  \"tva_applicable\": true,\n  \"montant_ttc\": 0,\n  \"montant_ht\": 0,\n  \"montant_tva\": 0,\n  \"calcul_tva\": \"explication\",\n  \"mode_reglement\": \"banque|caisse|credit_fournisseur|credit_client\",\n  \"necessite_variation_stock\": true,\n  \"avertissements\": \"hypotheses\"\n}";
+// ✅ NOUVEAU : Prompt unique et compact (~200 tokens vs ~800 avant)
+var SYSTEM_GENERATE = [
+  "Tu es Comeo AI, expert-comptable OHADA, SYSCOHADA Révisé 2017.",
+  "Génère les écritures comptables EXACTES en JSON pur.",
+  "TVA OHADA=18%. Si TTC donné: HT=ARRONDI(TTC/1.18), TVA=TTC-HT.",
+  "COMPTES CLÉS: marchandises:601/701, services:706, banque:512, caisse:571,",
+  "clients:411, fourn.ordinaire:401, fourn.immo:404,",
+  "TVA collectée:4421, TVA récup.biens:4452, TVA récup.services:4453, TVA récup.immo:4451,",
+  "salaires:6511, cotis.patronales:6611, amort:681,",
+  "immo.info:2443, immo.mobilier:2441, immo.transport:2411/2412, immo.bât:221.",
+  "RÈGLE: Débit total = Crédit total pour chaque écriture.",
+  "RETOURNE uniquement ce JSON (sans markdown):",
+  '{"titre":"","date":"","reference":"","ecritures":[{"etape":"","lignes":[{"compte":"","libelle":"","debit":0,"credit":0}]}],"analyse":"","notes":""}'
+].join(' ');
 
-var SYSTEM_GENERATE = "Tu es Comeo AI, expert-comptable OHADA, SYSCOHADA Revise 2017.\nTu recois une operation, le type d'entreprise, et une pre-analyse avec les comptes EXACTS.\nREGLE ABSOLUE : Utilise EXACTEMENT les comptes et montants de la pre-analyse.\nNe jamais enregistrer un montant TTC directement en immobilisation ou charge.\nVerification finale : Debit total = Credit total pour CHAQUE ecriture.\nFORMAT JSON pur uniquement :\n{\n  \"titre\": \"Titre court\",\n  \"date\": \"date\",\n  \"reference\": \"ref\",\n  \"type_entreprise\": \"type\",\n  \"ecritures\": [\n    {\n      \"etape\": \"Ecriture 1\",\n      \"lignes\": [\n        { \"compte\": \"num\", \"libelle\": \"lib\", \"debit\": 0, \"credit\": 0 }\n      ]\n    }\n  ],\n  \"analyse\": \"Explication\",\n  \"notes\": \"Vigilance\"\n}";
-
-function groqCall(systemPrompt, userMessage) {
-  return fetch(GROQ_URL, {
-    method:'POST',
-    headers:{'Content-Type':'application/json','Authorization':'Bearer '+GROQ_KEY},
-    body:JSON.stringify({model:GROQ_MODEL,max_tokens:10000,temperature:0.1,messages:[{role:'system',content:systemPrompt},{role:'user',content:userMessage}]})
-  }).then(function(res){return res.json();}).then(function(data){
-    if (data.error) throw new Error(data.error.message||'Erreur API Groq');
-    if (!data.choices||!data.choices[0]||!data.choices[0].message||!data.choices[0].message.content) throw new Error('Réponse API Groq invalide');
-    return data.choices[0].message.content.trim();
-  });
-}
-
-function preAnalyse(desc, type, montant, extra, entrepriseType) {
-  var cfg = ENTREPRISE_CONFIG[entrepriseType];
-  var prompt = 'TYPE : '+cfg.label+'\nOperation : '+desc;
-  if (montant) prompt += '\nMontant : '+montant+' FCFA';
-  if (type)    prompt += '\nType : '+type;
-  if (extra)   prompt += '\nDetails : '+extra;
-  prompt += '\nEffectue la pre-analyse et retourne le JSON.';
-  return groqCall(SYSTEM_PREANALYSE, prompt).then(function(raw) {
-    var clean=raw.replace(/```json\s*/gi,'').replace(/```\s*/gi,'').trim();
-    var js=clean.indexOf('{'); var je=clean.lastIndexOf('}');
-    if (js===-1) throw new Error('Pre-analyse JSON invalide');
-    return JSON.parse(clean.slice(js,je+1));
+// ✅ NOUVEAU : Appel Claude API (1 seul appel, remplace les 2 appels Groq)
+// ❌ ANCIEN  : groqCall() vers api.groq.com avec max_tokens:10000
+function claudeCall(userMessage) {
+  return fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model: "claude-sonnet-4-20250514",  // ✅ NOUVEAU : Claude Sonnet 4
+      max_tokens: 2500,                   // ✅ NOUVEAU : 2500 au lieu de 10000
+      system: SYSTEM_GENERATE,
+      messages: [{ role: "user", content: userMessage }]
+    })
+  })
+  .then(function(res) { return res.json(); })
+  .then(function(data) {
+    if (data.error) throw new Error(data.error.message || 'Erreur API Claude');
+    if (!data.content || !data.content[0] || !data.content[0].text) throw new Error('Réponse Claude invalide');
+    return data.content[0].text.trim();
   });
 }
 
 var isGenerating = false;
 
+// ✅ NOUVEAU : generateJournal() simplifié — 1 seul appel claudeCall()
+// ❌ ANCIEN  : preAnalyse() + groqCall() = 2 appels, double consommation TPM
 function generateJournal() {
   if (isGenerating) return;
-  var desc=document.getElementById('op-description').value.trim();
-  var date=document.getElementById('op-date').value||todayDate();
-  var ref=document.getElementById('op-ref').value.trim()||genRef();
-  var montant=document.getElementById('op-montant').value.trim();
-  var type=document.getElementById('op-type').value;
-  var extra=document.getElementById('op-extra').value.trim();
+  var desc    = document.getElementById('op-description').value.trim();
+  var date    = document.getElementById('op-date').value || todayDate();
+  var ref     = document.getElementById('op-ref').value.trim() || genRef();
+  var montant = document.getElementById('op-montant').value.trim();
+  var type    = document.getElementById('op-type').value;
+  var extra   = document.getElementById('op-extra').value.trim();
+
   if (!desc) { showToast("Décrivez l'opération"); return; }
-  isGenerating=true;
-  document.getElementById('btn-generate').disabled=true;
-  var cfg=ENTREPRISE_CONFIG[currentEntrepriseType];
-  document.getElementById('output-content').innerHTML='<div class="loading-state"><div class="spinner"></div><div>Analyse IA en cours...</div></div>';
-  preAnalyse(desc,type,montant,extra,currentEntrepriseType).catch(function(e){console.warn('Pre-analyse',e);return null;}).then(function(analyse) {
-    var userMsg='TYPE : '+cfg.label+'\nOPERATION : '+desc;
-    if (montant) userMsg+='\nMontant : '+montant+' FCFA';
-    if (type)    userMsg+='\nType : '+type;
-    if (extra)   userMsg+='\nDetails : '+extra;
-    userMsg+='\nDate : '+date+' | Ref : '+ref;
-    if (analyse) {
-      userMsg+='\n\nPRE-ANALYSE :\nOperations : '+(analyse.operations_requises||[]).join(' -> ');
-      userMsg+='\nCompte principal : '+analyse.compte_principal;
-      userMsg+='\nTVA : '+(analyse.compte_tva||'aucun');
-      userMsg+='\nContrepartie : '+analyse.compte_contrepartie;
-      userMsg+='\nTVA applicable : '+analyse.tva_applicable;
-      userMsg+='\nTTC : '+analyse.montant_ttc+' | HT : '+analyse.montant_ht+' | TVA : '+analyse.montant_tva;
-      userMsg+='\nMode : '+analyse.mode_reglement;
-      userMsg+='\nVariation stock : '+analyse.necessite_variation_stock;
-    }
-    return groqCall(SYSTEM_GENERATE, userMsg);
-  }).then(function(rawJson) {
-    var clean=rawJson.replace(/```json\s*/gi,'').replace(/```\s*/gi,'').trim();
-    var js=clean.indexOf('{'); var je=clean.lastIndexOf('}');
-    if (js===-1) throw new Error('Format JSON non trouvé');
-    var result=JSON.parse(clean.slice(js,je+1));
-    result.type_entreprise=cfg.label; result.date=date; result.reference=ref; result.description=desc;
-    renderJournal(result,desc,date,ref);
-    return saveEcriture(result);
-  }).catch(function(err) {
-    document.getElementById('output-content').innerHTML='<div class="empty-state"><div class="empty-icon" style="border-color:rgba(248,113,113,0.3);background:rgba(248,113,113,0.06)"><svg viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div><h3 style="color:var(--credit)">Erreur</h3><p>'+escHtml(err.message)+'</p></div>';
-    showToast('Erreur : '+err.message);
-  }).finally(function(){isGenerating=false;document.getElementById('btn-generate').disabled=false;});
+
+  isGenerating = true;
+  document.getElementById('btn-generate').disabled = true;
+  var cfg = ENTREPRISE_CONFIG[currentEntrepriseType];
+
+  document.getElementById('output-content').innerHTML =
+    '<div class="loading-state"><div class="spinner"></div><div>Analyse Claude AI en cours...</div></div>';
+
+  // ✅ NOUVEAU : Construction du message utilisateur (compact)
+  var userMsg = 'TYPE: ' + cfg.label + '\nOPÉRATION: ' + desc;
+  if (montant) userMsg += '\nMontant: ' + montant + ' FCFA';
+  if (type)    userMsg += '\nType: ' + type;
+  if (extra)   userMsg += '\nDétails: ' + extra;
+  userMsg += '\nDate: ' + date + ' | Ref: ' + ref;
+
+  // ✅ NOUVEAU : 1 seul appel API (claudeCall)
+  claudeCall(userMsg)
+    .then(function(rawJson) {
+      var clean = rawJson.replace(/```json\s*/gi,'').replace(/```\s*/gi,'').trim();
+      var js = clean.indexOf('{'); var je = clean.lastIndexOf('}');
+      if (js === -1) throw new Error('Format JSON non trouvé dans la réponse');
+      var result = JSON.parse(clean.slice(js, je + 1));
+      result.type_entreprise = cfg.label;
+      result.date = date;
+      result.reference = ref;
+      result.description = desc;
+      renderJournal(result, desc, date, ref);
+      return saveEcriture(result);
+    })
+    .catch(function(err) {
+      document.getElementById('output-content').innerHTML =
+        '<div class="empty-state"><div class="empty-icon" style="border-color:rgba(248,113,113,0.3);background:rgba(248,113,113,0.06)"><svg viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div><h3 style="color:var(--credit)">Erreur</h3><p>' + escHtml(err.message) + '</p></div>';
+      showToast('Erreur : ' + err.message);
+    })
+    .finally(function() {
+      isGenerating = false;
+      document.getElementById('btn-generate').disabled = false;
+    });
 }
 
 function renderJournal(result, opDesc, date, ref) {
-  var ecritures=result.ecritures||[];
-  var isMulti=ecritures.length>0&&Array.isArray(ecritures[0]&&ecritures[0].lignes);
-  var cardsHTML='';
+  var ecritures = result.ecritures || [];
+  var isMulti = ecritures.length > 0 && Array.isArray(ecritures[0] && ecritures[0].lignes);
+  var cardsHTML = '';
+
   if (isMulti) {
-    ecritures.forEach(function(ec,idx) {
-      var lignes=ec.lignes||[]; var totD=lignes.reduce(function(s,l){return s+(l.debit||0);},0); var totC=lignes.reduce(function(s,l){return s+(l.credit||0);},0); var eq=Math.abs(totD-totC)<1;
-      var rows='';
-      lignes.forEach(function(e){rows+='<tr><td class="col-compte">'+escHtml(e.compte||'')+'</td><td class="col-libelle">'+escHtml(e.libelle||'')+'<span class="col-sub">'+getPlanLibelle(e.compte)+'</span></td><td class="col-debit">'+(e.debit?fmtAmount(e.debit):'<span class="col-empty">-</span>')+'</td><td class="col-credit">'+(e.credit?fmtAmount(e.credit):'<span class="col-empty">-</span>')+'</td></tr>';});
-      cardsHTML+='<div class="journal-card"><div class="journal-card-header"><div class="journal-card-title"><span style="background:rgba(240,165,0,0.1);border:1px solid rgba(240,165,0,0.2);color:var(--accent3);font-family:var(--mono);font-size:10px;padding:2px 8px;border-radius:4px;margin-right:6px;">Écriture '+(idx+1)+'</span>'+escHtml(ec.etape||'')+'</div><div class="'+(eq?'equilibre-ok':'equilibre-err')+'">'+(eq?'OK Équilibre':'Déséquilibre')+'</div></div><table class="data-table"><thead><tr><th style="width:80px">Compte</th><th>Libellé</th><th style="text-align:right;width:120px">Débit</th><th style="text-align:right;width:120px">Crédit</th></tr></thead><tbody>'+rows+'</tbody></table><div class="journal-totals"><div class="total-item"><span class="total-label">Total Débit</span><span class="total-debit">'+fmtAmount(totD)+'</span></div><div class="total-item"><span class="total-label">Total Crédit</span><span class="total-credit">'+fmtAmount(totC)+'</span></div></div></div>';
+    ecritures.forEach(function(ec, idx) {
+      var lignes = ec.lignes || [];
+      var totD = lignes.reduce(function(s,l){return s+(l.debit||0);}, 0);
+      var totC = lignes.reduce(function(s,l){return s+(l.credit||0);}, 0);
+      var eq = Math.abs(totD - totC) < 1;
+      var rows = '';
+      lignes.forEach(function(e) {
+        rows += '<tr><td class="col-compte">'+escHtml(e.compte||'')+'</td><td class="col-libelle">'+escHtml(e.libelle||'')+'<span class="col-sub">'+getPlanLibelle(e.compte)+'</span></td><td class="col-debit">'+(e.debit?fmtAmount(e.debit):'<span class="col-empty">-</span>')+'</td><td class="col-credit">'+(e.credit?fmtAmount(e.credit):'<span class="col-empty">-</span>')+'</td></tr>';
+      });
+      cardsHTML += '<div class="journal-card"><div class="journal-card-header"><div class="journal-card-title"><span style="background:rgba(240,165,0,0.1);border:1px solid rgba(240,165,0,0.2);color:var(--accent3);font-family:var(--mono);font-size:10px;padding:2px 8px;border-radius:4px;margin-right:6px;">Écriture '+(idx+1)+'</span>'+escHtml(ec.etape||'')+'</div><div class="'+(eq?'equilibre-ok':'equilibre-err')+'">'+(eq?'OK Équilibre':'Déséquilibre')+'</div></div><table class="data-table"><thead><tr><th style="width:80px">Compte</th><th>Libellé</th><th style="text-align:right;width:120px">Débit</th><th style="text-align:right;width:120px">Crédit</th></tr></thead><tbody>'+rows+'</tbody></table><div class="journal-totals"><div class="total-item"><span class="total-label">Total Débit</span><span class="total-debit">'+fmtAmount(totD)+'</span></div><div class="total-item"><span class="total-label">Total Crédit</span><span class="total-credit">'+fmtAmount(totC)+'</span></div></div></div>';
     });
-    if (ecritures.length>1) cardsHTML='<div style="background:linear-gradient(135deg,rgba(240,165,0,0.07),rgba(0,136,255,0.05));border:1px solid rgba(240,165,0,0.15);border-radius:10px;padding:10px 14px;margin-bottom:12px;font-size:12px;color:var(--text2);"><strong style="color:var(--accent3);font-family:var(--display);font-size:13px;display:block;margin-bottom:4px;">'+ecritures.length+' écriture(s) comptable(s)</strong>Selon SYSCOHADA, cette opération génère '+ecritures.length+' écriture(s) distincte(s).</div>'+cardsHTML;
+    if (ecritures.length > 1) {
+      cardsHTML = '<div style="background:linear-gradient(135deg,rgba(240,165,0,0.07),rgba(0,136,255,0.05));border:1px solid rgba(240,165,0,0.15);border-radius:10px;padding:10px 14px;margin-bottom:12px;font-size:12px;color:var(--text2);"><strong style="color:var(--accent3);font-family:var(--display);font-size:13px;display:block;margin-bottom:4px;">'+ecritures.length+' écriture(s) comptable(s)</strong>Selon SYSCOHADA, cette opération génère '+ecritures.length+' écriture(s) distincte(s).</div>' + cardsHTML;
+    }
   } else {
-    var lignes=ecritures; var totD=lignes.reduce(function(s,l){return s+(l.debit||0);},0); var totC=lignes.reduce(function(s,l){return s+(l.credit||0);},0); var eq=Math.abs(totD-totC)<1;
-    var rows='';
-    lignes.forEach(function(e){rows+='<tr><td class="col-compte">'+escHtml(e.compte||'')+'</td><td class="col-libelle">'+escHtml(e.libelle||'')+'<span class="col-sub">'+getPlanLibelle(e.compte)+'</span></td><td class="col-debit">'+(e.debit?fmtAmount(e.debit):'<span class="col-empty">-</span>')+'</td><td class="col-credit">'+(e.credit?fmtAmount(e.credit):'<span class="col-empty">-</span>')+'</td></tr>';});
-    cardsHTML='<div class="journal-card"><div class="journal-card-header"><div class="journal-card-title">'+escHtml(result.titre||opDesc)+'</div><div class="journal-card-date">'+(result.date||date)+'</div><div class="journal-card-ref">'+escHtml(result.reference||ref)+'</div><div class="'+(eq?'equilibre-ok':'equilibre-err')+'">'+(eq?'OK Équilibre':'Déséquilibre')+'</div></div><table class="data-table"><thead><tr><th style="width:80px">Compte</th><th>Libellé</th><th style="text-align:right;width:120px">Débit</th><th style="text-align:right;width:120px">Crédit</th></tr></thead><tbody>'+rows+'</tbody></table><div class="journal-totals"><div class="total-item"><span class="total-label">Total Débit</span><span class="total-debit">'+fmtAmount(totD)+'</span></div><div class="total-item"><span class="total-label">Total Crédit</span><span class="total-credit">'+fmtAmount(totC)+'</span></div></div></div>';
+    var lignes = ecritures;
+    var totD = lignes.reduce(function(s,l){return s+(l.debit||0);}, 0);
+    var totC = lignes.reduce(function(s,l){return s+(l.credit||0);}, 0);
+    var eq = Math.abs(totD - totC) < 1;
+    var rows = '';
+    lignes.forEach(function(e) {
+      rows += '<tr><td class="col-compte">'+escHtml(e.compte||'')+'</td><td class="col-libelle">'+escHtml(e.libelle||'')+'<span class="col-sub">'+getPlanLibelle(e.compte)+'</span></td><td class="col-debit">'+(e.debit?fmtAmount(e.debit):'<span class="col-empty">-</span>')+'</td><td class="col-credit">'+(e.credit?fmtAmount(e.credit):'<span class="col-empty">-</span>')+'</td></tr>';
+    });
+    cardsHTML = '<div class="journal-card"><div class="journal-card-header"><div class="journal-card-title">'+escHtml(result.titre||opDesc)+'</div><div class="journal-card-date">'+(result.date||date)+'</div><div class="journal-card-ref">'+escHtml(result.reference||ref)+'</div><div class="'+(eq?'equilibre-ok':'equilibre-err')+'">'+(eq?'OK Équilibre':'Déséquilibre')+'</div></div><table class="data-table"><thead><tr><th style="width:80px">Compte</th><th>Libellé</th><th style="text-align:right;width:120px">Débit</th><th style="text-align:right;width:120px">Crédit</th></tr></thead><tbody>'+rows+'</tbody></table><div class="journal-totals"><div class="total-item"><span class="total-label">Total Débit</span><span class="total-debit">'+fmtAmount(totD)+'</span></div><div class="total-item"><span class="total-label">Total Crédit</span><span class="total-credit">'+fmtAmount(totC)+'</span></div></div></div>';
   }
-  document.getElementById('output-content').innerHTML='<div class="journal-result"><div class="ai-analysis"><div class="ai-analysis-header"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>Analyse — '+escHtml(result.type_entreprise||'SYSCOHADA')+'</div><div class="ai-analysis-text">'+escHtml(result.analyse||'').replace(/\n/g,'<br>')+'</div>'+(result.notes?'<div style="margin-top:8px;font-size:12px;color:var(--text3)">Note : '+escHtml(result.notes)+'</div>':'')+'</div>'+cardsHTML+'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;"><button class="btn-action" onclick="window.print()">Imprimer</button><button class="btn-action" onclick="exportCurrentJournalCSV()">Export CSV</button></div></div>';
+
+  document.getElementById('output-content').innerHTML =
+    '<div class="journal-result">' +
+    '<div class="ai-analysis"><div class="ai-analysis-header">' +
+    '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>' +
+    'Analyse Claude AI — '+escHtml(result.type_entreprise||'SYSCOHADA')+'</div>' +
+    '<div class="ai-analysis-text">'+escHtml(result.analyse||'').replace(/\n/g,'<br>')+'</div>' +
+    (result.notes ? '<div style="margin-top:8px;font-size:12px;color:var(--text3)">Note : '+escHtml(result.notes)+'</div>' : '') +
+    '</div>' + cardsHTML +
+    '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;">' +
+    '<button class="btn-action" onclick="window.print()">Imprimer</button>' +
+    '<button class="btn-action" onclick="exportCurrentJournalCSV()">Export CSV</button>' +
+    '</div></div>';
+
   window._lastJournalResult = result;
 }
 
 function exportCurrentJournalCSV() { if (window._lastJournalResult) exportJournalCSV(window._lastJournalResult); }
 function exportJournalCSV(result) {
-  var ecritures=result.ecritures||[]; var csv='Ecriture;Compte;Libelle;Debit;Credit\n';
-  if (ecritures.length>0&&ecritures[0]&&Array.isArray(ecritures[0].lignes)) {
-    ecritures.forEach(function(ec,idx){(ec.lignes||[]).forEach(function(l){csv+='"'+(ec.etape||'Ecriture '+(idx+1))+'";'+l.compte+';"'+(l.libelle||'').replace(/"/g,'""')+'";'+(l.debit||0)+';'+(l.credit||0)+'\n';});});
-  } else { ecritures.forEach(function(l){csv+='"";'+l.compte+';"'+(l.libelle||'').replace(/"/g,'""')+'";'+(l.debit||0)+';'+(l.credit||0)+'\n';}); }
-  downloadCSV(csv,'journal_'+(result.reference||'export')+'.csv');
+  var ecritures = result.ecritures || [];
+  var csv = 'Ecriture;Compte;Libelle;Debit;Credit\n';
+  if (ecritures.length > 0 && ecritures[0] && Array.isArray(ecritures[0].lignes)) {
+    ecritures.forEach(function(ec, idx) {
+      (ec.lignes||[]).forEach(function(l) {
+        csv += '"'+(ec.etape||'Ecriture '+(idx+1))+'";'+l.compte+';"'+(l.libelle||'').replace(/"/g,'""')+'";'+(l.debit||0)+';'+(l.credit||0)+'\n';
+      });
+    });
+  } else {
+    ecritures.forEach(function(l) {
+      csv += '"";'+l.compte+';"'+(l.libelle||'').replace(/"/g,'""')+'";'+(l.debit||0)+';'+(l.credit||0)+'\n';
+    });
+  }
+  downloadCSV(csv, 'journal_'+(result.reference||'export')+'.csv');
 }
 
 /* ===================================================
@@ -1025,21 +1068,21 @@ document.getElementById('op-description').addEventListener('keydown', function(e
   if (e.key === 'Enter' && e.ctrlKey) { e.preventDefault(); generateJournal(); }
 });
 
-// ✅ Exposer les fonctions globalement (nécessaire car dans DOMContentLoaded)
-window.switchAuth = switchAuth;
-window.doLogin = doLogin;
-window.doRegister = doRegister;
-window.forgotPassword = forgotPassword;
-window.logout = logout;
-window.showView = showView;
+// Exposer globalement
+window.switchAuth       = switchAuth;
+window.doLogin          = doLogin;
+window.doRegister       = doRegister;
+window.forgotPassword   = forgotPassword;
+window.logout           = logout;
+window.showView         = showView;
 window.selectEntreprise = selectEntreprise;
-window.setQuick = setQuick;
-window.generateJournal = generateJournal;
-window.saveManualEntry = saveManualEntry;
+window.setQuick         = setQuick;
+window.generateJournal  = generateJournal;
+window.saveManualEntry  = saveManualEntry;
 window.renderGrandLivre = renderGrandLivre;
-window.filterPlan = filterPlan;
-window.exportBalanceCSV = exportBalanceCSV;
-window.exportTresorerieCSV = exportTresorerieCSV;
+window.filterPlan       = filterPlan;
+window.exportBalanceCSV       = exportBalanceCSV;
+window.exportTresorerieCSV    = exportTresorerieCSV;
 window.exportCurrentJournalCSV = exportCurrentJournalCSV;
 
 }); // fin DOMContentLoaded
