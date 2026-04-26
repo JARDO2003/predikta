@@ -659,7 +659,6 @@ window.addEventListener('load', function() {
   if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
   db = firebase.firestore();
 
-  /* INIT DOM */
   document.getElementById('op-date').value = todayDate();
   document.getElementById('manual-date').value = todayDate();
   renderQuickOps();
@@ -734,9 +733,7 @@ function switchAuth(tab) {
   if (tab === 'login') { tabs[0].classList.add('active'); } else { tabs[1].classList.add('active'); }
   document.getElementById('form-' + tab).classList.add('active');
 }
-function switchAuthDirect(tab) {
-  switchAuth(tab);
-}
+function switchAuthDirect(tab) { switchAuth(tab); }
 
 function doRegister() {
   var err = document.getElementById('register-error');
@@ -758,22 +755,22 @@ function doRegister() {
       btn.disabled = false; btn.textContent = 'Créer mon compte (24h gratuit)'; return;
     }
     var now = Date.now();
-db.collection('users').add({
-  nom_entreprise: nom,
-  contact: contact,
-  password_hash: hashPassword(pass),
-  created_at: now,
-  trial_ends_at: now + 86400000,
-  is_subscribed: false,
-  subscription_ends_at: 0,
-  last_payment_date: 0,
-  payment_amount: 0,
-  type_entreprise: document.getElementById('reg-type').value || 'commerce',
-  secteur: document.getElementById('reg-secteur').value.trim(),
-  pays: document.getElementById('reg-pays').value || 'CI',
-  ville: document.getElementById('reg-ville').value.trim(),
-  rccm: document.getElementById('reg-rccm').value.trim(),
-  regime_fiscal: document.getElementById('reg-regime').value || 'reel'
+    db.collection('users').add({
+      nom_entreprise: nom,
+      contact: contact,
+      password_hash: hashPassword(pass),
+      created_at: now,
+      trial_ends_at: now + 86400000,
+      is_subscribed: false,
+      subscription_ends_at: 0,
+      last_payment_date: 0,
+      payment_amount: 0,
+      type_entreprise: document.getElementById('reg-type').value || 'commerce',
+      secteur: document.getElementById('reg-secteur').value.trim(),
+      pays: document.getElementById('reg-pays').value || 'CI',
+      ville: document.getElementById('reg-ville').value.trim(),
+      rccm: document.getElementById('reg-rccm').value.trim(),
+      regime_fiscal: document.getElementById('reg-regime').value || 'reel'
     }).then(function() {
       suc.textContent = 'Compte créé ! Essai 24h actif. Connectez-vous.';
       suc.style.display = 'block';
@@ -822,7 +819,6 @@ function afterLogin() {
   document.getElementById('app').classList.add('active');
   document.getElementById('header-org').textContent = '🏢 ' + currentUser.nom_entreprise;
   currentEntrepriseType = currentUser.type_entreprise || 'commerce';
-  // Pré-remplir profil
   document.getElementById('profil-nom').value = currentUser.nom_entreprise || '';
   document.getElementById('profil-contact').value = currentUser.contact || '';
   document.getElementById('profil-type').value = currentUser.type_entreprise || 'commerce';
@@ -855,21 +851,32 @@ setInterval(function() { if (currentUser) updateSubscriptionStatus(); }, 60000);
 
 /* ===================================================
    DATA
+   CORRECTION 1 : Suppression du orderBy('date','desc') pour éviter
+   l'erreur d'index composite Firestore. On trie côté client.
 =================================================== */
 function loadEcritures() {
   if (!currentUser) return;
-  db.collection('ecritures').where('user_id', '==', currentUser.id).orderBy('date', 'desc').get().then(function(snap) {
-    allEcritures = snap.docs.map(function(d) {
-      var data = d.data();
-      if (data.ecritures && Array.isArray(data.ecritures) && (!data.lignes || !data.lignes.length)) {
-        data.lignes = [];
-        data.ecritures.forEach(function(ec) { (ec.lignes || []).forEach(function(l) { data.lignes.push(l); }); });
-      }
-      return Object.assign({ id: d.id }, data);
-    });
-    renderDashboard(); renderGrandLivre(); renderBalance(); renderBilan(); renderResultat(); renderTiers(); renderTresorerie();
-  }).catch(function(e) { console.warn('loadEcritures', e); showToast('Erreur chargement données'); });
+  db.collection('ecritures')
+    .where('user_id', '==', currentUser.id)
+    .get()
+    .then(function(snap) {
+      allEcritures = snap.docs.map(function(d) {
+        var data = d.data();
+        if (data.ecritures && Array.isArray(data.ecritures) && (!data.lignes || !data.lignes.length)) {
+          data.lignes = [];
+          data.ecritures.forEach(function(ec) { (ec.lignes || []).forEach(function(l) { data.lignes.push(l); }); });
+        }
+        return Object.assign({ id: d.id }, data);
+      });
+      /* Tri côté client par date décroissante */
+      allEcritures.sort(function(a, b) {
+        return (b.date || '').localeCompare(a.date || '');
+      });
+      renderDashboard(); renderGrandLivre(); renderBalance(); renderBilan(); renderResultat(); renderTiers(); renderTresorerie();
+    })
+    .catch(function(e) { console.warn('loadEcritures', e); showToast('Erreur chargement données : ' + e.message); });
 }
+
 function saveEcriture(data) {
   if (!currentUser) return Promise.resolve();
   var payload = Object.assign({}, data);
@@ -879,7 +886,10 @@ function saveEcriture(data) {
   }
   var doc = Object.assign({}, payload, { user_id: currentUser.id, created_at: Date.now() });
   return db.collection('ecritures').add(doc).then(function(ref) {
-    doc.id = ref.id; allEcritures.unshift(doc);
+    doc.id = ref.id;
+    /* Insertion triée côté client */
+    allEcritures.unshift(doc);
+    allEcritures.sort(function(a, b) { return (b.date || '').localeCompare(a.date || ''); });
     renderDashboard(); renderGrandLivre(); renderBalance(); renderBilan(); renderResultat(); renderTiers(); renderTresorerie();
     showToast('Écriture enregistrée'); return doc;
   });
@@ -942,7 +952,7 @@ function switchJournalMode(mode, el) {
 }
 
 /* ===================================================
-   SAISIE MANUELLE SIMPLE (rapide)
+   SAISIE MANUELLE SIMPLE
 =================================================== */
 function saveManualSimple() {
   var desc = document.getElementById('op-description').value.trim();
@@ -957,7 +967,7 @@ function saveManualSimple() {
 }
 
 /* ===================================================
-   SAISIE MANUELLE MULTI-LIGNES (Sage-like)
+   SAISIE MANUELLE MULTI-LIGNES
 =================================================== */
 var manualLines = [];
 function initManualLines() {
@@ -1153,7 +1163,7 @@ function exportBalanceCSV() {
 }
 
 /* ===================================================
-   BILAN (Balance Sheet) — Actif / Passif
+   BILAN
 =================================================== */
 function renderBilan() {
   var body = document.getElementById('bilan-body');
@@ -1171,11 +1181,11 @@ function renderBilan() {
     var d = byCompte[c];
     var solde = d.td - d.tc;
     var classe = c.charAt(0);
-    if (classe === '6' || classe === '7' || classe === '8') return; // Exclude result accounts from permanent
+    if (classe === '6' || classe === '7' || classe === '8') return;
     if (solde > 0) { actif.push({compte:c, libelle:d.libelle, montant:solde}); totalActif += solde; }
     else if (solde < 0) { passif.push({compte:c, libelle:d.libelle, montant:-solde}); totalPassifRaw += -solde; }
   });
-  var resultat = totalActif - totalPassifRaw; // profit if positive, loss if negative
+  var resultat = totalActif - totalPassifRaw;
   var totalPassif = totalPassifRaw + resultat;
 
   var htmlActif = ''; var groupedA = {};
@@ -1187,9 +1197,7 @@ function renderBilan() {
   passif.forEach(function(p){ var cl = p.compte.charAt(0); if(!groupedP[cl]) groupedP[cl]=[]; groupedP[cl].push(p); });
   var orderP = ['1','4','5'];
   orderP.forEach(function(cl){ if(!groupedP[cl]) return; htmlPassif += '<div class="bilan-section"><div class="bilan-section-title">'+escHtml(_classeName(cl))+'</div>'; groupedP[cl].forEach(function(p){ htmlPassif += '<div class="bilan-row"><span class="label">'+escHtml(p.compte)+' — '+escHtml(p.libelle)+'</span><span class="value">'+fmtAmount(p.montant)+'</span></div>'; }); htmlPassif += '</div>'; });
-  // Resultat line
-  var resClass = resultat >= 0 ? 'ok' : 'err';
-  var resLabel = resultat >= 0 ? `Résultat de l'exercice (Bénéfice)` : `Résultat de l'exercice (Perte)`;
+  var resLabel = resultat >= 0 ? "Résultat de l'exercice (Bénéfice)" : "Résultat de l'exercice (Perte)";
   htmlPassif += '<div class="bilan-section"><div class="bilan-section-title">Capitaux Propres</div>';
   htmlPassif += '<div class="bilan-row"><span class="label" style="font-weight:600;color:'+(resultat>=0?'var(--debit)':'var(--credit)')+'">'+resLabel+'</span><span class="value" style="color:'+(resultat>=0?'var(--debit)':'var(--credit)')+'">'+fmtAmount(Math.abs(resultat))+'</span></div></div>';
 
@@ -1209,20 +1217,19 @@ function _classeName(c) {
 }
 function exportBilanCSV() {
   var csv = 'Bilan;Compte;Libelle;Montant\n';
-  // We rebuild the same data quickly
   var byCompte = {};
   allEcritures.forEach(function(e){(e.lignes||[]).forEach(function(l){var c=String(l.compte||'');if(!c)return;if(!byCompte[c])byCompte[c]={libelle:getPlanLibelle(c)||l.libelle,td:0,tc:0};byCompte[c].td+=l.debit||0;byCompte[c].tc+=l.credit||0;});});
   var totalActif=0,totalPassifRaw=0;
-  Object.keys(byCompte).sort().forEach(function(c){var d=byCompte[c];var solde=d.td-d.tc;var cl=c.charAt(0);if(cl==='6'||cl==='7'||cl==='8')return;if(solde>0){csv+='ACTIF;'+c+';"'+d.libelle+'";'+solde+'\n';totalActif+=solde;}else if(solde<0){csv+='PASSIF;'+c+';"'+d.libelle+'";-'+(-solde)+'\n';totalPassifRaw+=-solde;}});
+  Object.keys(byCompte).sort().forEach(function(c){var d=byCompte[c];var solde=d.td-d.tc;var cl=c.charAt(0);if(cl==='6'||cl==='7'||cl==='8')return;if(solde>0){csv+='ACTIF;'+c+';"'+d.libelle+'";'+solde+'\n';totalActif+=solde;}else if(solde<0){csv+='PASSIF;'+c+';"'+d.libelle+'";'+(-solde)+'\n';totalPassifRaw+=(-solde);}});
   var resultat = totalActif - totalPassifRaw;
-  csv += `PASSIF;121/129;"Resultat de l'exercice";${resultat}\n`;
+  csv += 'PASSIF;121/129;"Resultat de l\'exercice";'+resultat+'\n';
   csv += 'TOTAL;ACTIF;TOTAL;'+totalActif+'\n';
   csv += 'TOTAL;PASSIF;TOTAL;'+(totalPassifRaw+resultat)+'\n';
   downloadCSV(csv,'bilan.csv');
 }
 
 /* ===================================================
-   COMPTE DE RESULTAT (P&L)
+   COMPTE DE RESULTAT
 =================================================== */
 function renderResultat() {
   var body = document.getElementById('resultat-body');
@@ -1239,7 +1246,7 @@ function renderResultat() {
   Object.keys(byCompte).sort().forEach(function(c){
     var d = byCompte[c]; var cl = c.charAt(0);
     if (cl === '6') { var m = d.td - d.tc; if (m !== 0) { charges.push({compte:c, libelle:d.libelle, montant:m}); totalCharges += m; } }
-    if (cl === '7') { var m = d.tc - d.td; if (m !== 0) { produits.push({compte:c, libelle:d.libelle, montant:m}); totalProduits += m; } }
+    if (cl === '7') { var m2 = d.tc - d.td; if (m2 !== 0) { produits.push({compte:c, libelle:d.libelle, montant:m2}); totalProduits += m2; } }
   });
   var resultat = totalProduits - totalCharges;
   var resColor = resultat >= 0 ? 'var(--debit)' : 'var(--credit)';
@@ -1266,14 +1273,14 @@ function exportResultatCSV() {
   var byCompte = {};
   allEcritures.forEach(function(e){(e.lignes||[]).forEach(function(l){var c=String(l.compte||'');if(!c)return;if(!byCompte[c])byCompte[c]={libelle:getPlanLibelle(c)||l.libelle,td:0,tc:0};byCompte[c].td+=l.debit||0;byCompte[c].tc+=l.credit||0;});});
   var totalCharges=0,totalProduits=0;
-  Object.keys(byCompte).sort().forEach(function(c){var d=byCompte[c];var cl=c.charAt(0);if(cl==='6'){var m=d.td-d.tc;if(m!==0){csv+='CHARGE;'+c+';"'+d.libelle+'";'+m+'\n';totalCharges+=m;}}if(cl==='7'){var m=d.tc-d.td;if(m!==0){csv+='PRODUIT;'+c+';"'+d.libelle+'";'+m+'\n';totalProduits+=m;}}});
+  Object.keys(byCompte).sort().forEach(function(c){var d=byCompte[c];var cl=c.charAt(0);if(cl==='6'){var m=d.td-d.tc;if(m!==0){csv+='CHARGE;'+c+';"'+d.libelle+'";'+m+'\n';totalCharges+=m;}}if(cl==='7'){var m2=d.tc-d.td;if(m2!==0){csv+='PRODUIT;'+c+';"'+d.libelle+'";'+m2+'\n';totalProduits+=m2;}}});
   var resultat = totalProduits - totalCharges;
   csv += 'RESULTAT;121/129;"Resultat";'+resultat+'\n';
   downloadCSV(csv,'resultat.csv');
 }
 
 /* ===================================================
-   TIERS (Clients & Fournisseurs)
+   TIERS
 =================================================== */
 function renderTiers() {
   var body = document.getElementById('tiers-body');
@@ -1290,7 +1297,7 @@ function renderTiers() {
   Object.keys(byCompte).sort().forEach(function(c){
     var d = byCompte[c]; var solde = d.td - d.tc;
     if (c.startsWith('411')) { var m = solde > 0 ? solde : 0; if (m) { clients.push({compte:c,libelle:d.libelle,montant:m}); totalClients += m; } }
-    if (c.startsWith('401')) { var m = solde < 0 ? -solde : 0; if (m) { fournisseurs.push({compte:c,libelle:d.libelle,montant:m}); totalFournisseurs += m; } }
+    if (c.startsWith('401')) { var m2 = solde < 0 ? -solde : 0; if (m2) { fournisseurs.push({compte:c,libelle:d.libelle,montant:m2}); totalFournisseurs += m2; } }
   });
   var htmlClients = ''; clients.forEach(function(cl){ htmlClients += '<div class="bilan-row"><span class="label">'+escHtml(cl.compte)+' — '+escHtml(cl.libelle)+'</span><span class="value" style="color:var(--debit)">'+fmtAmount(cl.montant)+'</span></div>'; });
   var htmlFourn = ''; fournisseurs.forEach(function(f){ htmlFourn += '<div class="bilan-row"><span class="label">'+escHtml(f.compte)+' — '+escHtml(f.libelle)+'</span><span class="value" style="color:var(--credit)">'+fmtAmount(f.montant)+'</span></div>'; });
@@ -1308,7 +1315,7 @@ function exportTiersCSV() {
   var csv = 'Type;Compte;Libelle;Montant\n';
   var byCompte = {};
   allEcritures.forEach(function(e){(e.lignes||[]).forEach(function(l){var c=String(l.compte||'');if(!c)return;if(!byCompte[c])byCompte[c]={libelle:getPlanLibelle(c)||l.libelle,td:0,tc:0};byCompte[c].td+=l.debit||0;byCompte[c].tc+=l.credit||0;});});
-  Object.keys(byCompte).sort().forEach(function(c){var d=byCompte[c];var solde=d.td-d.tc;if(c.startsWith('411')&&solde>0){csv+='CLIENT;'+c+';"'+d.libelle+'";'+solde+'\n';}if(c.startsWith('401')&&solde<0){csv+='FOURNISSEUR;'+c+';"'+d.libelle+'";-'+(-solde)+'\n';}});
+  Object.keys(byCompte).sort().forEach(function(c){var d=byCompte[c];var solde=d.td-d.tc;if(c.startsWith('411')&&solde>0){csv+='CLIENT;'+c+';"'+d.libelle+'";'+solde+'\n';}if(c.startsWith('401')&&solde<0){csv+='FOURNISSEUR;'+c+';"'+d.libelle+'";'+(-solde)+'\n';}});
   downloadCSV(csv,'tiers.csv');
 }
 
@@ -1343,6 +1350,8 @@ function downloadCSV(csv, filename) {
 
 /* ===================================================
    GROQ API
+   CORRECTION 2 : Parseur JSON robuste — accepte les apostrophes simples,
+   les virgules trailing, les retours à la ligne non échappés.
 =================================================== */
 var GROQ_KEYS = [
   "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",
@@ -1350,47 +1359,42 @@ var GROQ_KEYS = [
   "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"
 ];
 var _groqKeyIndex = 0;
+
 var SYSTEM_GENERATE = [
   "Tu es Comeo AI, expert-comptable OHADA certifie, specialiste du SYSCOHADA Revise 2017 applicable en Cote d'Ivoire et zone OHADA.",
   "Genere les ecritures comptables EXACTES en JSON pur selon le Plan Comptable General SYSCOHADA Revise 2017 officiel.",
-  "REGLE 1 - ORDRE IMPERATIF: Dans chaque ecriture, TOUTES les lignes debitrices (debit > 0) EN PREMIER, puis TOUTES les lignes creditrices (credit > 0). Format obligatoire: D,D,...,C,C,... Jamais intercaler.",
+  "REGLE 1 - ORDRE IMPERATIF: Dans chaque ecriture, TOUTES les lignes debitrices (debit > 0) EN PREMIER, puis TOUTES les lignes creditrices (credit > 0).",
   "REGLE 2 - COMPTES SYSCOHADA REVISE 2017 (3 ou 4 chiffres):",
-  "Classe 1: Capital:101, Reserves:106, Resultat benefice:121, Resultat perte:129, Subv.equip:131, Emprunts LT:161, Depots-cautions:165.",
-  "Classe 2: Terrains:211, Batiments:221, Materiel industriel:231, Materiel agricole:232, Materiel transport:241, Vehicules tourisme:2411, Camions:2412, Materiel bureau-info:234, Mobilier:2341, Materiel bureau:2342, Materiel informatique:2343, Amort.immo:281, Amort.batiments:2813, Amort.transport:2841, Amort.bureau-info:2834.",
-  "Classe 3: Marchandises:31, Matieres premieres:32, Autres appros:33, Produits finis:35, Deprec.stocks:39.",
-  "Classe 4: Fournisseurs ordinaires:401, Fourn.effets a payer:402, Fourn.immo:404, Fourn.retenues garantie:405, Fourn.fact.non parvenues:408, Fourn.avances:409, Clients ordinaires:411, Clients effets a recevoir:412, Clients retenues garantie:413, Clients avances recues:419, Personnel avances:421, Personnel remunerations dues:422, CNPS salariale:431, CNPS patronale:432, Etat impots benefices:441, TVA collectee:4431, TVA recup.immo:4432, TVA recup.biens:4433, TVA recup.services:4434, IRPP retenu source:447, Debiteurs divers:461, Crediteurs divers:462, Charges constatees avance:476, Produits constates avance:477, Deprec.clients:491.",
-  "Classe 5: Valeurs encaissement:511, Banque:521, CCP:531, Caisse:571, Virements internes:581.",
-  "Classe 6: Achats marchandises:601, Achats mat.premieres:602, Variation stocks march.:6031, Variation stocks mat.prem.:6032, Achats mat.consommables:604, Transports achats:611, Transports ventes:612, Locations:622, Entretien:624, Assurances:625, Publicite:627, Telecoms:628, Deplacements:629, Frais bancaires:631, Sous-traitance:621, Salaires bruts:661, Charges soc.patronales:664, CNPS patronale:6641, Amort.immo corp.:681, Provisions:691.",
-  "Classe 7: Ventes marchandises:701, Ventes produits finis:702, Travaux factures:705, Services vendus:706, Produits accessoires:707, Variation stocks PF:7031, Subv.exploitation:741, Reprises amort.:781.",
-  "Classe 8: Charges HAO:831, Produits cessions immo:841, Impots resultat:871.",
+  "Classe 1: Capital:101, Reserves:106, Resultat benefice:121, Resultat perte:129, Subv.equip:131, Emprunts LT:161.",
+  "Classe 2: Terrains:211, Batiments:221, Materiel industriel:231, Materiel transport:241, Vehicules tourisme:2411, Camions:2412, Materiel bureau-info:234, Amort.immo:281.",
+  "Classe 3: Marchandises:31, Matieres premieres:32, Produits finis:35.",
+  "Classe 4: Fournisseurs:401, Clients:411, Personnel remunerations dues:422, CNPS salariale:431, TVA collectee:4431, TVA recup.biens:4433, IRPP:447.",
+  "Classe 5: Banque:521, Caisse:571.",
+  "Classe 6: Achats marchandises:601, Achats mat.premieres:602, Variation stocks:6031, Salaires bruts:661, Charges patronales:664, Amort:681.",
+  "Classe 7: Ventes marchandises:701, Services vendus:706, Variation stocks PF:7031.",
   "REGLE 3 - TVA OHADA=18%. Si TTC donne: HT=ARRONDI(TTC/1.18,0), TVA=TTC-HT.",
-  "REGLE 4 - EQUILIBRE: Somme(debit) = Somme(credit) pour chaque ecriture. Verifier avant de repondre.",
-  "REGLE 5 - Utiliser des libelles professionnels complets en francais.",
+  "REGLE 4 - EQUILIBRE: Somme(debit) = Somme(credit) pour chaque ecriture.",
+  "REGLE 5 - CRITIQUE: Reponds UNIQUEMENT avec du JSON valide. Utilise TOUJOURS des guillemets doubles pour les cles et valeurs string. N'utilise JAMAIS d'apostrophes simples.",
   "RETOURNE uniquement ce JSON strict (sans markdown, sans texte avant ou apres):",
   '{"titre":"","date":"","reference":"","type_entreprise":"","ecritures":[{"etape":"","lignes":[{"compte":"","libelle":"","debit":0,"credit":0}]}],"analyse":"","notes":""}'
 ].join(' ');
 
 var SYSTEM_DETECT = [
-  "Tu es expert-comptable OHADA certifie, SYSCOHADA Revise 2017 (Cote d'Ivoire, zone OHADA).",
+  "Tu es expert-comptable OHADA certifie, SYSCOHADA Revise 2017.",
   "Analyse l'operation commerciale et determine le nombre exact d'etapes comptables necessaires.",
-  "Si operation simple: 1 etape. Si complexe (achat+TVA+reglement, salaires+charges, etc.): decomposer en etapes distinctes.",
+  "REGLE CRITIQUE: Reponds UNIQUEMENT avec du JSON valide. Utilise TOUJOURS des guillemets doubles. N'utilise JAMAIS d'apostrophes simples dans les cles JSON.",
   "RETOURNE uniquement ce JSON (sans markdown, sans texte avant ou apres):",
   '{"etapes":["Etape 1 : libelle","Etape 2 : libelle"],"titre":"Titre court","analyse":"Explication breve","notes":""}'
 ].join(' ');
 
 var SYSTEM_ETAPE = [
-  "Tu es Comeo AI, expert-comptable OHADA certifie, SYSCOHADA Revise 2017 (Cote d'Ivoire, zone OHADA).",
+  "Tu es Comeo AI, expert-comptable OHADA certifie, SYSCOHADA Revise 2017.",
   "Genere l'ecriture comptable COMPLETE et EQUILIBREE pour l'etape demandee.",
-  "REGLE 1 - ORDRE IMPERATIF: TOUTES les lignes debitrices (debit > 0) EN PREMIER, puis TOUTES les lignes creditrices (credit > 0). Format: D,D,...,C,C,... Jamais melanger.",
-  "REGLE 2 - COMPTES SYSCOHADA REVISE 2017 (3 ou 4 chiffres selon detail requis):",
-  "Banque:521, Caisse:571, Clients:411, Fournisseurs ordinaires:401, Fourn.immo:404,",
-  "TVA collectee:4431, TVA recup.immo:4432, TVA recup.biens:4433, TVA recup.services:4434,",
-  "Ventes march.:701, Services:706, Achats march.:601, Achats mat.prem.:602,",
-  "Salaires bruts:661, Charges soc.patronales:664, CNPS salariale:431, CNPS patronale:432, IRPP:447, Net a payer:422,",
-  "Amort:281, Dot.amort:681, Stocks march.:31, Var.stocks:6031, Emprunt:161, Capital:101,",
-  "Materiel transport:241, Vehicules:2411, Camions:2412, Materiel info:2343, Mobilier:2341.",
+  "REGLE 1 - ORDRE: TOUTES les lignes debitrices EN PREMIER, puis TOUTES les lignes creditrices.",
+  "REGLE 2 - Comptes principaux: Banque:521, Caisse:571, Clients:411, Fournisseurs:401, TVA collectee:4431, TVA recup:4433, Ventes:701, Services:706, Achats:601, Salaires:661, Charges patronales:664, CNPS:431, IRPP:447, Net a payer:422, Amort:681.",
   "REGLE 3 - TVA=18%: HT=ARRONDI(TTC/1.18,0), TVA=TTC-HT.",
-  "REGLE 4 - EQUILIBRE ABSOLU: somme(debit) = somme(credit). Verifier avant de repondre.",
+  "REGLE 4 - EQUILIBRE: somme(debit) = somme(credit).",
+  "REGLE 5 - CRITIQUE: JSON valide uniquement. Guillemets doubles obligatoires. Pas d'apostrophes simples.",
   "RETOURNE uniquement ce JSON (sans markdown, sans texte avant ou apres):",
   '{"etape":"","lignes":[{"compte":"","libelle":"","debit":0,"credit":0}]}'
 ].join(' ');
@@ -1407,6 +1411,7 @@ function _sanitize(str) {
     .replace(/[^\x20-\x7E\xA0-\uFFFF]/g, ' ')
     .trim();
 }
+
 function _groqFetch(keyIndex, systemPrompt, userMessage, maxTokens) {
   var key = GROQ_KEYS[keyIndex % GROQ_KEYS.length];
   var safeSystem = _sanitize(systemPrompt);
@@ -1429,59 +1434,106 @@ function _groqFetch(keyIndex, systemPrompt, userMessage, maxTokens) {
     if (data.error) throw new Error('Groq clé ' + (keyIndex+1) + ' : ' + (data.error.message || 'Erreur API'));
     if (!data.choices || !data.choices[0] || !data.choices[0].message) throw new Error('Réponse Groq invalide (clé ' + (keyIndex+1) + ')');
     var content = data.choices[0].message.content || '';
-    // Nettoyer les caractères de contrôle hors des strings JSON potentielles
     content = content.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, ' ');
     return content.trim();
   });
 }
+
+/*
+  CORRECTION 2 : _parseJSON amélioré
+  - Convertit les apostrophes simples en guillemets doubles (JSON Python-style)
+  - Supprime les virgules trailing avant } et ]
+  - Reconstruit caractère par caractère si nécessaire
+*/
 function _parseJSON(raw) {
-  // 1. Nettoyer les blocs markdown
+  /* 1. Nettoyer les blocs markdown */
   var clean = raw
     .replace(/```json\s*/gi, '')
     .replace(/```\s*/gi, '')
     .trim();
 
-  // 2. Extraire le JSON entre { }
+  /* 2. Extraire entre { } */
   var js = clean.indexOf('{');
   var je = clean.lastIndexOf('}');
   if (js === -1) throw new Error('JSON introuvable dans la réponse IA');
   clean = clean.slice(js, je + 1);
 
-  // 3. Tentative de parse directe
+  /* 3. Tentative directe */
+  try { return JSON.parse(clean); } catch(e0) { /* continue */ }
+
+  /* 4. Convertir apostrophes simples → guillemets doubles (réponse Python-style) */
   try {
-    return JSON.parse(clean);
-  } catch(e1) {
-    // 4. Nettoyage agressif des caractères problématiques
-    try {
-      var fixed = clean
-        // Supprimer vrais retours à la ligne DANS les strings (entre guillemets)
-        .replace(/("(?:[^"\\]|\\.)*")/g, function(m) {
-          return m
-            .replace(/\n/g, '\\n')
-            .replace(/\r/g, '\\r')
-            .replace(/\t/g, '\\t');
-        })
-        // Supprimer les backslash orphelins (non suivis de caractère JSON valide)
-        .replace(/\\(?!["\\/bfnrtu])/g, ' ')
-        // Nettoyer caractères de contrôle hors strings
-        .replace(/[\u0000-\u001F\u007F]/g, ' ');
-      return JSON.parse(fixed);
-    } catch(e2) {
-      // 5. Reconstruction champ par champ si tout échoue
-      try {
-        var rebuilt = _rebuildJSON(clean);
-        return JSON.parse(rebuilt);
-      } catch(e3) {
-        console.error('Parse JSON échoué :', e3.message, '\nRaw:', clean.slice(0, 300));
-        throw new Error('Réponse IA invalide — Réessayez (détail: ' + e3.message + ')');
-      }
-    }
+    var converted = _convertSingleQuotes(clean);
+    return JSON.parse(converted);
+  } catch(e1) { /* continue */ }
+
+  /* 5. Nettoyage agressif */
+  try {
+    var fixed = clean
+      /* Convertir apostrophes */
+      .replace(/'/g, '"')
+      /* Supprimer virgules trailing */
+      .replace(/,\s*([\]}])/g, '$1')
+      /* Retours à la ligne dans strings */
+      .replace(/("(?:[^"\\]|\\.)*")/g, function(m) {
+        return m.replace(/\n/g, '\\n').replace(/\r/g, '\\r').replace(/\t/g, '\\t');
+      })
+      /* Backslash orphelins */
+      .replace(/\\(?!["\\/bfnrtu])/g, ' ')
+      /* Caractères de contrôle */
+      .replace(/[\u0000-\u001F\u007F]/g, ' ');
+    return JSON.parse(fixed);
+  } catch(e2) { /* continue */ }
+
+  /* 6. Reconstruction caractère par caractère */
+  try {
+    var rebuilt = _rebuildJSON(clean);
+    /* Virgules trailing dans la version reconstruite */
+    rebuilt = rebuilt.replace(/,\s*([\]}])/g, '$1');
+    return JSON.parse(rebuilt);
+  } catch(e3) {
+    console.error('Parse JSON échoué :', e3.message, '\nRaw:', clean.slice(0, 400));
+    throw new Error('Réponse IA invalide — Réessayez (détail: ' + e3.message + ')');
   }
 }
 
-// Reconstruction JSON robuste ligne par ligne
+/* Convertit un JSON avec apostrophes simples en JSON valide */
+function _convertSingleQuotes(str) {
+  var result = '';
+  var inString = false;
+  var quoteChar = '';
+  var escaped = false;
+  for (var i = 0; i < str.length; i++) {
+    var ch = str[i];
+    if (escaped) { result += ch; escaped = false; continue; }
+    if (ch === '\\') { escaped = true; result += ch; continue; }
+    if (!inString) {
+      if (ch === '"' || ch === "'") {
+        inString = true;
+        quoteChar = ch;
+        result += '"';
+        continue;
+      }
+      result += ch;
+    } else {
+      if (ch === quoteChar) {
+        inString = false;
+        result += '"';
+        continue;
+      }
+      /* Échapper les guillemets doubles à l'intérieur si on était en apostrophes */
+      if (ch === '"' && quoteChar === "'") {
+        result += '\\"';
+        continue;
+      }
+      result += ch;
+    }
+  }
+  return result;
+}
+
+/* Reconstruction JSON robuste caractère par caractère */
 function _rebuildJSON(str) {
-  // Remplace tous les sauts de ligne non échappés dans les valeurs string
   var inString = false;
   var escaped = false;
   var result = '';
@@ -1490,19 +1542,25 @@ function _rebuildJSON(str) {
     if (escaped) { result += ch; escaped = false; continue; }
     if (ch === '\\') { escaped = true; result += ch; continue; }
     if (ch === '"') { inString = !inString; result += ch; continue; }
+    if (ch === "'") {
+      /* Apostrophe → guillemet double */
+      inString = !inString;
+      result += '"';
+      continue;
+    }
     if (inString) {
       if (ch === '\n') { result += '\\n'; continue; }
       if (ch === '\r') { result += '\\r'; continue; }
       if (ch === '\t') { result += '\\t'; continue; }
-      // Supprimer autres caractères de contrôle dans les strings
       if (ch.charCodeAt(0) < 32) { continue; }
     }
     result += ch;
   }
   return result;
 }
+
 function groqCall(userMessage) {
-  return _groqFetch(0, SYSTEM_DETECT, userMessage, 500)
+  return _groqFetch(0, SYSTEM_DETECT, userMessage, 600)
     .then(function(rawDetect) {
       var detect = _parseJSON(rawDetect);
       var etapes = detect.etapes || [];
@@ -1521,7 +1579,10 @@ function groqCall(userMessage) {
               parsed.etape = parsed.etape || etape;
               var totD = (parsed.lignes||[]).reduce(function(s,l){return s+(l.debit||0);},0);
               var totC = (parsed.lignes||[]).reduce(function(s,l){return s+(l.credit||0);},0);
-              if (Math.abs(totD - totC) > 1) { var nextK = (kIdx + 1) % GROQ_KEYS.length; if (nextK !== origIdx) return tentative(nextK, origIdx); }
+              if (Math.abs(totD - totC) > 1) {
+                var nextK = (kIdx + 1) % GROQ_KEYS.length;
+                if (nextK !== origIdx) return tentative(nextK, origIdx);
+              }
               return parsed;
             });
         };
@@ -1553,10 +1614,10 @@ function generateJournal() {
   document.getElementById('btn-generate').disabled = true;
   var cfg = ENTREPRISE_CONFIG[currentEntrepriseType];
   document.getElementById('output-content').innerHTML = '<div class="loading-state"><div class="spinner"></div><div>Analyse Groq AI en cours...</div></div>';
-  var userMsg = 'TYPE: ' + cfg.label + '\nOPÉRATION: ' + desc;
+  var userMsg = 'TYPE: ' + cfg.label + '\nOPERATION: ' + desc;
   if (montant) userMsg += '\nMontant: ' + montant + ' FCFA';
   if (type)    userMsg += '\nType: ' + type;
-  if (extra)   userMsg += '\nDétails: ' + extra;
+  if (extra)   userMsg += '\nDetails: ' + extra;
   userMsg += '\nDate: ' + date + ' | Ref: ' + ref;
   groqCall(userMsg)
     .then(function(data) {
@@ -1610,15 +1671,16 @@ function renderJournal(result, opDesc, date, ref) {
     '<div class="ai-analysis-text">'+escHtml(result.analyse||'').replace(/\n/g,'<br>')+'</div>' +
     (result.notes ? '<div style="margin-top:8px;font-size:12px;color:var(--text3)">Note : '+escHtml(result.notes)+'</div>' : '') +
     '</div>' + cardsHTML +
- '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;">' +
-'<button class="btn-action" onclick="window.print()">🖨️ Imprimer</button>' +
-'<button class="btn-action" onclick="exportCurrentJournalCSV()">📄 CSV</button>' +
-'<button class="btn-action" onclick="exportCurrentJournalExcel()">📊 Excel</button>' +
-'<button class="btn-action" onclick="exportCurrentJournalWord()">📝 Word</button>' +
-'<button class="btn-action" onclick="exportCurrentJournalPDF()">📄 PDF</button>' +
-'</div></div>';
+    '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;">' +
+    '<button class="btn-action" onclick="window.print()">🖨️ Imprimer</button>' +
+    '<button class="btn-action" onclick="exportCurrentJournalCSV()">📄 CSV</button>' +
+    '<button class="btn-action" onclick="exportCurrentJournalExcel()">📊 Excel</button>' +
+    '<button class="btn-action" onclick="exportCurrentJournalWord()">📝 Word</button>' +
+    '<button class="btn-action" onclick="exportCurrentJournalPDF()">📄 PDF</button>' +
+    '</div></div>';
   window._lastJournalResult = result;
 }
+
 function exportCurrentJournalCSV() { if (window._lastJournalResult) exportJournalCSV(window._lastJournalResult); }
 function exportJournalCSV(result) {
   var ecritures = result.ecritures || [];
@@ -1675,7 +1737,65 @@ function saveProfilEntreprise() {
 
 /* ===================================================
    EXPORT WORD / EXCEL / PDF
+   CORRECTION 3 : exportBilanWord/Excel/PDF corrigés pour fonctionner
+   avec la structure HTML réelle (grilles flex, pas des tableaux)
 =================================================== */
+function getEnteteEntreprise() {
+  if (!currentUser) return '';
+  return '<div style="margin-bottom:18px;border-bottom:2px solid #1a56db;padding-bottom:10px;">'+
+    '<h1 style="margin:0;font-size:18pt;">'+escHtml(currentUser.nom_entreprise||'')+'</h1>'+
+    '<div style="color:#555;font-size:10pt;margin-top:4px;">'+
+    (currentUser.rccm?'RCCM: '+escHtml(currentUser.rccm)+' &nbsp;|&nbsp; ':'')+
+    (currentUser.regime_fiscal?'Régime: '+escHtml(currentUser.regime_fiscal)+' &nbsp;|&nbsp; ':'')+
+    (currentUser.ville?escHtml(currentUser.ville)+', ':'')+escHtml(currentUser.pays||'CI')+
+    '</div></div>';
+}
+
+function _buildBilanTable() {
+  /* Reconstruit le bilan sous forme de tableau HTML depuis les données brutes */
+  var byCompte = {};
+  allEcritures.forEach(function(e){(e.lignes||[]).forEach(function(l){var c=String(l.compte||'');if(!c)return;if(!byCompte[c])byCompte[c]={libelle:getPlanLibelle(c)||l.libelle,td:0,tc:0};byCompte[c].td+=l.debit||0;byCompte[c].tc+=l.credit||0;});});
+  var actif=[],passif=[],totalActif=0,totalPassifRaw=0;
+  Object.keys(byCompte).sort().forEach(function(c){var d=byCompte[c];var solde=d.td-d.tc;var cl=c.charAt(0);if(cl==='6'||cl==='7'||cl==='8')return;if(solde>0){actif.push({compte:c,libelle:d.libelle,montant:solde});totalActif+=solde;}else if(solde<0){passif.push({compte:c,libelle:d.libelle,montant:-solde});totalPassifRaw+=(-solde);}});
+  var resultat=totalActif-totalPassifRaw;
+  var html='<table border="1" style="width:100%;border-collapse:collapse;"><thead><tr><th>Compte Actif</th><th>Libellé</th><th>Montant</th><th>Compte Passif</th><th>Libellé</th><th>Montant</th></tr></thead><tbody>';
+  var maxLen=Math.max(actif.length, passif.length+1);
+  for(var i=0;i<maxLen;i++){
+    var a=actif[i]||null; var p=passif[i]||null;
+    if(i===passif.length) p={compte:'121/129',libelle:'Résultat de l\'exercice',montant:resultat};
+    html+='<tr>';
+    if(a){html+='<td>'+escHtml(a.compte)+'</td><td>'+escHtml(a.libelle)+'</td><td style="text-align:right">'+fmtAmount(a.montant)+'</td>';}
+    else{html+='<td></td><td></td><td></td>';}
+    if(p){html+='<td>'+escHtml(p.compte)+'</td><td>'+escHtml(p.libelle)+'</td><td style="text-align:right">'+fmtAmount(p.montant)+'</td>';}
+    else{html+='<td></td><td></td><td></td>';}
+    html+='</tr>';
+  }
+  html+='<tr style="font-weight:bold"><td colspan="2">TOTAL ACTIF</td><td style="text-align:right">'+fmtAmount(totalActif)+'</td><td colspan="2">TOTAL PASSIF</td><td style="text-align:right">'+fmtAmount(totalPassifRaw+resultat)+'</td></tr>';
+  html+='</tbody></table>';
+  return html;
+}
+
+function _buildResultatTable() {
+  var byCompte = {};
+  allEcritures.forEach(function(e){(e.lignes||[]).forEach(function(l){var c=String(l.compte||'');if(!c)return;if(!byCompte[c])byCompte[c]={libelle:getPlanLibelle(c)||l.libelle,td:0,tc:0};byCompte[c].td+=l.debit||0;byCompte[c].tc+=l.credit||0;});});
+  var charges=[],produits=[],totalCharges=0,totalProduits=0;
+  Object.keys(byCompte).sort().forEach(function(c){var d=byCompte[c];var cl=c.charAt(0);if(cl==='6'){var m=d.td-d.tc;if(m!==0){charges.push({compte:c,libelle:d.libelle,montant:m});totalCharges+=m;}}if(cl==='7'){var m2=d.tc-d.td;if(m2!==0){produits.push({compte:c,libelle:d.libelle,montant:m2});totalProduits+=m2;}}});
+  var resultat=totalProduits-totalCharges;
+  var html='<table border="1" style="width:100%;border-collapse:collapse;"><thead><tr><th>Charges (Cl.6)</th><th>Libellé</th><th>Montant</th><th>Produits (Cl.7)</th><th>Libellé</th><th>Montant</th></tr></thead><tbody>';
+  var maxLen=Math.max(charges.length,produits.length);
+  for(var i=0;i<maxLen;i++){
+    var ch=charges[i]||null; var pr=produits[i]||null;
+    html+='<tr>';
+    if(ch){html+='<td>'+escHtml(ch.compte)+'</td><td>'+escHtml(ch.libelle)+'</td><td style="text-align:right">'+fmtAmount(ch.montant)+'</td>';}else{html+='<td></td><td></td><td></td>';}
+    if(pr){html+='<td>'+escHtml(pr.compte)+'</td><td>'+escHtml(pr.libelle)+'</td><td style="text-align:right">'+fmtAmount(pr.montant)+'</td>';}else{html+='<td></td><td></td><td></td>';}
+    html+='</tr>';
+  }
+  html+='<tr style="font-weight:bold"><td colspan="2">TOTAL CHARGES</td><td style="text-align:right">'+fmtAmount(totalCharges)+'</td><td colspan="2">TOTAL PRODUITS</td><td style="text-align:right">'+fmtAmount(totalProduits)+'</td></tr>';
+  html+='<tr style="font-weight:bold;background:#f0f4ff"><td colspan="3">RÉSULTAT '+(resultat>=0?'BÉNÉFICE':'PERTE')+'</td><td colspan="3" style="text-align:right">'+fmtAmount(Math.abs(resultat))+'</td></tr>';
+  html+='</tbody></table>';
+  return html;
+}
+
 function exportWord(contenu, nomFichier) {
   var html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>'+nomFichier+'</title>'+
     '<style>body{font-family:Arial,sans-serif;font-size:12pt;margin:2cm;}table{border-collapse:collapse;width:100%;}th,td{border:1px solid #ccc;padding:6px 10px;text-align:left;}th{background:#f0f4ff;font-weight:bold;}h1{color:#1a56db;}h2{color:#1a56db;font-size:14pt;margin-top:20px;}</style>'+
@@ -1700,6 +1820,7 @@ function exportExcel(tableHtml, nomFichier) {
 
 function exportPDF(contenu, nomFichier) {
   var w = window.open('','_blank','width=900,height=700');
+  if (!w) { showToast('Popup bloqué — autorisez les popups pour exporter en PDF'); return; }
   w.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>'+nomFichier+'</title>'+
     '<style>body{font-family:Arial,sans-serif;font-size:11pt;margin:1.5cm;}table{border-collapse:collapse;width:100%;}'+
     'th,td{border:1px solid #999;padding:5px 8px;}th{background:#dde7ff;}.pos{color:#059669;}.neg{color:#dc2626;}'+
@@ -1709,20 +1830,11 @@ function exportPDF(contenu, nomFichier) {
   w.document.close();
 }
 
-function getEnteteEntreprise() {
-  if (!currentUser) return '';
-  return '<div style="margin-bottom:18px;border-bottom:2px solid #1a56db;padding-bottom:10px;">'+
-    '<h1 style="margin:0;font-size:18pt;">'+escHtml(currentUser.nom_entreprise||'')+'</h1>'+
-    '<div style="color:#555;font-size:10pt;margin-top:4px;">'+
-    (currentUser.rccm?'RCCM: '+escHtml(currentUser.rccm)+' &nbsp;|&nbsp; ':'')+ 
-    (currentUser.regime_fiscal?'Régime: '+escHtml(currentUser.regime_fiscal)+' &nbsp;|&nbsp; ':'')+
-    (currentUser.ville?escHtml(currentUser.ville)+', ':'')+escHtml(currentUser.pays||'CI')+
-    '</div></div>';
-}
-
-// Export Balance Word/Excel/PDF
+/* Balance */
 function exportBalanceWord() {
-  var html = getEnteteEntreprise()+'<h2>Balance des Comptes</h2>'+document.querySelector('#balance-body table').outerHTML;
+  var table = document.querySelector('#balance-body table');
+  if (!table) { showToast('Aucune balance à exporter'); return; }
+  var html = getEnteteEntreprise()+'<h2>Balance des Comptes</h2>'+table.outerHTML;
   exportWord(html,'balance_'+todayDate());
 }
 function exportBalanceExcel() {
@@ -1731,44 +1843,44 @@ function exportBalanceExcel() {
   exportExcel(table.outerHTML,'balance_'+todayDate());
 }
 function exportBalancePDF() {
-  var html = getEnteteEntreprise()+'<h2>Balance des Comptes — '+todayDate()+'</h2>'+
-    (document.querySelector('#balance-body table')?document.querySelector('#balance-body table').outerHTML:'<p>Aucune donnée</p>');
+  var table = document.querySelector('#balance-body table');
+  var html = getEnteteEntreprise()+'<h2>Balance des Comptes — '+todayDate()+'</h2>'+(table?table.outerHTML:'<p>Aucune donnée</p>');
   exportPDF(html,'balance_'+todayDate());
 }
 
-// Export Bilan Word/Excel/PDF
+/* Bilan — utilise _buildBilanTable() pour générer un vrai tableau HTML */
 function exportBilanWord() {
-  var html = getEnteteEntreprise()+'<h2>Bilan — Actif / Passif</h2>'+document.getElementById('bilan-body').innerHTML;
+  if (!allEcritures.length) { showToast('Aucune donnée à exporter'); return; }
+  var html = getEnteteEntreprise()+'<h2>Bilan — Actif / Passif</h2>'+_buildBilanTable();
   exportWord(html,'bilan_'+todayDate());
 }
 function exportBilanExcel() {
-  var tables = document.querySelectorAll('#bilan-body table');
-  var html = '<table><tr><th>ACTIF</th><th>PASSIF</th></tr></table>';
-  tables.forEach(function(t){ html += t.outerHTML; });
-  exportExcel(html,'bilan_'+todayDate());
+  if (!allEcritures.length) { showToast('Aucune donnée à exporter'); return; }
+  exportExcel(_buildBilanTable(),'bilan_'+todayDate());
 }
 function exportBilanPDF() {
-  var html = getEnteteEntreprise()+'<h2>Bilan — '+todayDate()+'</h2>'+document.getElementById('bilan-body').innerHTML;
+  if (!allEcritures.length) { showToast('Aucune donnée à exporter'); return; }
+  var html = getEnteteEntreprise()+'<h2>Bilan — '+todayDate()+'</h2>'+_buildBilanTable();
   exportPDF(html,'bilan_'+todayDate());
 }
 
-// Export Résultat Word/Excel/PDF
+/* Résultat — utilise _buildResultatTable() */
 function exportResultatWord() {
-  var html = getEnteteEntreprise()+'<h2>Compte de Résultat</h2>'+document.getElementById('resultat-body').innerHTML;
+  if (!allEcritures.length) { showToast('Aucune donnée à exporter'); return; }
+  var html = getEnteteEntreprise()+'<h2>Compte de Résultat</h2>'+_buildResultatTable();
   exportWord(html,'resultat_'+todayDate());
 }
 function exportResultatExcel() {
-  var tables = document.querySelectorAll('#resultat-body table');
-  var html = ''; tables.forEach(function(t){ html += t.outerHTML; });
-  if (!html) { showToast('Aucun résultat à exporter'); return; }
-  exportExcel(html,'resultat_'+todayDate());
+  if (!allEcritures.length) { showToast('Aucune donnée à exporter'); return; }
+  exportExcel(_buildResultatTable(),'resultat_'+todayDate());
 }
 function exportResultatPDF() {
-  var html = getEnteteEntreprise()+'<h2>Compte de Résultat — '+todayDate()+'</h2>'+document.getElementById('resultat-body').innerHTML;
+  if (!allEcritures.length) { showToast('Aucune donnée à exporter'); return; }
+  var html = getEnteteEntreprise()+'<h2>Compte de Résultat — '+todayDate()+'</h2>'+_buildResultatTable();
   exportPDF(html,'resultat_'+todayDate());
 }
 
-// Export Journal (écriture courante) Word/Excel/PDF
+/* Journal courant */
 function exportCurrentJournalWord() {
   if (!window._lastJournalResult) { showToast('Aucune écriture à exporter'); return; }
   var r = window._lastJournalResult;
