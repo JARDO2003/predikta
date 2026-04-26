@@ -1053,11 +1053,9 @@ function generateJournal() {
   userMsg += '\nDate: ' + date + ' | Ref: ' + ref;
 
   groqCall(userMsg)
-    .then(function(rawJson) {
-      var clean = rawJson.replace(/```json\s*/gi,'').replace(/```\s*/gi,'').trim();
-      var js = clean.indexOf('{'); var je = clean.lastIndexOf('}');
-      if (js === -1) throw new Error('Format JSON non trouvé dans la réponse');
-      var result = JSON.parse(clean.slice(js, je + 1));
+    .then(function(data) {
+      // groqCall retourne un objet (multi-étapes) ou une string (simple)
+      var result = (typeof data === 'string') ? _parseJSON(data) : data;
       result.type_entreprise = cfg.label;
       result.date = date;
       result.reference = ref;
