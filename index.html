@@ -667,6 +667,26 @@ var firebaseConfig = {
 };
 
 var db = null;
+var ENTREPRISE_CONFIG = {
+  commerce:{label:'Commerce',quickOps:['Vente marchandises credit','Achat marchandises credit','Encaissement client','Reglement fournisseur','Variation stock','Salaires','Amortissement','TVA','Immobilisation','Emprunt'],types:[{value:'',label:'Auto IA'},{value:'vente',label:'Vente'},{value:'achat',label:'Achat'},{value:'reglement_client',label:'Encaissement'},{value:'reglement_fourn',label:'Reglement'},{value:'stock',label:'Stock'},{value:'salaire',label:'Salaires'},{value:'amortissement',label:'Amortissement'},{value:'tva',label:'TVA'},{value:'immobilisation',label:'Immobilisation'},{value:'emprunt',label:'Emprunt'}]},
+  service:{label:'Services',quickOps:['Facturation service','Encaissement honoraires','Achat fournitures','Salaires','Loyer','Amortissement','TVA','Acompte'],types:[{value:'',label:'Auto IA'},{value:'facturation',label:'Facturation'},{value:'encaissement',label:'Encaissement'},{value:'achat_fourniture',label:'Fournitures'},{value:'salaire',label:'Salaires'},{value:'loyer',label:'Loyer'},{value:'amortissement',label:'Amortissement'},{value:'tva',label:'TVA'}]},
+  industrie:{label:'Industrie',quickOps:['Achat MP','Consommation MP','Constatation produits finis','Vente produits finis','Variation stock PF','Sous-traitance','Amortissement industriel','Salaires ouvriers','Energie usine'],types:[{value:'',label:'Auto IA'},{value:'achat_mp',label:'Achat MP'},{value:'production',label:'Production'},{value:'vente_pf',label:'Vente PF'},{value:'stock_mp',label:'Stock MP'},{value:'stock_pf',label:'Stock PF'},{value:'salaire',label:'Salaires'},{value:'amortissement',label:'Amortissement'}]},
+  banque:{label:'Banque',quickOps:['Depot client','Credit court terme','Interets prets','Commissions bancaires','Remboursement credit','Dotation provisions','Operation change','Salaires personnel'],types:[{value:'',label:'Auto IA'},{value:'depot',label:'Depots'},{value:'credit',label:'Credits'},{value:'interets',label:'Interets'},{value:'commission',label:'Commissions'},{value:'change',label:'Change'},{value:'provision_creance',label:'Provisions'}]},
+  sante:{label:'Sante',quickOps:['Recettes consultations','Facturation hospitalisation','Achat medicaments','Achat materiel medical','Salaires medical','Charges CNPS','Reglement patient','Subvention Etat','Amortissement medical'],types:[{value:'',label:'Auto IA'},{value:'recette_soins',label:'Recettes soins'},{value:'achat_medicaments',label:'Medicaments'},{value:'hospitalisation',label:'Hospitalisation'},{value:'salaire',label:'Salaires'},{value:'subvention',label:'Subvention'},{value:'amortissement_medical',label:'Amortissement'}]},
+  education:{label:'Education',quickOps:['Frais scolarite caisse','Scolarite avance','Facturation scolarite','Subvention Etat','Salaires enseignants','Achat fournitures','Achat materiel info','Amortissement','Inscription'],types:[{value:'',label:'Auto IA'},{value:'frais_scolarite',label:'Scolarite'},{value:'subvention',label:'Subvention'},{value:'salaire_enseignant',label:'Salaires'},{value:'achat_fournitures',label:'Fournitures'},{value:'immobilisation',label:'Equipements'},{value:'amortissement',label:'Amortissement'}]},
+  ong:{label:'ONG',quickOps:['Subvention bailleur','Depenses projet','Frais siege','Salaires equipe','Achat equipements','Mission terrain','Don en especes','Cotisations membres'],types:[{value:'',label:'Auto IA'},{value:'subvention_projet',label:'Subvention'},{value:'depense_projet',label:'Depenses projet'},{value:'salaire',label:'Salaires'},{value:'cotisation',label:'Cotisations'},{value:'mission',label:'Mission'}]},
+  agri:{label:'Agriculture',quickOps:['Achat intrants','Vente recoltes','Variation stock','Salaires saisonniers','Amortissement tracteur','Subvention agricole','Carburant','Achat irrigation'],types:[{value:'',label:'Auto IA'},{value:'achat_intrants',label:'Intrants'},{value:'vente_recolte',label:'Vente'},{value:'stock_agri',label:'Stock'},{value:'salaire_ouvrier',label:'Main-oeuvre'},{value:'subvention_agri',label:'Subvention'}]},
+  immo:{label:'Immobilier',quickOps:['Facture avancement','Achat materiaux','Sous-traitance','Acompte recu','Retenue garantie','Salaires chantier','Location engins','Immobilisation BTP','Travaux en cours'],types:[{value:'',label:'Auto IA'},{value:'facturation_travaux',label:'Facturation'},{value:'achat_materiaux',label:'Materiaux'},{value:'sous_traitance',label:'Sous-traitance'},{value:'acompte_chantier',label:'Acomptes'},{value:'wip',label:'WIP'},{value:'salaire',label:'Main-oeuvre'}]},
+  transport:{label:'Transport',quickOps:['Facturation transport','Achat carburant','Entretien vehicule','Amortissement vehicules','Assurance flotte','Salaires chauffeurs','Achat pieces','Peage','Achat camion'],types:[{value:'',label:'Auto IA'},{value:'facturation_transport',label:'Facturation'},{value:'achat_carburant',label:'Carburant'},{value:'entretien_vehicule',label:'Entretien'},{value:'salaire_chauffeur',label:'Salaires'},{value:'achat_vehicule',label:'Acquisition'},{value:'amortissement',label:'Amortissement'}]}
+};
+
+window.addEventListener('load', function() {
+  // ... reste du code inchangé
+  renderQuickOps();
+  renderTypeSelect();
+  // ...
+});
+
 
 window.addEventListener('load', function() {
   if (typeof firebase === 'undefined') {
@@ -736,7 +756,7 @@ function hashPassword(str) {
   return String(Math.abs(h));
 }
 
-if (id === 'historique') renderHistorique();
+
 
 /* ===================================================
    HISTORIQUE JOURNAL
@@ -1173,18 +1193,6 @@ function saveManualMulti() {
 /* ===================================================
    ENTREPRISE CONFIG
 =================================================== */
-var ENTREPRISE_CONFIG = {
-  commerce:{label:'Commerce',quickOps:['Vente marchandises credit','Achat marchandises credit','Encaissement client','Reglement fournisseur','Variation stock','Salaires','Amortissement','TVA','Immobilisation','Emprunt'],types:[{value:'',label:'Auto IA'},{value:'vente',label:'Vente'},{value:'achat',label:'Achat'},{value:'reglement_client',label:'Encaissement'},{value:'reglement_fourn',label:'Reglement'},{value:'stock',label:'Stock'},{value:'salaire',label:'Salaires'},{value:'amortissement',label:'Amortissement'},{value:'tva',label:'TVA'},{value:'immobilisation',label:'Immobilisation'},{value:'emprunt',label:'Emprunt'}]},
-  service:{label:'Services',quickOps:['Facturation service','Encaissement honoraires','Achat fournitures','Salaires','Loyer','Amortissement','TVA','Acompte'],types:[{value:'',label:'Auto IA'},{value:'facturation',label:'Facturation'},{value:'encaissement',label:'Encaissement'},{value:'achat_fourniture',label:'Fournitures'},{value:'salaire',label:'Salaires'},{value:'loyer',label:'Loyer'},{value:'amortissement',label:'Amortissement'},{value:'tva',label:'TVA'}]},
-  industrie:{label:'Industrie',quickOps:['Achat MP','Consommation MP','Constatation produits finis','Vente produits finis','Variation stock PF','Sous-traitance','Amortissement industriel','Salaires ouvriers','Energie usine'],types:[{value:'',label:'Auto IA'},{value:'achat_mp',label:'Achat MP'},{value:'production',label:'Production'},{value:'vente_pf',label:'Vente PF'},{value:'stock_mp',label:'Stock MP'},{value:'stock_pf',label:'Stock PF'},{value:'salaire',label:'Salaires'},{value:'amortissement',label:'Amortissement'}]},
-  banque:{label:'Banque',quickOps:['Depot client','Credit court terme','Interets prets','Commissions bancaires','Remboursement credit','Dotation provisions','Operation change','Salaires personnel'],types:[{value:'',label:'Auto IA'},{value:'depot',label:'Depots'},{value:'credit',label:'Credits'},{value:'interets',label:'Interets'},{value:'commission',label:'Commissions'},{value:'change',label:'Change'},{value:'provision_creance',label:'Provisions'}]},
-  sante:{label:'Sante',quickOps:['Recettes consultations','Facturation hospitalisation','Achat medicaments','Achat materiel medical','Salaires medical','Charges CNPS','Reglement patient','Subvention Etat','Amortissement medical'],types:[{value:'',label:'Auto IA'},{value:'recette_soins',label:'Recettes soins'},{value:'achat_medicaments',label:'Medicaments'},{value:'hospitalisation',label:'Hospitalisation'},{value:'salaire',label:'Salaires'},{value:'subvention',label:'Subvention'},{value:'amortissement_medical',label:'Amortissement'}]},
-  education:{label:'Education',quickOps:['Frais scolarite caisse','Scolarite avance','Facturation scolarite','Subvention Etat','Salaires enseignants','Achat fournitures','Achat materiel info','Amortissement','Inscription'],types:[{value:'',label:'Auto IA'},{value:'frais_scolarite',label:'Scolarite'},{value:'subvention',label:'Subvention'},{value:'salaire_enseignant',label:'Salaires'},{value:'achat_fournitures',label:'Fournitures'},{value:'immobilisation',label:'Equipements'},{value:'amortissement',label:'Amortissement'}]},
-  ong:{label:'ONG',quickOps:['Subvention bailleur','Depenses projet','Frais siege','Salaires equipe','Achat equipements','Mission terrain','Don en especes','Cotisations membres'],types:[{value:'',label:'Auto IA'},{value:'subvention_projet',label:'Subvention'},{value:'depense_projet',label:'Depenses projet'},{value:'salaire',label:'Salaires'},{value:'cotisation',label:'Cotisations'},{value:'mission',label:'Mission'}]},
-  agri:{label:'Agriculture',quickOps:['Achat intrants','Vente recoltes','Variation stock','Salaires saisonniers','Amortissement tracteur','Subvention agricole','Carburant','Achat irrigation'],types:[{value:'',label:'Auto IA'},{value:'achat_intrants',label:'Intrants'},{value:'vente_recolte',label:'Vente'},{value:'stock_agri',label:'Stock'},{value:'salaire_ouvrier',label:'Main-oeuvre'},{value:'subvention_agri',label:'Subvention'}]},
-  immo:{label:'Immobilier',quickOps:['Facture avancement','Achat materiaux','Sous-traitance','Acompte recu','Retenue garantie','Salaires chantier','Location engins','Immobilisation BTP','Travaux en cours'],types:[{value:'',label:'Auto IA'},{value:'facturation_travaux',label:'Facturation'},{value:'achat_materiaux',label:'Materiaux'},{value:'sous_traitance',label:'Sous-traitance'},{value:'acompte_chantier',label:'Acomptes'},{value:'wip',label:'WIP'},{value:'salaire',label:'Main-oeuvre'}]},
-  transport:{label:'Transport',quickOps:['Facturation transport','Achat carburant','Entretien vehicule','Amortissement vehicules','Assurance flotte','Salaires chauffeurs','Achat pieces','Peage','Achat camion'],types:[{value:'',label:'Auto IA'},{value:'facturation_transport',label:'Facturation'},{value:'achat_carburant',label:'Carburant'},{value:'entretien_vehicule',label:'Entretien'},{value:'salaire_chauffeur',label:'Salaires'},{value:'achat_vehicule',label:'Acquisition'},{value:'amortissement',label:'Amortissement'}]}
-};
 
 function selectEntreprise(el) {
   document.querySelectorAll('.e-chip').forEach(function(c) { c.classList.remove('active'); });
