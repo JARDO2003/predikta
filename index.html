@@ -1397,9 +1397,14 @@ var SYSTEM_ETAPE = [
 
 function _sanitize(str) {
   return str
-    .replace(/\\/g, '')
-    .replace(/[\u0000-\u001F\u007F]/g, ' ')
+    .replace(/\\/g, ' ')
+    .replace(/[\u0000-\u001F\u007F-\u009F]/g, ' ')
     .replace(/\t/g, ' ')
+    .replace(/\r\n/g, ' ')
+    .replace(/\r/g, ' ')
+    .replace(/\n/g, ' ')
+    .replace(/"/g, "'")
+    .replace(/[^\x20-\x7E\xA0-\uFFFF]/g, ' ')
     .trim();
 }
 function _groqFetch(keyIndex, systemPrompt, userMessage, maxTokens) {
@@ -1423,14 +1428,78 @@ function _groqFetch(keyIndex, systemPrompt, userMessage, maxTokens) {
   .then(function(data) {
     if (data.error) throw new Error('Groq clé ' + (keyIndex+1) + ' : ' + (data.error.message || 'Erreur API'));
     if (!data.choices || !data.choices[0] || !data.choices[0].message) throw new Error('Réponse Groq invalide (clé ' + (keyIndex+1) + ')');
-    return data.choices[0].message.content.trim();
+    var content = data.choices[0].message.content || '';
+    // Nettoyer les caractères de contrôle hors des strings JSON potentielles
+    content = content.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, ' ');
+    return content.trim();
   });
 }
 function _parseJSON(raw) {
-  var clean = raw.replace(/```json\s*/gi,'').replace(/```\s*/gi,'').trim();
-  var js = clean.indexOf('{'); var je = clean.lastIndexOf('}');
-  if (js === -1) throw new Error('JSON introuvable dans la réponse Groq');
-  return JSON.parse(clean.slice(js, je + 1));
+  // 1. Nettoyer les blocs markdown
+  var clean = raw
+    .replace(/```json\s*/gi, '')
+    .replace(/```\s*/gi, '')
+    .trim();
+
+  // 2. Extraire le JSON entre { }
+  var js = clean.indexOf('{');
+  var je = clean.lastIndexOf('}');
+  if (js === -1) throw new Error('JSON introuvable dans la réponse IA');
+  clean = clean.slice(js, je + 1);
+
+  // 3. Tentative de parse directe
+  try {
+    return JSON.parse(clean);
+  } catch(e1) {
+    // 4. Nettoyage agressif des caractères problématiques
+    try {
+      var fixed = clean
+        // Supprimer vrais retours à la ligne DANS les strings (entre guillemets)
+        .replace(/("(?:[^"\\]|\\.)*")/g, function(m) {
+          return m
+            .replace(/\n/g, '\\n')
+            .replace(/\r/g, '\\r')
+            .replace(/\t/g, '\\t');
+        })
+        // Supprimer les backslash orphelins (non suivis de caractère JSON valide)
+        .replace(/\\(?!["\\/bfnrtu])/g, ' ')
+        // Nettoyer caractères de contrôle hors strings
+        .replace(/[\u0000-\u001F\u007F]/g, ' ');
+      return JSON.parse(fixed);
+    } catch(e2) {
+      // 5. Reconstruction champ par champ si tout échoue
+      try {
+        var rebuilt = _rebuildJSON(clean);
+        return JSON.parse(rebuilt);
+      } catch(e3) {
+        console.error('Parse JSON échoué :', e3.message, '\nRaw:', clean.slice(0, 300));
+        throw new Error('Réponse IA invalide — Réessayez (détail: ' + e3.message + ')');
+      }
+    }
+  }
+}
+
+// Reconstruction JSON robuste ligne par ligne
+function _rebuildJSON(str) {
+  // Remplace tous les sauts de ligne non échappés dans les valeurs string
+  var inString = false;
+  var escaped = false;
+  var result = '';
+  for (var i = 0; i < str.length; i++) {
+    var ch = str[i];
+    if (escaped) { result += ch; escaped = false; continue; }
+    if (ch === '\\') { escaped = true; result += ch; continue; }
+    if (ch === '"') { inString = !inString; result += ch; continue; }
+    if (inString) {
+      if (ch === '\n') { result += '\\n'; continue; }
+      if (ch === '\r') { result += '\\r'; continue; }
+      if (ch === '\t') { result += '\\t'; continue; }
+      // Supprimer autres caractères de contrôle dans les strings
+      if (ch.charCodeAt(0) < 32) { continue; }
+    }
+    result += ch;
+  }
+  return result;
 }
 function groqCall(userMessage) {
   return _groqFetch(0, SYSTEM_DETECT, userMessage, 500)
