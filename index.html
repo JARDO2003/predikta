@@ -1076,7 +1076,8 @@ function showView(id, el) {
   document.getElementById('view-' + id).classList.add('active');
   if (el) el.classList.add('active');
   if (id === 'plan') renderPlan();
-  if (id === 'guide') renderGuide();
+if (id === 'guide') renderGuide();
+if (id === 'historique') renderHistorique();
   if (id === 'grandlivre') renderGrandLivre();
   if (id === 'balance') renderBalance();
   if (id === 'bilan') renderBilan();
@@ -1193,12 +1194,14 @@ function selectEntreprise(el) {
   renderQuickOps(); renderTypeSelect();
 }
 function renderQuickOps() {
-  document.getElementById('quick-ops-container').innerHTML = ENTREPRISE_CONFIG[currentEntrepriseType].quickOps.map(function(op) {
+  var type = currentEntrepriseType || 'commerce';
+  document.getElementById('quick-ops-container').innerHTML = ENTREPRISE_CONFIG[type].quickOps.map(function(op) {
     return '<span class="quick-chip" onclick="setQuick(\'' + op.replace(/'/g, "\\'") + '\')">' + op + '</span>';
   }).join('');
 }
 function renderTypeSelect() {
-  document.getElementById('op-type').innerHTML = ENTREPRISE_CONFIG[currentEntrepriseType].types.map(function(t) {
+  var type = currentEntrepriseType || 'commerce';
+  document.getElementById('op-type').innerHTML = ENTREPRISE_CONFIG[type].types.map(function(t) {
     return '<option value="'+t.value+'">'+t.label+'</option>';
   }).join('');
 }
