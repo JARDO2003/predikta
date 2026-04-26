@@ -266,12 +266,60 @@ table.data-table td { padding: 8px 10px; vertical-align: middle; color: var(--te
   <form id="form-register" class="auth-form">
     <div class="auth-error" id="register-error"></div>
     <div class="auth-success" id="register-success"></div>
-    <div class="form-group"><label>Nom de l'entreprise *</label><input type="text" id="reg-entreprise" placeholder="Ex: SARL ABC" required></div>
-    <div class="form-group"><label>Contact (email ou téléphone) *</label><input type="text" id="reg-contact" placeholder="contact@entreprise.ci" required></div>
-    <div class="form-group"><label>Mot de passe *</label><input type="password" id="reg-password" placeholder="Min. 6 caractères" required minlength="6"></div>
-    <div class="form-group"><label>Confirmer le mot de passe *</label><input type="password" id="reg-password2" placeholder="Répétez le mot de passe" required minlength="6"></div>
-    <button type="submit" class="btn-primary" id="btn-register">Créer mon compte (24h gratuit)</button>
-    <div class="auth-footer">En créant un compte, vous acceptez les conditions. Essai gratuit de 24h puis 2 000 FCFA/mois.</div>
+  <div class="form-group"><label>Nom de l'entreprise *</label><input type="text" id="reg-entreprise" placeholder="Ex: SARL ABC" required></div>
+<div class="form-group"><label>Contact (email ou téléphone) *</label><input type="text" id="reg-contact" placeholder="contact@entreprise.ci" required></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+  <div class="form-group"><label>Type d'entreprise</label>
+    <select id="reg-type">
+      <option value="commerce">🏪 Commerce</option>
+      <option value="service">💼 Services</option>
+      <option value="industrie">🏭 Industrie</option>
+      <option value="banque">🏦 Banque</option>
+      <option value="sante">🏥 Santé</option>
+      <option value="education">🎓 Éducation</option>
+      <option value="ong">🌍 ONG</option>
+      <option value="agri">🌾 Agriculture</option>
+      <option value="immo">🏗️ Immobilier</option>
+      <option value="transport">🚚 Transport</option>
+    </select>
+  </div>
+  <div class="form-group"><label>Secteur d'activité</label><input type="text" id="reg-secteur" placeholder="Ex: Alimentation"/></div>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+  <div class="form-group"><label>Pays</label>
+    <select id="reg-pays">
+      <option value="CI">🇨🇮 Côte d'Ivoire</option>
+      <option value="SN">🇸🇳 Sénégal</option>
+      <option value="ML">🇲🇱 Mali</option>
+      <option value="BF">🇧🇫 Burkina Faso</option>
+      <option value="BJ">🇧🇯 Bénin</option>
+      <option value="TG">🇹🇬 Togo</option>
+      <option value="GN">🇬🇳 Guinée</option>
+      <option value="CM">🇨🇲 Cameroun</option>
+      <option value="GA">🇬🇦 Gabon</option>
+      <option value="CG">🇨🇬 Congo</option>
+      <option value="CD">🇨🇩 RD Congo</option>
+      <option value="autre">Autre</option>
+    </select>
+  </div>
+  <div class="form-group"><label>Ville</label><input type="text" id="reg-ville" placeholder="Ex: Abidjan"/></div>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+  <div class="form-group"><label>RCCM</label><input type="text" id="reg-rccm" placeholder="Ex: CI-ABJ-2023-B-12345"/></div>
+  <div class="form-group"><label>Régime fiscal</label>
+    <select id="reg-regime">
+      <option value="reel">Réel Normal</option>
+      <option value="reel_simplifie">Réel Simplifié</option>
+      <option value="micro">Micro-entreprise</option>
+      <option value="forfait">Forfait</option>
+      <option value="exonere">Exonéré</option>
+    </select>
+  </div>
+</div>
+<div class="form-group"><label>Mot de passe *</label><input type="password" id="reg-password" placeholder="Min. 6 caractères" required minlength="6"></div>
+<div class="form-group"><label>Confirmer le mot de passe *</label><input type="password" id="reg-password2" placeholder="Répétez le mot de passe" required minlength="6"></div>
+<button type="submit" class="btn-primary" id="btn-register">Créer mon compte (24h gratuit)</button>
+<div class="auth-footer">En créant un compte, vous acceptez les conditions. Essai gratuit de 24h puis 2 000 FCFA/mois.</div>
   </form>
 </div>
 </div>
@@ -334,7 +382,12 @@ table.data-table td { padding: 8px 10px; vertical-align: middle; color: var(--te
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>Trésorerie
   </div>
   <div class="sidebar-divider"></div>
-  <div class="sidebar-section">Référence</div>
+<div class="sidebar-section">Entreprise</div>
+<div class="sidebar-item" onclick="showView('profil', this)">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Profil Entreprise
+</div>
+<div class="sidebar-divider"></div>
+<div class="sidebar-section">Référence</div>
   <div class="sidebar-item" onclick="showView('plan', this)">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>Plan Comptable
   </div>
@@ -451,27 +504,36 @@ table.data-table td { padding: 8px 10px; vertical-align: middle; color: var(--te
   <!-- BALANCE -->
   <div id="view-balance" class="view">
     <div class="panel-top"><h2>Balance des Comptes</h2>
-      <button class="btn-action" onclick="window.print()">🖨️ Imprimer</button>
-      <button class="btn-action" onclick="exportBalanceCSV()">📄 Export CSV</button>
-    </div>
+  <button class="btn-action" onclick="window.print()">🖨️ Imprimer</button>
+  <button class="btn-action" onclick="exportBalanceCSV()">📄 CSV</button>
+  <button class="btn-action" onclick="exportBalanceExcel()">📊 Excel</button>
+  <button class="btn-action" onclick="exportBalanceWord()">📝 Word</button>
+  <button class="btn-action" onclick="exportBalancePDF()">📄 PDF</button>
+</div>
     <div class="panel-body" id="balance-body"></div>
   </div>
 
   <!-- BILAN -->
   <div id="view-bilan" class="view">
-    <div class="panel-top"><h2>Bilan (Actif / Passif)</h2>
-      <button class="btn-action" onclick="window.print()">🖨️ Imprimer</button>
-      <button class="btn-action" onclick="exportBilanCSV()">📄 Export CSV</button>
-    </div>
+   <div class="panel-top"><h2>Bilan (Actif / Passif)</h2>
+  <button class="btn-action" onclick="window.print()">🖨️ Imprimer</button>
+  <button class="btn-action" onclick="exportBilanCSV()">📄 CSV</button>
+  <button class="btn-action" onclick="exportBilanExcel()">📊 Excel</button>
+  <button class="btn-action" onclick="exportBilanWord()">📝 Word</button>
+  <button class="btn-action" onclick="exportBilanPDF()">📄 PDF</button>
+</div>
     <div class="panel-body" id="bilan-body"></div>
   </div>
 
   <!-- COMPTE DE RESULTAT -->
   <div id="view-resultat" class="view">
     <div class="panel-top"><h2>Compte de Résultat</h2>
-      <button class="btn-action" onclick="window.print()">🖨️ Imprimer</button>
-      <button class="btn-action" onclick="exportResultatCSV()">📄 Export CSV</button>
-    </div>
+  <button class="btn-action" onclick="window.print()">🖨️ Imprimer</button>
+  <button class="btn-action" onclick="exportResultatCSV()">📄 CSV</button>
+  <button class="btn-action" onclick="exportResultatExcel()">📊 Excel</button>
+  <button class="btn-action" onclick="exportResultatWord()">📝 Word</button>
+  <button class="btn-action" onclick="exportResultatPDF()">📄 PDF</button>
+</div>
     <div class="panel-body" id="resultat-body"></div>
   </div>
 
@@ -505,6 +567,67 @@ table.data-table td { padding: 8px 10px; vertical-align: middle; color: var(--te
   <div id="view-guide" class="view">
     <div class="panel-top"><h2>Guide des Écritures Courantes</h2></div>
     <div class="panel-body" id="guide-body"></div>
+  </div>
+
+<!-- PROFIL ENTREPRISE -->
+  <div id="view-profil" class="view">
+    <div class="panel-top"><h2>Profil Entreprise</h2>
+      <button class="btn-action" onclick="saveProfilEntreprise()">💾 Enregistrer</button>
+    </div>
+    <div class="panel-body">
+      <div style="max-width:680px;display:flex;flex-direction:column;gap:14px;">
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:18px;">
+          <div style="font-weight:700;font-size:14px;color:var(--accent);margin-bottom:14px;">Informations générales</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div class="form-group"><label>Nom de l'entreprise</label><input type="text" id="profil-nom" placeholder="SARL ABC"/></div>
+            <div class="form-group"><label>Contact</label><input type="text" id="profil-contact" placeholder="email ou téléphone"/></div>
+            <div class="form-group"><label>Type d'entreprise</label>
+              <select id="profil-type">
+                <option value="commerce">🏪 Commerce</option>
+                <option value="service">💼 Services</option>
+                <option value="industrie">🏭 Industrie</option>
+                <option value="banque">🏦 Banque</option>
+                <option value="sante">🏥 Santé</option>
+                <option value="education">🎓 Éducation</option>
+                <option value="ong">🌍 ONG</option>
+                <option value="agri">🌾 Agriculture</option>
+                <option value="immo">🏗️ Immobilier</option>
+                <option value="transport">🚚 Transport</option>
+              </select>
+            </div>
+            <div class="form-group"><label>Secteur d'activité</label><input type="text" id="profil-secteur" placeholder="Alimentation, BTP..."/></div>
+            <div class="form-group"><label>Pays</label>
+              <select id="profil-pays">
+                <option value="CI">🇨🇮 Côte d'Ivoire</option>
+                <option value="SN">🇸🇳 Sénégal</option>
+                <option value="ML">🇲🇱 Mali</option>
+                <option value="BF">🇧🇫 Burkina Faso</option>
+                <option value="BJ">🇧🇯 Bénin</option>
+                <option value="TG">🇹🇬 Togo</option>
+                <option value="GN">🇬🇳 Guinée</option>
+                <option value="CM">🇨🇲 Cameroun</option>
+                <option value="GA">🇬🇦 Gabon</option>
+                <option value="CG">🇨🇬 Congo</option>
+                <option value="CD">🇨🇩 RD Congo</option>
+                <option value="autre">Autre</option>
+              </select>
+            </div>
+            <div class="form-group"><label>Ville</label><input type="text" id="profil-ville" placeholder="Abidjan"/></div>
+            <div class="form-group"><label>RCCM</label><input type="text" id="profil-rccm" placeholder="CI-ABJ-2023-B-12345"/></div>
+            <div class="form-group"><label>Régime fiscal</label>
+              <select id="profil-regime">
+                <option value="reel">Réel Normal</option>
+                <option value="reel_simplifie">Réel Simplifié</option>
+                <option value="micro">Micro-entreprise</option>
+                <option value="forfait">Forfait</option>
+                <option value="exonere">Exonéré</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div id="profil-success" style="display:none;background:#f0fdf4;border:1px solid #bbf7d0;color:var(--debit);font-size:13px;padding:10px 14px;border-radius:8px;font-weight:500;">✓ Profil mis à jour avec succès.</div>
+      </div>
+    </div>
   </div>
 
 </div>
@@ -635,12 +758,22 @@ function doRegister() {
       btn.disabled = false; btn.textContent = 'Créer mon compte (24h gratuit)'; return;
     }
     var now = Date.now();
-    db.collection('users').add({
-      nom_entreprise: nom, contact: contact,
-      password_hash: hashPassword(pass),
-      created_at: now, trial_ends_at: now + 86400000,
-      is_subscribed: false, subscription_ends_at: 0,
-      last_payment_date: 0, payment_amount: 0, type_entreprise: 'commerce'
+db.collection('users').add({
+  nom_entreprise: nom,
+  contact: contact,
+  password_hash: hashPassword(pass),
+  created_at: now,
+  trial_ends_at: now + 86400000,
+  is_subscribed: false,
+  subscription_ends_at: 0,
+  last_payment_date: 0,
+  payment_amount: 0,
+  type_entreprise: document.getElementById('reg-type').value || 'commerce',
+  secteur: document.getElementById('reg-secteur').value.trim(),
+  pays: document.getElementById('reg-pays').value || 'CI',
+  ville: document.getElementById('reg-ville').value.trim(),
+  rccm: document.getElementById('reg-rccm').value.trim(),
+  regime_fiscal: document.getElementById('reg-regime').value || 'reel'
     }).then(function() {
       suc.textContent = 'Compte créé ! Essai 24h actif. Connectez-vous.';
       suc.style.display = 'block';
@@ -689,6 +822,15 @@ function afterLogin() {
   document.getElementById('app').classList.add('active');
   document.getElementById('header-org').textContent = '🏢 ' + currentUser.nom_entreprise;
   currentEntrepriseType = currentUser.type_entreprise || 'commerce';
+  // Pré-remplir profil
+  document.getElementById('profil-nom').value = currentUser.nom_entreprise || '';
+  document.getElementById('profil-contact').value = currentUser.contact || '';
+  document.getElementById('profil-type').value = currentUser.type_entreprise || 'commerce';
+  document.getElementById('profil-secteur').value = currentUser.secteur || '';
+  document.getElementById('profil-pays').value = currentUser.pays || 'CI';
+  document.getElementById('profil-ville').value = currentUser.ville || '';
+  document.getElementById('profil-rccm').value = currentUser.rccm || '';
+  document.getElementById('profil-regime').value = currentUser.regime_fiscal || 'reel';
   updateSubscriptionStatus();
   loadEcritures();
 }
@@ -1399,10 +1541,13 @@ function renderJournal(result, opDesc, date, ref) {
     '<div class="ai-analysis-text">'+escHtml(result.analyse||'').replace(/\n/g,'<br>')+'</div>' +
     (result.notes ? '<div style="margin-top:8px;font-size:12px;color:var(--text3)">Note : '+escHtml(result.notes)+'</div>' : '') +
     '</div>' + cardsHTML +
-    '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;">' +
-    '<button class="btn-action" onclick="window.print()">Imprimer</button>' +
-    '<button class="btn-action" onclick="exportCurrentJournalCSV()">Export CSV</button>' +
-    '</div></div>';
+ '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;">' +
+'<button class="btn-action" onclick="window.print()">🖨️ Imprimer</button>' +
+'<button class="btn-action" onclick="exportCurrentJournalCSV()">📄 CSV</button>' +
+'<button class="btn-action" onclick="exportCurrentJournalExcel()">📊 Excel</button>' +
+'<button class="btn-action" onclick="exportCurrentJournalWord()">📝 Word</button>' +
+'<button class="btn-action" onclick="exportCurrentJournalPDF()">📄 PDF</button>' +
+'</div></div>';
   window._lastJournalResult = result;
 }
 function exportCurrentJournalCSV() { if (window._lastJournalResult) exportJournalCSV(window._lastJournalResult); }
@@ -1421,6 +1566,173 @@ function exportJournalCSV(result) {
     });
   }
   downloadCSV(csv, 'journal_'+(result.reference||'export')+'.csv');
+}
+
+/* ===================================================
+   PROFIL ENTREPRISE
+=================================================== */
+function saveProfilEntreprise() {
+  if (!currentUser) return;
+  var nom = document.getElementById('profil-nom').value.trim();
+  var contact = document.getElementById('profil-contact').value.trim();
+  var type = document.getElementById('profil-type').value;
+  var secteur = document.getElementById('profil-secteur').value.trim();
+  var pays = document.getElementById('profil-pays').value;
+  var ville = document.getElementById('profil-ville').value.trim();
+  var rccm = document.getElementById('profil-rccm').value.trim();
+  var regime = document.getElementById('profil-regime').value;
+  if (!nom) { showToast('Le nom est requis'); return; }
+  db.collection('users').doc(currentUser.id).update({
+    nom_entreprise: nom, contact: contact,
+    type_entreprise: type, secteur: secteur,
+    pays: pays, ville: ville, rccm: rccm,
+    regime_fiscal: regime, updated_at: Date.now()
+  }).then(function() {
+    currentUser.nom_entreprise = nom;
+    currentUser.type_entreprise = type;
+    currentUser.secteur = secteur;
+    currentUser.pays = pays;
+    currentUser.ville = ville;
+    currentUser.rccm = rccm;
+    currentUser.regime_fiscal = regime;
+    currentEntrepriseType = type;
+    document.getElementById('header-org').textContent = '🏢 ' + nom;
+    var s = document.getElementById('profil-success');
+    s.style.display = 'block';
+    setTimeout(function() { s.style.display = 'none'; }, 3000);
+    showToast('Profil mis à jour');
+  }).catch(function(e) { showToast('Erreur : ' + e.message); });
+}
+
+/* ===================================================
+   EXPORT WORD / EXCEL / PDF
+=================================================== */
+function exportWord(contenu, nomFichier) {
+  var html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>'+nomFichier+'</title>'+
+    '<style>body{font-family:Arial,sans-serif;font-size:12pt;margin:2cm;}table{border-collapse:collapse;width:100%;}th,td{border:1px solid #ccc;padding:6px 10px;text-align:left;}th{background:#f0f4ff;font-weight:bold;}h1{color:#1a56db;}h2{color:#1a56db;font-size:14pt;margin-top:20px;}</style>'+
+    '</head><body>'+contenu+'</body></html>';
+  var blob = new Blob(['\ufeff'+html], {type:'application/msword;charset=utf-8'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a'); a.href = url; a.download = nomFichier+'.doc'; a.click();
+  URL.revokeObjectURL(url); showToast('Export Word effectué');
+}
+
+function exportExcel(tableHtml, nomFichier) {
+  var html = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel">'+
+    '<head><meta charset="UTF-8"><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet>'+
+    '<x:Name>'+nomFichier+'</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions>'+
+    '</x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--></head>'+
+    '<body>'+tableHtml+'</body></html>';
+  var blob = new Blob(['\ufeff'+html], {type:'application/vnd.ms-excel;charset=utf-8'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a'); a.href = url; a.download = nomFichier+'.xls'; a.click();
+  URL.revokeObjectURL(url); showToast('Export Excel effectué');
+}
+
+function exportPDF(contenu, nomFichier) {
+  var w = window.open('','_blank','width=900,height=700');
+  w.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>'+nomFichier+'</title>'+
+    '<style>body{font-family:Arial,sans-serif;font-size:11pt;margin:1.5cm;}table{border-collapse:collapse;width:100%;}'+
+    'th,td{border:1px solid #999;padding:5px 8px;}th{background:#dde7ff;}.pos{color:#059669;}.neg{color:#dc2626;}'+
+    'h1{color:#1a56db;font-size:16pt;}h2{color:#1a56db;font-size:13pt;margin-top:16px;}'+
+    '@media print{button{display:none!important;}}</style></head>'+
+    '<body>'+contenu+'<br/><button onclick="window.print()" style="margin-top:20px;padding:10px 24px;background:#1a56db;color:#fff;border:none;border-radius:8px;font-size:13px;cursor:pointer;">🖨️ Imprimer / Enregistrer PDF</button></body></html>');
+  w.document.close();
+}
+
+function getEnteteEntreprise() {
+  if (!currentUser) return '';
+  return '<div style="margin-bottom:18px;border-bottom:2px solid #1a56db;padding-bottom:10px;">'+
+    '<h1 style="margin:0;font-size:18pt;">'+escHtml(currentUser.nom_entreprise||'')+'</h1>'+
+    '<div style="color:#555;font-size:10pt;margin-top:4px;">'+
+    (currentUser.rccm?'RCCM: '+escHtml(currentUser.rccm)+' &nbsp;|&nbsp; ':'')+ 
+    (currentUser.regime_fiscal?'Régime: '+escHtml(currentUser.regime_fiscal)+' &nbsp;|&nbsp; ':'')+
+    (currentUser.ville?escHtml(currentUser.ville)+', ':'')+escHtml(currentUser.pays||'CI')+
+    '</div></div>';
+}
+
+// Export Balance Word/Excel/PDF
+function exportBalanceWord() {
+  var html = getEnteteEntreprise()+'<h2>Balance des Comptes</h2>'+document.querySelector('#balance-body table').outerHTML;
+  exportWord(html,'balance_'+todayDate());
+}
+function exportBalanceExcel() {
+  var table = document.querySelector('#balance-body table');
+  if (!table) { showToast('Aucune balance à exporter'); return; }
+  exportExcel(table.outerHTML,'balance_'+todayDate());
+}
+function exportBalancePDF() {
+  var html = getEnteteEntreprise()+'<h2>Balance des Comptes — '+todayDate()+'</h2>'+
+    (document.querySelector('#balance-body table')?document.querySelector('#balance-body table').outerHTML:'<p>Aucune donnée</p>');
+  exportPDF(html,'balance_'+todayDate());
+}
+
+// Export Bilan Word/Excel/PDF
+function exportBilanWord() {
+  var html = getEnteteEntreprise()+'<h2>Bilan — Actif / Passif</h2>'+document.getElementById('bilan-body').innerHTML;
+  exportWord(html,'bilan_'+todayDate());
+}
+function exportBilanExcel() {
+  var tables = document.querySelectorAll('#bilan-body table');
+  var html = '<table><tr><th>ACTIF</th><th>PASSIF</th></tr></table>';
+  tables.forEach(function(t){ html += t.outerHTML; });
+  exportExcel(html,'bilan_'+todayDate());
+}
+function exportBilanPDF() {
+  var html = getEnteteEntreprise()+'<h2>Bilan — '+todayDate()+'</h2>'+document.getElementById('bilan-body').innerHTML;
+  exportPDF(html,'bilan_'+todayDate());
+}
+
+// Export Résultat Word/Excel/PDF
+function exportResultatWord() {
+  var html = getEnteteEntreprise()+'<h2>Compte de Résultat</h2>'+document.getElementById('resultat-body').innerHTML;
+  exportWord(html,'resultat_'+todayDate());
+}
+function exportResultatExcel() {
+  var tables = document.querySelectorAll('#resultat-body table');
+  var html = ''; tables.forEach(function(t){ html += t.outerHTML; });
+  if (!html) { showToast('Aucun résultat à exporter'); return; }
+  exportExcel(html,'resultat_'+todayDate());
+}
+function exportResultatPDF() {
+  var html = getEnteteEntreprise()+'<h2>Compte de Résultat — '+todayDate()+'</h2>'+document.getElementById('resultat-body').innerHTML;
+  exportPDF(html,'resultat_'+todayDate());
+}
+
+// Export Journal (écriture courante) Word/Excel/PDF
+function exportCurrentJournalWord() {
+  if (!window._lastJournalResult) { showToast('Aucune écriture à exporter'); return; }
+  var r = window._lastJournalResult;
+  var html = getEnteteEntreprise()+'<h2>Journal — '+escHtml(r.titre||r.description||'')+'</h2>';
+  (r.ecritures||[]).forEach(function(ec,i){
+    html += '<h3>Écriture '+(i+1)+' : '+escHtml(ec.etape||'')+'</h3>';
+    html += '<table><thead><tr><th>Compte</th><th>Libellé</th><th>Débit</th><th>Crédit</th></tr></thead><tbody>';
+    (ec.lignes||[]).forEach(function(l){ html+='<tr><td>'+escHtml(l.compte)+'</td><td>'+escHtml(l.libelle)+'</td><td style="color:green">'+fmtAmount(l.debit)+'</td><td style="color:red">'+fmtAmount(l.credit)+'</td></tr>'; });
+    html += '</tbody></table>';
+  });
+  exportWord(html,'journal_'+(r.reference||todayDate()));
+}
+function exportCurrentJournalExcel() {
+  if (!window._lastJournalResult) { showToast('Aucune écriture à exporter'); return; }
+  var r = window._lastJournalResult;
+  var html = '<table><thead><tr><th>Étape</th><th>Compte</th><th>Libellé</th><th>Débit</th><th>Crédit</th></tr></thead><tbody>';
+  (r.ecritures||[]).forEach(function(ec,i){
+    (ec.lignes||[]).forEach(function(l){ html+='<tr><td>'+escHtml(ec.etape||'Écriture '+(i+1))+'</td><td>'+escHtml(l.compte)+'</td><td>'+escHtml(l.libelle)+'</td><td>'+fmtAmount(l.debit)+'</td><td>'+fmtAmount(l.credit)+'</td></tr>'; });
+  });
+  html += '</tbody></table>';
+  exportExcel(html,'journal_'+(r.reference||todayDate()));
+}
+function exportCurrentJournalPDF() {
+  if (!window._lastJournalResult) { showToast('Aucune écriture à exporter'); return; }
+  var r = window._lastJournalResult;
+  var html = getEnteteEntreprise()+'<h2>Journal — '+escHtml(r.titre||r.description||'')+'</h2>';
+  (r.ecritures||[]).forEach(function(ec,i){
+    html += '<h3>Écriture '+(i+1)+' : '+escHtml(ec.etape||'')+'</h3>';
+    html += '<table><thead><tr><th>Compte</th><th>Libellé</th><th>Débit</th><th>Crédit</th></tr></thead><tbody>';
+    (ec.lignes||[]).forEach(function(l){ html+='<tr><td>'+escHtml(l.compte)+'</td><td>'+escHtml(l.libelle)+'</td><td class="pos">'+fmtAmount(l.debit)+'</td><td class="neg">'+fmtAmount(l.credit)+'</td></tr>'; });
+    html += '</tbody></table>';
+  });
+  exportPDF(html,'journal_'+(r.reference||todayDate()));
 }
 
 /* ===================================================
