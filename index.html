@@ -809,7 +809,7 @@ function saveManualSimple() {
   var montant = parseAmount(document.getElementById('op-montant').value);
   if (!desc || !montant) { showToast('Veuillez remplir la description et le montant'); return; }
   var ecriture = { titre: desc, date: date, reference: ref, description: desc, type_entreprise: currentEntrepriseType,
-    lignes: [{compte:'601',libelle:'Charge / Achat',debit:montant,credit:0},{compte:'512',libelle:'Banque / Règlement',debit:0,credit:montant}]};
+    lignes: [{compte:'601',libelle:'Charge / Achat',debit:montant,credit:0},{compte:'521',libelle:'Banque / Règlement',debit:0,credit:montant}]};
   saveEcriture(ecriture);
   document.getElementById('output-content').innerHTML = '<div class="journal-card"><div class="journal-card-header"><div class="journal-card-title">Écriture rapide enregistrée</div></div><div style="padding:12px;color:var(--text2);font-size:13px;">'+escHtml(desc)+' — '+fmtAmount(montant)+'</div></div>';
 }
@@ -910,11 +910,11 @@ function setQuick(text) { document.getElementById('op-description').value = text
 var PLAN_COMPTABLE = {
   "Classe 1 — Ressources durables":{"101":"Capital social","106":"Reserves","121":"Resultat net : benefice","129":"Resultat net : perte","131":"Subventions d'equipement","141":"Emprunts et dettes financieres","161":"Emprunts ordinaires etablissements de credit","165":"Depots et cautionnements recus","166":"Interets courus"},
   "Classe 2 — Actif immobilise":{"211":"Terrains nus","221":"Batiments industriels","231":"Materiel et outillage industriel","232":"Materiel agricole","241":"Materiel de transport","2411":"Vehicules de tourisme","2412":"Camions et vehicules utilitaires","244":"Materiel de bureau et informatique","2441":"Mobilier de bureau","2442":"Materiel de bureau","2443":"Materiel informatique","245":"Materiel medical","251":"Titres de participation","272":"Prets","281":"Amortissements immobilisations corporelles","2813":"Amortissements batiments","2816":"Amortissements materiel et outillage","2817":"Amortissements materiel de transport","2844":"Amortissements materiel bureau et informatique","291":"Depreciations immobilisations incorporelles"},
-  "Classe 3 — Stocks":{"301":"Marchandises A","302":"Marchandises B","311":"Matieres premieres","321":"Matieres consommables","331":"Produits en cours","341":"Produits intermediaires","351":"Produits finis","361":"Produits residuels","391":"Depreciations stocks marchandises","392":"Depreciations stocks matieres premieres","395":"Depreciations stocks produits finis"},
-  "Classe 4 — Tiers":{"401":"Fournisseurs","4011":"Fournisseurs ordinaires","404":"Fournisseurs d'immobilisations","405":"Fournisseurs, retenues de garantie","408":"Fournisseurs, factures non parvenues","409":"Fournisseurs debiteurs, avances","411":"Clients","4111":"Clients ordinaires","412":"Clients - Effets a recevoir","413":"Clients - Retenues de garantie","414":"Clients - Avances et acomptes recus","416":"Clients douteux","418":"Clients - Produits a recevoir","419":"Clients crediteurs","421":"Personnel, avances","422":"Personnel, remunerations dues","431":"Securite sociale","432":"Caisses de retraites","441":"Etat, impots sur les benefices","442":"Etat, impots et taxes sur le CA","4421":"TVA collectee","4451":"TVA recuperable sur immobilisations","4452":"TVA recuperable sur achats de biens","4453":"TVA recuperable sur services","447":"Etat, impots retenus a la source","461":"Debiteurs divers","462":"Crediteurs divers","487":"Produits constates d'avance","491":"Depreciations comptes clients"},
-  "Classe 5 — Tresorerie":{"511":"Valeurs a l'encaissement","512":"Banques - comptes courants","516":"Comptes courants postaux","571":"Caisses en monnaies nationales","5711":"Caisse principale","581":"Virements internes"},
-  "Classe 6 — Charges":{"601":"Achats de marchandises","602":"Achats de matieres premieres","604":"Achats matieres et fournitures consommables","6091":"Variation stocks marchandises","6092":"Variation stocks matieres premieres","611":"Transports sur achats","612":"Transports sur ventes","613":"Autres transports","621":"Sous-traitance generale","622":"Locations et charges locatives","624":"Entretien, reparations","625":"Primes d'assurance","627":"Publicite","628":"Frais de telecommunications","629":"Transports et deplacements","631":"Frais bancaires","632":"Remunerations intermediaires","651":"Remunerations du personnel","6511":"Appointements et salaires bruts","661":"Cotisations organismes sociaux","6611":"Cotisations patronales CNPS/CNSS","681":"Dotations aux amortissements corporels","6817":"Dotation amortissements materiel transport","6844":"Dotation amortissements materiel bureau","691":"Dotations aux provisions","6972":"Depreciations creances clients"},
-  "Classe 7 — Produits":{"701":"Ventes de marchandises","702":"Ventes de produits finis","703":"Ventes de produits intermediaires","705":"Travaux factures","706":"Services vendus","707":"Produits accessoires","708":"Revenus activites annexes","7091":"Variation stocks produits finis","741":"Subventions d'exploitation","751":"Revenus immeubles non affectes","771":"Escomptes obtenus","772":"Gains de change","781":"Reprises amortissements et provisions"},
+  "Classe 3 — Stocks":{"31":"Marchandises","311":"Marchandises A","312":"Marchandises B","32":"Matieres premieres et fournitures","321":"Matieres premieres","322":"Matieres et fournitures consommables","33":"Autres approvisionnements","35":"Produits finis","36":"Produits intermediaires et residuels","391":"Depreciations stocks marchandises","392":"Depreciations stocks matieres premieres","395":"Depreciations stocks produits finis"},
+  "Classe 4 — Tiers":{"401":"Fournisseurs","4011":"Fournisseurs ordinaires","404":"Fournisseurs d'immobilisations","405":"Fournisseurs, retenues de garantie","408":"Fournisseurs, factures non parvenues","409":"Fournisseurs debiteurs, avances","411":"Clients","4111":"Clients ordinaires","412":"Clients - Effets a recevoir","413":"Clients - Retenues de garantie","414":"Clients - Avances et acomptes recus","416":"Clients douteux","418":"Clients - Produits a recevoir","419":"Clients crediteurs","421":"Personnel, avances","422":"Personnel, remunerations dues","43":"Organismes sociaux","431":"CNPS - part salariale","432":"CNPS - part patronale","441":"Etat, impots sur les benefices","442":"Etat, impots et taxes recouvrables","4431":"TVA collectee","4451":"TVA recuperable sur immobilisations","4452":"TVA recuperable sur achats de biens","4453":"TVA recuperable sur services","447":"Etat, impots retenus a la source (IRPP)","461":"Debiteurs divers","462":"Crediteurs divers","487":"Produits constates d'avance","491":"Depreciations comptes clients"},
+  "Classe 5 — Tresorerie":{"511":"Valeurs a l'encaissement","521":"Banques - comptes courants","531":"Cheques postaux","571":"Caisses en monnaies nationales","5711":"Caisse principale","581":"Virements internes"},
+  "Classe 6 — Charges":{"601":"Achats de marchandises","602":"Achats de matieres premieres","604":"Achats matieres et fournitures consommables","6031":"Variation stocks marchandises","6032":"Variation stocks matieres premieres","611":"Transports sur achats","612":"Transports sur ventes","613":"Autres transports","621":"Sous-traitance generale","622":"Locations et charges locatives","624":"Entretien, reparations","625":"Primes d'assurance","627":"Publicite","628":"Frais de telecommunications","629":"Transports et deplacements","631":"Frais bancaires","632":"Remunerations intermediaires","661":"Remunerations du personnel","6611":"Appointements et salaires bruts","664":"Charges sociales - part patronale","6641":"Cotisations patronales CNPS","681":"Dotations aux amortissements corporels","6817":"Dotation amortissements materiel transport","6844":"Dotation amortissements materiel bureau","691":"Dotations aux provisions","6972":"Depreciations creances clients"},
+  "Classe 7 — Produits":{"701":"Ventes de marchandises","702":"Ventes de produits finis","703":"Ventes de produits intermediaires","705":"Travaux factures","706":"Services vendus","707":"Produits accessoires","708":"Revenus activites annexes","7031":"Variation stocks produits finis","741":"Subventions d'exploitation","751":"Revenus immeubles non affectes","771":"Escomptes obtenus","772":"Gains de change","781":"Reprises amortissements et provisions"},
   "Classe 8 — Autres":{"811":"Charges exercices anterieurs","821":"Produits exercices anterieurs","831":"Charges HAO","841":"Produits cessions immobilisations","861":"Participation travailleurs","871":"Impots sur le resultat"}
 };
 
@@ -1209,32 +1209,39 @@ var GROQ_KEYS = [
 ];
 var _groqKeyIndex = 0;
 var SYSTEM_GENERATE = [
-  "Tu es Comeo AI, expert-comptable OHADA, SYSCOHADA Révisé 2017.",
+  "Tu es Comeo AI, expert-comptable OHADA certifié, SYSCOHADA Révisé 2017.",
   "Génère les écritures comptables EXACTES en JSON pur.",
-  "TVA OHADA=18%. Si TTC donné: HT=ARRONDI(TTC/1.18), TVA=TTC-HT.",
-  "COMPTES CLÉS: marchandises:601/701, services:706, banque:512, caisse:571,",
-  "clients:411, fourn.ordinaire:401, fourn.immo:404,",
-  "TVA collectée:4421, TVA récup.biens:4452, TVA récup.services:4453, TVA récup.immo:4451,",
-  "salaires:6511, cotis.patronales:6611, amort:681,",
-  "immo.info:2443, immo.mobilier:2441, immo.transport:2411/2412, immo.bât:221.",
+  "RÈGLE DE PRÉSENTATION ABSOLUE: dans chaque écriture, toutes les lignes débitrices (debit > 0) doivent apparaître EN PREMIER, puis toutes les lignes créditrices (credit > 0). Ne jamais mélanger.",
+  "TVA OHADA=18%. Si TTC donné: HT=ARRONDI(TTC/1.18,0), TVA=TTC-HT.",
+  "COMPTES SYSCOHADA OFFICIELS (ignore tout autre plan):",
+  "Ventes marchandises:701, Ventes services:706, Achats marchandises:601, Achats mat.1ères:602,",
+  "Clients:411, Fournisseurs ordinaires:401, Fournisseurs immo:404,",
+  "Banque:521, Caisse:571, Virements internes:581,",
+  "TVA collectée:4431, TVA récup.biens:4451, TVA récup.services:4452, TVA récup.immo:4453,",
+  "Salaires bruts:661, Charges patronales:664, CNPS:43, IRPP:447, Net à payer:422,",
+  "Amort.immo corp.:281, Dot.amort:681, Immo.matériel:244, Immo.bâtiment:231, Terrain:211,",
+  "Stock marchandises:31, Variation stock:6031, Emprunt LT:161, Capital:101.",
   "RÈGLE: Débit total = Crédit total pour chaque écriture.",
   "RETOURNE uniquement ce JSON (sans markdown):",
   '{"titre":"","date":"","reference":"","ecritures":[{"etape":"","lignes":[{"compte":"","libelle":"","debit":0,"credit":0}]}],"analyse":"","notes":""}'
 ].join(' ');
 var SYSTEM_DETECT = [
-  "Tu es expert-comptable OHADA, SYSCOHADA Révisé 2017. Analyse cette opération commerciale.",
+  "Tu es expert-comptable OHADA certifié, SYSCOHADA Révisé 2017. Analyse cette opération commerciale.",
   "Détermine les étapes exactes selon le type d'opération décrit.",
   "RETOURNE uniquement ce JSON (sans markdown) :",
   '{"etapes":["Étape 1 : libellé exact","Étape 2 : libellé exact","Étape 3 : libellé exact"],"titre":"","analyse":"","notes":""}'
 ].join(' ');
 var SYSTEM_ETAPE = [
-  "Tu es Comeo AI, expert-comptable OHADA, SYSCOHADA Révisé 2017.",
+  "Tu es Comeo AI, expert-comptable OHADA certifié, SYSCOHADA Révisé 2017.",
   "Génère l'écriture comptable COMPLÈTE et ÉQUILIBRÉE pour l'étape demandée.",
+  "RÈGLE DE PRÉSENTATION ABSOLUE: toutes les lignes débitrices (debit > 0) EN PREMIER, puis toutes les lignes créditrices (credit > 0). Jamais mélanger débit et crédit.",
   "TVA OHADA=18%. Si TTC: HT=ARRONDI(TTC/1.18,0), TVA=TTC-HT.",
-  "COMPTES: ventes:701, achats:601, clients:411, fourn:401, fourn.immo:404,",
-  "banque:512, caisse:571, stock:310, variation stock:6031,",
-  "TVA collectée:4421, TVA récup.biens:4452, TVA récup.immo:4451,",
-  "salaires bruts:6511, charges patronales:6611, CNPS:431, IRPP:447, net à payer:422, immo:244x.",
+  "COMPTES SYSCOHADA OFFICIELS (ignore tout autre plan):",
+  "Ventes:701, Services:706, Achats:601, Clients:411, Fourn:401, Fourn.immo:404,",
+  "Banque:521, Caisse:571,",
+  "TVA collectée:4431, TVA récup.biens:4451, TVA récup.services:4452, TVA récup.immo:4453,",
+  "Salaires:661, Charges patron.:664, CNPS:43, IRPP:447, Net payer:422,",
+  "Amort:281, Dot.amort:681, Stock:31, Var.stock:6031, Emprunt:161, Capital:101.",
   "RÈGLE ABSOLUE: somme(debit) = somme(credit). Vérifie l'équilibre avant de répondre.",
   "RETOURNE uniquement ce JSON (sans markdown):",
   '{"etape":"","lignes":[{"compte":"","libelle":"","debit":0,"credit":0}]}'
