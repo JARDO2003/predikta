@@ -1,8 +1,515 @@
-/* ============================================================
-   COMEO AI PRO — JAVASCRIPT
-   app.js
-============================================================ */
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<title>Comeo AI Pro — Comptabilité SYSCOHADA</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@300;400;500&family=Fraunces:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/firebase@9.22.2/firebase-app-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/firebase@9.22.2/firebase-firestore-compat.js"></script>
+<style>
+:root {
+  --bg:#0c0e14;--bg2:#12151f;--bg3:#181c28;--bg4:#1e2336;--bg5:#232840;
+  --border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.1);--border3:rgba(255,255,255,0.18);
+  --gold:#d4a853;--gold2:#f0c96a;--gold3:#8b6820;--gold-glow:rgba(212,168,83,0.15);--gold-glow2:rgba(212,168,83,0.08);
+  --emerald:#2dd4a0;--rose:#f4617a;--sky:#60b4f0;
+  --text:#f0ede8;--text2:#a8a49e;--text3:#5a5650;
+  --debit:#2dd4a0;--credit:#f4617a;
+  --font:'Syne',sans-serif;--mono:'DM Mono',monospace;--serif:'Fraunces',serif;
+  --shadow:0 2px 12px rgba(0,0,0,0.4);--shadow-lg:0 8px 40px rgba(0,0,0,0.6);--glow:0 0 24px rgba(212,168,83,0.2);
+  --r:10px;--r-lg:16px;--r-xl:22px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--font);font-size:14px;line-height:1.5;overflow:hidden;-webkit-font-smoothing:antialiased;}
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:9998;opacity:0.6;}
+::-webkit-scrollbar{width:4px;height:4px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:var(--bg5);border-radius:2px;}::-webkit-scrollbar-thumb:hover{background:var(--gold3);}
 
+/* AUTH */
+#auth-overlay{position:fixed;inset:0;z-index:10000;display:flex;align-items:center;justify-content:center;overflow-y:auto;background:var(--bg);}
+.auth-bg{position:fixed;inset:0;background:radial-gradient(ellipse 60% 40% at 80% 20%,rgba(212,168,83,0.12) 0%,transparent 60%),radial-gradient(ellipse 50% 60% at 10% 80%,rgba(45,212,160,0.06) 0%,transparent 60%),var(--bg);z-index:0;}
+.auth-box{position:relative;z-index:1;width:100%;max-width:480px;margin:20px;padding:40px;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r-xl);box-shadow:var(--shadow-lg),0 0 60px rgba(212,168,83,0.08);}
+.auth-logo{display:flex;align-items:center;gap:14px;margin-bottom:8px;}
+.auth-logo-mark{width:44px;height:44px;background:linear-gradient(135deg,var(--gold),var(--gold2));border-radius:12px;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-weight:600;font-size:20px;color:#0c0e14;box-shadow:0 4px 20px rgba(212,168,83,0.4);}
+.auth-logo-text{font-family:var(--serif);font-weight:600;font-size:26px;letter-spacing:-0.5px;color:var(--text);}
+.auth-logo-text span{color:var(--gold);font-style:italic;}
+.auth-tagline{font-size:11px;color:var(--text3);font-family:var(--mono);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:28px;padding-left:2px;}
+.auth-tabs{display:flex;gap:0;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:4px;margin-bottom:24px;}
+.auth-tab{flex:1;background:transparent;border:none;color:var(--text3);border-radius:8px;padding:10px;font-family:var(--font);font-size:12px;font-weight:600;cursor:pointer;transition:all 0.2s;text-align:center;letter-spacing:0.5px;text-transform:uppercase;}
+.auth-tab.active{background:var(--bg5);color:var(--gold);box-shadow:var(--shadow);}
+.auth-form{display:none;}.auth-form.active{display:block;}
+.form-group{margin-bottom:14px;}
+.form-group label{display:block;font-family:var(--mono);font-size:10px;font-weight:400;text-transform:uppercase;letter-spacing:1.2px;color:var(--text3);margin-bottom:7px;}
+.form-group input,.form-group textarea,.form-group select{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);color:var(--text);font-family:var(--font);font-size:13px;padding:11px 14px;outline:none;transition:border-color 0.2s,box-shadow 0.2s;-webkit-appearance:none;}
+.form-group select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%235a5650' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:36px;}
+.form-group input:focus,.form-group textarea:focus,.form-group select:focus{border-color:var(--gold);box-shadow:0 0 0 3px var(--gold-glow2);}
+.form-group input::placeholder,.form-group textarea::placeholder{color:var(--text3);}
+.btn-primary{width:100%;background:linear-gradient(135deg,var(--gold),#c49840);color:#0c0e14;border:none;border-radius:var(--r);padding:13px 24px;font-family:var(--font);font-weight:700;font-size:13px;cursor:pointer;transition:all 0.25s;display:flex;align-items:center;justify-content:center;gap:8px;letter-spacing:0.8px;text-transform:uppercase;box-shadow:0 4px 20px rgba(212,168,83,0.3);}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(212,168,83,0.45);background:linear-gradient(135deg,var(--gold2),var(--gold));}
+.btn-primary:disabled{opacity:0.5;cursor:not-allowed;transform:none;}
+.btn-link{background:none;border:none;color:var(--gold);font-family:var(--mono);font-size:11px;cursor:pointer;text-decoration:none;padding:0;margin-top:10px;letter-spacing:0.5px;transition:color 0.2s;}
+.btn-link:hover{color:var(--gold2);}
+.auth-footer{margin-top:16px;text-align:center;font-size:11px;color:var(--text3);font-family:var(--mono);letter-spacing:0.3px;}
+.auth-error{background:rgba(244,97,122,0.08);border:1px solid rgba(244,97,122,0.2);color:var(--rose);font-size:12px;padding:10px 14px;border-radius:var(--r);margin-bottom:14px;display:none;font-family:var(--mono);}
+.auth-success{background:rgba(45,212,160,0.08);border:1px solid rgba(45,212,160,0.2);color:var(--emerald);font-size:12px;padding:10px 14px;border-radius:var(--r);margin-bottom:14px;display:none;font-family:var(--mono);}
+
+/* PAYWALL */
+#paywall-overlay{position:fixed;inset:0;background:rgba(12,14,20,0.95);z-index:9999;display:none;align-items:center;justify-content:center;backdrop-filter:blur(8px);}
+.paywall-box{max-width:480px;padding:40px;text-align:center;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r-xl);box-shadow:var(--shadow-lg);}
+.paywall-icon{width:72px;height:72px;background:rgba(212,168,83,0.1);border:1px solid rgba(212,168,83,0.2);border-radius:20px;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:32px;}
+.paywall-title{font-family:var(--serif);font-size:24px;font-weight:600;color:var(--text);margin-bottom:10px;font-style:italic;}
+.paywall-text{font-size:13px;color:var(--text2);margin-bottom:28px;line-height:1.7;font-family:var(--mono);}
+.paywall-text strong{color:var(--gold);}
+.paywall-btns{display:flex;flex-direction:column;gap:10px;}
+.btn-wave{background:linear-gradient(135deg,#1ba5e8,#0d7ab5);color:#fff;border:none;border-radius:var(--r);padding:13px 24px;font-weight:700;font-size:13px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;text-transform:uppercase;letter-spacing:0.5px;font-family:var(--font);}
+.btn-wave:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(27,165,232,0.3);}
+.btn-whatsapp{background:linear-gradient(135deg,#25d366,#1aaa4f);color:#fff;border:none;border-radius:var(--r);padding:13px 24px;font-weight:700;font-size:13px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;text-transform:uppercase;letter-spacing:0.5px;font-family:var(--font);}
+.btn-whatsapp:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(37,211,102,0.3);}
+
+/* APP */
+#app{display:none;grid-template-rows:60px 1fr;grid-template-columns:240px 1fr;height:100vh;width:100vw;}
+#app.active{display:grid;}
+
+/* HEADER */
+#header{grid-column:1/-1;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:16px;position:relative;z-index:100;}
+.logo-lockup{display:flex;align-items:center;gap:12px;}
+.logo-mark{width:34px;height:34px;background:linear-gradient(135deg,var(--gold),#c49840);border-radius:9px;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-weight:600;font-size:14px;color:#0c0e14;flex-shrink:0;box-shadow:0 2px 12px rgba(212,168,83,0.35);}
+.logo-text{font-family:var(--serif);font-weight:600;font-size:17px;color:var(--text);letter-spacing:-0.3px;}
+.logo-text em{color:var(--gold);font-style:italic;}
+.header-divider{width:1px;height:24px;background:var(--border);flex-shrink:0;}
+.header-sub{font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;}
+.header-right{margin-left:auto;display:flex;align-items:center;gap:10px;}
+.pill{background:var(--bg4);border:1px solid var(--border);border-radius:100px;padding:4px 12px;font-family:var(--mono);font-size:10px;color:var(--text2);letter-spacing:0.5px;font-weight:400;}
+.pill-gold{background:var(--gold-glow2);border:1px solid rgba(212,168,83,0.2);color:var(--gold);}
+.pill-warn{color:#f0c96a;border-color:rgba(240,201,106,0.2);}
+.btn-header{background:transparent;border:1px solid var(--border);color:var(--text3);border-radius:var(--r);padding:6px 14px;font-family:var(--mono);font-size:10px;letter-spacing:0.8px;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .2s;}
+.btn-header:hover{border-color:var(--rose);color:var(--rose);background:rgba(244,97,122,0.06);}
+
+/* SIDEBAR */
+#sidebar{background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;padding:12px 0;}
+.sidebar-section{padding:14px 20px 6px;font-family:var(--mono);font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:1.8px;font-weight:400;}
+.sidebar-item{display:flex;align-items:center;gap:10px;padding:9px 16px 9px 20px;cursor:pointer;color:var(--text3);font-size:13px;transition:all 0.15s;font-weight:500;border-left:2px solid transparent;letter-spacing:0.2px;margin:1px 0;}
+.sidebar-item:hover{color:var(--text);background:rgba(255,255,255,0.03);}
+.sidebar-item.active{color:var(--gold);background:var(--gold-glow2);border-left-color:var(--gold);}
+.sidebar-item svg{width:15px;height:15px;flex-shrink:0;stroke-width:1.8;}
+.sidebar-divider{height:1px;background:var(--border);margin:8px 20px;}
+
+/* MAIN */
+#main{display:flex;flex-direction:column;overflow:hidden;background:var(--bg);}
+.view{display:none;flex-direction:column;height:100%;overflow:hidden;}
+.view.active{display:flex;}
+
+/* PANELS */
+.panel-top{padding:16px 24px;border-bottom:1px solid var(--border);background:var(--bg2);flex-shrink:0;display:flex;align-items:center;gap:12px;}
+.panel-top h2{font-family:var(--serif);font-size:20px;font-weight:400;letter-spacing:-0.3px;flex:1;color:var(--text);font-style:italic;}
+.panel-body{flex:1;overflow-y:auto;padding:20px 24px;}
+.panel-header{padding:10px 20px;font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:1.2px;color:var(--text3);border-bottom:1px solid var(--border);flex-shrink:0;display:flex;align-items:center;gap:8px;background:var(--bg2);font-weight:400;}
+.dot{width:5px;height:5px;border-radius:50%;background:var(--gold);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.2;}}
+
+/* BUTTONS */
+.btn-secondary{background:var(--bg3);border:1px solid var(--border2);color:var(--text2);border-radius:var(--r);padding:9px 18px;font-family:var(--font);font-size:12px;cursor:pointer;transition:all 0.15s;font-weight:600;letter-spacing:0.3px;}
+.btn-secondary:hover{border-color:var(--gold3);color:var(--gold);background:var(--gold-glow2);}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;}
+.btn-action{background:var(--bg3);border:1px solid var(--border);color:var(--text3);border-radius:8px;padding:7px 14px;font-family:var(--mono);font-size:10px;letter-spacing:0.8px;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;gap:5px;transition:all .15s;font-weight:400;}
+.btn-action:hover{border-color:var(--gold3);color:var(--gold);background:var(--gold-glow2);}
+
+/* JOURNAL */
+.journal-body{display:grid;grid-template-columns:360px 1fr;gap:0;flex:1;overflow:hidden;}
+.input-panel{border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;background:var(--bg2);}
+.input-content{padding:16px;display:flex;flex-direction:column;gap:14px;}
+.output-panel{display:flex;flex-direction:column;overflow:hidden;}
+.output-content{flex:1;overflow-y:auto;padding:20px;}
+.panel-tabs{display:flex;border-bottom:1px solid var(--border);background:var(--bg2);flex-shrink:0;position:sticky;top:0;z-index:10;}
+.panel-tab{flex:1;padding:12px;text-align:center;font-family:var(--mono);font-size:10px;font-weight:400;letter-spacing:1px;text-transform:uppercase;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;background:transparent;transition:all .15s;}
+.panel-tab.active{color:var(--gold);border-bottom-color:var(--gold);}
+.journal-mode{display:none;}.journal-mode.active{display:flex;flex-direction:column;gap:0;}
+
+/* TYPE SELECTOR */
+.type-bar{padding:10px 16px;background:var(--bg);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;flex-shrink:0;flex-wrap:wrap;position:sticky;top:0;z-index:5;}
+.type-bar-label{font-family:var(--mono);font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:1.5px;white-space:nowrap;}
+.type-chips{display:flex;gap:4px;flex-wrap:wrap;flex:1;}
+.e-chip{background:var(--bg3);border:1px solid var(--border);color:var(--text3);border-radius:100px;padding:4px 12px;font-family:var(--mono);font-size:10px;cursor:pointer;transition:all 0.15s;white-space:nowrap;font-weight:400;letter-spacing:0.5px;}
+.e-chip:hover{border-color:var(--gold3);color:var(--text2);}
+.e-chip.active{background:var(--gold-glow);border-color:rgba(212,168,83,0.4);color:var(--gold);font-weight:500;}
+.quick-ops{display:flex;flex-wrap:wrap;gap:5px;}
+.quick-chip{background:var(--bg3);border:1px solid var(--border);color:var(--text3);border-radius:100px;padding:4px 12px;font-family:var(--mono);font-size:10px;cursor:pointer;transition:all 0.15s;letter-spacing:0.3px;}
+.quick-chip:hover{border-color:var(--gold3);color:var(--gold2);background:var(--gold-glow2);}
+
+/* TABLES */
+table.data-table{width:100%;border-collapse:collapse;font-size:12px;}
+table.data-table thead tr th{background:var(--bg3);padding:9px 12px;text-align:left;font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--text3);border-bottom:1px solid var(--border);font-weight:400;white-space:nowrap;}
+table.data-table tbody tr{border-bottom:1px solid var(--border);transition:background 0.1s;}
+table.data-table tbody tr:hover{background:rgba(255,255,255,0.02);}
+table.data-table td{padding:9px 12px;vertical-align:middle;color:var(--text2);}
+.col-compte{font-family:var(--mono);font-size:12px;color:var(--gold);font-weight:500;white-space:nowrap;}
+.col-libelle{color:var(--text);font-size:12px;font-weight:500;}
+.col-sub{font-family:var(--mono);font-size:10px;color:var(--text3);display:block;font-weight:300;margin-top:2px;}
+.col-debit{font-family:var(--mono);font-size:12px;color:var(--debit);text-align:right;font-weight:500;white-space:nowrap;}
+.col-credit{font-family:var(--mono);font-size:12px;color:var(--credit);text-align:right;font-weight:500;white-space:nowrap;}
+.col-solde{font-family:var(--mono);font-size:12px;color:var(--text);text-align:right;font-weight:500;white-space:nowrap;}
+.col-empty{color:var(--text3);font-family:var(--mono);font-size:11px;text-align:right;}
+
+/* JOURNAL CARDS */
+.journal-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;margin-bottom:14px;transition:border-color 0.2s;}
+.journal-card:hover{border-color:var(--border2);}
+.journal-card-header{padding:12px 16px;background:var(--bg3);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.journal-card-title{font-weight:600;font-size:13px;color:var(--text);flex:1;}
+.journal-card-date{font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:0.5px;}
+.journal-card-ref{font-family:var(--mono);font-size:10px;background:var(--gold-glow2);border:1px solid rgba(212,168,83,0.2);color:var(--gold);padding:3px 10px;border-radius:6px;font-weight:500;letter-spacing:0.3px;}
+.journal-totals{background:var(--bg);border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:24px;padding:8px 16px;font-family:var(--mono);font-size:11px;}
+.total-item{display:flex;gap:8px;align-items:center;}
+.total-label{color:var(--text3);font-size:9px;text-transform:uppercase;letter-spacing:0.8px;}
+.total-debit{color:var(--debit);font-weight:500;}
+.total-credit{color:var(--credit);font-weight:500;}
+.equilibre-ok{background:rgba(45,212,160,0.08);border:1px solid rgba(45,212,160,0.2);color:var(--emerald);font-family:var(--mono);font-size:10px;padding:3px 10px;border-radius:6px;font-weight:500;letter-spacing:0.3px;}
+.equilibre-err{background:rgba(244,97,122,0.08);border:1px solid rgba(244,97,122,0.2);color:var(--rose);font-family:var(--mono);font-size:10px;padding:3px 10px;border-radius:6px;font-weight:500;letter-spacing:0.3px;}
+
+/* AI ANALYSIS */
+.ai-analysis{background:linear-gradient(135deg,rgba(212,168,83,0.06),rgba(96,180,240,0.04));border:1px solid rgba(212,168,83,0.15);border-radius:var(--r-lg);padding:14px 16px;margin-bottom:16px;}
+.ai-analysis-header{display:flex;align-items:center;gap:8px;margin-bottom:8px;font-family:var(--mono);font-size:10px;color:var(--gold);letter-spacing:1px;text-transform:uppercase;font-weight:500;}
+.ai-analysis-text{font-size:13px;color:var(--text2);line-height:1.7;}
+.ai-analysis-text strong{color:var(--text);}
+
+/* DASHBOARD */
+.dashboard-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;margin-bottom:28px;}
+.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-lg);padding:20px;transition:border-color 0.2s,transform 0.2s;position:relative;overflow:hidden;}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:0;transition:opacity 0.3s;}
+.stat-card:hover{border-color:var(--border2);}
+.stat-card:hover::before{opacity:0.5;}
+.stat-label{font-family:var(--mono);font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;font-weight:400;}
+.stat-value{font-family:var(--font);font-size:24px;font-weight:700;color:var(--text);letter-spacing:-0.5px;}
+.stat-value.pos{color:var(--debit);}
+.stat-value.neg{color:var(--credit);}
+.stat-sub{font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:6px;}
+
+/* GRAND LIVRE */
+.gl-compte{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;margin-bottom:14px;}
+.gl-compte-header{padding:12px 16px;background:var(--bg3);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;cursor:pointer;}
+.gl-compte-num{font-family:var(--mono);font-size:13px;color:var(--gold);font-weight:500;}
+.gl-compte-lib{font-size:13px;color:var(--text);flex:1;font-weight:500;}
+.gl-compte-totals{font-family:var(--mono);font-size:11px;color:var(--text3);display:flex;gap:16px;font-weight:400;}
+
+/* MANUAL TABLE */
+.manual-table{width:100%;border-collapse:collapse;font-size:12px;}
+.manual-table th{background:var(--bg3);padding:7px 10px;text-align:left;font-family:var(--mono);font-size:9px;text-transform:uppercase;color:var(--text3);border-bottom:1px solid var(--border);font-weight:400;letter-spacing:0.8px;}
+.manual-table td{padding:5px 6px;border-bottom:1px solid var(--border);}
+.manual-table input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:6px 8px;font-size:12px;color:var(--text);outline:none;font-family:var(--font);transition:border-color 0.15s;}
+.manual-table input:focus{border-color:var(--gold);}
+.manual-table input.mono{font-family:var(--mono);text-align:right;}
+.manual-totals{display:flex;justify-content:space-between;padding:8px 0;font-family:var(--mono);font-size:11px;color:var(--text2);}
+.manual-totals .ok{color:var(--debit);}.manual-totals .err{color:var(--credit);}
+
+/* BILAN */
+.bilan-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.bilan-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;}
+.bilan-card-header{padding:14px 16px;background:var(--bg3);border-bottom:1px solid var(--border);font-family:var(--mono);font-size:11px;font-weight:500;color:var(--text2);text-transform:uppercase;letter-spacing:1px;display:flex;justify-content:space-between;align-items:center;}
+.bilan-section{padding:10px 16px;border-bottom:1px solid var(--border);}
+.bilan-section-title{font-family:var(--mono);font-size:9px;font-weight:400;text-transform:uppercase;color:var(--text3);letter-spacing:1.2px;margin-bottom:8px;}
+.bilan-row{display:flex;justify-content:space-between;padding:4px 0;font-size:12px;}
+.bilan-row .label{color:var(--text2);}
+.bilan-row .value{font-family:var(--mono);font-weight:500;color:var(--text);}
+.bilan-total-row{display:flex;justify-content:space-between;padding:12px 16px;font-family:var(--mono);font-size:12px;font-weight:600;background:var(--bg3);}
+.bilan-total-row .value{color:var(--gold);}
+.tiers-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+
+/* LOADING / EMPTY */
+.loading-state{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:16px;color:var(--text3);}
+.spinner{width:32px;height:32px;border:1.5px solid var(--border2);border-top-color:var(--gold);border-radius:50%;animation:spin 0.9s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:14px;color:var(--text3);text-align:center;padding:40px;}
+.empty-icon{width:52px;height:52px;background:var(--gold-glow2);border:1px solid rgba(212,168,83,0.15);border-radius:14px;display:flex;align-items:center;justify-content:center;}
+.empty-icon svg{width:22px;height:22px;color:var(--gold);opacity:0.6;}
+.empty-state h3{font-size:15px;color:var(--text2);font-weight:600;}
+.empty-state p{font-size:12px;line-height:1.6;max-width:260px;font-family:var(--mono);}
+
+/* TOAST */
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--bg4);color:var(--text);border:1px solid var(--border2);font-family:var(--mono);font-size:12px;padding:11px 22px;border-radius:100px;opacity:0;transition:all 0.3s;pointer-events:none;z-index:9999;white-space:nowrap;font-weight:400;letter-spacing:0.3px;box-shadow:var(--shadow-lg);}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* PLAN GRID */
+.plan-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:5px;}
+.plan-item{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;display:flex;gap:10px;transition:border-color 0.15px;}
+.plan-item:hover{border-color:var(--gold3);}
+.plan-num{font-family:var(--mono);font-size:11px;color:var(--gold);font-weight:500;white-space:nowrap;}
+.plan-lib{font-size:11px;color:var(--text2);}
+
+/* API KEY STATUS */
+.api-status{position:fixed;bottom:24px;right:24px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:6px 12px;font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:0.8px;z-index:100;display:flex;align-items:center;gap:6px;}
+.api-dot{width:4px;height:4px;border-radius:50%;background:var(--emerald);}
+
+@media print{#sidebar,#header,.input-panel,.panel-header,.btn-action,.btn-row,.ai-analysis,.type-bar,.btn-header,.panel-tabs,.api-status{display:none!important;}#main{grid-column:1/-1;}body{background:#fff;color:#000;}}
+@media(max-width:900px){#app{grid-template-columns:1fr;grid-template-rows:60px auto 1fr;}#sidebar{display:none;}.journal-body{grid-template-columns:1fr;}.input-panel{max-height:380px;}.bilan-grid,.tiers-grid{grid-template-columns:1fr;}}
+</style>
+<base target="_blank">
+</head>
+<body>
+
+<!-- AUTH -->
+<div id="auth-overlay">
+  <div class="auth-bg"></div>
+  <div class="auth-box">
+    <div class="auth-logo"><div class="auth-logo-mark">C</div><div class="auth-logo-text">Comeo <span>AI</span></div></div>
+    <div class="auth-tagline">Comptabilité SYSCOHADA · Révisé 2023</div>
+    <div class="auth-tabs">
+      <div class="auth-tab active" onclick="switchAuth('login')">Connexion</div>
+      <div class="auth-tab" onclick="switchAuth('register')">Nouveau compte</div>
+    </div>
+    <form id="form-login" class="auth-form active">
+      <div class="auth-error" id="login-error"></div>
+      <div class="form-group"><label>Nom de l'entreprise</label><input type="text" id="login-entreprise" placeholder="Ex: SARL ABC" required></div>
+      <div class="form-group"><label>Mot de passe</label><input type="password" id="login-password" placeholder="••••••••" required></div>
+      <button type="submit" class="btn-primary" id="btn-login">Se connecter</button>
+      <div style="text-align:center;margin-top:12px;"><button type="button" class="btn-link" onclick="forgotPassword()">Mot de passe oublié ?</button></div>
+    </form>
+    <form id="form-register" class="auth-form">
+      <div class="auth-error" id="register-error"></div>
+      <div class="auth-success" id="register-success"></div>
+      <div class="form-group"><label>Nom de l'entreprise *</label><input type="text" id="reg-entreprise" placeholder="Ex: SARL ABC" required></div>
+      <div class="form-group"><label>Contact (email ou téléphone) *</label><input type="text" id="reg-contact" placeholder="contact@entreprise.ci" required></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div class="form-group"><label>Type d'entreprise</label>
+          <select id="reg-type"><option value="commerce">🏪 Commerce</option><option value="service">💼 Services</option><option value="industrie">🏭 Industrie</option><option value="banque">🏦 Banque</option><option value="sante">🏥 Santé</option><option value="education">🎓 Éducation</option><option value="ong">🌍 ONG</option><option value="agri">🌾 Agriculture</option><option value="immo">🏗️ Immobilier</option><option value="transport">🚚 Transport</option></select>
+        </div>
+        <div class="form-group"><label>Secteur d'activité</label><input type="text" id="reg-secteur" placeholder="Ex: Alimentation"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div class="form-group"><label>Pays</label>
+          <select id="reg-pays"><option value="CI">🇨🇮 Côte d'Ivoire</option><option value="SN">🇸🇳 Sénégal</option><option value="ML">🇲🇱 Mali</option><option value="BF">🇧🇫 Burkina Faso</option><option value="BJ">🇧🇯 Bénin</option><option value="TG">🇹🇬 Togo</option><option value="GN">🇬🇳 Guinée</option><option value="CM">🇨🇲 Cameroun</option><option value="GA">🇬🇦 Gabon</option><option value="CG">🇨🇬 Congo</option><option value="CD">🇨🇩 RD Congo</option><option value="autre">Autre</option></select>
+        </div>
+        <div class="form-group"><label>Ville</label><input type="text" id="reg-ville" placeholder="Ex: Abidjan"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div class="form-group"><label>RCCM</label><input type="text" id="reg-rccm" placeholder="CI-ABJ-2023-B-12345"></div>
+        <div class="form-group"><label>Régime fiscal</label><select id="reg-regime"><option value="reel">Réel Normal</option><option value="reel_simplifie">Réel Simplifié</option><option value="micro">Micro-entreprise</option><option value="forfait">Forfait</option><option value="exonere">Exonéré</option></select></div>
+      </div>
+      <div class="form-group"><label>Mot de passe *</label><input type="password" id="reg-password" placeholder="Min. 6 caractères" required minlength="6"></div>
+      <div class="form-group"><label>Confirmer le mot de passe *</label><input type="password" id="reg-password2" placeholder="Répétez le mot de passe" required minlength="6"></div>
+      <button type="submit" class="btn-primary" id="btn-register">Créer mon compte — 24h gratuit</button>
+      <div class="auth-footer" style="margin-top:12px;">Essai gratuit 24h · puis 2 000 FCFA/mois</div>
+    </form>
+  </div>
+</div>
+
+<!-- PAYWALL -->
+<div id="paywall-overlay">
+  <div class="paywall-box">
+    <div class="paywall-icon">⏳</div>
+    <div class="paywall-title">Votre essai est terminé</div>
+    <div class="paywall-text">Merci d'avoir testé <strong>Comeo AI Pro</strong>.<br>Continuez pour <strong>2 000 FCFA/mois</strong> seulement.</div>
+    <div class="paywall-btns">
+      <a class="btn-wave" href="https://pay.wave.com/m/M_ci_iqMcg8KwRE-W/c/ci/?amount=2000" target="_blank">💳 Payer avec Wave (2 000 FCFA)</a>
+      <a class="btn-whatsapp" href="https://wa.me/2250508463003?text=Bonjour%2C%20j%27ai%20effectu%C3%A9%20mon%20paiement%20Comeo%20AI.%20Mon%20entreprise%20%3A%20" target="_blank">📲 Confirmer sur WhatsApp</a>
+      <button class="btn-secondary" style="width:100%;margin-top:4px;" onclick="logout()">Se déconnecter</button>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div id="header">
+    <div class="logo-lockup"><div class="logo-mark">C</div><div class="logo-text">Comeo <em>AI</em> Pro</div></div>
+    <div class="header-divider"></div>
+    <div class="header-sub">SYSCOHADA · Révisé 2023</div>
+    <div class="header-right">
+      <span class="pill pill-gold" id="header-org">🏢 Entreprise</span>
+      <span class="pill" id="header-status">🟢 Actif</span>
+      <button class="btn-header" onclick="logout()"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Quitter</button>
+    </div>
+  </div>
+
+  <div id="sidebar">
+    <div class="sidebar-section">Principal</div>
+    <div class="sidebar-item active" onclick="showView('dashboard',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>Tableau de bord</div>
+    <div class="sidebar-item" onclick="showView('journal',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Journal</div>
+    <div class="sidebar-item" onclick="showView('grandlivre',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>Grand Livre</div>
+    <div class="sidebar-item" onclick="showView('balance',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>Balance</div>
+    <div class="sidebar-item" onclick="showView('bilan',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>Bilan</div>
+    <div class="sidebar-item" onclick="showView('resultat',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>Compte de Résultat</div>
+    <div class="sidebar-item" onclick="showView('tiers',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Tiers</div>
+    <div class="sidebar-item" onclick="showView('tresorerie',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>Trésorerie</div>
+    <div class="sidebar-item" onclick="showView('historique',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Historique</div>
+    <div class="sidebar-divider"></div>
+    <div class="sidebar-section">Réglages</div>
+    <div class="sidebar-item" onclick="showView('profil',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Profil Entreprise</div>
+    <div class="sidebar-divider"></div>
+    <div class="sidebar-section">Référence</div>
+    <div class="sidebar-item" onclick="showView('plan',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>Plan Comptable</div>
+    <div class="sidebar-item" onclick="showView('guide',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Guide des Opérations</div>
+  </div>
+
+  <div id="main">
+    <!-- DASHBOARD -->
+    <div id="view-dashboard" class="view active">
+      <div class="panel-top"><h2>Tableau de bord</h2><span style="color:var(--text3);font-family:var(--mono);font-size:10px;letter-spacing:1px;text-transform:uppercase;">Vue synthétique</span></div>
+      <div class="panel-body">
+        <div class="dashboard-grid">
+          <div class="stat-card"><div class="stat-label">Écritures ce mois</div><div class="stat-value" id="dash-nb-ecritures">0</div></div>
+          <div class="stat-card"><div class="stat-label">Total Débit</div><div class="stat-value pos" id="dash-total-debit">0 FCFA</div></div>
+          <div class="stat-card"><div class="stat-label">Total Crédit</div><div class="stat-value neg" id="dash-total-credit">0 FCFA</div></div>
+          <div class="stat-card"><div class="stat-label">Solde Trésorerie</div><div class="stat-value" id="dash-solde-treso">0 FCFA</div></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;"><div style="font-family:var(--mono);font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:1.5px;">Dernières écritures</div><div style="flex:1;height:1px;background:var(--border);"></div></div>
+        <div id="dash-last-ecritures"></div>
+      </div>
+    </div>
+
+    <!-- JOURNAL -->
+    <div id="view-journal" class="view">
+      <div class="panel-top"><h2>Journal Comptable</h2><span style="font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:0.8px;">IA · SYSCOHADA 2023</span></div>
+      <div class="type-bar">
+        <span class="type-bar-label">Secteur :</span>
+        <div class="type-chips">
+          <div class="e-chip active" data-type="commerce" onclick="selectEntreprise(this)">🏪 Commerce</div>
+          <div class="e-chip" data-type="service" onclick="selectEntreprise(this)">💼 Services</div>
+          <div class="e-chip" data-type="industrie" onclick="selectEntreprise(this)">🏭 Industrie</div>
+          <div class="e-chip" data-type="banque" onclick="selectEntreprise(this)">🏦 Banque</div>
+          <div class="e-chip" data-type="sante" onclick="selectEntreprise(this)">🏥 Santé</div>
+          <div class="e-chip" data-type="education" onclick="selectEntreprise(this)">🎓 Éducation</div>
+          <div class="e-chip" data-type="ong" onclick="selectEntreprise(this)">🌍 ONG</div>
+          <div class="e-chip" data-type="agri" onclick="selectEntreprise(this)">🌾 Agriculture</div>
+          <div class="e-chip" data-type="immo" onclick="selectEntreprise(this)">🏗️ Immobilier</div>
+          <div class="e-chip" data-type="transport" onclick="selectEntreprise(this)">🚚 Transport</div>
+        </div>
+        <div id="context-badge" style="font-family:var(--mono);font-size:10px;color:var(--gold);letter-spacing:0.5px;white-space:nowrap;">🏪 Commerce</div>
+      </div>
+      <div class="journal-body">
+        <div class="input-panel">
+          <div class="panel-tabs">
+            <div class="panel-tab active" onclick="switchJournalMode('ia',this)">⚡ Génération IA</div>
+            <div class="panel-tab" onclick="switchJournalMode('manuel',this)">✏️ Saisie manuelle</div>
+          </div>
+          <div id="journal-mode-ia" class="journal-mode active">
+            <div class="input-content">
+              <div class="form-group"><label>Opérations rapides</label><div class="quick-ops" id="quick-ops-container"></div></div>
+              <div class="form-group"><label>Description *</label><textarea id="op-description" rows="3" placeholder="Décrivez l'opération comptable..." style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);color:var(--text);font-family:var(--font);font-size:13px;padding:11px 14px;outline:none;width:100%;transition:border-color .2s;resize:vertical;"></textarea></div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                <div class="form-group"><label>Date</label><input type="date" id="op-date"/></div>
+                <div class="form-group"><label>Référence</label><input type="text" id="op-ref" placeholder="FAC-001"/></div>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                <div class="form-group"><label>Montant (FCFA)</label><input type="text" id="op-montant" placeholder="1 500 000"/></div>
+                <div class="form-group"><label>Type</label><select id="op-type"></select></div>
+              </div>
+              <div class="form-group"><label>Infos complémentaires</label><input type="text" id="op-extra" placeholder="TVA 18%, escompte..."/></div>
+              <div class="btn-row">
+                <button class="btn-primary" id="btn-generate" onclick="generateJournal()" style="flex:1;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>Générer par IA</button>
+                <button class="btn-secondary" onclick="saveManualSimple()">Saisie rapide</button>
+              </div>
+            </div>
+          </div>
+          <div id="journal-mode-manuel" class="journal-mode">
+            <div class="input-content">
+              <div class="form-group"><label>Description</label><input type="text" id="manual-desc" placeholder="Libellé de l'écriture..."/></div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                <div class="form-group"><label>Date</label><input type="date" id="manual-date"/></div>
+                <div class="form-group"><label>Référence</label><input type="text" id="manual-ref" placeholder="JNL-001"/></div>
+              </div>
+              <div class="form-group" style="margin-bottom:4px;"><label>Lignes d'écriture</label></div>
+              <table class="manual-table"><thead><tr><th>Compte</th><th>Libellé</th><th style="text-align:right">Débit</th><th style="text-align:right">Crédit</th><th></th></tr></thead><tbody id="manual-lines-body"></tbody></table>
+              <div class="btn-row" style="margin-top:8px;"><button class="btn-secondary" onclick="addManualLine()">+ Ligne</button><button class="btn-secondary" onclick="clearManualLines()">Réinitialiser</button></div>
+              <div class="manual-totals" id="manual-totals">Total Débit : 0 FCFA | Total Crédit : 0 FCFA</div>
+              <button class="btn-primary" onclick="saveManualMulti()">Enregistrer l'écriture</button>
+            </div>
+          </div>
+        </div>
+        <div class="output-panel">
+          <div class="panel-header"><div class="dot"></div>Résultat IA — SYSCOHADA 2023</div>
+          <div class="output-content" id="output-content">
+            <div class="empty-state"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="5 3 19 12 5 21 5 3"/></svg></div><h3>Prêt à générer</h3><p>Décrivez une opération et cliquez sur Générer par IA.</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- GRAND LIVRE -->
+    <div id="view-grandlivre" class="view">
+      <div class="panel-top"><h2>Grand Livre</h2><input type="text" id="gl-search" placeholder="Rechercher un compte..." oninput="renderGrandLivre(this.value)" style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);color:var(--text);padding:8px 14px;outline:none;width:220px;font-size:12px;font-family:var(--mono);"><button class="btn-action" onclick="window.print()">🖨️ Imprimer</button></div>
+      <div class="panel-body" id="gl-body"></div>
+    </div>
+
+    <!-- BALANCE -->
+    <div id="view-balance" class="view">
+      <div class="panel-top"><h2>Balance des Comptes</h2><button class="btn-action" onclick="window.print()">🖨️ Imprimer</button><button class="btn-action" onclick="exportBalanceCSV()">CSV</button><button class="btn-action" onclick="exportBalanceExcel()">Excel</button><button class="btn-action" onclick="exportBalanceWord()">Word</button><button class="btn-action" onclick="exportBalancePDF()">PDF</button></div>
+      <div class="panel-body" id="balance-body"></div>
+    </div>
+
+    <!-- BILAN -->
+    <div id="view-bilan" class="view">
+      <div class="panel-top"><h2>Bilan — Actif / Passif</h2><button class="btn-action" onclick="window.print()">🖨️ Imprimer</button><button class="btn-action" onclick="exportBilanCSV()">CSV</button><button class="btn-action" onclick="exportBilanExcel()">Excel</button><button class="btn-action" onclick="exportBilanWord()">Word</button><button class="btn-action" onclick="exportBilanPDF()">PDF</button></div>
+      <div class="panel-body" id="bilan-body"></div>
+    </div>
+
+    <!-- COMPTE DE RESULTAT -->
+    <div id="view-resultat" class="view">
+      <div class="panel-top"><h2>Compte de Résultat</h2><button class="btn-action" onclick="window.print()">🖨️ Imprimer</button><button class="btn-action" onclick="exportResultatCSV()">CSV</button><button class="btn-action" onclick="exportResultatExcel()">Excel</button><button class="btn-action" onclick="exportResultatWord()">Word</button><button class="btn-action" onclick="exportResultatPDF()">PDF</button></div>
+      <div class="panel-body" id="resultat-body"></div>
+    </div>
+
+    <!-- TIERS -->
+    <div id="view-tiers" class="view">
+      <div class="panel-top"><h2>Tiers — Clients &amp; Fournisseurs</h2><button class="btn-action" onclick="window.print()">🖨️ Imprimer</button><button class="btn-action" onclick="exportTiersCSV()">CSV</button></div>
+      <div class="panel-body" id="tiers-body"></div>
+    </div>
+
+    <!-- TRESORERIE -->
+    <div id="view-tresorerie" class="view">
+      <div class="panel-top"><h2>Trésorerie</h2><button class="btn-action" onclick="window.print()">🖨️ Imprimer</button><button class="btn-action" onclick="exportTresorerieCSV()">CSV</button></div>
+      <div class="panel-body" id="tresorerie-body"></div>
+    </div>
+
+    <!-- HISTORIQUE -->
+    <div id="view-historique" class="view">
+      <div class="panel-top"><h2>Historique des Journaux</h2>
+        <input type="text" id="hist-search" placeholder="Rechercher..." oninput="renderHistorique(this.value)" style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);color:var(--text);padding:8px 14px;outline:none;width:200px;font-size:12px;font-family:var(--mono);">
+        <input type="month" id="hist-month" oninput="renderHistorique()" style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);color:var(--text);padding:8px 10px;outline:none;font-size:12px;font-family:var(--mono);">
+        <button class="btn-action" onclick="exportHistoriqueCSV()">CSV</button><button class="btn-action" onclick="window.print()">🖨️ Imprimer</button>
+      </div>
+      <div class="panel-body" id="historique-body"></div>
+    </div>
+
+    <!-- PROFIL -->
+    <div id="view-profil" class="view">
+      <div class="panel-top"><h2>Profil Entreprise</h2><button class="btn-action" onclick="saveProfilEntreprise()">💾 Enregistrer</button></div>
+      <div class="panel-body">
+        <div style="max-width:680px;display:flex;flex-direction:column;gap:16px;">
+          <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-lg);padding:20px;">
+            <div style="font-family:var(--mono);font-size:10px;color:var(--gold);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:16px;">Informations générales</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+              <div class="form-group"><label>Nom de l'entreprise</label><input type="text" id="profil-nom" placeholder="SARL ABC"/></div>
+              <div class="form-group"><label>Contact</label><input type="text" id="profil-contact" placeholder="email ou téléphone"/></div>
+              <div class="form-group"><label>Type d'entreprise</label><select id="profil-type"><option value="commerce">🏪 Commerce</option><option value="service">💼 Services</option><option value="industrie">🏭 Industrie</option><option value="banque">🏦 Banque</option><option value="sante">🏥 Santé</option><option value="education">🎓 Éducation</option><option value="ong">🌍 ONG</option><option value="agri">🌾 Agriculture</option><option value="immo">🏗️ Immobilier</option><option value="transport">🚚 Transport</option></select></div>
+              <div class="form-group"><label>Secteur d'activité</label><input type="text" id="profil-secteur" placeholder="Alimentation, BTP..."/></div>
+              <div class="form-group"><label>Pays</label><select id="profil-pays"><option value="CI">🇨🇮 Côte d'Ivoire</option><option value="SN">🇸🇳 Sénégal</option><option value="ML">🇲🇱 Mali</option><option value="BF">🇧🇫 Burkina Faso</option><option value="BJ">🇧🇯 Bénin</option><option value="TG">🇹🇬 Togo</option><option value="GN">🇬🇳 Guinée</option><option value="CM">🇨🇲 Cameroun</option><option value="GA">🇬🇦 Gabon</option><option value="CG">🇨🇬 Congo</option><option value="CD">🇨🇩 RD Congo</option><option value="autre">Autre</option></select></div>
+              <div class="form-group"><label>Ville</label><input type="text" id="profil-ville" placeholder="Abidjan"/></div>
+              <div class="form-group"><label>RCCM</label><input type="text" id="profil-rccm" placeholder="CI-ABJ-2023-B-12345"/></div>
+              <div class="form-group"><label>Régime fiscal</label><select id="profil-regime"><option value="reel">Réel Normal</option><option value="reel_simplifie">Réel Simplifié</option><option value="micro">Micro-entreprise</option><option value="forfait">Forfait</option><option value="exonere">Exonéré</option></select></div>
+            </div>
+          </div>
+          <div id="profil-success" style="display:none;background:rgba(45,212,160,0.08);border:1px solid rgba(45,212,160,0.2);color:var(--emerald);font-family:var(--mono);font-size:12px;padding:12px 16px;border-radius:var(--r);letter-spacing:0.3px;">✓ Profil mis à jour avec succès.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PLAN COMPTABLE -->
+    <div id="view-plan" class="view">
+      <div class="panel-top"><h2>Plan Comptable SYSCOHADA 2023</h2><input type="text" id="plan-search" placeholder="Rechercher..." oninput="filterPlan(this.value)" style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);color:var(--text);padding:8px 14px;outline:none;width:220px;font-size:12px;font-family:var(--mono);"></div>
+      <div class="panel-body" id="plan-body"></div>
+    </div>
+
+    <!-- GUIDE -->
+    <div id="view-guide" class="view">
+      <div class="panel-top"><h2>Guide des Écritures Courantes</h2></div>
+      <div class="panel-body" id="guide-body"></div>
+    </div>
+  </div>
+</div>
+
+<!-- API KEY STATUS INDICATOR -->
+<div class="api-status" id="api-status-bar"><div class="api-dot" id="api-dot"></div><span id="api-status-text">API prête</span></div>
+
+<div id="toast"></div>
+
+<script>
 /* ============================================================
    FIREBASE — DOUBLE BASE DE DONNÉES
    DB1 (data-com-a94a8)  : écritures comptables
@@ -29,11 +536,13 @@ var DB2_CONFIG = {
   measurementId:"G-1KWC1NCJ45"
 };
 
-var db1 = null;
-var db2 = null;
+var db1 = null; // Comptabilité (écritures)
+var db2 = null; // Abonnements (gestion clients)
 
 /* ============================================================
    GROQ API — ROTATION DES CLÉS
+   Les clés tournent automatiquement à chaque appel.
+   En cas d'erreur (rate limit), on passe à la suivante.
 ============================================================ */
 var GROQ_KEYS = [
   "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",
@@ -43,15 +552,18 @@ var GROQ_KEYS = [
   "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"
 ];
 
+// Index courant de la clé (persisté en session)
 var _groqKeyIndex = 0;
 var _groqKeyUsageCount = {};
 
+/* Obtenir la prochaine clé disponible avec rotation */
 function getNextGroqKey(preferredIndex) {
   var idx = (preferredIndex !== undefined) ? preferredIndex : _groqKeyIndex;
   _groqKeyIndex = (idx + 1) % GROQ_KEYS.length;
   return { key: GROQ_KEYS[idx], index: idx };
 }
 
+/* Marquer une clé comme échouée et obtenir la suivante */
 function markKeyFailed(index) {
   _groqKeyUsageCount[index] = (_groqKeyUsageCount[index] || 0) + 1;
   var nextIdx = (index + 1) % GROQ_KEYS.length;
@@ -149,6 +661,7 @@ function switchAuth(tab){
   document.getElementById('form-'+tab).classList.add('active');
 }
 
+/* Inscription — écrit dans DB1 (comptabilité) ET DB2 (abonnements) */
 function doRegister(){
   var err=document.getElementById('register-error'),suc=document.getElementById('register-success');
   err.style.display='none';suc.style.display='none';
@@ -164,9 +677,16 @@ function doRegister(){
     if(!snap.empty){err.textContent='Cette entreprise existe déjà.';err.style.display='block';btn.disabled=false;btn.textContent='Créer mon compte — 24h gratuit';return;}
     var now=Date.now();
     var userData={
-      nom_entreprise:nom,contact:contact,password_hash:hashPassword(pass),created_at:now,
-      trial_ends_at:now+86400000,is_subscribed:false,subscription_ends_at:0,
-      subscription_type:'none',last_payment_date:0,payment_amount:0,
+      nom_entreprise:nom,
+      contact:contact,
+      password_hash:hashPassword(pass),
+      created_at:now,
+      trial_ends_at:now+86400000, // 24h essai gratuit
+      is_subscribed:false,
+      subscription_ends_at:0,
+      subscription_type:'none', // 'monthly' | 'annual' | 'none'
+      last_payment_date:0,
+      payment_amount:0,
       type_entreprise:document.getElementById('reg-type').value||'commerce',
       secteur:document.getElementById('reg-secteur').value.trim(),
       pays:document.getElementById('reg-pays').value||'CI',
@@ -174,16 +694,25 @@ function doRegister(){
       rccm:document.getElementById('reg-rccm').value.trim(),
       regime_fiscal:document.getElementById('reg-regime').value||'reel'
     };
+
+    // Écriture simultanée dans DB1 (gestion interne) et DB2 (abonnements)
     var p1=db1.collection('users').add(userData);
     var p2=db2.collection('abonnements').add({
-      nom_entreprise:nom,contact:contact,created_at:now,trial_ends_at:now+86400000,
-      is_subscribed:false,subscription_type:'none',subscription_ends_at:0,
-      last_payment_date:0,payment_amount:0,
+      nom_entreprise:nom,
+      contact:contact,
+      created_at:now,
+      trial_ends_at:now+86400000,
+      is_subscribed:false,
+      subscription_type:'none',
+      subscription_ends_at:0,
+      last_payment_date:0,
+      payment_amount:0,
       pays:document.getElementById('reg-pays').value||'CI',
       ville:document.getElementById('reg-ville').value.trim(),
       type_entreprise:document.getElementById('reg-type').value||'commerce',
-      statut:'trial'
+      statut:'trial' // 'trial' | 'active' | 'expired'
     });
+
     Promise.all([p1,p2]).then(function(){
       suc.textContent='Compte créé ! Essai 24h actif. Connectez-vous.';
       suc.style.display='block';
@@ -196,20 +725,25 @@ function doRegister(){
   }).catch(function(e){err.textContent='Erreur : '+e.message;err.style.display='block';btn.disabled=false;btn.textContent='Créer mon compte — 24h gratuit';});
 }
 
+/* Connexion — vérifie dans DB1 et synchronise l'abonnement depuis DB2 */
 function doLogin(){
   var err=document.getElementById('login-error');err.style.display='none';
   var nom=document.getElementById('login-entreprise').value.trim();
   var pass=document.getElementById('login-password').value;
   if(!nom||!pass){err.textContent='Remplissez tous les champs.';err.style.display='block';return;}
   var btn=document.getElementById('btn-login');btn.disabled=true;btn.textContent='Connexion...';
+
   db1.collection('users').where('nom_entreprise','==',nom).limit(1).get().then(function(snap){
     if(snap.empty){err.textContent='Entreprise non trouvée.';err.style.display='block';btn.disabled=false;btn.textContent='Se connecter';return;}
     var doc=snap.docs[0],data=doc.data();
     if(data.password_hash!==hashPassword(pass)){err.textContent='Mot de passe incorrect.';err.style.display='block';btn.disabled=false;btn.textContent='Se connecter';return;}
+
+    // Synchroniser le statut d'abonnement depuis DB2
     db2.collection('abonnements').where('nom_entreprise','==',nom).limit(1).get().then(function(snap2){
       var abonnement={};
       if(!snap2.empty){
         abonnement=snap2.docs[0].data();
+        // Mettre à jour DB1 avec les infos d'abonnement de DB2
         if(abonnement.is_subscribed!==undefined){
           db1.collection('users').doc(doc.id).update({
             is_subscribed:abonnement.is_subscribed,
@@ -228,6 +762,7 @@ function doLogin(){
       afterLogin();
       btn.disabled=false;btn.textContent='Se connecter';
     }).catch(function(){
+      // Si DB2 inaccessible, utiliser les données de DB1
       currentUser=Object.assign({id:doc.id},data);
       afterLogin();
       btn.disabled=false;btn.textContent='Se connecter';
@@ -617,7 +1152,8 @@ function saveProfilEntreprise(){
   var nom=document.getElementById('profil-nom').value.trim();
   if(!nom){showToast('Le nom est requis');return;}
   var updateData={
-    nom_entreprise:nom,contact:document.getElementById('profil-contact').value.trim(),
+    nom_entreprise:nom,
+    contact:document.getElementById('profil-contact').value.trim(),
     type_entreprise:document.getElementById('profil-type').value,
     secteur:document.getElementById('profil-secteur').value.trim(),
     pays:document.getElementById('profil-pays').value,
@@ -626,6 +1162,7 @@ function saveProfilEntreprise(){
     regime_fiscal:document.getElementById('profil-regime').value,
     updated_at:Date.now()
   };
+  // Mise à jour simultanée DB1 et DB2
   var p1=db1.collection('users').doc(currentUser.id).update(updateData);
   var p2=db2.collection('abonnements').where('nom_entreprise','==',currentUser.nom_entreprise).limit(1).get().then(function(snap2){
     if(!snap2.empty){return db2.collection('abonnements').doc(snap2.docs[0].id).update({nom_entreprise:nom,type_entreprise:updateData.type_entreprise,pays:updateData.pays,ville:updateData.ville,updated_at:Date.now()});}
@@ -666,7 +1203,10 @@ function exportResultatWord(){if(!allEcritures.length){showToast('Aucune donnée
 function exportResultatPDF(){if(!allEcritures.length){showToast('Aucune donnée');return;}exportPDF(getEnteteEntreprise()+'<h2>Compte de Résultat — SYSCOHADA 2023</h2>'+_buildResultatTable(),'resultat_'+todayDate());}
 
 /* ============================================================
-   GROQ AI — PROMPTS SYSTÈME
+   GROQ AI — ROTATION DES CLÉS INTELLIGENTE
+   Chaque appel utilise la clé suivante dans la rotation.
+   En cas d'erreur 429 (rate limit), la clé suivante est essayée.
+   Jusqu'à GROQ_KEYS.length tentatives par appel.
 ============================================================ */
 var SYSTEM_GENERATE=`Tu es Comeo AI, expert-comptable OHADA certifié, spécialiste du PLAN COMPTABLE SYSCOHADA RÉVISÉ 2023 (OHADA).
 Tu utilises EXCLUSIVEMENT les numéros de comptes du SYSCOHADA 2023 ci-dessous. NE JAMAIS inventer de numéros.
@@ -709,11 +1249,16 @@ Utilise EXCLUSIVEMENT les numéros SYSCOHADA 2023 : 4011,4111,5211,6011,7011,443
 JSON valide uniquement.
 RETOURNE: {"etape":"","lignes":[{"compte":"","libelle":"","debit":0,"credit":0}]}`;
 
-/* ============================================================
-   GROQ AI — APPELS API AVEC ROTATION
-============================================================ */
 function _sanitize(str){return str.replace(/\\/g,' ').replace(/[\u0000-\u001F\u007F-\u009F]/g,' ').replace(/\t/g,' ').replace(/\r\n/g,' ').replace(/\r/g,' ').replace(/\n/g,' ').replace(/"/g,"'").replace(/[^\x20-\x7E\xA0-\uFFFF]/g,' ').trim();}
 
+/**
+ * Appel Groq avec rotation automatique des clés.
+ * @param {string} systemPrompt
+ * @param {string} userMessage
+ * @param {number} maxTokens
+ * @param {number} attemptKeyIndex - index de départ pour cette tentative
+ * @param {number} attempts - nombre de tentatives restantes
+ */
 function _groqFetchWithRotation(systemPrompt, userMessage, maxTokens, attemptKeyIndex, attempts) {
   if(attempts <= 0) return Promise.reject(new Error('Toutes les clés API sont temporairement limitées. Réessayez dans 1 minute.'));
   var keyInfo = getNextGroqKey(attemptKeyIndex);
@@ -732,11 +1277,13 @@ function _groqFetchWithRotation(systemPrompt, userMessage, maxTokens, attemptKey
     })
   }).then(function(res){
     if(res.status===429||res.status===503||res.status===502){
+      // Rate limit ou erreur serveur — passer à la clé suivante
       var nextIdx = markKeyFailed(keyInfo.index);
       return _groqFetchWithRotation(systemPrompt, userMessage, maxTokens, nextIdx, attempts-1);
     }
     return res.json().then(function(data){
       if(data.error){
+        // Erreur API (ex: clé invalide) — rotation
         var nextIdx = markKeyFailed(keyInfo.index);
         if(data.error.code==='rate_limit_exceeded'||data.error.type==='rate_limit_exceeded'){
           return _groqFetchWithRotation(systemPrompt, userMessage, maxTokens, nextIdx, attempts-1);
@@ -756,6 +1303,7 @@ function _groqFetchWithRotation(systemPrompt, userMessage, maxTokens, attemptKey
 }
 
 function _groqFetch(keyIndex, systemPrompt, userMessage, maxTokens) {
+  // Lance avec la clé spécifiée, autorise rotation sur toutes les clés
   return _groqFetchWithRotation(systemPrompt, userMessage, maxTokens, keyIndex, GROQ_KEYS.length);
 }
 
@@ -778,6 +1326,7 @@ function _parseJSON(raw){
 }
 
 function groqCall(userMessage){
+  // Détection des étapes — clé courante
   var startKey = _groqKeyIndex;
   return _groqFetch(startKey, SYSTEM_DETECT, userMessage, 600).then(function(rawDetect){
     var detect=_parseJSON(rawDetect);var etapes=detect.etapes||[];
@@ -786,6 +1335,7 @@ function groqCall(userMessage){
     }
     showToast('⚙️ '+etapes.length+' étapes — rotation des clés...',5000);
     var promises=etapes.map(function(etape,i){
+      // Chaque étape utilise la clé suivante dans la rotation
       var kIdx=(startKey+i)%GROQ_KEYS.length;
       var msg=userMessage+'\n\nContexte: '+etapes.join(' | ')+'\nGénère UNIQUEMENT l\'écriture équilibrée pour : '+etape;
       return _groqFetch(kIdx, SYSTEM_ETAPE, msg, 1000).then(function(raw){
@@ -799,9 +1349,6 @@ function groqCall(userMessage){
   });
 }
 
-/* ============================================================
-   GÉNÉRATION JOURNAL IA
-============================================================ */
 var isGenerating=false;
 function generateJournal(){
   if(isGenerating)return;
@@ -871,6 +1418,7 @@ window.addEventListener('load',function(){
     return;
   }
 
+  // Initialisation Firebase DB1 — Comptabilité
   var app1;
   if(!firebase.apps.find(function(a){return a.name==='db1';})){
     app1=firebase.initializeApp(DB1_CONFIG,'db1');
@@ -879,6 +1427,7 @@ window.addEventListener('load',function(){
   }
   db1=firebase.firestore(app1);
 
+  // Initialisation Firebase DB2 — Abonnements
   var app2;
   if(!firebase.apps.find(function(a){return a.name==='db2';})){
     app2=firebase.initializeApp(DB2_CONFIG,'db2');
@@ -887,6 +1436,7 @@ window.addEventListener('load',function(){
   }
   db2=firebase.firestore(app2);
 
+  // Init UI
   document.getElementById('op-date').value=todayDate();
   document.getElementById('manual-date').value=todayDate();
   renderQuickOps();renderTypeSelect();renderPlan();renderGuide();initManualLines();
@@ -897,3 +1447,6 @@ window.addEventListener('load',function(){
 
   updateApiStatus('API prête · '+GROQ_KEYS.length+' clés', 'ok');
 });
+</script>
+</body>
+</html>
