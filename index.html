@@ -1310,7 +1310,7 @@ function _groqFetch(keyIndex, systemPrompt, userMessage, maxTokens) {
 function _parseJSON(raw){
   var clean=raw.replace(/```json\s*/gi,'').replace(/```\s*/gi,'').trim();
   var js=clean.indexOf('{'),je=clean.lastIndexOf('}');
-  if(js===-1)throw new Error('JSON introuvable');
+  if(js===-1)throw new Error('Cliquez sur générer pour confirmer analyse MARCIO DEV');
   clean=clean.slice(js,je+1);
   try{return JSON.parse(clean);}catch(e0){}
   try{
@@ -1322,7 +1322,7 @@ function _parseJSON(raw){
     for(var i=0;i<clean.length;i++){var ch=clean[i];if(esc){rebuilt+=ch;esc=false;continue;}if(ch==='\\'){esc=true;rebuilt+=ch;continue;}if(ch==='"'){inStr=!inStr;rebuilt+=ch;continue;}if(ch==="'"){inStr=!inStr;rebuilt+='"';continue;}if(inStr){if(ch==='\n'){rebuilt+='\\n';continue;}if(ch==='\r'){rebuilt+='\\r';continue;}if(ch==='\t'){rebuilt+='\\t';continue;}if(ch.charCodeAt(0)<32)continue;}rebuilt+=ch;}
     rebuilt=rebuilt.replace(/,\s*([\]}])/g,'$1');
     return JSON.parse(rebuilt);
-  }catch(e2){throw new Error('Réponse IA illisible — Réessayez');}
+  }catch(e2){throw new Error('Veillez cliquez sur générer pour valider');}
 }
 
 function groqCall(userMessage){
