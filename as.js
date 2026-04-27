@@ -1,4 +1,9 @@
 /* ============================================================
+   COMEO AI PRO — JAVASCRIPT
+   app.js
+============================================================ */
+
+/* ============================================================
    FIREBASE — DOUBLE BASE DE DONNÉES
    DB1 (data-com-a94a8)  : écritures comptables
    DB2 (livreur-21be8)   : abonnements & gestion clients
@@ -24,13 +29,11 @@ var DB2_CONFIG = {
   measurementId:"G-1KWC1NCJ45"
 };
 
-var db1 = null; // Comptabilité (écritures)
-var db2 = null; // Abonnements (gestion clients)
+var db1 = null;
+var db2 = null;
 
 /* ============================================================
    GROQ API — ROTATION DES CLÉS
-   Les clés tournent automatiquement à chaque appel.
-   En cas d'erreur (rate limit), on passe à la suivante.
 ============================================================ */
 var GROQ_KEYS = [
   "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",
@@ -40,18 +43,15 @@ var GROQ_KEYS = [
   "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"
 ];
 
-// Index courant de la clé (persisté en session)
 var _groqKeyIndex = 0;
 var _groqKeyUsageCount = {};
 
-/* Obtenir la prochaine clé disponible avec rotation */
 function getNextGroqKey(preferredIndex) {
   var idx = (preferredIndex !== undefined) ? preferredIndex : _groqKeyIndex;
   _groqKeyIndex = (idx + 1) % GROQ_KEYS.length;
   return { key: GROQ_KEYS[idx], index: idx };
 }
 
-/* Marquer une clé comme échouée et obtenir la suivante */
 function markKeyFailed(index) {
   _groqKeyUsageCount[index] = (_groqKeyUsageCount[index] || 0) + 1;
   var nextIdx = (index + 1) % GROQ_KEYS.length;
@@ -149,7 +149,6 @@ function switchAuth(tab){
   document.getElementById('form-'+tab).classList.add('active');
 }
 
-/* Inscription — écrit dans DB1 (comptabilité) ET DB2 (abonnements) */
 function doRegister(){
   var err=document.getElementById('register-error'),suc=document.getElementById('register-success');
   err.style.display='none';suc.style.display='none';
@@ -165,16 +164,9 @@ function doRegister(){
     if(!snap.empty){err.textContent='Cette entreprise existe déjà.';err.style.display='block';btn.disabled=false;btn.textContent='Créer mon compte — 24h gratuit';return;}
     var now=Date.now();
     var userData={
-      nom_entreprise:nom,
-      contact:contact,
-      password_hash:hashPassword(pass),
-      created_at:now,
-      trial_ends_at:now+86400000, // 24h essai gratuit
-      is_subscribed:false,
-      subscription_ends_at:0,
-      subscription_type:'none', // 'monthly' | 'annual' | 'none'
-      last_payment_date:0,
-      payment_amount:0,
+      nom_entreprise:nom,contact:contact,password_hash:hashPassword(pass),created_at:now,
+      trial_ends_at:now+86400000,is_subscribed:false,subscription_ends_at:0,
+      subscription_type:'none',last_payment_date:0,payment_amount:0,
       type_entreprise:document.getElementById('reg-type').value||'commerce',
       secteur:document.getElementById('reg-secteur').value.trim(),
       pays:document.getElementById('reg-pays').value||'CI',
@@ -182,25 +174,16 @@ function doRegister(){
       rccm:document.getElementById('reg-rccm').value.trim(),
       regime_fiscal:document.getElementById('reg-regime').value||'reel'
     };
-
-    // Écriture simultanée dans DB1 (gestion interne) et DB2 (abonnements)
     var p1=db1.collection('users').add(userData);
     var p2=db2.collection('abonnements').add({
-      nom_entreprise:nom,
-      contact:contact,
-      created_at:now,
-      trial_ends_at:now+86400000,
-      is_subscribed:false,
-      subscription_type:'none',
-      subscription_ends_at:0,
-      last_payment_date:0,
-      payment_amount:0,
+      nom_entreprise:nom,contact:contact,created_at:now,trial_ends_at:now+86400000,
+      is_subscribed:false,subscription_type:'none',subscription_ends_at:0,
+      last_payment_date:0,payment_amount:0,
       pays:document.getElementById('reg-pays').value||'CI',
       ville:document.getElementById('reg-ville').value.trim(),
       type_entreprise:document.getElementById('reg-type').value||'commerce',
-      statut:'trial' // 'trial' | 'active' | 'expired'
+      statut:'trial'
     });
-
     Promise.all([p1,p2]).then(function(){
       suc.textContent='Compte créé ! Essai 24h actif. Connectez-vous.';
       suc.style.display='block';
@@ -213,25 +196,20 @@ function doRegister(){
   }).catch(function(e){err.textContent='Erreur : '+e.message;err.style.display='block';btn.disabled=false;btn.textContent='Créer mon compte — 24h gratuit';});
 }
 
-/* Connexion — vérifie dans DB1 et synchronise l'abonnement depuis DB2 */
 function doLogin(){
   var err=document.getElementById('login-error');err.style.display='none';
   var nom=document.getElementById('login-entreprise').value.trim();
   var pass=document.getElementById('login-password').value;
   if(!nom||!pass){err.textContent='Remplissez tous les champs.';err.style.display='block';return;}
   var btn=document.getElementById('btn-login');btn.disabled=true;btn.textContent='Connexion...';
-
   db1.collection('users').where('nom_entreprise','==',nom).limit(1).get().then(function(snap){
     if(snap.empty){err.textContent='Entreprise non trouvée.';err.style.display='block';btn.disabled=false;btn.textContent='Se connecter';return;}
     var doc=snap.docs[0],data=doc.data();
     if(data.password_hash!==hashPassword(pass)){err.textContent='Mot de passe incorrect.';err.style.display='block';btn.disabled=false;btn.textContent='Se connecter';return;}
-
-    // Synchroniser le statut d'abonnement depuis DB2
     db2.collection('abonnements').where('nom_entreprise','==',nom).limit(1).get().then(function(snap2){
       var abonnement={};
       if(!snap2.empty){
         abonnement=snap2.docs[0].data();
-        // Mettre à jour DB1 avec les infos d'abonnement de DB2
         if(abonnement.is_subscribed!==undefined){
           db1.collection('users').doc(doc.id).update({
             is_subscribed:abonnement.is_subscribed,
@@ -250,7 +228,6 @@ function doLogin(){
       afterLogin();
       btn.disabled=false;btn.textContent='Se connecter';
     }).catch(function(){
-      // Si DB2 inaccessible, utiliser les données de DB1
       currentUser=Object.assign({id:doc.id},data);
       afterLogin();
       btn.disabled=false;btn.textContent='Se connecter';
@@ -640,8 +617,7 @@ function saveProfilEntreprise(){
   var nom=document.getElementById('profil-nom').value.trim();
   if(!nom){showToast('Le nom est requis');return;}
   var updateData={
-    nom_entreprise:nom,
-    contact:document.getElementById('profil-contact').value.trim(),
+    nom_entreprise:nom,contact:document.getElementById('profil-contact').value.trim(),
     type_entreprise:document.getElementById('profil-type').value,
     secteur:document.getElementById('profil-secteur').value.trim(),
     pays:document.getElementById('profil-pays').value,
@@ -650,7 +626,6 @@ function saveProfilEntreprise(){
     regime_fiscal:document.getElementById('profil-regime').value,
     updated_at:Date.now()
   };
-  // Mise à jour simultanée DB1 et DB2
   var p1=db1.collection('users').doc(currentUser.id).update(updateData);
   var p2=db2.collection('abonnements').where('nom_entreprise','==',currentUser.nom_entreprise).limit(1).get().then(function(snap2){
     if(!snap2.empty){return db2.collection('abonnements').doc(snap2.docs[0].id).update({nom_entreprise:nom,type_entreprise:updateData.type_entreprise,pays:updateData.pays,ville:updateData.ville,updated_at:Date.now()});}
@@ -691,10 +666,7 @@ function exportResultatWord(){if(!allEcritures.length){showToast('Aucune donnée
 function exportResultatPDF(){if(!allEcritures.length){showToast('Aucune donnée');return;}exportPDF(getEnteteEntreprise()+'<h2>Compte de Résultat — SYSCOHADA 2023</h2>'+_buildResultatTable(),'resultat_'+todayDate());}
 
 /* ============================================================
-   GROQ AI — ROTATION DES CLÉS INTELLIGENTE
-   Chaque appel utilise la clé suivante dans la rotation.
-   En cas d'erreur 429 (rate limit), la clé suivante est essayée.
-   Jusqu'à GROQ_KEYS.length tentatives par appel.
+   GROQ AI — PROMPTS SYSTÈME
 ============================================================ */
 var SYSTEM_GENERATE=`Tu es Comeo AI, expert-comptable OHADA certifié, spécialiste du PLAN COMPTABLE SYSCOHADA RÉVISÉ 2023 (OHADA).
 Tu utilises EXCLUSIVEMENT les numéros de comptes du SYSCOHADA 2023 ci-dessous. NE JAMAIS inventer de numéros.
@@ -737,16 +709,11 @@ Utilise EXCLUSIVEMENT les numéros SYSCOHADA 2023 : 4011,4111,5211,6011,7011,443
 JSON valide uniquement.
 RETOURNE: {"etape":"","lignes":[{"compte":"","libelle":"","debit":0,"credit":0}]}`;
 
+/* ============================================================
+   GROQ AI — APPELS API AVEC ROTATION
+============================================================ */
 function _sanitize(str){return str.replace(/\\/g,' ').replace(/[\u0000-\u001F\u007F-\u009F]/g,' ').replace(/\t/g,' ').replace(/\r\n/g,' ').replace(/\r/g,' ').replace(/\n/g,' ').replace(/"/g,"'").replace(/[^\x20-\x7E\xA0-\uFFFF]/g,' ').trim();}
 
-/**
- * Appel Groq avec rotation automatique des clés.
- * @param {string} systemPrompt
- * @param {string} userMessage
- * @param {number} maxTokens
- * @param {number} attemptKeyIndex - index de départ pour cette tentative
- * @param {number} attempts - nombre de tentatives restantes
- */
 function _groqFetchWithRotation(systemPrompt, userMessage, maxTokens, attemptKeyIndex, attempts) {
   if(attempts <= 0) return Promise.reject(new Error('Toutes les clés API sont temporairement limitées. Réessayez dans 1 minute.'));
   var keyInfo = getNextGroqKey(attemptKeyIndex);
@@ -765,13 +732,11 @@ function _groqFetchWithRotation(systemPrompt, userMessage, maxTokens, attemptKey
     })
   }).then(function(res){
     if(res.status===429||res.status===503||res.status===502){
-      // Rate limit ou erreur serveur — passer à la clé suivante
       var nextIdx = markKeyFailed(keyInfo.index);
       return _groqFetchWithRotation(systemPrompt, userMessage, maxTokens, nextIdx, attempts-1);
     }
     return res.json().then(function(data){
       if(data.error){
-        // Erreur API (ex: clé invalide) — rotation
         var nextIdx = markKeyFailed(keyInfo.index);
         if(data.error.code==='rate_limit_exceeded'||data.error.type==='rate_limit_exceeded'){
           return _groqFetchWithRotation(systemPrompt, userMessage, maxTokens, nextIdx, attempts-1);
@@ -791,7 +756,6 @@ function _groqFetchWithRotation(systemPrompt, userMessage, maxTokens, attemptKey
 }
 
 function _groqFetch(keyIndex, systemPrompt, userMessage, maxTokens) {
-  // Lance avec la clé spécifiée, autorise rotation sur toutes les clés
   return _groqFetchWithRotation(systemPrompt, userMessage, maxTokens, keyIndex, GROQ_KEYS.length);
 }
 
@@ -814,7 +778,6 @@ function _parseJSON(raw){
 }
 
 function groqCall(userMessage){
-  // Détection des étapes — clé courante
   var startKey = _groqKeyIndex;
   return _groqFetch(startKey, SYSTEM_DETECT, userMessage, 600).then(function(rawDetect){
     var detect=_parseJSON(rawDetect);var etapes=detect.etapes||[];
@@ -823,7 +786,6 @@ function groqCall(userMessage){
     }
     showToast('⚙️ '+etapes.length+' étapes — rotation des clés...',5000);
     var promises=etapes.map(function(etape,i){
-      // Chaque étape utilise la clé suivante dans la rotation
       var kIdx=(startKey+i)%GROQ_KEYS.length;
       var msg=userMessage+'\n\nContexte: '+etapes.join(' | ')+'\nGénère UNIQUEMENT l\'écriture équilibrée pour : '+etape;
       return _groqFetch(kIdx, SYSTEM_ETAPE, msg, 1000).then(function(raw){
@@ -837,6 +799,9 @@ function groqCall(userMessage){
   });
 }
 
+/* ============================================================
+   GÉNÉRATION JOURNAL IA
+============================================================ */
 var isGenerating=false;
 function generateJournal(){
   if(isGenerating)return;
@@ -906,7 +871,6 @@ window.addEventListener('load',function(){
     return;
   }
 
-  // Initialisation Firebase DB1 — Comptabilité
   var app1;
   if(!firebase.apps.find(function(a){return a.name==='db1';})){
     app1=firebase.initializeApp(DB1_CONFIG,'db1');
@@ -915,7 +879,6 @@ window.addEventListener('load',function(){
   }
   db1=firebase.firestore(app1);
 
-  // Initialisation Firebase DB2 — Abonnements
   var app2;
   if(!firebase.apps.find(function(a){return a.name==='db2';})){
     app2=firebase.initializeApp(DB2_CONFIG,'db2');
@@ -924,7 +887,6 @@ window.addEventListener('load',function(){
   }
   db2=firebase.firestore(app2);
 
-  // Init UI
   document.getElementById('op-date').value=todayDate();
   document.getElementById('manual-date').value=todayDate();
   renderQuickOps();renderTypeSelect();renderPlan();renderGuide();initManualLines();
