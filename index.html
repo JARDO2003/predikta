@@ -1284,8 +1284,103 @@ function setup3D(container){
   // ===== Effet "4D" : cycle solaire animé =====
   let timeOfDay=0.5, dayCycleEnabled=false;
   window.toggle4D=()=>{ dayCycleEnabled=!dayCycleEnabled; return dayCycleEnabled; };
+
+  // ===== MODE VISITE (First-person walk) =====
+  // Caméra perspective séparée pour la visite immersive
+  const walkCam=new THREE.PerspectiveCamera(72, container.clientWidth/container.clientHeight, 0.05, 2000);
+  let walkMode=false;
+  const walkState={ x:0, y:1.65, z:0, yaw:0, pitch:0, vx:0, vz:0, vy:0, onGround:true };
+  const keys={};
+  const PLAYER_RADIUS=0.35;
+  const PLAYER_HEIGHT=1.7;
+  const WALK_SPEED=3.2;     // m/s
+  const RUN_MULT=1.9;
+  const GRAVITY=18;
+  const JUMP_V=6.2;
+
+  // Construit la liste des AABBs des murs pour la collision
+  function getWallAABBs(){
+    const data=Eng.getData();
+    const SCALE=0.1;
+    const list=[];
+    data.walls.forEach(w=>{
+      if(w.type==='door') return; // on traverse les portes
+      const x1=w.x1*SCALE, z1=w.y1*SCALE, x2=w.x2*SCALE, z2=w.y2*SCALE;
+      const t=((w.thickness||20)*SCALE)/2;
+      // épaisseur orthogonale au segment
+      const dx=x2-x1, dz=z2-z1, len=Math.hypot(dx,dz)||1;
+      const nx=-dz/len*t, nz=dx/len*t;
+      const xs=[x1+nx,x1-nx,x2+nx,x2-nx], zs=[z1+nz,z1-nz,z2+nz,z2-nz];
+      list.push({minX:Math.min(...xs),maxX:Math.max(...xs),minZ:Math.min(...zs),maxZ:Math.max(...zs)});
+    });
+    return list;
+  }
+  let walkAABBs=[];
+  function rebuildCollision(){ walkAABBs=getWallAABBs(); }
+
+  function collide(nx,nz){
+    // empêche d'entrer dans une AABB en restituant l'axe le moins enfoncé
+    for(const b of walkAABBs){
+      if(nx+PLAYER_RADIUS>b.minX && nx-PLAYER_RADIUS<b.maxX &&
+         nz+PLAYER_RADIUS>b.minZ && nz-PLAYER_RADIUS<b.maxZ){
+        const penLeft  = (nx+PLAYER_RADIUS)-b.minX;
+        const penRight = b.maxX-(nx-PLAYER_RADIUS);
+        const penTop   = (nz+PLAYER_RADIUS)-b.minZ;
+        const penBot   = b.maxZ-(nz-PLAYER_RADIUS);
+        const m=Math.min(penLeft,penRight,penTop,penBot);
+        if(m===penLeft) nx=b.minX-PLAYER_RADIUS;
+        else if(m===penRight) nx=b.maxX+PLAYER_RADIUS;
+        else if(m===penTop) nz=b.minZ-PLAYER_RADIUS;
+        else nz=b.maxZ+PLAYER_RADIUS;
+      }
+    }
+    return [nx,nz];
+  }
+
+  function startWalk(){
+    rebuildCollision();
+    // place le joueur au centre de la première pièce
+    const data=Eng.getData();
+    if(data.rooms.length){
+      const r=data.rooms[0];
+      walkState.x=(r.x+r.w/2)*0.1;
+      walkState.z=(r.y+r.h/2)*0.1;
+    } else { walkState.x=0; walkState.z=0; }
+    walkState.y=PLAYER_HEIGHT*0.97;
+    walkState.yaw=0; walkState.pitch=0;
+    walkState.vx=walkState.vz=walkState.vy=0;
+    walkMode=true;
+    renderer.domElement.requestPointerLock&&renderer.domElement.requestPointerLock();
+    document.getElementById('walk-overlay')?.classList.add('on');
+  }
+  function stopWalk(){
+    walkMode=false;
+    document.exitPointerLock&&document.exitPointerLock();
+    document.getElementById('walk-overlay')?.classList.remove('on');
+  }
+  window.toggleWalk=()=>{ walkMode?stopWalk():startWalk(); return walkMode; };
+
+  document.addEventListener('pointerlockchange',()=>{
+    if(!document.pointerLockElement && walkMode) stopWalk();
+  });
+  document.addEventListener('mousemove',e=>{
+    if(!walkMode||!document.pointerLockElement) return;
+    walkState.yaw   -= e.movementX*0.0025;
+    walkState.pitch -= e.movementY*0.0025;
+    walkState.pitch = Math.max(-Math.PI/2+0.05, Math.min(Math.PI/2-0.05, walkState.pitch));
+  });
+  document.addEventListener('keydown',e=>{
+    if(!walkMode) return;
+    keys[e.code]=true;
+    if(e.code==='Escape'){ stopWalk(); }
+    if(e.code==='Space' && walkState.onGround){ walkState.vy=JUMP_V; walkState.onGround=false; }
+  });
+  document.addEventListener('keyup',e=>{ keys[e.code]=false; });
+
+  let lastT=performance.now();
   function animate(){
     requestAnimationFrame(animate);
+    const now=performance.now(); const dt=Math.min(0.05,(now-lastT)/1000); lastT=now;
     if(dayCycleEnabled){
       timeOfDay=(timeOfDay+0.0008)%1;
       const ang=timeOfDay*Math.PI*2;
@@ -1295,15 +1390,51 @@ function setup3D(container){
       sun.color.setRGB(0.95+day*0.05,0.85+day*0.15,0.6+day*0.4);
       scene.background=new THREE.Color(0.05+day*0.85,0.05+day*0.83,0.1+day*0.78);
     }
-    renderer.render(scene,camera);
+    if(walkMode){
+      // entrées
+      const fwd  = (keys['KeyW']||keys['ArrowUp']?1:0) - (keys['KeyS']||keys['ArrowDown']?1:0);
+      const strafe = (keys['KeyD']||keys['ArrowRight']?1:0) - (keys['KeyA']||keys['ArrowLeft']?1:0);
+      const speed = WALK_SPEED * (keys['ShiftLeft']||keys['ShiftRight']?RUN_MULT:1);
+      const sinY=Math.sin(walkState.yaw), cosY=Math.cos(walkState.yaw);
+      const dx = (-sinY*fwd + cosY*strafe);
+      const dz = (-cosY*fwd - sinY*strafe);
+      const mag=Math.hypot(dx,dz)||1;
+      const tvx = (dx/mag)*speed*(fwd||strafe?1:0);
+      const tvz = (dz/mag)*speed*(fwd||strafe?1:0);
+      // lissage
+      walkState.vx += (tvx-walkState.vx)*Math.min(1,dt*12);
+      walkState.vz += (tvz-walkState.vz)*Math.min(1,dt*12);
+      // gravité
+      walkState.vy -= GRAVITY*dt;
+      let nx=walkState.x + walkState.vx*dt;
+      let nz=walkState.z + walkState.vz*dt;
+      [nx,nz]=collide(nx,walkState.z);
+      [nx,nz]=collide(nx,nz);
+      walkState.x=nx; walkState.z=nz;
+      walkState.y += walkState.vy*dt;
+      if(walkState.y<=PLAYER_HEIGHT*0.97){ walkState.y=PLAYER_HEIGHT*0.97; walkState.vy=0; walkState.onGround=true; }
+      // applique caméra
+      walkCam.position.set(walkState.x, walkState.y, walkState.z);
+      walkCam.rotation.order='YXZ';
+      walkCam.rotation.y=walkState.yaw; walkCam.rotation.x=walkState.pitch;
+      walkCam.aspect=container.clientWidth/container.clientHeight; walkCam.updateProjectionMatrix();
+      renderer.render(scene,walkCam);
+    } else {
+      renderer.render(scene,camera);
+    }
   }
   animate(); updateCam();
+
+  // Reconstruit les collisions quand la scène change
+  const _origRefresh=window.refresh3D;
+  window.refresh3D=function(){ if(_origRefresh) _origRefresh.apply(this,arguments); rebuildCollision(); };
+  rebuildCollision();
 
   window.addEventListener('resize',()=>{const W2=container.clientWidth,H2=container.clientHeight;renderer.setSize(W2,H2);updateCam();});
 
   // Hint
   const h=document.createElement('div');
-  h.className='hint3d';h.innerHTML='🖱 Clic+glisser : orbiter · Shift/Clic-droit : déplacer · Molette : zoom · Double-clic : recentrer';
+  h.className='hint3d';h.innerHTML='🖱 Orbiter · Shift/Clic-droit : déplacer · Molette : zoom · Double-clic : recentrer · 🚶 Bouton Visite pour entrer dans la maison';
   container.appendChild(h);
 
   three3d={scene,camera,renderer,container};
@@ -1843,12 +1974,12 @@ function showToast(msg,isError=false){
   setTimeout(()=>{t.style.opacity='0';setTimeout(()=>t.remove(),300);},2500);
 }
 </script>
-<!-- ============= COMEO AI ASSISTANT (Groq) ============= -->
+<!-- ============= COMEO AI ASSISTANT (local · sans clé) ============= -->
 <style>
 #comeo-fab{position:fixed;bottom:20px;right:20px;width:58px;height:58px;border-radius:50%;background:linear-gradient(135deg,#00d4ff,#a855f7);border:none;color:#fff;font-size:26px;cursor:pointer;box-shadow:0 8px 30px rgba(0,212,255,.5),0 0 0 0 rgba(168,85,247,.5);z-index:9998;animation:comeoPulse 2.4s infinite;transition:transform .2s}
 #comeo-fab:hover{transform:scale(1.1)}
 @keyframes comeoPulse{0%,100%{box-shadow:0 8px 30px rgba(0,212,255,.5),0 0 0 0 rgba(168,85,247,.7)}50%{box-shadow:0 8px 30px rgba(0,212,255,.5),0 0 0 18px rgba(168,85,247,0)}}
-#comeo-panel{position:fixed;bottom:90px;right:20px;width:380px;height:540px;background:rgba(13,13,26,.96);backdrop-filter:blur(14px);border:1px solid #00d4ff44;border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,.6),0 0 40px rgba(0,212,255,.15);display:none;flex-direction:column;z-index:9999;overflow:hidden;font-family:var(--font);color:#fff}
+#comeo-panel{position:fixed;bottom:90px;right:20px;width:400px;height:600px;background:rgba(13,13,26,.96);backdrop-filter:blur(14px);border:1px solid #00d4ff44;border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,.6),0 0 40px rgba(0,212,255,.15);display:none;flex-direction:column;z-index:9999;overflow:hidden;font-family:var(--font);color:#fff}
 #comeo-panel.open{display:flex;animation:comeoSlide .25s ease}
 @keyframes comeoSlide{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
 .comeo-head{padding:12px 14px;background:linear-gradient(135deg,rgba(0,212,255,.15),rgba(168,85,247,.15));border-bottom:1px solid #2a2a5a;display:flex;align-items:center;gap:10px}
@@ -1859,25 +1990,39 @@ function showToast(msg,isError=false){
 @keyframes dotBlink{50%{opacity:.3}}
 .comeo-close{margin-left:auto;background:none;border:none;color:#8888aa;font-size:18px;cursor:pointer;padding:4px 8px;border-radius:4px}
 .comeo-close:hover{background:#1e1e38;color:#fff}
+.comeo-tabs{display:flex;border-bottom:1px solid #2a2a5a;background:rgba(0,0,0,.2)}
+.comeo-tab{flex:1;background:none;border:none;color:#8888aa;padding:8px;font-size:11px;font-family:var(--font);cursor:pointer;letter-spacing:.5px;border-bottom:2px solid transparent}
+.comeo-tab.on{color:#00d4ff;border-bottom-color:#00d4ff;background:rgba(0,212,255,.06)}
+.comeo-body{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.comeo-pane{flex:1;overflow-y:auto;display:none}
+.comeo-pane.on{display:flex;flex-direction:column}
 .comeo-msgs{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px}
-.comeo-msg{max-width:85%;padding:9px 12px;border-radius:12px;font-size:12.5px;line-height:1.45;white-space:pre-wrap;word-wrap:break-word}
+.comeo-msg{max-width:88%;padding:9px 12px;border-radius:12px;font-size:12.5px;line-height:1.45;white-space:pre-wrap;word-wrap:break-word}
 .comeo-msg.u{align-self:flex-end;background:linear-gradient(135deg,#00d4ff,#0099cc);color:#000;font-weight:500;border-bottom-right-radius:4px}
 .comeo-msg.a{align-self:flex-start;background:#1e1e38;border:1px solid #2a2a5a;border-bottom-left-radius:4px}
 .comeo-msg.tool{align-self:flex-start;background:rgba(168,85,247,.12);border:1px dashed #a855f7;font-family:var(--mono);font-size:10.5px;color:#c4a3ff;max-width:100%}
-.comeo-suggestions{display:flex;flex-wrap:wrap;gap:6px;padding:8px 14px 0}
-.comeo-sugg{background:#1e1e38;border:1px solid #2a2a5a;color:#aab;padding:5px 10px;border-radius:14px;font-size:11px;cursor:pointer;transition:all .15s}
-.comeo-sugg:hover{background:#00d4ff22;border-color:#00d4ff;color:#fff}
 .comeo-input{display:flex;gap:6px;padding:10px 12px;border-top:1px solid #2a2a5a;background:rgba(0,0,0,.3)}
 .comeo-input input{flex:1;background:#0d0d1a;border:1px solid #2a2a5a;color:#fff;padding:9px 12px;border-radius:8px;font-family:var(--font);font-size:12.5px;outline:none}
 .comeo-input input:focus{border-color:#00d4ff;box-shadow:0 0 0 2px rgba(0,212,255,.2)}
 .comeo-input button{background:linear-gradient(135deg,#00d4ff,#a855f7);color:#fff;border:none;padding:0 14px;border-radius:8px;cursor:pointer;font-weight:600;font-size:12px}
-.comeo-input button:disabled{opacity:.4;cursor:not-allowed}
-#comeo-fab.thinking::after{content:'';position:absolute;inset:-4px;border:2px solid #fff;border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
+.cmd-list{padding:10px 12px;overflow-y:auto}
+.cmd-group{margin-bottom:14px}
+.cmd-group-title{font-family:var(--disp);font-size:10px;letter-spacing:1.5px;color:#a855f7;margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid #2a2a5a}
+.cmd-item{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 10px;background:#161628;border:1px solid #2a2a5a;border-radius:6px;margin-bottom:5px;cursor:pointer;transition:all .15s}
+.cmd-item:hover{border-color:#00d4ff;background:#1e1e38}
+.cmd-label{font-size:12px;color:#fff;font-weight:500}
+.cmd-desc{font-size:10px;color:#8888aa;margin-top:2px}
+.cmd-go{background:linear-gradient(135deg,#00d4ff,#a855f7);color:#fff;border:none;padding:5px 9px;border-radius:5px;font-size:10px;cursor:pointer;font-weight:600;flex-shrink:0}
 .view3d-tools{position:absolute;top:10px;right:10px;display:flex;gap:6px;z-index:5}
 .view3d-tools button{background:rgba(13,13,26,.85);backdrop-filter:blur(8px);border:1px solid #2a2a5a;color:#fff;padding:7px 11px;border-radius:6px;font-family:var(--font);font-size:11px;cursor:pointer;display:flex;align-items:center;gap:5px}
 .view3d-tools button:hover{border-color:#00d4ff;background:#00d4ff22}
 .view3d-tools button.on{background:linear-gradient(135deg,#00d4ff,#a855f7);border-color:transparent}
+#walk-overlay{position:fixed;inset:0;pointer-events:none;z-index:9000;display:none;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:30px}
+#walk-overlay.on{display:flex}
+#walk-overlay::before{content:'';position:absolute;top:50%;left:50%;width:14px;height:14px;border:2px solid rgba(255,255,255,.85);border-radius:50%;transform:translate(-50%,-50%);box-shadow:0 0 6px rgba(0,0,0,.6)}
+#walk-overlay::after{content:'';position:absolute;top:50%;left:50%;width:2px;height:2px;background:#fff;transform:translate(-50%,-50%)}
+.walk-hud{background:rgba(13,13,26,.9);backdrop-filter:blur(8px);border:1px solid #00d4ff66;border-radius:8px;padding:8px 16px;font-family:var(--font);font-size:11px;color:#fff;letter-spacing:.5px;display:flex;gap:14px}
+.walk-hud kbd{background:#1e1e38;border:1px solid #2a2a5a;border-radius:3px;padding:1px 5px;font-family:var(--mono);font-size:10px;color:#00d4ff}
 </style>
 
 <button id="comeo-fab" title="Comeo AI – Assistant architecte">🤖</button>
@@ -1886,142 +2031,271 @@ function showToast(msg,isError=false){
     <div class="comeo-avatar">🤖</div>
     <div>
       <div class="comeo-title">COMEO AI</div>
-      <div class="comeo-sub"><span class="comeo-dot"></span>Connecté · Groq Llama</div>
+      <div class="comeo-sub"><span class="comeo-dot"></span>Assistant intégré · Local</div>
     </div>
     <button class="comeo-close" onclick="document.getElementById('comeo-panel').classList.remove('open')">✕</button>
   </div>
-  <div class="comeo-msgs" id="comeo-msgs">
-    <div class="comeo-msg a">👋 Bonjour ! Je suis <b>Comeo</b>, votre assistant architecte. Je peux créer des bâtiments complets, ajouter des murs, des pièces, des meubles, et bien plus. Dites-moi ce que vous voulez construire !</div>
+  <div class="comeo-tabs">
+    <button class="comeo-tab on" data-pane="chat">💬 Discussion</button>
+    <button class="comeo-tab" data-pane="cmds">⚡ Commandes</button>
   </div>
-  <div class="comeo-suggestions">
-    <button class="comeo-sugg" onclick="comeoAsk('Crée une maison avec 3 chambres')">🏠 Maison 3 chambres</button>
-    <button class="comeo-sugg" onclick="comeoAsk('Ajoute un canapé et une table dans le salon')">🛋️ Meubler salon</button>
-    <button class="comeo-sugg" onclick="comeoAsk('Liste les éléments du projet')">📋 Inventaire</button>
+  <div class="comeo-body">
+    <div class="comeo-pane on" data-pane="chat">
+      <div class="comeo-msgs" id="comeo-msgs">
+        <div class="comeo-msg a">👋 Bonjour, je suis <b>Comeo AI</b>. Demandez-moi de construire une maison, ajouter des pièces, des meubles, lancer la visite immersive, etc. Onglet <b>⚡ Commandes</b> pour la liste complète.</div>
+      </div>
+      <div class="comeo-input">
+        <input id="comeo-input" placeholder="Ex: « Construis une villa 4 chambres »" />
+        <button id="comeo-send">↑</button>
+      </div>
+    </div>
+    <div class="comeo-pane cmd-list" data-pane="cmds" id="cmd-list"></div>
   </div>
-  <div class="comeo-input">
-    <input id="comeo-input" placeholder="Demandez à Comeo..." />
-    <button id="comeo-send">↑</button>
+</div>
+
+<div id="walk-overlay">
+  <div class="walk-hud">
+    <span>🚶 <b>Mode Visite</b></span>
+    <span><kbd>Z/Q/S/D</kbd> ou <kbd>WASD</kbd> Avancer</span>
+    <span><kbd>Souris</kbd> Regarder</span>
+    <span><kbd>Shift</kbd> Courir</span>
+    <span><kbd>Espace</kbd> Sauter</span>
+    <span><kbd>Échap</kbd> Sortir</span>
   </div>
 </div>
 
 <script>
+/* ============================================================
+   COMEO AI — assistant local (NLP + commandes prédéfinies)
+   Aucune clé API requise. Tout fonctionne hors-ligne.
+   ============================================================ */
 (function(){
-  const GROQ_API_KEY='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';
-  const MODEL='llama-3.3-70b-versatile';
   const fab=document.getElementById('comeo-fab');
   const panel=document.getElementById('comeo-panel');
   const msgsEl=document.getElementById('comeo-msgs');
   const input=document.getElementById('comeo-input');
   const send=document.getElementById('comeo-send');
-
+  const cmdList=document.getElementById('cmd-list');
   fab.onclick=()=>panel.classList.toggle('open');
+  panel.querySelectorAll('.comeo-tab').forEach(t=>t.onclick=()=>{
+    panel.querySelectorAll('.comeo-tab').forEach(x=>x.classList.toggle('on',x===t));
+    panel.querySelectorAll('.comeo-pane').forEach(p=>p.classList.toggle('on',p.dataset.pane===t.dataset.pane));
+  });
 
-  const TOOLS=[
-    {type:'function',function:{name:'add_wall',description:'Ajoute un mur entre 2 points',parameters:{type:'object',properties:{x1:{type:'number'},y1:{type:'number'},x2:{type:'number'},y2:{type:'number'}},required:['x1','y1','x2','y2']}}},
-    {type:'function',function:{name:'add_room',description:'Ajoute une pièce rectangulaire avec ses 4 murs',parameters:{type:'object',properties:{x:{type:'number'},y:{type:'number'},w:{type:'number',description:'largeur en cm canvas'},h:{type:'number'},name:{type:'string'}},required:['x','y','w','h']}}},
-    {type:'function',function:{name:'add_door',description:'Ajoute une porte',parameters:{type:'object',properties:{x1:{type:'number'},y1:{type:'number'},x2:{type:'number'},y2:{type:'number'}},required:['x1','y1','x2','y2']}}},
-    {type:'function',function:{name:'add_window',description:'Ajoute une fenêtre',parameters:{type:'object',properties:{x1:{type:'number'},y1:{type:'number'},x2:{type:'number'},y2:{type:'number'}},required:['x1','y1','x2','y2']}}},
-    {type:'function',function:{name:'place_furniture',description:'Place un meuble. Types: sofa, bed, table, desk, bath, kitchen, wardrobe, plant',parameters:{type:'object',properties:{type:{type:'string'},x:{type:'number'},y:{type:'number'},rotation:{type:'number'}},required:['type','x','y']}}},
-    {type:'function',function:{name:'build_house',description:'Construit une maison complète avec salon et chambres',parameters:{type:'object',properties:{width:{type:'number',description:'largeur totale en cm canvas (par défaut 400)'},height:{type:'number'},bedrooms:{type:'number',description:'nombre de chambres'}}}}},
-    {type:'function',function:{name:'list_elements',description:'Liste les éléments du projet en cours',parameters:{type:'object',properties:{}}}},
-    {type:'function',function:{name:'clear_all',description:'Efface tout le projet',parameters:{type:'object',properties:{}}}},
-    {type:'function',function:{name:'recenter_view',description:'Recentre la vue 3D sur le bâtiment',parameters:{type:'object',properties:{}}}},
-    {type:'function',function:{name:'set_view_mode',description:'Change le mode de vue: plan, 3d, elevation, section',parameters:{type:'object',properties:{mode:{type:'string'}},required:['mode']}}},
+  function addMsg(content,cls){
+    const d=document.createElement('div');
+    d.className='comeo-msg '+(cls||'a');
+    if(cls==='tool') d.textContent=content;
+    else d.innerHTML=content;
+    msgsEl.appendChild(d); msgsEl.scrollTop=msgsEl.scrollHeight; return d;
+  }
+
+  // ====== Helpers d'accès au moteur ======
+  const A=()=>Eng.api;
+  function clickViewMode(m){ const b=document.querySelector(`.vm-btn[data-mode="${m}"]`); if(b)b.click(); }
+  function ensure3D(){ clickViewMode('3d'); }
+
+  // ====== Catalogue de COMMANDES (faisables avec ou sans toi) ======
+  const COMMANDS=[
+    {group:'🏗️ Construction', items:[
+      {id:'studio',     label:'Construire un studio',         desc:'1 pièce ouverte 4×5 m + meubles',     run:()=>buildPreset('studio')},
+      {id:'maison2',    label:'Maison 2 chambres',           desc:'Salon + 2 chambres + meubles',         run:()=>buildPreset('h2')},
+      {id:'maison3',    label:'Maison 3 chambres',           desc:'Salon + cuisine + 3 chambres + bain', run:()=>buildPreset('h3')},
+      {id:'villa',      label:'Villa 4 chambres',            desc:'Grande villa avec suite parentale',    run:()=>buildPreset('villa')},
+      {id:'appart',     label:'Appartement T3',              desc:'Plan d\'appartement 3 pièces',         run:()=>buildPreset('t3')},
+      {id:'duplex',     label:'Maison à étage (duplex)',     desc:'Étage symbolique + escalier',          run:()=>buildPreset('duplex')},
+    ]},
+    {group:'🧱 Édition', items:[
+      {id:'wall',     label:'Ajouter un mur',         desc:'Active l\'outil mur',           run:()=>{ensure3D();/*outil mur*/ const b=document.querySelector('[data-tool="wall"]'); b&&b.click(); return 'Outil Mur activé. Cliquez en 2D pour tracer.';}},
+      {id:'room',     label:'Ajouter une pièce 4×4 m',desc:'Au centre du plan',              run:()=>A().addRoom(-200,-200,400,400,'Pièce')},
+      {id:'door',     label:'Ajouter une porte',      desc:'Sur le mur le plus proche du centre', run:()=>{A().addDoor(-40,-200,40,-200); return 'Porte ajoutée';}},
+      {id:'window',   label:'Ajouter une fenêtre',    desc:'Façade sud',                     run:()=>{A().addWindow(-60,200,60,200); return 'Fenêtre ajoutée';}},
+      {id:'clear',    label:'Tout effacer',           desc:'Réinitialise le projet',         run:()=>{Eng.clearAll(); return 'Projet effacé';}},
+    ]},
+    {group:'🛋️ Mobilier', items:[
+      {id:'sofa',    label:'Canapé',     desc:'Au centre',          run:()=>A().placeFurniture('sofa',0,0)},
+      {id:'bed',     label:'Lit',         desc:'Au centre',          run:()=>A().placeFurniture('bed',0,0)},
+      {id:'table',   label:'Table',       desc:'Au centre',          run:()=>A().placeFurniture('table',0,0)},
+      {id:'desk',    label:'Bureau',      desc:'Au centre',          run:()=>A().placeFurniture('desk',0,0)},
+      {id:'kitchen', label:'Cuisine',     desc:'Au centre',          run:()=>A().placeFurniture('kitchen',0,0)},
+      {id:'bath',    label:'Baignoire',   desc:'Au centre',          run:()=>A().placeFurniture('bath',0,0)},
+      {id:'wardrobe',label:'Armoire',     desc:'Au centre',          run:()=>A().placeFurniture('wardrobe',0,0)},
+      {id:'plant',   label:'Plante',      desc:'Décoration',         run:()=>A().placeFurniture('plant',0,0)},
+    ]},
+    {group:'🎥 Vues & Visite', items:[
+      {id:'plan',     label:'Vue Plan 2D',          desc:'',                                    run:()=>{clickViewMode('plan'); return 'Vue plan';}},
+      {id:'3d',       label:'Vue 3D',               desc:'',                                    run:()=>{ensure3D(); return 'Vue 3D';}},
+      {id:'eleva',    label:'Vue Élévation',        desc:'',                                    run:()=>{clickViewMode('elevation'); return 'Vue élévation';}},
+      {id:'sect',     label:'Vue Section',          desc:'',                                    run:()=>{clickViewMode('section'); return 'Vue section';}},
+      {id:'recenter', label:'Recentrer la 3D',      desc:'',                                    run:()=>{window.recenter3D&&window.recenter3D(); return 'Vue recentrée';}},
+      {id:'4d',       label:'Cycle Jour / Nuit',    desc:'Active l\'animation solaire 4D',      run:()=>{ensure3D();const on=window.toggle4D&&window.toggle4D(); return on?'☀️ Cycle activé':'🌙 Cycle désactivé';}},
+      {id:'walk',     label:'🚶 Entrer dans la maison',desc:'Visite immersive (FPS, collisions)',run:()=>{ensure3D();setTimeout(()=>window.toggleWalk&&window.toggleWalk(),300); return 'Visite immersive lancée. Cliquez sur la 3D, ZQSD pour bouger.';}},
+    ]},
+    {group:'📊 Analyse', items:[
+      {id:'list',     label:'Inventaire du projet', desc:'Pièces, murs, meubles',                run:()=>{const r=A().listElements(); return JSON.stringify(r,null,2);}},
+      {id:'cost',     label:'Estimer le coût',      desc:'Coût indicatif total',                  run:()=>{const c=Eng.estimateCost&&Eng.estimateCost(); return c?('💰 Coût estimé : '+c+' €'):'Indisponible';}},
+      {id:'energy',   label:'Estimer l\'énergie',   desc:'Performance thermique',                 run:()=>{const e=Eng.energyEstimate&&Eng.energyEstimate(); return e?('⚡ '+JSON.stringify(e)):'Indisponible';}},
+    ]},
+    {group:'💾 Fichier', items:[
+      {id:'undo',     label:'Annuler',              desc:'Ctrl+Z',                                run:()=>{Eng.undo&&Eng.undo(); return 'Annulé';}},
+      {id:'redo',     label:'Refaire',              desc:'Ctrl+Y',                                run:()=>{Eng.redo&&Eng.redo(); return 'Refait';}},
+      {id:'export',   label:'Exporter le projet',   desc:'JSON',                                   run:()=>{Eng.exportScene&&Eng.exportScene(); return 'Export lancé';}},
+    ]},
   ];
 
-  function execTool(name,args){
-    try{
-      const a=Eng.api;
-      switch(name){
-        case 'add_wall': return {id:a.addWall(args.x1,args.y1,args.x2,args.y2)};
-        case 'add_room': return {id:a.addRoom(args.x,args.y,args.w,args.h,args.name)};
-        case 'add_door': a.addDoor(args.x1,args.y1,args.x2,args.y2); return {ok:true};
-        case 'add_window': a.addWindow(args.x1,args.y1,args.x2,args.y2); return {ok:true};
-        case 'place_furniture': a.placeFurniture(args.type,args.x,args.y,args.rotation); return {ok:true};
-        case 'build_house': return a.buildHouse(args);
-        case 'list_elements': return a.listElements();
-        case 'clear_all': Eng.clearAll(); return {ok:true};
-        case 'recenter_view': if(window.recenter3D)window.recenter3D(); return {ok:true};
-        case 'set_view_mode': {
-          const btn=document.querySelector(`.vm-btn[data-mode="${args.mode}"]`);
-          if(btn) btn.click();
-          return {ok:true,mode:args.mode};
-        }
-        default: return {error:'unknown tool'};
-      }
-    }catch(e){ return {error:String(e.message||e)}; }
-  }
-
-  const SYSTEM=`Tu es Comeo, l'assistant IA intégré à ARCHITECT PRO 3D, un logiciel d'architecture.
-Tu PEUX et DOIS utiliser les fonctions/outils fournis pour modifier réellement le projet (créer murs, pièces, meubles, etc.).
-Coordonnées: l'origine (0,0) est au centre. Les unités sont en "cm canvas" (1 unité ≈ 1 cm). Une pièce typique fait 300-500 unités. Les meubles font 40-80 unités.
-Quand l'utilisateur demande de construire/ajouter quelque chose, appelle directement la bonne fonction. Réponds brièvement en français après l'action.`;
-
-  let history=[{role:'system',content:SYSTEM}];
-
-  function addMsg(role,content,cls){
-    const d=document.createElement('div');
-    d.className='comeo-msg '+(cls||(role==='user'?'u':'a'));
-    d.textContent=content;
-    msgsEl.appendChild(d);
-    msgsEl.scrollTop=msgsEl.scrollHeight;
-    return d;
-  }
-
-  async function callGroq(messages){
-    const r=await fetch('https://api.groq.com/openai/v1/chat/completions',{
-      method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':'Bearer '+GROQ_API_KEY},
-      body:JSON.stringify({model:MODEL,messages,tools:TOOLS,tool_choice:'auto',temperature:0.4})
-    });
-    if(!r.ok){ const t=await r.text(); throw new Error('Groq '+r.status+': '+t.slice(0,200)); }
-    return r.json();
-  }
-
-  async function chat(userText){
-    history.push({role:'user',content:userText});
-    addMsg('user',userText);
-    fab.classList.add('thinking'); send.disabled=true;
-    try{
-      for(let step=0; step<5; step++){
-        const data=await callGroq(history);
-        const msg=data.choices[0].message;
-        history.push(msg);
-        if(msg.tool_calls && msg.tool_calls.length){
-          for(const tc of msg.tool_calls){
-            let args={}; try{args=JSON.parse(tc.function.arguments||'{}');}catch(e){}
-            const result=execTool(tc.function.name,args);
-            addMsg('tool','⚙ '+tc.function.name+'('+JSON.stringify(args)+') → '+JSON.stringify(result),'tool');
-            history.push({role:'tool',tool_call_id:tc.id,content:JSON.stringify(result)});
-          }
-          continue;
-        }
-        if(msg.content) addMsg('assistant',msg.content);
-        break;
-      }
-    }catch(e){
-      addMsg('assistant','❌ Erreur : '+e.message);
-    } finally {
-      fab.classList.remove('thinking'); send.disabled=false; input.focus();
+  // ===== Presets de bâtiments réalistes =====
+  function buildPreset(kind){
+    Eng.clearAll();
+    const a=A();
+    if(kind==='studio'){
+      a.addRoom(-200,-150,400,300,'Studio');
+      a.placeFurniture('bed',-130,-90);
+      a.placeFurniture('sofa',100,-90);
+      a.placeFurniture('kitchen',-130,90);
+      a.placeFurniture('table',100,80);
+      a.addWindow(-80,-150,80,-150); a.addDoor(-40,150,40,150);
+      return 'Studio 4×3 m construit ✅';
     }
+    if(kind==='h2'){ a.buildHouse({x:-250,y:-150,width:500,height:300,bedrooms:2});
+      a.placeFurniture('kitchen',-200,-100); a.placeFurniture('table',-100,80);
+      a.addDoor(-30,150,30,150); a.addWindow(-220,-150,-150,-150); a.addWindow(150,-150,220,-150);
+      return 'Maison 2 chambres construite ✅';
+    }
+    if(kind==='h3'){ a.buildHouse({x:-300,y:-180,width:600,height:360,bedrooms:3});
+      a.placeFurniture('kitchen',-250,-130); a.placeFurniture('table',-100,100); a.placeFurniture('sofa',-200,80);
+      a.placeFurniture('bath',-250,140);
+      a.addDoor(-30,180,30,180);
+      a.addWindow(-280,-180,-200,-180); a.addWindow(-100,-180,-20,-180); a.addWindow(150,-180,230,-180);
+      return 'Maison 3 chambres construite ✅';
+    }
+    if(kind==='villa'){
+      a.addRoom(-350,-220,700,440,'Villa');
+      // découpes
+      const wT=20;
+      // sépare salon/nuit
+      Eng.api.addWall(0,-220,0,40);
+      // suite parentale
+      Eng.api.addWall(0,-220,200,-220); // déjà périmètre, ok
+      Eng.api.addRoom(0,-220,350,160,'Suite parentale');
+      Eng.api.addRoom(0,-60,175,140,'Chambre 2');
+      Eng.api.addRoom(175,-60,175,140,'Chambre 3');
+      Eng.api.addRoom(0,80,175,140,'Chambre 4');
+      Eng.api.addRoom(175,80,175,140,'Salle de bain');
+      Eng.api.addRoom(-350,-220,350,440,'Salon / Cuisine');
+      a.placeFurniture('bed',60,-180); a.placeFurniture('wardrobe',270,-200);
+      a.placeFurniture('bed',40,-30); a.placeFurniture('bed',215,-30); a.placeFurniture('bed',40,110);
+      a.placeFurniture('bath',220,150); a.placeFurniture('sofa',-300,-180); a.placeFurniture('table',-180,80);
+      a.placeFurniture('kitchen',-300,150); a.placeFurniture('plant',-300,-50);
+      a.addDoor(-40,-220,40,-220); a.addWindow(-300,-220,-200,-220); a.addWindow(-100,-220,-20,-220);
+      a.addWindow(-350,-50,-350,50);
+      return 'Villa 4 chambres construite ✅';
+    }
+    if(kind==='t3'){
+      a.addRoom(-200,-150,400,300,'Appartement T3');
+      Eng.api.addRoom(-200,-150,200,150,'Salon');
+      Eng.api.addRoom(0,-150,200,150,'Cuisine');
+      Eng.api.addRoom(-200,0,200,150,'Chambre 1');
+      Eng.api.addRoom(0,0,120,150,'Chambre 2');
+      Eng.api.addRoom(120,0,80,150,'SDB');
+      a.placeFurniture('sofa',-160,-110); a.placeFurniture('table',-110,-50);
+      a.placeFurniture('kitchen',40,-110); a.placeFurniture('bed',-160,40);
+      a.placeFurniture('bed',40,40); a.placeFurniture('bath',135,40);
+      a.addDoor(-30,-150,30,-150); a.addWindow(-180,-150,-100,-150); a.addWindow(100,-150,180,-150);
+      return 'Appartement T3 construit ✅';
+    }
+    if(kind==='duplex'){
+      a.buildHouse({x:-250,y:-150,width:500,height:300,bedrooms:2});
+      a.placeFurniture('table',-180,80); a.placeFurniture('kitchen',-230,-100);
+      a.placeFurniture('sofa',-180,-50); a.placeFurniture('plant',180,-130);
+      // escalier symbolique
+      a.placeFurniture('wardrobe',150,-120);
+      a.addDoor(-30,150,30,150);
+      a.addWindow(-220,-150,-150,-150); a.addWindow(150,-150,220,-150);
+      return 'Duplex construit ✅ (étage symbolisé par module escalier)';
+    }
+    return 'Modèle inconnu';
   }
 
-  window.comeoAsk=(t)=>{ panel.classList.add('open'); chat(t); };
+  // ===== Rendu de l'onglet Commandes =====
+  COMMANDS.forEach(g=>{
+    const sec=document.createElement('div'); sec.className='cmd-group';
+    const t=document.createElement('div'); t.className='cmd-group-title'; t.textContent=g.group; sec.appendChild(t);
+    g.items.forEach(it=>{
+      const row=document.createElement('div'); row.className='cmd-item';
+      row.innerHTML=`<div><div class="cmd-label">${it.label}</div><div class="cmd-desc">${it.desc||''}</div></div>`;
+      const b=document.createElement('button'); b.className='cmd-go'; b.textContent='Exécuter';
+      b.onclick=()=>{ const r=runCommand(it); switchToChatAndShow(it.label,r); };
+      row.appendChild(b); sec.appendChild(row);
+    });
+    cmdList.appendChild(sec);
+  });
+
+  function runCommand(it){
+    try{ const r=it.run(); return (typeof r==='string'||typeof r==='number')?r:(r?JSON.stringify(r):'OK ✅'); }
+    catch(e){ return '❌ '+(e.message||e); }
+  }
+  function switchToChatAndShow(label,result){
+    panel.querySelectorAll('.comeo-tab').forEach(x=>x.classList.toggle('on',x.dataset.pane==='chat'));
+    panel.querySelectorAll('.comeo-pane').forEach(p=>p.classList.toggle('on',p.dataset.pane==='chat'));
+    addMsg('▶ '+label,'u');
+    addMsg(result,'tool');
+  }
+
+  // ===== Compréhension de langage naturel (FR) =====
+  function nlu(text){
+    const t=text.toLowerCase();
+    const num=(re,def)=>{ const m=t.match(re); return m?parseInt(m[1]):def; };
+    // visite
+    if(/(visite|entrer|rentrer|marcher|first.?person|fps|immersi)/.test(t)) return ()=>runCommand({run:COMMANDS.find(g=>g.group.includes('Vues')).items.find(i=>i.id==='walk').run});
+    if(/(jour.?nuit|cycle|4d|soleil)/.test(t)) return ()=>runCommand({run:COMMANDS.find(g=>g.group.includes('Vues')).items.find(i=>i.id==='4d').run});
+    if(/(recentr)/.test(t)) return ()=>{window.recenter3D&&window.recenter3D();return 'Recentré';};
+    if(/(efface|nettoy|reset|tout supprimer|vider)/.test(t)) return ()=>{Eng.clearAll();return 'Projet effacé';};
+    if(/(inventaire|liste|élément)/.test(t)) return ()=>{return JSON.stringify(A().listElements(),null,2);};
+    if(/(coût|prix|estim)/.test(t)) return ()=>{const c=Eng.estimateCost&&Eng.estimateCost(); return c?'💰 '+c+' €':'Indisponible';};
+    // construction
+    if(/(villa)/.test(t)) return ()=>buildPreset('villa');
+    if(/(studio)/.test(t)) return ()=>buildPreset('studio');
+    if(/(t3|appart|appartement)/.test(t)) return ()=>buildPreset('t3');
+    if(/(duplex|étage|étages|deux.?niveaux)/.test(t)) return ()=>buildPreset('duplex');
+    if(/(maison|construis|construire|bâtiment|batiment|house)/.test(t)){
+      const beds=num(/(\d+)\s*(chambre|piece|pièce|bedroom)/,2);
+      if(beds>=4) return ()=>buildPreset('villa');
+      if(beds===3) return ()=>buildPreset('h3');
+      return ()=>buildPreset('h2');
+    }
+    // mobilier
+    const FURN={canapé:'sofa',canape:'sofa',sofa:'sofa',lit:'bed',bed:'bed',table:'table',bureau:'desk',desk:'desk',cuisine:'kitchen',kitchen:'kitchen',baignoire:'bath',bain:'bath',armoire:'wardrobe',plante:'plant',plant:'plant'};
+    for(const k in FURN){ if(t.includes(k)) return ()=>{A().placeFurniture(FURN[k],0,0); return '✅ '+k+' ajouté';}; }
+    // pièce
+    if(/(pièce|piece|chambre|salon|room)/.test(t)) return ()=>{A().addRoom(-200,-150,400,300,'Pièce'); return '✅ Pièce ajoutée';};
+    if(/(porte)/.test(t)) return ()=>{A().addDoor(-40,-150,40,-150); return '✅ Porte ajoutée';};
+    if(/(fenêtre|fenetre|window)/.test(t)) return ()=>{A().addWindow(-60,150,60,150); return '✅ Fenêtre ajoutée';};
+    // vues
+    if(/(plan 2d|vue plan|2d)/.test(t)) return ()=>{clickViewMode('plan');return 'Vue plan';};
+    if(/(3d|trois.?d)/.test(t)) return ()=>{ensure3D();return 'Vue 3D';};
+    if(/(élévation|elevation)/.test(t)) return ()=>{clickViewMode('elevation');return 'Vue élévation';};
+    if(/(section|coupe)/.test(t)) return ()=>{clickViewMode('section');return 'Vue section';};
+    if(/(aide|help|que peux.?tu|capacit)/.test(t)) return ()=>'Voir l\'onglet ⚡ Commandes pour la liste complète. Vous pouvez aussi écrire en langage naturel : « construis une villa 4 chambres », « ajoute un canapé », « lance la visite », « cycle jour nuit »…';
+    return null;
+  }
+
+  function chat(text){
+    addMsg(text,'u');
+    const fn=nlu(text);
+    if(!fn){ addMsg('🤔 Je n\'ai pas compris. Voici ce que je sais faire :<br>• <b>Construire</b> : maison, villa, studio, T3, duplex<br>• <b>Ajouter</b> : pièce, mur, porte, fenêtre, meubles<br>• <b>Visiter</b> : « entre dans la maison » 🚶<br>• <b>Vues</b> : plan, 3D, élévation, section, cycle jour/nuit<br><br>Ouvrez l\'onglet <b>⚡ Commandes</b> pour la liste complète.'); return; }
+    const r=fn();
+    addMsg(typeof r==='string'?r:JSON.stringify(r),'tool');
+    // confirmation amicale
+    setTimeout(()=>addMsg('✅ Fait. Autre chose ?'),120);
+  }
+
+  window.comeoAsk=t=>{ panel.classList.add('open'); chat(t); };
   send.onclick=()=>{ const t=input.value.trim(); if(!t)return; input.value=''; chat(t); };
-  input.addEventListener('keydown',e=>{ if(e.key==='Enter'){ send.click(); }});
+  input.addEventListener('keydown',e=>{ if(e.key==='Enter') send.click(); });
 })();
 
-// === Outils flottants vue 3D : recentrer + 4D ===
+/* ============= Outils flottants vue 3D ============= */
 (function(){
-  const main=document.querySelector('#viewport-3d')||document.querySelector('.canvas-container')||document.body;
-  const obs=new MutationObserver(()=>{
-    const c3d=document.querySelector('canvas');
-    const wrap3d=c3d&&c3d.parentElement;
-    if(wrap3d && !wrap3d.querySelector('.view3d-tools') && wrap3d.style.position!=='static'){
-      // injecté plus bas via délai
-    }
-  });
-  // Plus simple : on attend que setup3D ait construit le container
   setTimeout(()=>{
     document.querySelectorAll('canvas').forEach(c=>{
       const p=c.parentElement;
@@ -2031,14 +2305,13 @@ Quand l'utilisateur demande de construire/ajouter quelque chose, appelle directe
       tools.className='view3d-tools';
       tools.innerHTML=`
         <button id="btn-recenter" title="Recentrer (double-clic)">⊙ Recentrer</button>
-        <button id="btn-4d" title="Activer le cycle jour/nuit (4D)">🌓 4D</button>
+        <button id="btn-4d" title="Cycle jour/nuit (4D)">🌓 4D</button>
+        <button id="btn-walk" title="Visite immersive (FPS)">🚶 Visite</button>
       `;
       p.appendChild(tools);
       tools.querySelector('#btn-recenter').onclick=()=>window.recenter3D&&window.recenter3D();
-      tools.querySelector('#btn-4d').onclick=(e)=>{
-        const on=window.toggle4D&&window.toggle4D();
-        e.target.classList.toggle('on',on);
-      };
+      tools.querySelector('#btn-4d').onclick=e=>{const on=window.toggle4D&&window.toggle4D(); e.currentTarget.classList.toggle('on',on);};
+      tools.querySelector('#btn-walk').onclick=e=>{const on=window.toggleWalk&&window.toggleWalk(); e.currentTarget.classList.toggle('on',on);};
     });
   },1500);
 })();
