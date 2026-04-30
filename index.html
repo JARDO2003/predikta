@@ -1010,6 +1010,75 @@ const Eng = (() => {
   function zoomOut(){ const c=canvas.width/2,d=canvas.height/2,nz=Math.max(.1,zoom*.8);panX=c-(c-panX)*(nz/zoom);panY=d-(d-panY)*(nz/zoom);zoom=nz;const e=document.getElementById('zoom-level');if(e)e.textContent=Math.round(zoom*100)+'%';render2d(); }
   function zoomReset(){ zoom=1;if(canvas){panX=canvas.width/2;panY=canvas.height/2;}const e=document.getElementById('zoom-level');if(e)e.textContent='100%';render2d(); }
 
+  // ===== API exposée à l'assistant IA (Comeo) =====
+  const api = {
+    addWall(x1,y1,x2,y2,thickness){
+      pushHist();
+      walls.push({id:genId(),x1,y1,x2,y2,thickness:thickness||wallThickness,layer:'structure'});
+      render2d(); if(window.refresh3D) window.refresh3D();
+      return walls[walls.length-1].id;
+    },
+    addRoom(x,y,w,h,name){
+      pushHist();
+      rooms.push({id:genId(),x,y,w,h,name:name||`Pièce ${rooms.length+1}`,area:Math.round(w*h/GS/GS*4)/100,layer:'structure'});
+      // murs périmétriques
+      walls.push({id:genId(),x1:x,y1:y,x2:x+w,y2:y,thickness:wallThickness,layer:'structure'});
+      walls.push({id:genId(),x1:x+w,y1:y,x2:x+w,y2:y+h,thickness:wallThickness,layer:'structure'});
+      walls.push({id:genId(),x1:x+w,y1:y+h,x2:x,y2:y+h,thickness:wallThickness,layer:'structure'});
+      walls.push({id:genId(),x1:x,y1:y+h,x2:x,y2:y,thickness:wallThickness,layer:'structure'});
+      render2d(); if(window.refresh3D) window.refresh3D();
+      return rooms[rooms.length-1].id;
+    },
+    addDoor(x1,y1,x2,y2){
+      pushHist();
+      walls.push({id:genId(),x1,y1,x2,y2,thickness:10,type:'door',layer:'structure'});
+      render2d(); if(window.refresh3D) window.refresh3D();
+    },
+    addWindow(x1,y1,x2,y2){
+      pushHist();
+      walls.push({id:genId(),x1,y1,x2,y2,thickness:8,type:'window',layer:'structure'});
+      render2d(); if(window.refresh3D) window.refresh3D();
+    },
+    placeFurniture(type,x,y,rot){
+      pushHist();
+      const sizes={sofa:[80,40],bed:[80,60],table:[60,60],desk:[70,40],bath:[70,40],kitchen:[80,40],wardrobe:[60,30],plant:[20,20]};
+      const [w,h]=sizes[type]||[40,40];
+      furnitureItems.push({id:genId(),type,x:x-w/2,y:y-h/2,w,h,rotation:rot||0,layer:'furniture'});
+      render2d(); if(window.refresh3D) window.refresh3D();
+    },
+    buildHouse(spec){
+      // spec: {x,y,width,height,bedrooms}
+      pushHist();
+      const X=spec.x||-200, Y=spec.y||-150;
+      const W=spec.width||400, H=spec.height||300;
+      const beds=spec.bedrooms||2;
+      // contour
+      this.addRoom(X,Y,W,H,'Maison');
+      // séparation salon / chambres
+      const splitX = X + Math.round(W*0.55);
+      walls.push({id:genId(),x1:splitX,y1:Y,x2:splitX,y2:Y+H,thickness:wallThickness,layer:'structure'});
+      rooms.push({id:genId(),x:X,y:Y,w:splitX-X,h:H,name:'Salon',area:Math.round((splitX-X)*H/GS/GS*4)/100,layer:'structure'});
+      // chambres divisées
+      const bedW = W - (splitX-X);
+      const bedH = Math.round(H/beds);
+      for(let i=0;i<beds;i++){
+        const by = Y + i*bedH;
+        if(i>0) walls.push({id:genId(),x1:splitX,y1:by,x2:X+W,y2:by,thickness:wallThickness,layer:'structure'});
+        rooms.push({id:genId(),x:splitX,y:by,w:bedW,h:bedH,name:`Chambre ${i+1}`,area:Math.round(bedW*bedH/GS/GS*4)/100,layer:'structure'});
+        // lit
+        furnitureItems.push({id:genId(),type:'bed',x:splitX+10,y:by+10,w:80,h:60,rotation:0,layer:'furniture'});
+      }
+      // canapé salon
+      furnitureItems.push({id:genId(),type:'sofa',x:X+20,y:Y+20,w:80,h:40,rotation:0,layer:'furniture'});
+      furnitureItems.push({id:genId(),type:'table',x:X+20,y:Y+80,w:60,h:60,rotation:0,layer:'furniture'});
+      render2d(); if(window.refresh3D) window.refresh3D();
+      return {rooms:rooms.length, walls:walls.length};
+    },
+    listElements(){
+      return {walls:walls.length, rooms:rooms.map(r=>({name:r.name,area:r.area})), furniture:furnitureItems.map(f=>f.type)};
+    }
+  };
+
   return{
     init:initCanvas,render:render2d,
     setTool,setViewMode,getStats,
@@ -1023,6 +1092,7 @@ const Eng = (() => {
     exportScene,importScene,clearAll,
     undo,redo,zoomIn,zoomOut,zoomReset,
     getData:()=>({walls,rooms,furnitureItems,GS,wallHeight}),
+    api,
   };
 })();
 
@@ -1103,11 +1173,25 @@ function init3D(){
   if(three3d){ refresh3D(); return; }
 
   if(typeof THREE==='undefined'){
-    const s=document.createElement('script');
-    s.src='https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
-    s.onload=()=>setup3D(container);
-    s.onerror=()=>{container.innerHTML='<div class="vpbg"><span class="vpbg-icon">🌐</span><span class="vpbg-title">HORS LIGNE</span><span class="vpbg-sub">Three.js requis (connexion internet)</span></div>';};
-    document.head.appendChild(s);
+    const sources=[
+      'https://unpkg.com/three@0.128.0/build/three.min.js',
+      'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js',
+      'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js'
+    ];
+    let idx=0;
+    const tryLoad=()=>{
+      if(idx>=sources.length){
+        container.innerHTML='<div class="vpbg"><span class="vpbg-icon">🌐</span><span class="vpbg-title">HORS LIGNE</span><span class="vpbg-sub">Three.js requis (connexion internet)</span></div>';
+        return;
+      }
+      const s=document.createElement('script');
+      s.src=sources[idx++];
+      s.crossOrigin='anonymous';
+      s.onload=()=>setup3D(container);
+      s.onerror=()=>{ s.remove(); tryLoad(); };
+      document.head.appendChild(s);
+    };
+    tryLoad();
   } else {
     setup3D(container);
   }
@@ -1139,41 +1223,87 @@ function setup3D(container){
   sun.shadow.camera.right=sun.shadow.camera.top=300;
   sun.shadow.camera.far=800; sun.shadow.bias=-.0005;
   scene.add(sun);
-  scene.add(Object.assign(new THREE.DirectionalLight(0xd0e8ff,.35),{position:new THREE.Vector3(-80,60,-80)}));
+  const fillLight=new THREE.DirectionalLight(0xd0e8ff,.35);
+  fillLight.position.set(-80,60,-80);
+  scene.add(fillLight);
 
   // Build from engine data
   buildScene(scene);
 
-  // Camera orbit
-  let rotH=45, rotV=35, zoom3=180, isDrag=false, lastX=0, lastY=0;
+  // Camera orbit (amélioré : pan, recentrage, zoom élargi)
+  let rotH=45, rotV=35, zoom3=220, isDrag=false, isPan=false, lastX=0, lastY=0;
+  let target={x:50,y:0,z:50};
   function updateCam(){
     const rH=rotH*Math.PI/180, rV=rotV*Math.PI/180, dist=500;
-    camera.position.set(dist*Math.sin(rH)*Math.cos(rV),dist*Math.sin(rV),dist*Math.cos(rH)*Math.cos(rV));
-    camera.lookAt(50,0,50);
+    camera.position.set(target.x+dist*Math.sin(rH)*Math.cos(rV),target.y+dist*Math.sin(rV),target.z+dist*Math.cos(rH)*Math.cos(rV));
+    camera.lookAt(target.x,target.y,target.z);
     const asp=container.clientWidth/container.clientHeight;
     camera.left=-zoom3*asp/2;camera.right=zoom3*asp/2;camera.top=zoom3/2;camera.bottom=-zoom3/2;
     camera.updateProjectionMatrix();
   }
-  renderer.domElement.addEventListener('mousedown',e=>{isDrag=true;lastX=e.clientX;lastY=e.clientY;renderer.domElement.style.cursor='grabbing';});
-  renderer.domElement.addEventListener('mousemove',e=>{if(!isDrag)return;rotH-=(e.clientX-lastX)*.4;rotV=Math.max(5,Math.min(85,rotV+(e.clientY-lastY)*.3));lastX=e.clientX;lastY=e.clientY;updateCam();});
-  renderer.domElement.addEventListener('mouseup',()=>{isDrag=false;renderer.domElement.style.cursor='grab';});
-  renderer.domElement.addEventListener('mouseleave',()=>{isDrag=false;});
-  renderer.domElement.addEventListener('wheel',e=>{zoom3=Math.max(60,Math.min(600,zoom3+e.deltaY*.3));updateCam();e.preventDefault();},{passive:false});
+  function recenter(){
+    const data=Eng.getData();
+    if(data.rooms.length||data.walls.length){
+      let minX=1e9,maxX=-1e9,minZ=1e9,maxZ=-1e9;
+      data.rooms.forEach(r=>{minX=Math.min(minX,r.x*.1);maxX=Math.max(maxX,(r.x+r.w)*.1);minZ=Math.min(minZ,r.y*.1);maxZ=Math.max(maxZ,(r.y+r.h)*.1);});
+      data.walls.forEach(w=>{minX=Math.min(minX,w.x1*.1,w.x2*.1);maxX=Math.max(maxX,w.x1*.1,w.x2*.1);minZ=Math.min(minZ,w.y1*.1,w.y2*.1);maxZ=Math.max(maxZ,w.y1*.1,w.y2*.1);});
+      target.x=(minX+maxX)/2;target.z=(minZ+maxZ)/2;target.y=0;
+      zoom3=Math.max(60,Math.max(maxX-minX,maxZ-minZ)*1.6);
+    } else { target={x:50,y:0,z:50}; zoom3=220; }
+    rotH=45;rotV=35;updateCam();
+  }
+  window.recenter3D=recenter;
+  renderer.domElement.addEventListener('mousedown',e=>{
+    if(e.button===2||e.shiftKey){isPan=true;}else{isDrag=true;}
+    lastX=e.clientX;lastY=e.clientY;renderer.domElement.style.cursor='grabbing';
+  });
+  renderer.domElement.addEventListener('contextmenu',e=>e.preventDefault());
+  renderer.domElement.addEventListener('mousemove',e=>{
+    if(!isDrag&&!isPan)return;
+    const dx=e.clientX-lastX, dy=e.clientY-lastY;
+    if(isPan){
+      const rH=rotH*Math.PI/180, k=zoom3/container.clientWidth;
+      target.x -= (dx*Math.cos(rH)+dy*Math.sin(rH))*k;
+      target.z += (dx*Math.sin(rH)-dy*Math.cos(rH))*k;
+    } else {
+      rotH-=dx*.4;rotV=Math.max(5,Math.min(85,rotV+dy*.3));
+    }
+    lastX=e.clientX;lastY=e.clientY;updateCam();
+  });
+  renderer.domElement.addEventListener('mouseup',()=>{isDrag=false;isPan=false;renderer.domElement.style.cursor='grab';});
+  renderer.domElement.addEventListener('mouseleave',()=>{isDrag=false;isPan=false;});
+  renderer.domElement.addEventListener('dblclick',recenter);
+  renderer.domElement.addEventListener('wheel',e=>{zoom3=Math.max(20,Math.min(2000,zoom3+e.deltaY*.4));updateCam();e.preventDefault();},{passive:false});
   // Touch
   let ltd=0;
   renderer.domElement.addEventListener('touchstart',e=>{if(e.touches.length===1){isDrag=true;lastX=e.touches[0].clientX;lastY=e.touches[0].clientY;}if(e.touches.length===2)ltd=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);});
-  renderer.domElement.addEventListener('touchmove',e=>{e.preventDefault();if(e.touches.length===1&&isDrag){rotH-=(e.touches[0].clientX-lastX)*.4;rotV=Math.max(5,Math.min(85,rotV+(e.touches[0].clientY-lastY)*.3));lastX=e.touches[0].clientX;lastY=e.touches[0].clientY;updateCam();}if(e.touches.length===2){const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);zoom3=Math.max(60,Math.min(600,zoom3-(d-ltd)*.5));ltd=d;updateCam();}},{passive:false});
+  renderer.domElement.addEventListener('touchmove',e=>{e.preventDefault();if(e.touches.length===1&&isDrag){rotH-=(e.touches[0].clientX-lastX)*.4;rotV=Math.max(5,Math.min(85,rotV+(e.touches[0].clientY-lastY)*.3));lastX=e.touches[0].clientX;lastY=e.touches[0].clientY;updateCam();}if(e.touches.length===2){const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);zoom3=Math.max(20,Math.min(2000,zoom3-(d-ltd)*.8));ltd=d;updateCam();}},{passive:false});
   renderer.domElement.addEventListener('touchend',()=>isDrag=false);
   renderer.domElement.style.cursor='grab';
 
-  function animate(){requestAnimationFrame(animate);renderer.render(scene,camera);}
+  // ===== Effet "4D" : cycle solaire animé =====
+  let timeOfDay=0.5, dayCycleEnabled=false;
+  window.toggle4D=()=>{ dayCycleEnabled=!dayCycleEnabled; return dayCycleEnabled; };
+  function animate(){
+    requestAnimationFrame(animate);
+    if(dayCycleEnabled){
+      timeOfDay=(timeOfDay+0.0008)%1;
+      const ang=timeOfDay*Math.PI*2;
+      sun.position.set(Math.cos(ang)*200,Math.max(20,Math.sin(ang)*250),Math.sin(ang)*100);
+      const day=Math.max(0,Math.sin(ang));
+      sun.intensity=0.2+day*1.2;
+      sun.color.setRGB(0.95+day*0.05,0.85+day*0.15,0.6+day*0.4);
+      scene.background=new THREE.Color(0.05+day*0.85,0.05+day*0.83,0.1+day*0.78);
+    }
+    renderer.render(scene,camera);
+  }
   animate(); updateCam();
 
   window.addEventListener('resize',()=>{const W2=container.clientWidth,H2=container.clientHeight;renderer.setSize(W2,H2);updateCam();});
 
   // Hint
   const h=document.createElement('div');
-  h.className='hint3d';h.textContent='🖱 Glisser pour orbiter · Molette pour zoomer';
+  h.className='hint3d';h.innerHTML='🖱 Clic+glisser : orbiter · Shift/Clic-droit : déplacer · Molette : zoom · Double-clic : recentrer';
   container.appendChild(h);
 
   three3d={scene,camera,renderer,container};
@@ -1191,7 +1321,9 @@ function refresh3D(){
   sun.shadow.camera.right=sun.shadow.camera.top=300;
   sun.shadow.camera.far=800;sun.shadow.bias=-.0005;
   scene.add(sun);
-  scene.add(Object.assign(new THREE.DirectionalLight(0xd0e8ff,.35),{position:new THREE.Vector3(-80,60,-80)}));
+  const fillLight2=new THREE.DirectionalLight(0xd0e8ff,.35);
+  fillLight2.position.set(-80,60,-80);
+  scene.add(fillLight2);
   buildScene(scene);
 }
 
@@ -1711,5 +1843,206 @@ function showToast(msg,isError=false){
   setTimeout(()=>{t.style.opacity='0';setTimeout(()=>t.remove(),300);},2500);
 }
 </script>
+<!-- ============= COMEO AI ASSISTANT (Groq) ============= -->
+<style>
+#comeo-fab{position:fixed;bottom:20px;right:20px;width:58px;height:58px;border-radius:50%;background:linear-gradient(135deg,#00d4ff,#a855f7);border:none;color:#fff;font-size:26px;cursor:pointer;box-shadow:0 8px 30px rgba(0,212,255,.5),0 0 0 0 rgba(168,85,247,.5);z-index:9998;animation:comeoPulse 2.4s infinite;transition:transform .2s}
+#comeo-fab:hover{transform:scale(1.1)}
+@keyframes comeoPulse{0%,100%{box-shadow:0 8px 30px rgba(0,212,255,.5),0 0 0 0 rgba(168,85,247,.7)}50%{box-shadow:0 8px 30px rgba(0,212,255,.5),0 0 0 18px rgba(168,85,247,0)}}
+#comeo-panel{position:fixed;bottom:90px;right:20px;width:380px;height:540px;background:rgba(13,13,26,.96);backdrop-filter:blur(14px);border:1px solid #00d4ff44;border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,.6),0 0 40px rgba(0,212,255,.15);display:none;flex-direction:column;z-index:9999;overflow:hidden;font-family:var(--font);color:#fff}
+#comeo-panel.open{display:flex;animation:comeoSlide .25s ease}
+@keyframes comeoSlide{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+.comeo-head{padding:12px 14px;background:linear-gradient(135deg,rgba(0,212,255,.15),rgba(168,85,247,.15));border-bottom:1px solid #2a2a5a;display:flex;align-items:center;gap:10px}
+.comeo-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#00d4ff,#a855f7);display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 0 12px rgba(0,212,255,.6)}
+.comeo-title{font-family:var(--disp);font-weight:700;letter-spacing:1px;font-size:13px}
+.comeo-sub{font-size:9px;color:#10b981;display:flex;align-items:center;gap:5px;margin-top:2px}
+.comeo-dot{width:6px;height:6px;border-radius:50%;background:#10b981;box-shadow:0 0 6px #10b981;animation:dotBlink 1.5s infinite}
+@keyframes dotBlink{50%{opacity:.3}}
+.comeo-close{margin-left:auto;background:none;border:none;color:#8888aa;font-size:18px;cursor:pointer;padding:4px 8px;border-radius:4px}
+.comeo-close:hover{background:#1e1e38;color:#fff}
+.comeo-msgs{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px}
+.comeo-msg{max-width:85%;padding:9px 12px;border-radius:12px;font-size:12.5px;line-height:1.45;white-space:pre-wrap;word-wrap:break-word}
+.comeo-msg.u{align-self:flex-end;background:linear-gradient(135deg,#00d4ff,#0099cc);color:#000;font-weight:500;border-bottom-right-radius:4px}
+.comeo-msg.a{align-self:flex-start;background:#1e1e38;border:1px solid #2a2a5a;border-bottom-left-radius:4px}
+.comeo-msg.tool{align-self:flex-start;background:rgba(168,85,247,.12);border:1px dashed #a855f7;font-family:var(--mono);font-size:10.5px;color:#c4a3ff;max-width:100%}
+.comeo-suggestions{display:flex;flex-wrap:wrap;gap:6px;padding:8px 14px 0}
+.comeo-sugg{background:#1e1e38;border:1px solid #2a2a5a;color:#aab;padding:5px 10px;border-radius:14px;font-size:11px;cursor:pointer;transition:all .15s}
+.comeo-sugg:hover{background:#00d4ff22;border-color:#00d4ff;color:#fff}
+.comeo-input{display:flex;gap:6px;padding:10px 12px;border-top:1px solid #2a2a5a;background:rgba(0,0,0,.3)}
+.comeo-input input{flex:1;background:#0d0d1a;border:1px solid #2a2a5a;color:#fff;padding:9px 12px;border-radius:8px;font-family:var(--font);font-size:12.5px;outline:none}
+.comeo-input input:focus{border-color:#00d4ff;box-shadow:0 0 0 2px rgba(0,212,255,.2)}
+.comeo-input button{background:linear-gradient(135deg,#00d4ff,#a855f7);color:#fff;border:none;padding:0 14px;border-radius:8px;cursor:pointer;font-weight:600;font-size:12px}
+.comeo-input button:disabled{opacity:.4;cursor:not-allowed}
+#comeo-fab.thinking::after{content:'';position:absolute;inset:-4px;border:2px solid #fff;border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.view3d-tools{position:absolute;top:10px;right:10px;display:flex;gap:6px;z-index:5}
+.view3d-tools button{background:rgba(13,13,26,.85);backdrop-filter:blur(8px);border:1px solid #2a2a5a;color:#fff;padding:7px 11px;border-radius:6px;font-family:var(--font);font-size:11px;cursor:pointer;display:flex;align-items:center;gap:5px}
+.view3d-tools button:hover{border-color:#00d4ff;background:#00d4ff22}
+.view3d-tools button.on{background:linear-gradient(135deg,#00d4ff,#a855f7);border-color:transparent}
+</style>
+
+<button id="comeo-fab" title="Comeo AI – Assistant architecte">🤖</button>
+<div id="comeo-panel">
+  <div class="comeo-head">
+    <div class="comeo-avatar">🤖</div>
+    <div>
+      <div class="comeo-title">COMEO AI</div>
+      <div class="comeo-sub"><span class="comeo-dot"></span>Connecté · Groq Llama</div>
+    </div>
+    <button class="comeo-close" onclick="document.getElementById('comeo-panel').classList.remove('open')">✕</button>
+  </div>
+  <div class="comeo-msgs" id="comeo-msgs">
+    <div class="comeo-msg a">👋 Bonjour ! Je suis <b>Comeo</b>, votre assistant architecte. Je peux créer des bâtiments complets, ajouter des murs, des pièces, des meubles, et bien plus. Dites-moi ce que vous voulez construire !</div>
+  </div>
+  <div class="comeo-suggestions">
+    <button class="comeo-sugg" onclick="comeoAsk('Crée une maison avec 3 chambres')">🏠 Maison 3 chambres</button>
+    <button class="comeo-sugg" onclick="comeoAsk('Ajoute un canapé et une table dans le salon')">🛋️ Meubler salon</button>
+    <button class="comeo-sugg" onclick="comeoAsk('Liste les éléments du projet')">📋 Inventaire</button>
+  </div>
+  <div class="comeo-input">
+    <input id="comeo-input" placeholder="Demandez à Comeo..." />
+    <button id="comeo-send">↑</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  const GROQ_API_KEY='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';
+  const MODEL='llama-3.3-70b-versatile';
+  const fab=document.getElementById('comeo-fab');
+  const panel=document.getElementById('comeo-panel');
+  const msgsEl=document.getElementById('comeo-msgs');
+  const input=document.getElementById('comeo-input');
+  const send=document.getElementById('comeo-send');
+
+  fab.onclick=()=>panel.classList.toggle('open');
+
+  const TOOLS=[
+    {type:'function',function:{name:'add_wall',description:'Ajoute un mur entre 2 points',parameters:{type:'object',properties:{x1:{type:'number'},y1:{type:'number'},x2:{type:'number'},y2:{type:'number'}},required:['x1','y1','x2','y2']}}},
+    {type:'function',function:{name:'add_room',description:'Ajoute une pièce rectangulaire avec ses 4 murs',parameters:{type:'object',properties:{x:{type:'number'},y:{type:'number'},w:{type:'number',description:'largeur en cm canvas'},h:{type:'number'},name:{type:'string'}},required:['x','y','w','h']}}},
+    {type:'function',function:{name:'add_door',description:'Ajoute une porte',parameters:{type:'object',properties:{x1:{type:'number'},y1:{type:'number'},x2:{type:'number'},y2:{type:'number'}},required:['x1','y1','x2','y2']}}},
+    {type:'function',function:{name:'add_window',description:'Ajoute une fenêtre',parameters:{type:'object',properties:{x1:{type:'number'},y1:{type:'number'},x2:{type:'number'},y2:{type:'number'}},required:['x1','y1','x2','y2']}}},
+    {type:'function',function:{name:'place_furniture',description:'Place un meuble. Types: sofa, bed, table, desk, bath, kitchen, wardrobe, plant',parameters:{type:'object',properties:{type:{type:'string'},x:{type:'number'},y:{type:'number'},rotation:{type:'number'}},required:['type','x','y']}}},
+    {type:'function',function:{name:'build_house',description:'Construit une maison complète avec salon et chambres',parameters:{type:'object',properties:{width:{type:'number',description:'largeur totale en cm canvas (par défaut 400)'},height:{type:'number'},bedrooms:{type:'number',description:'nombre de chambres'}}}}},
+    {type:'function',function:{name:'list_elements',description:'Liste les éléments du projet en cours',parameters:{type:'object',properties:{}}}},
+    {type:'function',function:{name:'clear_all',description:'Efface tout le projet',parameters:{type:'object',properties:{}}}},
+    {type:'function',function:{name:'recenter_view',description:'Recentre la vue 3D sur le bâtiment',parameters:{type:'object',properties:{}}}},
+    {type:'function',function:{name:'set_view_mode',description:'Change le mode de vue: plan, 3d, elevation, section',parameters:{type:'object',properties:{mode:{type:'string'}},required:['mode']}}},
+  ];
+
+  function execTool(name,args){
+    try{
+      const a=Eng.api;
+      switch(name){
+        case 'add_wall': return {id:a.addWall(args.x1,args.y1,args.x2,args.y2)};
+        case 'add_room': return {id:a.addRoom(args.x,args.y,args.w,args.h,args.name)};
+        case 'add_door': a.addDoor(args.x1,args.y1,args.x2,args.y2); return {ok:true};
+        case 'add_window': a.addWindow(args.x1,args.y1,args.x2,args.y2); return {ok:true};
+        case 'place_furniture': a.placeFurniture(args.type,args.x,args.y,args.rotation); return {ok:true};
+        case 'build_house': return a.buildHouse(args);
+        case 'list_elements': return a.listElements();
+        case 'clear_all': Eng.clearAll(); return {ok:true};
+        case 'recenter_view': if(window.recenter3D)window.recenter3D(); return {ok:true};
+        case 'set_view_mode': {
+          const btn=document.querySelector(`.vm-btn[data-mode="${args.mode}"]`);
+          if(btn) btn.click();
+          return {ok:true,mode:args.mode};
+        }
+        default: return {error:'unknown tool'};
+      }
+    }catch(e){ return {error:String(e.message||e)}; }
+  }
+
+  const SYSTEM=`Tu es Comeo, l'assistant IA intégré à ARCHITECT PRO 3D, un logiciel d'architecture.
+Tu PEUX et DOIS utiliser les fonctions/outils fournis pour modifier réellement le projet (créer murs, pièces, meubles, etc.).
+Coordonnées: l'origine (0,0) est au centre. Les unités sont en "cm canvas" (1 unité ≈ 1 cm). Une pièce typique fait 300-500 unités. Les meubles font 40-80 unités.
+Quand l'utilisateur demande de construire/ajouter quelque chose, appelle directement la bonne fonction. Réponds brièvement en français après l'action.`;
+
+  let history=[{role:'system',content:SYSTEM}];
+
+  function addMsg(role,content,cls){
+    const d=document.createElement('div');
+    d.className='comeo-msg '+(cls||(role==='user'?'u':'a'));
+    d.textContent=content;
+    msgsEl.appendChild(d);
+    msgsEl.scrollTop=msgsEl.scrollHeight;
+    return d;
+  }
+
+  async function callGroq(messages){
+    const r=await fetch('https://api.groq.com/openai/v1/chat/completions',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+GROQ_API_KEY},
+      body:JSON.stringify({model:MODEL,messages,tools:TOOLS,tool_choice:'auto',temperature:0.4})
+    });
+    if(!r.ok){ const t=await r.text(); throw new Error('Groq '+r.status+': '+t.slice(0,200)); }
+    return r.json();
+  }
+
+  async function chat(userText){
+    history.push({role:'user',content:userText});
+    addMsg('user',userText);
+    fab.classList.add('thinking'); send.disabled=true;
+    try{
+      for(let step=0; step<5; step++){
+        const data=await callGroq(history);
+        const msg=data.choices[0].message;
+        history.push(msg);
+        if(msg.tool_calls && msg.tool_calls.length){
+          for(const tc of msg.tool_calls){
+            let args={}; try{args=JSON.parse(tc.function.arguments||'{}');}catch(e){}
+            const result=execTool(tc.function.name,args);
+            addMsg('tool','⚙ '+tc.function.name+'('+JSON.stringify(args)+') → '+JSON.stringify(result),'tool');
+            history.push({role:'tool',tool_call_id:tc.id,content:JSON.stringify(result)});
+          }
+          continue;
+        }
+        if(msg.content) addMsg('assistant',msg.content);
+        break;
+      }
+    }catch(e){
+      addMsg('assistant','❌ Erreur : '+e.message);
+    } finally {
+      fab.classList.remove('thinking'); send.disabled=false; input.focus();
+    }
+  }
+
+  window.comeoAsk=(t)=>{ panel.classList.add('open'); chat(t); };
+  send.onclick=()=>{ const t=input.value.trim(); if(!t)return; input.value=''; chat(t); };
+  input.addEventListener('keydown',e=>{ if(e.key==='Enter'){ send.click(); }});
+})();
+
+// === Outils flottants vue 3D : recentrer + 4D ===
+(function(){
+  const main=document.querySelector('#viewport-3d')||document.querySelector('.canvas-container')||document.body;
+  const obs=new MutationObserver(()=>{
+    const c3d=document.querySelector('canvas');
+    const wrap3d=c3d&&c3d.parentElement;
+    if(wrap3d && !wrap3d.querySelector('.view3d-tools') && wrap3d.style.position!=='static'){
+      // injecté plus bas via délai
+    }
+  });
+  // Plus simple : on attend que setup3D ait construit le container
+  setTimeout(()=>{
+    document.querySelectorAll('canvas').forEach(c=>{
+      const p=c.parentElement;
+      if(!p||p.querySelector('.view3d-tools'))return;
+      if(getComputedStyle(p).position==='static') p.style.position='relative';
+      const tools=document.createElement('div');
+      tools.className='view3d-tools';
+      tools.innerHTML=`
+        <button id="btn-recenter" title="Recentrer (double-clic)">⊙ Recentrer</button>
+        <button id="btn-4d" title="Activer le cycle jour/nuit (4D)">🌓 4D</button>
+      `;
+      p.appendChild(tools);
+      tools.querySelector('#btn-recenter').onclick=()=>window.recenter3D&&window.recenter3D();
+      tools.querySelector('#btn-4d').onclick=(e)=>{
+        const on=window.toggle4D&&window.toggle4D();
+        e.target.classList.toggle('on',on);
+      };
+    });
+  },1500);
+})();
+</script>
+
 </body>
 </html>
