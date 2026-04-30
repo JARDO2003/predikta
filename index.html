@@ -1013,13 +1013,13 @@ const Eng = (() => {
   // ===== API exposée à l'assistant IA (Comeo) =====
   const api = {
     addWall(x1,y1,x2,y2,thickness){
-      pushHist();
+      save();
       walls.push({id:genId(),x1,y1,x2,y2,thickness:thickness||wallThickness,layer:'structure'});
       render2d(); if(window.refresh3D) window.refresh3D();
       return walls[walls.length-1].id;
     },
     addRoom(x,y,w,h,name){
-      pushHist();
+      save();
       rooms.push({id:genId(),x,y,w,h,name:name||`Pièce ${rooms.length+1}`,area:Math.round(w*h/GS/GS*4)/100,layer:'structure'});
       // murs périmétriques
       walls.push({id:genId(),x1:x,y1:y,x2:x+w,y2:y,thickness:wallThickness,layer:'structure'});
@@ -1030,17 +1030,17 @@ const Eng = (() => {
       return rooms[rooms.length-1].id;
     },
     addDoor(x1,y1,x2,y2){
-      pushHist();
+      save();
       walls.push({id:genId(),x1,y1,x2,y2,thickness:10,type:'door',layer:'structure'});
       render2d(); if(window.refresh3D) window.refresh3D();
     },
     addWindow(x1,y1,x2,y2){
-      pushHist();
+      save();
       walls.push({id:genId(),x1,y1,x2,y2,thickness:8,type:'window',layer:'structure'});
       render2d(); if(window.refresh3D) window.refresh3D();
     },
     placeFurniture(type,x,y,rot){
-      pushHist();
+      save();
       const sizes={sofa:[80,40],bed:[80,60],table:[60,60],desk:[70,40],bath:[70,40],kitchen:[80,40],wardrobe:[60,30],plant:[20,20]};
       const [w,h]=sizes[type]||[40,40];
       furnitureItems.push({id:genId(),type,x:x-w/2,y:y-h/2,w,h,rotation:rot||0,layer:'furniture'});
@@ -1048,7 +1048,7 @@ const Eng = (() => {
     },
     buildHouse(spec){
       // spec: {x,y,width,height,bedrooms}
-      pushHist();
+      save();
       const X=spec.x||-200, Y=spec.y||-150;
       const W=spec.width||400, H=spec.height||300;
       const beds=spec.bedrooms||2;
