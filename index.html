@@ -1,1 +1,1787 @@
-erreur
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ArchBIM Studio — Modélisation 3D & BIM Nouvelle Génération</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0c0f;
+      --bg2: #0f1218;
+      --bg3: #141820;
+      --surface: #1a1f2e;
+      --surface2: #222840;
+      --border: rgba(255,255,255,0.07);
+      --border2: rgba(255,255,255,0.12);
+      --accent: #f5a623;
+      --accent2: #e8863a;
+      --blue: #4a9eff;
+      --blue2: #2d7dd2;
+      --teal: #00d4b4;
+      --text: #e8eaf0;
+      --text2: #8b92a8;
+      --text3: #555e78;
+      --ff-head: 'Syne', sans-serif;
+      --ff-body: 'DM Sans', sans-serif;
+      --r: 12px;
+      --r2: 20px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--ff-body);
+      font-size: 16px;
+      line-height: 1.6;
+      overflow-x: hidden;
+      cursor: none;
+    }
+
+    /* Custom Cursor */
+    #cursor {
+      width: 10px; height: 10px;
+      background: var(--accent);
+      border-radius: 50%;
+      position: fixed;
+      pointer-events: none;
+      z-index: 9999;
+      transform: translate(-50%,-50%);
+      transition: width .15s, height .15s, background .15s;
+    }
+    #cursor-ring {
+      width: 36px; height: 36px;
+      border: 1.5px solid rgba(245,166,35,0.5);
+      border-radius: 50%;
+      position: fixed;
+      pointer-events: none;
+      z-index: 9998;
+      transform: translate(-50%,-50%);
+      transition: width .3s, height .3s, transform .08s, border-color .3s;
+    }
+    body:hover #cursor { opacity: 1; }
+
+    /* Noise overlay */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 9000;
+      opacity: 0.4;
+    }
+
+    /* ── SCROLLBAR ── */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 4px; }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0;
+      z-index: 1000;
+      padding: 0 40px;
+      height: 68px;
+      display: flex; align-items: center; justify-content: space-between;
+      background: rgba(10,12,15,0.85);
+      backdrop-filter: blur(20px) saturate(1.5);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo {
+      display: flex; align-items: center; gap: 10px;
+      font-family: var(--ff-head);
+      font-size: 1.2rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      text-decoration: none;
+    }
+    .nav-logo-icon {
+      width: 34px; height: 34px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border-radius: 8px;
+      display: grid; place-items: center;
+      font-size: 0.85rem;
+    }
+    .nav-links {
+      display: flex; align-items: center; gap: 32px;
+      list-style: none;
+    }
+    .nav-links a {
+      color: var(--text2);
+      text-decoration: none;
+      font-size: 0.88rem;
+      font-weight: 500;
+      letter-spacing: 0.01em;
+      transition: color .2s;
+    }
+    .nav-links a:hover { color: var(--text); }
+    .nav-cta {
+      display: flex; align-items: center; gap: 12px;
+    }
+    .btn-ghost {
+      padding: 8px 18px;
+      border: 1px solid var(--border2);
+      border-radius: 8px;
+      color: var(--text2);
+      background: transparent;
+      font-family: var(--ff-body);
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all .2s;
+    }
+    .btn-ghost:hover { background: var(--surface); color: var(--text); border-color: var(--border2); }
+    .btn-accent {
+      padding: 8px 20px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border: none;
+      border-radius: 8px;
+      color: #1a0e00;
+      font-family: var(--ff-body);
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform .15s, box-shadow .15s;
+    }
+    .btn-accent:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(245,166,35,0.35); }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      padding: 100px 40px 60px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 60px;
+      align-items: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-bg {
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 70% 70% at 65% 40%, rgba(74,158,255,0.06) 0%, transparent 60%),
+                  radial-gradient(ellipse 50% 50% at 20% 80%, rgba(245,166,35,0.05) 0%, transparent 55%);
+    }
+    .hero-grid {
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+      background-size: 50px 50px;
+      mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 20%, transparent 80%);
+    }
+    .hero-left { position: relative; z-index: 2; }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(245,166,35,0.1);
+      border: 1px solid rgba(245,166,35,0.25);
+      border-radius: 100px;
+      padding: 5px 14px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--accent);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 28px;
+    }
+    .hero-badge-dot {
+      width: 6px; height: 6px;
+      background: var(--accent);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.7); }
+    }
+    .hero h1 {
+      font-family: var(--ff-head);
+      font-size: clamp(2.4rem, 4vw, 3.8rem);
+      font-weight: 800;
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+      margin-bottom: 24px;
+    }
+    .hero h1 .line { display: block; overflow: hidden; }
+    .hero h1 .line span { display: block; animation: slideUp 0.7s cubic-bezier(0.16,1,0.3,1) both; }
+    .hero h1 .line:nth-child(2) span { animation-delay: 0.1s; }
+    .hero h1 .line:nth-child(3) span { animation-delay: 0.2s; }
+    @keyframes slideUp {
+      from { transform: translateY(100%); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    .hero h1 em { font-style: normal; color: var(--accent); }
+    .hero-desc {
+      color: var(--text2);
+      font-size: 1.05rem;
+      font-weight: 300;
+      line-height: 1.7;
+      max-width: 420px;
+      margin-bottom: 40px;
+      animation: fadeIn 0.8s 0.4s both;
+    }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+    .hero-actions {
+      display: flex; align-items: center; gap: 16px;
+      margin-bottom: 52px;
+      animation: fadeIn 0.8s 0.5s both;
+    }
+    .btn-primary {
+      padding: 14px 28px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border: none;
+      border-radius: 10px;
+      color: #1a0e00;
+      font-family: var(--ff-body);
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex; align-items: center; gap: 8px;
+      transition: transform .15s, box-shadow .15s;
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(245,166,35,0.4); }
+    .btn-secondary {
+      padding: 14px 28px;
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      border-radius: 10px;
+      color: var(--text);
+      font-family: var(--ff-body);
+      font-size: 0.95rem;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex; align-items: center; gap: 8px;
+      transition: all .2s;
+    }
+    .btn-secondary:hover { background: var(--surface2); border-color: rgba(255,255,255,0.2); }
+    .hero-stats {
+      display: flex; gap: 36px;
+      animation: fadeIn 0.8s 0.6s both;
+    }
+    .stat-item { }
+    .stat-num {
+      font-family: var(--ff-head);
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: var(--text);
+      letter-spacing: -0.03em;
+    }
+    .stat-label {
+      font-size: 0.78rem;
+      color: var(--text3);
+      font-weight: 400;
+      margin-top: 2px;
+    }
+
+    /* ── HERO VIEWPORT ── */
+    .hero-right { position: relative; z-index: 2; animation: fadeIn 0.9s 0.3s both; }
+    .viewport-wrapper {
+      background: var(--bg3);
+      border: 1px solid var(--border2);
+      border-radius: var(--r2);
+      overflow: hidden;
+      box-shadow: 0 40px 80px rgba(0,0,0,0.6), 0 0 0 1px var(--border);
+      position: relative;
+    }
+    .viewport-toolbar {
+      background: var(--bg2);
+      border-bottom: 1px solid var(--border);
+      padding: 0 14px;
+      height: 38px;
+      display: flex; align-items: center; gap: 0;
+    }
+    .vp-dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      margin-right: 6px;
+    }
+    .vp-dot.r { background: #ff5f57; }
+    .vp-dot.y { background: #ffbd2e; }
+    .vp-dot.g { background: #28c840; }
+    .vp-tabs {
+      display: flex; gap: 2px;
+      margin-left: 16px;
+    }
+    .vp-tab {
+      padding: 4px 12px;
+      font-size: 0.75rem;
+      border-radius: 6px 6px 0 0;
+      cursor: pointer;
+      transition: all .2s;
+    }
+    .vp-tab.active {
+      background: var(--accent);
+      color: #1a0e00;
+      font-weight: 700;
+    }
+    .vp-tab:not(.active) { color: var(--text3); }
+    .viewport-canvas {
+      position: relative;
+      height: 360px;
+      background: #0c1016;
+      overflow: hidden;
+    }
+
+    /* 3D Building SVG Scene */
+    .scene-container {
+      width: 100%; height: 100%;
+      position: relative;
+    }
+    .scene-svg {
+      width: 100%; height: 100%;
+    }
+    .scene-overlay {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      height: 100px;
+      background: linear-gradient(transparent, var(--bg3));
+    }
+    .scene-grid-bg {
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(74,158,255,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(74,158,255,0.04) 1px, transparent 1px);
+      background-size: 30px 30px;
+    }
+    .scene-info-panel {
+      position: absolute;
+      top: 12px; right: 12px;
+      background: rgba(10,12,15,0.9);
+      border: 1px solid var(--border2);
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-size: 0.72rem;
+      color: var(--text2);
+      backdrop-filter: blur(10px);
+      min-width: 160px;
+    }
+    .sip-title {
+      font-family: var(--ff-head);
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .sip-row {
+      display: flex; justify-content: space-between; gap: 16px;
+      padding: 3px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .sip-row:last-child { border-bottom: none; }
+    .sip-val { color: var(--text); font-weight: 500; }
+
+    .axis-badge {
+      position: absolute; bottom: 14px; left: 14px;
+      background: rgba(10,12,15,0.85);
+      border: 1px solid var(--border2);
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 0.7rem;
+      display: flex; gap: 10px;
+      backdrop-filter: blur(8px);
+    }
+    .axis-x { color: #ff6b6b; font-weight: 700; }
+    .axis-y { color: #69db7c; font-weight: 700; }
+    .axis-z { color: #74c0fc; font-weight: 700; }
+
+    /* Floating cards below viewport */
+    .viewport-footer {
+      padding: 12px 14px;
+      display: flex; gap: 8px;
+      background: var(--bg2);
+      border-top: 1px solid var(--border);
+    }
+    .tool-chip {
+      padding: 4px 12px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      font-size: 0.72rem;
+      color: var(--text2);
+      display: flex; align-items: center; gap: 5px;
+    }
+    .tool-chip.active {
+      background: rgba(245,166,35,0.12);
+      border-color: rgba(245,166,35,0.3);
+      color: var(--accent);
+    }
+    .tool-chip-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+
+    /* ── MARQUEE ── */
+    .marquee-section {
+      padding: 28px 0;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      overflow: hidden;
+      position: relative;
+    }
+    .marquee-track {
+      display: flex; gap: 0;
+      animation: marquee 24s linear infinite;
+      width: max-content;
+    }
+    @keyframes marquee {
+      from { transform: translateX(0); }
+      to { transform: translateX(-50%); }
+    }
+    .marquee-item {
+      padding: 0 36px;
+      display: flex; align-items: center; gap: 12px;
+      color: var(--text3);
+      font-size: 0.82rem;
+      font-weight: 500;
+      white-space: nowrap;
+      letter-spacing: 0.02em;
+    }
+    .marquee-item svg { opacity: 0.4; }
+    .marquee-sep { color: var(--text3); opacity: 0.3; }
+
+    /* ── SECTION SHARED ── */
+    section { padding: 100px 40px; }
+    .section-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 14px;
+    }
+    .section-title {
+      font-family: var(--ff-head);
+      font-size: clamp(1.8rem, 3vw, 2.8rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      margin-bottom: 16px;
+    }
+    .section-sub {
+      color: var(--text2);
+      font-size: 1rem;
+      font-weight: 300;
+      max-width: 500px;
+      line-height: 1.7;
+    }
+
+    /* ── FEATURES ── */
+    .features { background: var(--bg); }
+    .features-header {
+      text-align: center;
+      margin-bottom: 72px;
+    }
+    .features-header .section-sub { margin: 0 auto; }
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: var(--r2);
+      overflow: hidden;
+    }
+    .feature-card {
+      background: var(--bg);
+      padding: 40px 36px;
+      position: relative;
+      transition: background .25s;
+    }
+    .feature-card:hover { background: var(--bg3); }
+    .feature-card::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--accent), transparent);
+      opacity: 0;
+      transition: opacity .3s;
+    }
+    .feature-card:hover::after { opacity: 1; }
+    .feat-icon {
+      width: 48px; height: 48px;
+      border-radius: 12px;
+      display: grid; place-items: center;
+      margin-bottom: 22px;
+      font-size: 1.3rem;
+    }
+    .feat-icon.orange { background: rgba(245,166,35,0.12); border: 1px solid rgba(245,166,35,0.2); }
+    .feat-icon.blue { background: rgba(74,158,255,0.1); border: 1px solid rgba(74,158,255,0.2); }
+    .feat-icon.teal { background: rgba(0,212,180,0.1); border: 1px solid rgba(0,212,180,0.2); }
+    .feat-title {
+      font-family: var(--ff-head);
+      font-size: 1.05rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+      color: var(--text);
+    }
+    .feat-desc {
+      font-size: 0.88rem;
+      color: var(--text2);
+      line-height: 1.65;
+      font-weight: 300;
+    }
+
+    /* ── SHOWCASE ── */
+    .showcase {
+      background: var(--bg2);
+      position: relative;
+      overflow: hidden;
+    }
+    .showcase-inner {
+      display: grid;
+      grid-template-columns: 1fr 1.1fr;
+      gap: 80px;
+      align-items: center;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .showcase-text { }
+    .showcase-list {
+      list-style: none;
+      margin-top: 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .showcase-list li {
+      display: flex; align-items: flex-start; gap: 12px;
+      font-size: 0.9rem;
+      color: var(--text2);
+      line-height: 1.5;
+    }
+    .showcase-list li::before {
+      content: '';
+      width: 18px; height: 18px; min-width: 18px;
+      border-radius: 50%;
+      background: rgba(245,166,35,0.12);
+      border: 1.5px solid var(--accent);
+      display: grid; place-items: center;
+      margin-top: 2px;
+    }
+    .showcase-list li span { color: var(--text); font-weight: 500; }
+    .showcase-visual {
+      position: relative;
+    }
+    .showcase-window {
+      background: var(--bg3);
+      border: 1px solid var(--border2);
+      border-radius: var(--r2);
+      overflow: hidden;
+      box-shadow: 0 32px 64px rgba(0,0,0,0.5);
+    }
+    .sw-header {
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 16px;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .sw-dots { display: flex; gap: 6px; }
+    .sw-dot { width: 9px; height: 9px; border-radius: 50%; }
+    .sw-dot.r { background: #ff5f57; }
+    .sw-dot.y { background: #ffbd2e; }
+    .sw-dot.g { background: #28c840; }
+    .sw-title-bar {
+      flex: 1; text-align: center;
+      font-size: 0.72rem; color: var(--text3);
+    }
+    .sw-body {
+      display: flex; height: 300px;
+    }
+    .sw-sidebar {
+      width: 180px; min-width: 180px;
+      background: var(--bg);
+      border-right: 1px solid var(--border);
+      padding: 12px;
+      overflow-y: auto;
+    }
+    .sw-sidebar::-webkit-scrollbar { width: 3px; }
+    .sw-sidebar::-webkit-scrollbar-thumb { background: var(--surface); }
+    .sw-tree-group { margin-bottom: 14px; }
+    .sw-tree-label {
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: var(--text3);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 4px 6px;
+      margin-bottom: 4px;
+    }
+    .sw-tree-item {
+      display: flex; align-items: center; gap: 6px;
+      padding: 4px 8px;
+      border-radius: 5px;
+      font-size: 0.72rem;
+      color: var(--text2);
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .sw-tree-item:hover { background: var(--surface); color: var(--text); }
+    .sw-tree-item.active { background: rgba(245,166,35,0.1); color: var(--accent); }
+    .sw-tree-icon { font-size: 0.65rem; opacity: 0.6; }
+    .sw-main {
+      flex: 1;
+      position: relative;
+      background: #080b10;
+      overflow: hidden;
+    }
+    /* Interior 3D scene */
+    .interior-scene {
+      width: 100%; height: 100%;
+      position: relative;
+      overflow: hidden;
+    }
+    .int-floor {
+      position: absolute;
+      bottom: 0; left: -20px; right: -20px;
+      height: 55%;
+      background: linear-gradient(180deg, #1a1c22 0%, #141618 100%);
+      transform: perspective(400px) rotateX(8deg);
+      transform-origin: bottom;
+    }
+    .int-wall-back {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 60%;
+      background: linear-gradient(180deg, #1e2028 0%, #191c22 100%);
+    }
+    .int-wall-left {
+      position: absolute;
+      top: 0; left: 0;
+      width: 30%; height: 100%;
+      background: linear-gradient(90deg, #131518 0%, #1a1d24 100%);
+      clip-path: polygon(0 0, 100% 15%, 100% 100%, 0 100%);
+    }
+    /* Brick texture */
+    .int-brick {
+      position: absolute;
+      top: 5%; left: 2%;
+      width: 28%; height: 85%;
+      background:
+        repeating-linear-gradient(180deg,
+          transparent, transparent 14px,
+          rgba(255,255,255,0.03) 14px, rgba(255,255,255,0.03) 15px
+        ),
+        repeating-linear-gradient(90deg,
+          transparent, transparent 28px,
+          rgba(255,255,255,0.02) 28px, rgba(255,255,255,0.02) 29px
+        );
+      background-color: #3d3020;
+      border-radius: 2px;
+    }
+    /* Window */
+    .int-window {
+      position: absolute;
+      top: 5%; right: 5%;
+      width: 45%; height: 75%;
+      border: 3px solid #1a2030;
+      background: linear-gradient(135deg, rgba(200,220,255,0.12), rgba(150,180,255,0.05));
+      display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr;
+      gap: 3px;
+    }
+    .int-window-pane {
+      background: linear-gradient(135deg, rgba(200,220,255,0.06), rgba(100,140,200,0.03));
+    }
+    /* Sofa */
+    .int-sofa {
+      position: absolute;
+      bottom: 22%; left: 30%;
+      width: 38%; height: 18%;
+      background: linear-gradient(180deg, #2a2e3a, #1e2230);
+      border-radius: 4px 4px 0 0;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    }
+    .int-sofa-back {
+      position: absolute;
+      bottom: calc(22% + 18% - 2px); left: 30%;
+      width: 38%; height: 8%;
+      background: #252830;
+      border-radius: 2px;
+    }
+    /* Rug */
+    .int-rug {
+      position: absolute;
+      bottom: 12%; left: 20%;
+      width: 55%; height: 10%;
+      background: linear-gradient(90deg, transparent, rgba(100,80,60,0.15), transparent);
+      border-radius: 2px;
+    }
+    /* Lights */
+    .int-light {
+      position: absolute;
+      top: 8%; left: 50%;
+      width: 2px; height: 12%;
+      background: rgba(255,220,150,0.3);
+    }
+    .int-light::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 50%;
+      transform: translateX(-50%);
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: rgba(255,220,150,0.8);
+      box-shadow: 0 0 20px 8px rgba(255,200,100,0.15);
+    }
+
+    .sw-props {
+      width: 160px; min-width: 160px;
+      background: var(--bg);
+      border-left: 1px solid var(--border);
+      padding: 12px;
+      font-size: 0.68rem;
+    }
+    .sw-prop-label {
+      font-size: 0.62rem;
+      font-weight: 700;
+      color: var(--text3);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .sw-prop-row {
+      display: flex; justify-content: space-between;
+      padding: 3px 0;
+      color: var(--text2);
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      font-size: 0.68rem;
+    }
+    .sw-prop-row span:last-child { color: var(--accent); font-weight: 500; }
+
+    /* Floating tag */
+    .showcase-tag {
+      position: absolute;
+      top: -14px; right: -20px;
+      background: linear-gradient(135deg, var(--blue), var(--blue2));
+      border-radius: 10px;
+      padding: 10px 16px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: white;
+      box-shadow: 0 8px 24px rgba(74,158,255,0.35);
+    }
+
+    /* ── WORKFLOW ── */
+    .workflow {
+      background: var(--bg);
+      position: relative;
+    }
+    .workflow-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .workflow-header {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 40px;
+      align-items: end;
+      margin-bottom: 60px;
+    }
+    .workflow-steps {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 2px;
+      background: var(--border);
+      border-radius: var(--r2);
+      overflow: hidden;
+    }
+    .wf-step {
+      background: var(--bg3);
+      padding: 32px 28px;
+      position: relative;
+      transition: background .25s;
+    }
+    .wf-step:hover { background: var(--surface); }
+    .wf-num {
+      font-family: var(--ff-head);
+      font-size: 3rem;
+      font-weight: 800;
+      color: rgba(255,255,255,0.04);
+      line-height: 1;
+      margin-bottom: 16px;
+      letter-spacing: -0.05em;
+    }
+    .wf-icon {
+      font-size: 1.4rem;
+      margin-bottom: 14px;
+    }
+    .wf-title {
+      font-family: var(--ff-head);
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: var(--text);
+    }
+    .wf-desc {
+      font-size: 0.82rem;
+      color: var(--text2);
+      line-height: 1.6;
+      font-weight: 300;
+    }
+    .wf-connector {
+      position: absolute;
+      top: 50%; right: -1px;
+      width: 24px;
+      height: 1px;
+      background: linear-gradient(90deg, var(--accent), transparent);
+      z-index: 1;
+    }
+
+    /* ── PRICING ── */
+    .pricing {
+      background: var(--bg2);
+    }
+    .pricing-header {
+      text-align: center;
+      margin-bottom: 60px;
+    }
+    .pricing-header .section-sub { margin: 0 auto; }
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    .price-card {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: var(--r2);
+      padding: 36px 32px;
+      position: relative;
+      transition: transform .25s, box-shadow .25s;
+    }
+    .price-card:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(0,0,0,0.3); }
+    .price-card.featured {
+      background: var(--surface);
+      border-color: var(--accent);
+      border-width: 1.5px;
+    }
+    .price-card.featured::before {
+      content: 'POPULAIRE';
+      position: absolute;
+      top: -12px; left: 50%; transform: translateX(-50%);
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #1a0e00;
+      font-size: 0.65rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      padding: 4px 12px;
+      border-radius: 100px;
+    }
+    .price-plan {
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text3);
+      margin-bottom: 8px;
+    }
+    .price-card.featured .price-plan { color: var(--accent); }
+    .price-amount {
+      font-family: var(--ff-head);
+      font-size: 2.4rem;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+    .price-amount sup { font-size: 1rem; vertical-align: super; }
+    .price-period { font-size: 0.8rem; color: var(--text3); margin-bottom: 24px; }
+    .price-divider { height: 1px; background: var(--border); margin-bottom: 24px; }
+    .price-features { list-style: none; margin-bottom: 32px; }
+    .price-features li {
+      display: flex; align-items: center; gap: 10px;
+      padding: 6px 0;
+      font-size: 0.85rem;
+      color: var(--text2);
+    }
+    .price-features li::before {
+      content: '✓';
+      color: var(--teal);
+      font-weight: 700;
+      font-size: 0.8rem;
+    }
+    .price-features li.disabled {
+      opacity: 0.35;
+    }
+    .price-features li.disabled::before { content: '—'; color: var(--text3); }
+    .btn-plan {
+      width: 100%;
+      padding: 12px;
+      border-radius: 10px;
+      font-family: var(--ff-body);
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .2s;
+      border: 1px solid var(--border2);
+      background: var(--surface);
+      color: var(--text);
+    }
+    .price-card.featured .btn-plan {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #1a0e00;
+      border: none;
+    }
+    .price-card.featured .btn-plan:hover { box-shadow: 0 8px 24px rgba(245,166,35,0.35); transform: translateY(-1px); }
+    .btn-plan:hover { background: var(--surface2); }
+
+    /* ── TESTIMONIALS ── */
+    .testimonials {
+      background: var(--bg);
+    }
+    .testimonials-header { margin-bottom: 52px; }
+    .testimonials-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+    .testi-card {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: var(--r2);
+      padding: 32px 28px;
+      transition: border-color .25s;
+    }
+    .testi-card:hover { border-color: var(--border2); }
+    .testi-stars {
+      display: flex; gap: 3px;
+      margin-bottom: 16px;
+      color: var(--accent);
+      font-size: 0.8rem;
+    }
+    .testi-text {
+      font-size: 0.9rem;
+      color: var(--text2);
+      line-height: 1.7;
+      font-weight: 300;
+      margin-bottom: 24px;
+      font-style: italic;
+    }
+    .testi-text em { font-style: normal; color: var(--text); font-weight: 500; }
+    .testi-author { display: flex; align-items: center; gap: 12px; }
+    .testi-avatar {
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      display: grid; place-items: center;
+      font-family: var(--ff-head);
+      font-size: 0.9rem;
+      font-weight: 800;
+      color: var(--bg);
+    }
+    .testi-name {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .testi-role {
+      font-size: 0.75rem;
+      color: var(--text3);
+      margin-top: 1px;
+    }
+
+    /* ── CTA ── */
+    .cta-section {
+      padding: 120px 40px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      background: var(--bg2);
+    }
+    .cta-bg {
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 60% 60% at 50% 50%, rgba(245,166,35,0.06) 0%, transparent 70%);
+    }
+    .cta-section .section-title { font-size: clamp(2rem, 4vw, 3.5rem); }
+    .cta-section .section-sub { margin: 0 auto 40px; }
+    .cta-section .section-label { text-align: center; }
+    .cta-actions {
+      display: flex; justify-content: center; align-items: center; gap: 16px;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--bg);
+      border-top: 1px solid var(--border);
+      padding: 60px 40px 32px;
+    }
+    .footer-inner {
+      display: grid;
+      grid-template-columns: 1.5fr 1fr 1fr 1fr;
+      gap: 48px;
+      margin-bottom: 48px;
+    }
+    .footer-brand .nav-logo { margin-bottom: 14px; }
+    .footer-desc { font-size: 0.83rem; color: var(--text3); line-height: 1.7; max-width: 240px; }
+    .footer-col-title {
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text2);
+      margin-bottom: 16px;
+    }
+    .footer-col ul { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+    .footer-col ul a { color: var(--text3); text-decoration: none; font-size: 0.83rem; transition: color .2s; }
+    .footer-col ul a:hover { color: var(--text); }
+    .footer-bottom {
+      display: flex; justify-content: space-between; align-items: center;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+    }
+    .footer-copy { font-size: 0.78rem; color: var(--text3); }
+    .footer-socials { display: flex; gap: 12px; }
+    .social-btn {
+      width: 34px; height: 34px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      display: grid; place-items: center;
+      cursor: pointer;
+      transition: all .2s;
+      font-size: 0.85rem;
+      color: var(--text3);
+      background: transparent;
+      text-decoration: none;
+    }
+    .social-btn:hover { border-color: var(--border2); background: var(--surface); color: var(--text); }
+
+    /* ── ANIMATIONS ON SCROLL ── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.6s cubic-bezier(0.16,1,0.3,1), transform 0.6s cubic-bezier(0.16,1,0.3,1);
+    }
+    .reveal.visible { opacity: 1; transform: none; }
+    .reveal-d1 { transition-delay: 0.1s; }
+    .reveal-d2 { transition-delay: 0.2s; }
+    .reveal-d3 { transition-delay: 0.3s; }
+    .reveal-d4 { transition-delay: 0.4s; }
+
+    /* Animated 3D building in hero */
+    @keyframes float {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-8px) rotate(0.5deg); }
+    }
+    .scene-svg { animation: float 6s ease-in-out infinite; }
+
+    /* Spinner for loading states */
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 1024px) {
+      .hero { grid-template-columns: 1fr; padding: 100px 24px 60px; }
+      .hero-right { display: none; }
+      .features-grid { grid-template-columns: repeat(2, 1fr); }
+      .workflow-steps { grid-template-columns: repeat(2, 1fr); }
+      .workflow-header { grid-template-columns: 1fr; }
+      .pricing-grid { grid-template-columns: 1fr; max-width: 400px; }
+      .testimonials-grid { grid-template-columns: 1fr; }
+      .showcase-inner { grid-template-columns: 1fr; }
+      .footer-inner { grid-template-columns: 1fr 1fr; }
+      nav { padding: 0 24px; }
+      .nav-links { display: none; }
+      section { padding: 70px 24px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Custom Cursor -->
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+
+<!-- ── NAV ── -->
+<nav>
+  <a class="nav-logo" href="#">
+    <div class="nav-logo-icon">⬡</div>
+    ArchBIM Studio
+  </a>
+  <ul class="nav-links">
+    <li><a href="#features">Fonctionnalités</a></li>
+    <li><a href="#showcase">Interface</a></li>
+    <li><a href="#workflow">Workflow</a></li>
+    <li><a href="#pricing">Tarifs</a></li>
+    <li><a href="#testimonials">Avis</a></li>
+  </ul>
+  <div class="nav-cta">
+    <button class="btn-ghost">Se connecter</button>
+    <button class="btn-accent">Essai gratuit</button>
+  </div>
+</nav>
+
+<!-- ── HERO ── -->
+<section class="hero" style="padding-top:100px">
+  <div class="hero-bg"></div>
+  <div class="hero-grid"></div>
+
+  <div class="hero-left">
+    <div class="hero-badge">
+      <span class="hero-badge-dot"></span>
+      Nouveau — Version 4.2 disponible
+    </div>
+    <h1>
+      <span class="line"><span>Modélisation BIM</span></span>
+      <span class="line"><span>& CAO <em>Nouvelle</em></span></span>
+      <span class="line"><span>Génération</span></span>
+    </h1>
+    <p class="hero-desc">
+      La plateforme tout-en-un pour architectes et ingénieurs. Concevez, modélisez et collaborez avec des outils BIM et 3D de précision professionnelle.
+    </p>
+    <div class="hero-actions">
+      <button class="btn-primary">
+        <span>▶</span> Démarrer gratuitement
+      </button>
+      <button class="btn-secondary">
+        <span>◎</span> Voir la démo
+      </button>
+    </div>
+    <div class="hero-stats">
+      <div class="stat-item">
+        <div class="stat-num">48K+</div>
+        <div class="stat-label">Professionnels</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">1.2M</div>
+        <div class="stat-label">Projets créés</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">99.9%</div>
+        <div class="stat-label">Disponibilité</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero-right">
+    <div class="viewport-wrapper">
+      <div class="viewport-toolbar">
+        <div class="vp-dot r"></div>
+        <div class="vp-dot y"></div>
+        <div class="vp-dot g"></div>
+        <div class="vp-tabs">
+          <div class="vp-tab active">Perspective 3D</div>
+          <div class="vp-tab">Plan masse</div>
+          <div class="vp-tab">Coupe A-A</div>
+        </div>
+      </div>
+      <div class="viewport-canvas">
+        <div class="scene-grid-bg"></div>
+        <!-- SVG 3D Building Scene -->
+        <svg class="scene-svg" viewBox="0 0 600 360" xmlns="http://www.w3.org/2000/svg">
+          <!-- Ground plane -->
+          <ellipse cx="300" cy="330" rx="260" ry="24" fill="rgba(74,158,255,0.04)" stroke="rgba(74,158,255,0.1)" stroke-width="1"/>
+          <!-- Shadow -->
+          <ellipse cx="295" cy="326" rx="200" ry="16" fill="rgba(0,0,0,0.4)"/>
+
+          <!-- BUILDING BASE / GROUND FLOOR -->
+          <!-- Left face (darker) -->
+          <polygon points="90,290 90,160 220,130 220,260" fill="#1a2030" stroke="#2a3548" stroke-width="0.5"/>
+          <!-- Front face -->
+          <polygon points="90,290 350,290 350,160 220,130 220,260" fill="#1e2535" stroke="#2a3548" stroke-width="0.5"/>
+          <!-- Top face -->
+          <polygon points="90,160 220,130 480,130 350,160" fill="#243040" stroke="#2a3548" stroke-width="0.5"/>
+
+          <!-- SECOND FLOOR (offset/cantilevered) -->
+          <!-- Left face -->
+          <polygon points="140,160 140,55 250,30 250,130" fill="#1c2840" stroke="#354a68" stroke-width="0.5"/>
+          <!-- Front face -->
+          <polygon points="140,160 380,160 380,55 250,30" fill="#21304a" stroke="#354a68" stroke-width="0.5"/>
+          <!-- Top -->
+          <polygon points="140,55 250,30 490,30 380,55" fill="#293858" stroke="#354a68" stroke-width="0.5"/>
+
+          <!-- ROOF OVERHANG -->
+          <polygon points="120,45 510,45 510,35 120,35" fill="#2d4060" stroke="#4060a0" stroke-width="0.5"/>
+          <line x1="120" y1="40" x2="510" y2="40" stroke="rgba(74,158,255,0.15)" stroke-width="0.5"/>
+
+          <!-- WINDOWS - Ground floor front -->
+          <!-- Window 1 -->
+          <rect x="235" y="165" width="55" height="70" fill="rgba(200,230,255,0.08)" stroke="#354a68" stroke-width="0.8"/>
+          <line x1="262" y1="165" x2="262" y2="235" stroke="#354a68" stroke-width="0.5"/>
+          <rect x="236" y="166" width="53" height="68" fill="rgba(150,200,255,0.04)"/>
+
+          <!-- Window 2 -->
+          <rect x="300" y="165" width="40" height="70" fill="rgba(200,230,255,0.08)" stroke="#354a68" stroke-width="0.8"/>
+
+          <!-- DOOR -->
+          <rect x="165" y="220" width="35" height="70" fill="#c87a2e" stroke="#a85a18" stroke-width="0.8" rx="2"/>
+          <rect x="166" y="221" width="33" height="68" fill="linear-gradient(180deg,#d4852e,#a85a18)" rx="2"/>
+          <circle cx="195" cy="258" r="2.5" fill="#f5a623"/>
+
+          <!-- GLASS WALL - ground floor -->
+          <rect x="350" y="160" width="130" height="130" fill="rgba(200,230,255,0.04)" stroke="#2a3a58" stroke-width="0.8"/>
+          <!-- grid lines on glass -->
+          <line x1="393" y1="160" x2="393" y2="290" stroke="#2a3a58" stroke-width="0.5"/>
+          <line x1="436" y1="160" x2="436" y2="290" stroke="#2a3a58" stroke-width="0.5"/>
+          <line x1="350" y1="215" x2="480" y2="215" stroke="#2a3a58" stroke-width="0.5"/>
+
+          <!-- SECOND FLOOR WINDOWS -->
+          <rect x="155" y="65" width="80" height="55" fill="rgba(200,230,255,0.1)" stroke="#354a68" stroke-width="0.8"/>
+          <line x1="195" y1="65" x2="195" y2="120" stroke="#354a68" stroke-width="0.5"/>
+
+          <rect x="245" y="65" width="60" height="55" fill="rgba(200,230,255,0.06)" stroke="#354a68" stroke-width="0.8"/>
+
+          <rect x="315" y="65" width="55" height="55" fill="rgba(200,230,255,0.06)" stroke="#354a68" stroke-width="0.8"/>
+
+          <!-- BALCONY RAILING second floor -->
+          <line x1="140" y1="160" x2="380" y2="160" stroke="#4a6a9a" stroke-width="1.5"/>
+          <line x1="160" y1="145" x2="160" y2="165" stroke="#4a6a9a" stroke-width="1"/>
+          <line x1="190" y1="145" x2="190" y2="165" stroke="#4a6a9a" stroke-width="1"/>
+          <line x1="220" y1="145" x2="220" y2="165" stroke="#4a6a9a" stroke-width="1"/>
+          <line x1="250" y1="145" x2="250" y2="165" stroke="#4a6a9a" stroke-width="1"/>
+          <line x1="280" y1="145" x2="280" y2="165" stroke="#4a6a9a" stroke-width="1"/>
+          <line x1="310" y1="145" x2="310" y2="165" stroke="#4a6a9a" stroke-width="1"/>
+          <line x1="340" y1="145" x2="340" y2="165" stroke="#4a6a9a" stroke-width="1"/>
+          <line x1="370" y1="145" x2="370" y2="165" stroke="#4a6a9a" stroke-width="1"/>
+
+          <!-- POOL -->
+          <ellipse cx="480" cy="295" rx="90" ry="20" fill="rgba(0,180,220,0.15)" stroke="rgba(0,200,255,0.3)" stroke-width="1"/>
+          <ellipse cx="480" cy="295" rx="80" ry="15" fill="rgba(0,160,200,0.1)"/>
+          <!-- Pool shimmer -->
+          <line x1="420" y1="290" x2="480" y2="288" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+          <line x1="450" y1="298" x2="530" y2="295" stroke="rgba(255,255,255,0.07)" stroke-width="0.8"/>
+
+          <!-- LANDSCAPING - trees -->
+          <!-- Tree 1 -->
+          <ellipse cx="80" cy="278" rx="18" ry="22" fill="rgba(40,100,60,0.4)" stroke="rgba(60,130,80,0.3)" stroke-width="0.5"/>
+          <line x1="80" y1="300" x2="80" y2="312" stroke="#2a3a20" stroke-width="2"/>
+
+          <!-- Tree 2 -->
+          <ellipse cx="530" cy="265" rx="22" ry="28" fill="rgba(35,90,55,0.4)" stroke="rgba(55,120,75,0.3)" stroke-width="0.5"/>
+          <line x1="530" y1="293" x2="530" y2="310" stroke="#2a3a20" stroke-width="2.5"/>
+
+          <!-- DIMENSION LINES -->
+          <line x1="90" y1="310" x2="350" y2="310" stroke="rgba(245,166,35,0.3)" stroke-width="0.8" stroke-dasharray="4,3"/>
+          <line x1="90" y1="306" x2="90" y2="314" stroke="rgba(245,166,35,0.4)" stroke-width="0.8"/>
+          <line x1="350" y1="306" x2="350" y2="314" stroke="rgba(245,166,35,0.4)" stroke-width="0.8"/>
+          <text x="220" y="324" text-anchor="middle" fill="rgba(245,166,35,0.6)" font-size="8" font-family="DM Sans, sans-serif">14.50 m</text>
+
+          <!-- Selection highlight - glow on second floor -->
+          <polygon points="140,160 380,160 380,55 250,30" fill="rgba(74,158,255,0.03)" stroke="rgba(74,158,255,0.4)" stroke-width="1.5" stroke-dasharray="6,3"/>
+
+          <!-- North arrow -->
+          <g transform="translate(555,28)">
+            <circle cx="0" cy="0" r="14" fill="rgba(10,12,15,0.8)" stroke="rgba(255,255,255,0.15)" stroke-width="0.8"/>
+            <polygon points="0,-10 3,2 0,0 -3,2" fill="white" opacity="0.8"/>
+            <polygon points="0,-10 3,2 0,0 -3,2" fill="rgba(245,166,35,0.9)" clip-path="inset(0 50% 0 0)"/>
+            <text x="0" y="18" text-anchor="middle" fill="rgba(255,255,255,0.5)" font-size="7" font-family="DM Sans, sans-serif" font-weight="700">N</text>
+          </g>
+        </svg>
+
+        <!-- Info panel -->
+        <div class="scene-info-panel">
+          <div class="sip-title">Propriétés</div>
+          <div class="sip-row"><span>Niveau</span><span class="sip-val">RDC + R+1</span></div>
+          <div class="sip-row"><span>Surface</span><span class="sip-val">285 m²</span></div>
+          <div class="sip-row"><span>Hauteur</span><span class="sip-val">7.2 m</span></div>
+          <div class="sip-row"><span>Volume</span><span class="sip-val">1 620 m³</span></div>
+        </div>
+
+        <!-- Axis indicator -->
+        <div class="axis-badge">
+          <span class="axis-x">X</span>
+          <span class="axis-y">Y</span>
+          <span class="axis-z">Z</span>
+        </div>
+      </div>
+      <div class="viewport-footer">
+        <div class="tool-chip active"><span class="tool-chip-dot"></span> Sélection</div>
+        <div class="tool-chip">Mesure</div>
+        <div class="tool-chip">Ombres</div>
+        <div class="tool-chip">Rendu IA</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── MARQUEE ── -->
+<div class="marquee-section">
+  <div class="marquee-track" id="marqueeTrack">
+    <!-- repeated twice for seamless loop -->
+    <div class="marquee-item">⬡ Modélisation BIM</div><div class="marquee-item marquee-sep">·</div>
+    <div class="marquee-item">⬡ Rendu temps réel</div><div class="marquee-item marquee-sep">·</div>
+    <div class="marquee-item">⬡ Collaboration cloud</div><div class="marquee-item marquee-sep">·</div>
+    <div class="marquee-item">⬡ Coupes automatiques</div><div class="marquee-item marquee-sep">·</div>
+    <div class="marquee-item">⬡ Export IFC / DWG</div><div class="marquee-item marquee-sep">·</div>
+    <div class="marquee-item">⬡ Analyse thermique</div><div class="marquee-item marquee-sep">·</div>
+    <div class="marquee-item">⬡ Nomenclatures auto</div><div class="marquee-item marquee-sep">·</div>
+    <div class="marquee-item">⬡ Modélisation BIM</div><div class="marquee-item marquee-sep">·</div>
+    <div class="marquee-item">⬡ Rendu temps réel</div><div class="marquee-item marquee-sep">·</div>
+    <div class="marquee-item">⬡ Collaboration cloud</div><div class="marquee-item marquee-sep">·</div>
+    <div class="marquee-item">⬡ Coupes automatiques</div><div class="marquee-item marquee-sep">·</div>
+    <div class="marquee-item">⬡ Export IFC / DWG</div><div class="marquee-item marquee-sep">·</div>
+    <div class="marquee-item">⬡ Analyse thermique</div><div class="marquee-item marquee-sep">·</div>
+    <div class="marquee-item">⬡ Nomenclatures auto</div><div class="marquee-item marquee-sep">·</div>
+  </div>
+</div>
+
+<!-- ── FEATURES ── -->
+<section class="features" id="features">
+  <div class="features-header reveal">
+    <div class="section-label">Fonctionnalités</div>
+    <h2 class="section-title">Tout ce dont vous avez besoin</h2>
+    <p class="section-sub">Des outils professionnels pensés pour accélérer votre workflow du concept au permis de construire.</p>
+  </div>
+  <div class="features-grid">
+    <div class="feature-card reveal reveal-d1">
+      <div class="feat-icon orange">🏗️</div>
+      <div class="feat-title">Modélisation BIM paramétrique</div>
+      <p class="feat-desc">Créez des modèles intelligents avec des familles paramétriques. Chaque élément porte ses données : matériaux, coûts, performances thermiques.</p>
+    </div>
+    <div class="feature-card reveal reveal-d2">
+      <div class="feat-icon blue">✏️</div>
+      <div class="feat-title">Dessin 3D intuitif</div>
+      <p class="feat-desc">Interface fluide inspirée des meilleurs outils du marché. Snap intelligent, inférences 3D et raccourcis clavier entièrement personnalisables.</p>
+    </div>
+    <div class="feature-card reveal reveal-d3">
+      <div class="feat-icon teal">⚡</div>
+      <div class="feat-title">Rendu photoréaliste IA</div>
+      <p class="feat-desc">Générez des rendus haute qualité en quelques secondes grâce à notre moteur de rendu accéléré par IA et GPU cloud.</p>
+    </div>
+    <div class="feature-card reveal reveal-d1">
+      <div class="feat-icon blue">👥</div>
+      <div class="feat-title">Collaboration temps réel</div>
+      <p class="feat-desc">Travaillez simultanément à plusieurs sur le même projet. Gestion des conflits, historique des versions et commentaires contextuels.</p>
+    </div>
+    <div class="feature-card reveal reveal-d2">
+      <div class="feat-icon orange">📐</div>
+      <div class="feat-title">Plans & Coupes automatiques</div>
+      <p class="feat-desc">Générez plans, élévations, coupes et nomenclatures automatiquement depuis votre maquette 3D. Mise en page professionnelle incluse.</p>
+    </div>
+    <div class="feature-card reveal reveal-d3">
+      <div class="feat-icon teal">🔗</div>
+      <div class="feat-title">Interopérabilité totale</div>
+      <p class="feat-desc">Import/export IFC, DWG, DXF, SKP, RVT, OBJ. Compatible avec tous les outils de la chaîne BIM du marché.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ── SHOWCASE ── -->
+<section class="showcase" id="showcase">
+  <div class="showcase-inner">
+    <div class="showcase-text reveal">
+      <div class="section-label">Interface</div>
+      <h2 class="section-title">Pensée pour les <em style="font-style:normal;color:var(--accent)">créateurs</em></h2>
+      <p class="section-sub">Une interface épurée qui s'efface pour que vous puissiez vous concentrer sur l'essentiel : concevoir de l'architecture.</p>
+      <ul class="showcase-list">
+        <li><span>Arborescence du projet</span> — hiérarchie claire et navigation instantanée entre les vues</li>
+        <li><span>Panneau de propriétés</span> — éditez les paramètres de n'importe quel élément en un clic</li>
+        <li><span>Multi-vues synchronisées</span> — plan, coupe et 3D en simultané avec navigation liée</li>
+        <li><span>Palettes personnalisables</span> — organisez vos outils selon votre workflow</li>
+      </ul>
+    </div>
+    <div class="showcase-visual reveal reveal-d2">
+      <div class="showcase-tag">SketchUp-like 3D</div>
+      <div class="showcase-window">
+        <div class="sw-header">
+          <div class="sw-dots">
+            <div class="sw-dot r"></div>
+            <div class="sw-dot y"></div>
+            <div class="sw-dot g"></div>
+          </div>
+          <div class="sw-title-bar">ArchBIM Studio — interieur_sejour.abs</div>
+        </div>
+        <div class="sw-body">
+          <div class="sw-sidebar">
+            <div class="sw-tree-group">
+              <div class="sw-tree-label">Vues</div>
+              <div class="sw-tree-item active"><span class="sw-tree-icon">◉</span> Scène 3D</div>
+              <div class="sw-tree-item"><span class="sw-tree-icon">▭</span> Perspective</div>
+              <div class="sw-tree-item"><span class="sw-tree-icon">□</span> Face</div>
+              <div class="sw-tree-item"><span class="sw-tree-icon">▷</span> Plan RDC</div>
+            </div>
+            <div class="sw-tree-group">
+              <div class="sw-tree-label">Calques</div>
+              <div class="sw-tree-item"><span class="sw-tree-icon">◈</span> Structure</div>
+              <div class="sw-tree-item"><span class="sw-tree-icon">◈</span> Revêtements</div>
+              <div class="sw-tree-item active"><span class="sw-tree-icon">◈</span> Mobilier</div>
+              <div class="sw-tree-item"><span class="sw-tree-icon">◈</span> Lumières</div>
+            </div>
+            <div class="sw-tree-group">
+              <div class="sw-tree-label">Composants</div>
+              <div class="sw-tree-item"><span class="sw-tree-icon">⬡</span> Canapé L</div>
+              <div class="sw-tree-item"><span class="sw-tree-icon">⬡</span> Cheminée</div>
+              <div class="sw-tree-item"><span class="sw-tree-icon">⬡</span> Table café</div>
+            </div>
+          </div>
+          <div class="sw-main">
+            <!-- Interior 3D Scene -->
+            <div class="interior-scene">
+              <div class="int-wall-back"></div>
+              <div class="int-wall-left"></div>
+              <div class="int-brick"></div>
+              <div class="int-window">
+                <div class="int-window-pane"></div>
+                <div class="int-window-pane"></div>
+                <div class="int-window-pane"></div>
+                <div class="int-window-pane"></div>
+              </div>
+              <div class="int-floor"></div>
+              <div class="int-sofa-back"></div>
+              <div class="int-sofa"></div>
+              <div class="int-rug"></div>
+              <div class="int-light"></div>
+            </div>
+          </div>
+          <div class="sw-props">
+            <div class="sw-prop-label">Propriétés</div>
+            <div class="sw-prop-row"><span>Composant</span><span>Canapé L</span></div>
+            <div class="sw-prop-row"><span>Matière</span><span>Tissu</span></div>
+            <div class="sw-prop-row"><span>L×l</span><span>2.80×1.60</span></div>
+            <div class="sw-prop-row"><span>H</span><span>0.78 m</span></div>
+            <div class="sw-prop-row"><span>Couleur</span><span>Gris</span></div>
+            <div class="sw-prop-row"><span>Marque</span><span>Personaliz.</span></div>
+            <div style="margin-top:12px">
+              <div class="sw-prop-label" style="color:var(--accent)">Calque actif</div>
+              <div style="color:var(--text2);font-size:0.68rem;margin-top:4px">◈ Mobilier</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── WORKFLOW ── -->
+<section class="workflow" id="workflow">
+  <div class="workflow-inner">
+    <div class="workflow-header">
+      <div class="reveal">
+        <div class="section-label">Workflow</div>
+        <h2 class="section-title">De l'esquisse au dossier en 4 étapes</h2>
+      </div>
+      <div class="reveal reveal-d2">
+        <p class="section-sub">Un processus fluide et intégré qui élimine les allers-retours entre logiciels et vous fait gagner des heures.</p>
+      </div>
+    </div>
+    <div class="workflow-steps">
+      <div class="wf-step reveal reveal-d1">
+        <div class="wf-num">01</div>
+        <div class="wf-icon">🎯</div>
+        <div class="wf-title">Concevoir</div>
+        <p class="wf-desc">Esquissez vos premières idées en 3D directement. Import de plans scannés, référence image, modélisation libre.</p>
+      </div>
+      <div class="wf-step reveal reveal-d2">
+        <div class="wf-num">02</div>
+        <div class="wf-icon">🧱</div>
+        <div class="wf-title">Structurer</div>
+        <p class="wf-desc">Ajoutez l'intelligence BIM : murs porteurs, dalles, toitures, menuiseries avec leurs données techniques.</p>
+      </div>
+      <div class="wf-step reveal reveal-d3">
+        <div class="wf-num">03</div>
+        <div class="wf-icon">🎨</div>
+        <div class="wf-title">Habiller</div>
+        <p class="wf-desc">Matériaux, mobilier depuis notre bibliothèque de +40 000 objets 3D, éclairage et rendu photoréaliste.</p>
+      </div>
+      <div class="wf-step reveal reveal-d4">
+        <div class="wf-num">04</div>
+        <div class="wf-icon">📦</div>
+        <div class="wf-title">Livrer</div>
+        <p class="wf-desc">Plans, coupes, nomenclatures et dossier PC générés automatiquement et conformes aux normes.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── PRICING ── -->
+<section class="pricing" id="pricing">
+  <div class="pricing-header reveal">
+    <div class="section-label">Tarifs</div>
+    <h2 class="section-title">Simple et transparent</h2>
+    <p class="section-sub">Sans frais cachés. Changez de formule à tout moment. Remboursement sous 30 jours garanti.</p>
+  </div>
+  <div class="pricing-grid">
+    <div class="price-card reveal reveal-d1">
+      <div class="price-plan">Starter</div>
+      <div class="price-amount"><sup>€</sup>0</div>
+      <div class="price-period">pour toujours</div>
+      <div class="price-divider"></div>
+      <ul class="price-features">
+        <li>3 projets actifs</li>
+        <li>Export PDF et PNG</li>
+        <li>Bibliothèque basique (500 objets)</li>
+        <li>1 Go de stockage cloud</li>
+        <li class="disabled">Collaboration temps réel</li>
+        <li class="disabled">Rendu IA</li>
+        <li class="disabled">Export IFC / DWG</li>
+      </ul>
+      <button class="btn-plan">Commencer gratuitement</button>
+    </div>
+    <div class="price-card featured reveal reveal-d2">
+      <div class="price-plan">Professionnel</div>
+      <div class="price-amount"><sup>€</sup>49</div>
+      <div class="price-period">par mois / utilisateur</div>
+      <div class="price-divider"></div>
+      <ul class="price-features">
+        <li>Projets illimités</li>
+        <li>Export IFC, DWG, DXF</li>
+        <li>Bibliothèque complète (40 000+)</li>
+        <li>50 Go de stockage cloud</li>
+        <li>Collaboration temps réel</li>
+        <li>50 rendus IA / mois</li>
+        <li>Support prioritaire</li>
+      </ul>
+      <button class="btn-plan">Démarrer l'essai gratuit</button>
+    </div>
+    <div class="price-card reveal reveal-d3">
+      <div class="price-plan">Entreprise</div>
+      <div class="price-amount" style="font-size:1.8rem">Sur devis</div>
+      <div class="price-period">à partir de 5 utilisateurs</div>
+      <div class="price-divider"></div>
+      <ul class="price-features">
+        <li>Tout le plan Professionnel</li>
+        <li>SSO & Active Directory</li>
+        <li>Stockage illimité</li>
+        <li>Rendus IA illimités</li>
+        <li>API & intégrations custom</li>
+        <li>SLA 99.9% garanti</li>
+        <li>Account manager dédié</li>
+      </ul>
+      <button class="btn-plan">Contacter les ventes</button>
+    </div>
+  </div>
+</section>
+
+<!-- ── TESTIMONIALS ── -->
+<section class="testimonials" id="testimonials">
+  <div class="testimonials-header reveal">
+    <div class="section-label">Témoignages</div>
+    <h2 class="section-title">Ce que disent nos utilisateurs</h2>
+  </div>
+  <div class="testimonials-grid">
+    <div class="testi-card reveal reveal-d1">
+      <div class="testi-stars">★★★★★</div>
+      <p class="testi-text">"La transition depuis Revit a été <em>beaucoup plus simple</em> que prévu. L'interface est bien plus intuitive et la collaboration en temps réel a vraiment changé notre façon de travailler en agence."</p>
+      <div class="testi-author">
+        <div class="testi-avatar" style="background:linear-gradient(135deg,var(--accent),var(--accent2))">SM</div>
+        <div>
+          <div class="testi-name">Sophie Marchand</div>
+          <div class="testi-role">Architecte DPLG — Atelier M+</div>
+        </div>
+      </div>
+    </div>
+    <div class="testi-card reveal reveal-d2">
+      <div class="testi-stars">★★★★★</div>
+      <p class="testi-text">"Je viens de SketchUp et ArchBIM m'offre <em>tout ce que j'aimais</em> dedans, plus le BIM par-dessus. Les exports IFC sont parfaits pour communiquer avec les bureaux d'études."</p>
+      <div class="testi-author">
+        <div class="testi-avatar" style="background:linear-gradient(135deg,var(--blue),var(--blue2))">TK</div>
+        <div>
+          <div class="testi-name">Thomas Keller</div>
+          <div class="testi-role">Designer d'intérieur — Studio TK</div>
+        </div>
+      </div>
+    </div>
+    <div class="testi-card reveal reveal-d3">
+      <div class="testi-stars">★★★★★</div>
+      <p class="testi-text">"Le rendu IA est <em>bluffant</em> pour les présentations clients. En 30 secondes on obtient des visuels de qualité. On a réduit nos délais de présentation de moitié."</p>
+      <div class="testi-author">
+        <div class="testi-avatar" style="background:linear-gradient(135deg,var(--teal),#00a890)">AB</div>
+        <div>
+          <div class="testi-name">Amina Boudiaf</div>
+          <div class="testi-role">Cheffe de projet — Groupe Vinci Immo</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── CTA ── -->
+<section class="cta-section">
+  <div class="cta-bg"></div>
+  <div style="position:relative;z-index:2">
+    <div class="section-label reveal">Prêt à commencer ?</div>
+    <h2 class="section-title reveal reveal-d1">Rejoignez 48 000 professionnels<br>qui font confiance à ArchBIM</h2>
+    <p class="section-sub reveal reveal-d2">14 jours d'essai gratuit sur le plan Professionnel. Aucune carte bancaire requise.</p>
+    <div class="cta-actions reveal reveal-d3" style="margin-top:40px">
+      <button class="btn-primary" style="font-size:1rem;padding:16px 36px">Démarrer gratuitement →</button>
+      <button class="btn-secondary" style="font-size:1rem;padding:16px 36px">Voir une démo en direct</button>
+    </div>
+  </div>
+</section>
+
+<!-- ── FOOTER ── -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <a class="nav-logo" href="#">
+        <div class="nav-logo-icon">⬡</div>
+        ArchBIM Studio
+      </a>
+      <p class="footer-desc">La plateforme BIM & 3D nouvelle génération pour architectes, designers et ingénieurs du bâtiment.</p>
+    </div>
+    <div class="footer-col">
+      <div class="footer-col-title">Produit</div>
+      <ul>
+        <li><a href="#">Fonctionnalités</a></li>
+        <li><a href="#">Nouveautés</a></li>
+        <li><a href="#">Roadmap</a></li>
+        <li><a href="#">Tarifs</a></li>
+        <li><a href="#">Intégrations</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <div class="footer-col-title">Ressources</div>
+      <ul>
+        <li><a href="#">Documentation</a></li>
+        <li><a href="#">Tutoriels vidéo</a></li>
+        <li><a href="#">Bibliothèque 3D</a></li>
+        <li><a href="#">Blog</a></li>
+        <li><a href="#">Communauté</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <div class="footer-col-title">Entreprise</div>
+      <ul>
+        <li><a href="#">À propos</a></li>
+        <li><a href="#">Carrières</a></li>
+        <li><a href="#">Partenaires</a></li>
+        <li><a href="#">Contact</a></li>
+        <li><a href="#">CGU & Confidentialité</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div class="footer-copy">© 2025 ArchBIM Studio — Tous droits réservés</div>
+    <div class="footer-socials">
+      <a class="social-btn" href="#">𝕏</a>
+      <a class="social-btn" href="#">in</a>
+      <a class="social-btn" href="#">yt</a>
+      <a class="social-btn" href="#">gh</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // ── Custom Cursor ──
+  const cursor = document.getElementById('cursor');
+  const ring = document.getElementById('cursor-ring');
+  let rx = 0, ry = 0;
+
+  document.addEventListener('mousemove', e => {
+    cursor.style.left = e.clientX + 'px';
+    cursor.style.top = e.clientY + 'px';
+    // ring follows with lag
+    rx += (e.clientX - rx) * 0.12;
+    ry += (e.clientY - ry) * 0.12;
+    ring.style.left = rx + 'px';
+    ring.style.top = ry + 'px';
+  });
+
+  function animRing() {
+    const cursor = document.getElementById('cursor');
+    const ring = document.getElementById('cursor-ring');
+    ring.style.left = rx + 'px';
+    ring.style.top = ry + 'px';
+    requestAnimationFrame(animRing);
+  }
+  animRing();
+
+  document.querySelectorAll('a,button,.feature-card,.testi-card,.price-card').forEach(el => {
+    el.addEventListener('mouseenter', () => {
+      cursor.style.width = '16px';
+      cursor.style.height = '16px';
+      ring.style.width = '52px';
+      ring.style.height = '52px';
+      ring.style.borderColor = 'rgba(245,166,35,0.8)';
+    });
+    el.addEventListener('mouseleave', () => {
+      cursor.style.width = '10px';
+      cursor.style.height = '10px';
+      ring.style.width = '36px';
+      ring.style.height = '36px';
+      ring.style.borderColor = 'rgba(245,166,35,0.5)';
+    });
+  });
+
+  // ── Scroll Reveal ──
+  const revealEls = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.12 });
+  revealEls.forEach(el => observer.observe(el));
+
+  // ── Viewport tabs ──
+  document.querySelectorAll('.vp-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.vp-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+    });
+  });
+
+  // ── Tool chips ──
+  document.querySelectorAll('.tool-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      document.querySelectorAll('.tool-chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+    });
+  });
+
+  // ── Sidebar tree items ──
+  document.querySelectorAll('.sw-tree-item').forEach(item => {
+    item.addEventListener('click', () => {
+      const group = item.closest('.sw-tree-group');
+      if (group) {
+        group.querySelectorAll('.sw-tree-item').forEach(i => i.classList.remove('active'));
+      }
+      item.classList.add('active');
+    });
+  });
+
+  // ── Nav scroll effect ──
+  window.addEventListener('scroll', () => {
+    const nav = document.querySelector('nav');
+    if (window.scrollY > 40) {
+      nav.style.borderBottomColor = 'rgba(255,255,255,0.1)';
+    } else {
+      nav.style.borderBottomColor = 'rgba(255,255,255,0.07)';
+    }
+  });
+
+  // ── Stats counter animation ──
+  const stats = document.querySelectorAll('.stat-num');
+  const statsObserver = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.style.opacity = '0';
+        setTimeout(() => {
+          entry.target.style.transition = 'opacity 0.5s';
+          entry.target.style.opacity = '1';
+        }, 100);
+        statsObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.5 });
+  stats.forEach(s => statsObserver.observe(s));
+
+  // ── Viewport tabs interaction - change scene info ──
+  const tabsData = [
+    { label: 'Perspective 3D', props: [['Niveau','RDC + R+1'],['Surface','285 m²'],['Hauteur','7.2 m'],['Volume','1 620 m³']] },
+    { label: 'Plan masse', props: [['Emprise','350 m²'],['Recul','3.50 m'],['COS','0.81'],['Orienta.','Nord/Sud']] },
+    { label: 'Coupe A-A', props: [['H. RDC','3.20 m'],['H. R+1','3.00 m'],['Épaisseur','0.20 m'],['Acrotère','0.80 m']] },
+  ];
+  const infoTitle = document.querySelector('.sip-title');
+  const infoRows = document.querySelectorAll('.sip-row');
+
+  document.querySelectorAll('.vp-tab').forEach((tab, i) => {
+    tab.addEventListener('click', () => {
+      const data = tabsData[i];
+      if (data && infoRows.length >= 4) {
+        data.props.forEach((prop, j) => {
+          if (infoRows[j]) {
+            infoRows[j].children[0].textContent = prop[0];
+            infoRows[j].children[1].textContent = prop[1];
+          }
+        });
+      }
+    });
+  });
+</script>
+
+</body>
+</html>
