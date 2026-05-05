@@ -1,1452 +1,1845 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
-<title>Comeo AI Pro — Comptabilité SYSCOHADA</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@300;400;500&family=Fraunces:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/firebase@9.22.2/firebase-app-compat.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/firebase@9.22.2/firebase-firestore-compat.js"></script>
-<style>
-:root {
-  --bg:#0c0e14;--bg2:#12151f;--bg3:#181c28;--bg4:#1e2336;--bg5:#232840;
-  --border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.1);--border3:rgba(255,255,255,0.18);
-  --gold:#d4a853;--gold2:#f0c96a;--gold3:#8b6820;--gold-glow:rgba(212,168,83,0.15);--gold-glow2:rgba(212,168,83,0.08);
-  --emerald:#2dd4a0;--rose:#f4617a;--sky:#60b4f0;
-  --text:#f0ede8;--text2:#a8a49e;--text3:#5a5650;
-  --debit:#2dd4a0;--credit:#f4617a;
-  --font:'Syne',sans-serif;--mono:'DM Mono',monospace;--serif:'Fraunces',serif;
-  --shadow:0 2px 12px rgba(0,0,0,0.4);--shadow-lg:0 8px 40px rgba(0,0,0,0.6);--glow:0 0 24px rgba(212,168,83,0.2);
-  --r:10px;--r-lg:16px;--r-xl:22px;
-}
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--font);font-size:14px;line-height:1.5;overflow:hidden;-webkit-font-smoothing:antialiased;}
-body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:9998;opacity:0.6;}
-::-webkit-scrollbar{width:4px;height:4px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:var(--bg5);border-radius:2px;}::-webkit-scrollbar-thumb:hover{background:var(--gold3);}
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-/* AUTH */
-#auth-overlay{position:fixed;inset:0;z-index:10000;display:flex;align-items:center;justify-content:center;overflow-y:auto;background:var(--bg);}
-.auth-bg{position:fixed;inset:0;background:radial-gradient(ellipse 60% 40% at 80% 20%,rgba(212,168,83,0.12) 0%,transparent 60%),radial-gradient(ellipse 50% 60% at 10% 80%,rgba(45,212,160,0.06) 0%,transparent 60%),var(--bg);z-index:0;}
-.auth-box{position:relative;z-index:1;width:100%;max-width:480px;margin:20px;padding:40px;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r-xl);box-shadow:var(--shadow-lg),0 0 60px rgba(212,168,83,0.08);}
-.auth-logo{display:flex;align-items:center;gap:14px;margin-bottom:8px;}
-.auth-logo-mark{width:44px;height:44px;background:linear-gradient(135deg,var(--gold),var(--gold2));border-radius:12px;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-weight:600;font-size:20px;color:#0c0e14;box-shadow:0 4px 20px rgba(212,168,83,0.4);}
-.auth-logo-text{font-family:var(--serif);font-weight:600;font-size:26px;letter-spacing:-0.5px;color:var(--text);}
-.auth-logo-text span{color:var(--gold);font-style:italic;}
-.auth-tagline{font-size:11px;color:var(--text3);font-family:var(--mono);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:28px;padding-left:2px;}
-.auth-tabs{display:flex;gap:0;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:4px;margin-bottom:24px;}
-.auth-tab{flex:1;background:transparent;border:none;color:var(--text3);border-radius:8px;padding:10px;font-family:var(--font);font-size:12px;font-weight:600;cursor:pointer;transition:all 0.2s;text-align:center;letter-spacing:0.5px;text-transform:uppercase;}
-.auth-tab.active{background:var(--bg5);color:var(--gold);box-shadow:var(--shadow);}
-.auth-form{display:none;}.auth-form.active{display:block;}
-.form-group{margin-bottom:14px;}
-.form-group label{display:block;font-family:var(--mono);font-size:10px;font-weight:400;text-transform:uppercase;letter-spacing:1.2px;color:var(--text3);margin-bottom:7px;}
-.form-group input,.form-group textarea,.form-group select{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);color:var(--text);font-family:var(--font);font-size:13px;padding:11px 14px;outline:none;transition:border-color 0.2s,box-shadow 0.2s;-webkit-appearance:none;}
-.form-group select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%235a5650' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:36px;}
-.form-group input:focus,.form-group textarea:focus,.form-group select:focus{border-color:var(--gold);box-shadow:0 0 0 3px var(--gold-glow2);}
-.form-group input::placeholder,.form-group textarea::placeholder{color:var(--text3);}
-.btn-primary{width:100%;background:linear-gradient(135deg,var(--gold),#c49840);color:#0c0e14;border:none;border-radius:var(--r);padding:13px 24px;font-family:var(--font);font-weight:700;font-size:13px;cursor:pointer;transition:all 0.25s;display:flex;align-items:center;justify-content:center;gap:8px;letter-spacing:0.8px;text-transform:uppercase;box-shadow:0 4px 20px rgba(212,168,83,0.3);}
-.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(212,168,83,0.45);background:linear-gradient(135deg,var(--gold2),var(--gold));}
-.btn-primary:disabled{opacity:0.5;cursor:not-allowed;transform:none;}
-.btn-link{background:none;border:none;color:var(--gold);font-family:var(--mono);font-size:11px;cursor:pointer;text-decoration:none;padding:0;margin-top:10px;letter-spacing:0.5px;transition:color 0.2s;}
-.btn-link:hover{color:var(--gold2);}
-.auth-footer{margin-top:16px;text-align:center;font-size:11px;color:var(--text3);font-family:var(--mono);letter-spacing:0.3px;}
-.auth-error{background:rgba(244,97,122,0.08);border:1px solid rgba(244,97,122,0.2);color:var(--rose);font-size:12px;padding:10px 14px;border-radius:var(--r);margin-bottom:14px;display:none;font-family:var(--mono);}
-.auth-success{background:rgba(45,212,160,0.08);border:1px solid rgba(45,212,160,0.2);color:var(--emerald);font-size:12px;padding:10px 14px;border-radius:var(--r);margin-bottom:14px;display:none;font-family:var(--mono);}
-
-/* PAYWALL */
-#paywall-overlay{position:fixed;inset:0;background:rgba(12,14,20,0.95);z-index:9999;display:none;align-items:center;justify-content:center;backdrop-filter:blur(8px);}
-.paywall-box{max-width:480px;padding:40px;text-align:center;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r-xl);box-shadow:var(--shadow-lg);}
-.paywall-icon{width:72px;height:72px;background:rgba(212,168,83,0.1);border:1px solid rgba(212,168,83,0.2);border-radius:20px;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:32px;}
-.paywall-title{font-family:var(--serif);font-size:24px;font-weight:600;color:var(--text);margin-bottom:10px;font-style:italic;}
-.paywall-text{font-size:13px;color:var(--text2);margin-bottom:28px;line-height:1.7;font-family:var(--mono);}
-.paywall-text strong{color:var(--gold);}
-.paywall-btns{display:flex;flex-direction:column;gap:10px;}
-.btn-wave{background:linear-gradient(135deg,#1ba5e8,#0d7ab5);color:#fff;border:none;border-radius:var(--r);padding:13px 24px;font-weight:700;font-size:13px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;text-transform:uppercase;letter-spacing:0.5px;font-family:var(--font);}
-.btn-wave:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(27,165,232,0.3);}
-.btn-whatsapp{background:linear-gradient(135deg,#25d366,#1aaa4f);color:#fff;border:none;border-radius:var(--r);padding:13px 24px;font-weight:700;font-size:13px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;text-transform:uppercase;letter-spacing:0.5px;font-family:var(--font);}
-.btn-whatsapp:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(37,211,102,0.3);}
-
-/* APP */
-#app{display:none;grid-template-rows:60px 1fr;grid-template-columns:240px 1fr;height:100vh;width:100vw;}
-#app.active{display:grid;}
-
-/* HEADER */
-#header{grid-column:1/-1;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:16px;position:relative;z-index:100;}
-.logo-lockup{display:flex;align-items:center;gap:12px;}
-.logo-mark{width:34px;height:34px;background:linear-gradient(135deg,var(--gold),#c49840);border-radius:9px;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-weight:600;font-size:14px;color:#0c0e14;flex-shrink:0;box-shadow:0 2px 12px rgba(212,168,83,0.35);}
-.logo-text{font-family:var(--serif);font-weight:600;font-size:17px;color:var(--text);letter-spacing:-0.3px;}
-.logo-text em{color:var(--gold);font-style:italic;}
-.header-divider{width:1px;height:24px;background:var(--border);flex-shrink:0;}
-.header-sub{font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;}
-.header-right{margin-left:auto;display:flex;align-items:center;gap:10px;}
-.pill{background:var(--bg4);border:1px solid var(--border);border-radius:100px;padding:4px 12px;font-family:var(--mono);font-size:10px;color:var(--text2);letter-spacing:0.5px;font-weight:400;}
-.pill-gold{background:var(--gold-glow2);border:1px solid rgba(212,168,83,0.2);color:var(--gold);}
-.pill-warn{color:#f0c96a;border-color:rgba(240,201,106,0.2);}
-.btn-header{background:transparent;border:1px solid var(--border);color:var(--text3);border-radius:var(--r);padding:6px 14px;font-family:var(--mono);font-size:10px;letter-spacing:0.8px;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .2s;}
-.btn-header:hover{border-color:var(--rose);color:var(--rose);background:rgba(244,97,122,0.06);}
-
-/* SIDEBAR */
-#sidebar{background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;padding:12px 0;}
-.sidebar-section{padding:14px 20px 6px;font-family:var(--mono);font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:1.8px;font-weight:400;}
-.sidebar-item{display:flex;align-items:center;gap:10px;padding:9px 16px 9px 20px;cursor:pointer;color:var(--text3);font-size:13px;transition:all 0.15s;font-weight:500;border-left:2px solid transparent;letter-spacing:0.2px;margin:1px 0;}
-.sidebar-item:hover{color:var(--text);background:rgba(255,255,255,0.03);}
-.sidebar-item.active{color:var(--gold);background:var(--gold-glow2);border-left-color:var(--gold);}
-.sidebar-item svg{width:15px;height:15px;flex-shrink:0;stroke-width:1.8;}
-.sidebar-divider{height:1px;background:var(--border);margin:8px 20px;}
-
-/* MAIN */
-#main{display:flex;flex-direction:column;overflow:hidden;background:var(--bg);}
-.view{display:none;flex-direction:column;height:100%;overflow:hidden;}
-.view.active{display:flex;}
-
-/* PANELS */
-.panel-top{padding:16px 24px;border-bottom:1px solid var(--border);background:var(--bg2);flex-shrink:0;display:flex;align-items:center;gap:12px;}
-.panel-top h2{font-family:var(--serif);font-size:20px;font-weight:400;letter-spacing:-0.3px;flex:1;color:var(--text);font-style:italic;}
-.panel-body{flex:1;overflow-y:auto;padding:20px 24px;}
-.panel-header{padding:10px 20px;font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:1.2px;color:var(--text3);border-bottom:1px solid var(--border);flex-shrink:0;display:flex;align-items:center;gap:8px;background:var(--bg2);font-weight:400;}
-.dot{width:5px;height:5px;border-radius:50%;background:var(--gold);animation:pulse 2s infinite;}
-@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.2;}}
-
-/* BUTTONS */
-.btn-secondary{background:var(--bg3);border:1px solid var(--border2);color:var(--text2);border-radius:var(--r);padding:9px 18px;font-family:var(--font);font-size:12px;cursor:pointer;transition:all 0.15s;font-weight:600;letter-spacing:0.3px;}
-.btn-secondary:hover{border-color:var(--gold3);color:var(--gold);background:var(--gold-glow2);}
-.btn-row{display:flex;gap:8px;flex-wrap:wrap;}
-.btn-action{background:var(--bg3);border:1px solid var(--border);color:var(--text3);border-radius:8px;padding:7px 14px;font-family:var(--mono);font-size:10px;letter-spacing:0.8px;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;gap:5px;transition:all .15s;font-weight:400;}
-.btn-action:hover{border-color:var(--gold3);color:var(--gold);background:var(--gold-glow2);}
-
-/* JOURNAL */
-.journal-body{display:grid;grid-template-columns:360px 1fr;gap:0;flex:1;overflow:hidden;}
-.input-panel{border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;background:var(--bg2);}
-.input-content{padding:16px;display:flex;flex-direction:column;gap:14px;}
-.output-panel{display:flex;flex-direction:column;overflow:hidden;}
-.output-content{flex:1;overflow-y:auto;padding:20px;}
-.panel-tabs{display:flex;border-bottom:1px solid var(--border);background:var(--bg2);flex-shrink:0;position:sticky;top:0;z-index:10;}
-.panel-tab{flex:1;padding:12px;text-align:center;font-family:var(--mono);font-size:10px;font-weight:400;letter-spacing:1px;text-transform:uppercase;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;background:transparent;transition:all .15s;}
-.panel-tab.active{color:var(--gold);border-bottom-color:var(--gold);}
-.journal-mode{display:none;}.journal-mode.active{display:flex;flex-direction:column;gap:0;}
-
-/* TYPE SELECTOR */
-.type-bar{padding:10px 16px;background:var(--bg);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;flex-shrink:0;flex-wrap:wrap;position:sticky;top:0;z-index:5;}
-.type-bar-label{font-family:var(--mono);font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:1.5px;white-space:nowrap;}
-.type-chips{display:flex;gap:4px;flex-wrap:wrap;flex:1;}
-.e-chip{background:var(--bg3);border:1px solid var(--border);color:var(--text3);border-radius:100px;padding:4px 12px;font-family:var(--mono);font-size:10px;cursor:pointer;transition:all 0.15s;white-space:nowrap;font-weight:400;letter-spacing:0.5px;}
-.e-chip:hover{border-color:var(--gold3);color:var(--text2);}
-.e-chip.active{background:var(--gold-glow);border-color:rgba(212,168,83,0.4);color:var(--gold);font-weight:500;}
-.quick-ops{display:flex;flex-wrap:wrap;gap:5px;}
-.quick-chip{background:var(--bg3);border:1px solid var(--border);color:var(--text3);border-radius:100px;padding:4px 12px;font-family:var(--mono);font-size:10px;cursor:pointer;transition:all 0.15s;letter-spacing:0.3px;}
-.quick-chip:hover{border-color:var(--gold3);color:var(--gold2);background:var(--gold-glow2);}
-
-/* TABLES */
-table.data-table{width:100%;border-collapse:collapse;font-size:12px;}
-table.data-table thead tr th{background:var(--bg3);padding:9px 12px;text-align:left;font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--text3);border-bottom:1px solid var(--border);font-weight:400;white-space:nowrap;}
-table.data-table tbody tr{border-bottom:1px solid var(--border);transition:background 0.1s;}
-table.data-table tbody tr:hover{background:rgba(255,255,255,0.02);}
-table.data-table td{padding:9px 12px;vertical-align:middle;color:var(--text2);}
-.col-compte{font-family:var(--mono);font-size:12px;color:var(--gold);font-weight:500;white-space:nowrap;}
-.col-libelle{color:var(--text);font-size:12px;font-weight:500;}
-.col-sub{font-family:var(--mono);font-size:10px;color:var(--text3);display:block;font-weight:300;margin-top:2px;}
-.col-debit{font-family:var(--mono);font-size:12px;color:var(--debit);text-align:right;font-weight:500;white-space:nowrap;}
-.col-credit{font-family:var(--mono);font-size:12px;color:var(--credit);text-align:right;font-weight:500;white-space:nowrap;}
-.col-solde{font-family:var(--mono);font-size:12px;color:var(--text);text-align:right;font-weight:500;white-space:nowrap;}
-.col-empty{color:var(--text3);font-family:var(--mono);font-size:11px;text-align:right;}
-
-/* JOURNAL CARDS */
-.journal-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;margin-bottom:14px;transition:border-color 0.2s;}
-.journal-card:hover{border-color:var(--border2);}
-.journal-card-header{padding:12px 16px;background:var(--bg3);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
-.journal-card-title{font-weight:600;font-size:13px;color:var(--text);flex:1;}
-.journal-card-date{font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:0.5px;}
-.journal-card-ref{font-family:var(--mono);font-size:10px;background:var(--gold-glow2);border:1px solid rgba(212,168,83,0.2);color:var(--gold);padding:3px 10px;border-radius:6px;font-weight:500;letter-spacing:0.3px;}
-.journal-totals{background:var(--bg);border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:24px;padding:8px 16px;font-family:var(--mono);font-size:11px;}
-.total-item{display:flex;gap:8px;align-items:center;}
-.total-label{color:var(--text3);font-size:9px;text-transform:uppercase;letter-spacing:0.8px;}
-.total-debit{color:var(--debit);font-weight:500;}
-.total-credit{color:var(--credit);font-weight:500;}
-.equilibre-ok{background:rgba(45,212,160,0.08);border:1px solid rgba(45,212,160,0.2);color:var(--emerald);font-family:var(--mono);font-size:10px;padding:3px 10px;border-radius:6px;font-weight:500;letter-spacing:0.3px;}
-.equilibre-err{background:rgba(244,97,122,0.08);border:1px solid rgba(244,97,122,0.2);color:var(--rose);font-family:var(--mono);font-size:10px;padding:3px 10px;border-radius:6px;font-weight:500;letter-spacing:0.3px;}
-
-/* AI ANALYSIS */
-.ai-analysis{background:linear-gradient(135deg,rgba(212,168,83,0.06),rgba(96,180,240,0.04));border:1px solid rgba(212,168,83,0.15);border-radius:var(--r-lg);padding:14px 16px;margin-bottom:16px;}
-.ai-analysis-header{display:flex;align-items:center;gap:8px;margin-bottom:8px;font-family:var(--mono);font-size:10px;color:var(--gold);letter-spacing:1px;text-transform:uppercase;font-weight:500;}
-.ai-analysis-text{font-size:13px;color:var(--text2);line-height:1.7;}
-.ai-analysis-text strong{color:var(--text);}
-
-/* DASHBOARD */
-.dashboard-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;margin-bottom:28px;}
-.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-lg);padding:20px;transition:border-color 0.2s,transform 0.2s;position:relative;overflow:hidden;}
-.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:0;transition:opacity 0.3s;}
-.stat-card:hover{border-color:var(--border2);}
-.stat-card:hover::before{opacity:0.5;}
-.stat-label{font-family:var(--mono);font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;font-weight:400;}
-.stat-value{font-family:var(--font);font-size:24px;font-weight:700;color:var(--text);letter-spacing:-0.5px;}
-.stat-value.pos{color:var(--debit);}
-.stat-value.neg{color:var(--credit);}
-.stat-sub{font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:6px;}
-
-/* GRAND LIVRE */
-.gl-compte{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;margin-bottom:14px;}
-.gl-compte-header{padding:12px 16px;background:var(--bg3);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;cursor:pointer;}
-.gl-compte-num{font-family:var(--mono);font-size:13px;color:var(--gold);font-weight:500;}
-.gl-compte-lib{font-size:13px;color:var(--text);flex:1;font-weight:500;}
-.gl-compte-totals{font-family:var(--mono);font-size:11px;color:var(--text3);display:flex;gap:16px;font-weight:400;}
-
-/* MANUAL TABLE */
-.manual-table{width:100%;border-collapse:collapse;font-size:12px;}
-.manual-table th{background:var(--bg3);padding:7px 10px;text-align:left;font-family:var(--mono);font-size:9px;text-transform:uppercase;color:var(--text3);border-bottom:1px solid var(--border);font-weight:400;letter-spacing:0.8px;}
-.manual-table td{padding:5px 6px;border-bottom:1px solid var(--border);}
-.manual-table input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:6px 8px;font-size:12px;color:var(--text);outline:none;font-family:var(--font);transition:border-color 0.15s;}
-.manual-table input:focus{border-color:var(--gold);}
-.manual-table input.mono{font-family:var(--mono);text-align:right;}
-.manual-totals{display:flex;justify-content:space-between;padding:8px 0;font-family:var(--mono);font-size:11px;color:var(--text2);}
-.manual-totals .ok{color:var(--debit);}.manual-totals .err{color:var(--credit);}
-
-/* BILAN */
-.bilan-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
-.bilan-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;}
-.bilan-card-header{padding:14px 16px;background:var(--bg3);border-bottom:1px solid var(--border);font-family:var(--mono);font-size:11px;font-weight:500;color:var(--text2);text-transform:uppercase;letter-spacing:1px;display:flex;justify-content:space-between;align-items:center;}
-.bilan-section{padding:10px 16px;border-bottom:1px solid var(--border);}
-.bilan-section-title{font-family:var(--mono);font-size:9px;font-weight:400;text-transform:uppercase;color:var(--text3);letter-spacing:1.2px;margin-bottom:8px;}
-.bilan-row{display:flex;justify-content:space-between;padding:4px 0;font-size:12px;}
-.bilan-row .label{color:var(--text2);}
-.bilan-row .value{font-family:var(--mono);font-weight:500;color:var(--text);}
-.bilan-total-row{display:flex;justify-content:space-between;padding:12px 16px;font-family:var(--mono);font-size:12px;font-weight:600;background:var(--bg3);}
-.bilan-total-row .value{color:var(--gold);}
-.tiers-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
-
-/* LOADING / EMPTY */
-.loading-state{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:16px;color:var(--text3);}
-.spinner{width:32px;height:32px;border:1.5px solid var(--border2);border-top-color:var(--gold);border-radius:50%;animation:spin 0.9s linear infinite;}
-@keyframes spin{to{transform:rotate(360deg);}}
-.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:14px;color:var(--text3);text-align:center;padding:40px;}
-.empty-icon{width:52px;height:52px;background:var(--gold-glow2);border:1px solid rgba(212,168,83,0.15);border-radius:14px;display:flex;align-items:center;justify-content:center;}
-.empty-icon svg{width:22px;height:22px;color:var(--gold);opacity:0.6;}
-.empty-state h3{font-size:15px;color:var(--text2);font-weight:600;}
-.empty-state p{font-size:12px;line-height:1.6;max-width:260px;font-family:var(--mono);}
-
-/* TOAST */
-#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--bg4);color:var(--text);border:1px solid var(--border2);font-family:var(--mono);font-size:12px;padding:11px 22px;border-radius:100px;opacity:0;transition:all 0.3s;pointer-events:none;z-index:9999;white-space:nowrap;font-weight:400;letter-spacing:0.3px;box-shadow:var(--shadow-lg);}
-#toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
-
-/* PLAN GRID */
-.plan-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:5px;}
-.plan-item{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;display:flex;gap:10px;transition:border-color 0.15px;}
-.plan-item:hover{border-color:var(--gold3);}
-.plan-num{font-family:var(--mono);font-size:11px;color:var(--gold);font-weight:500;white-space:nowrap;}
-.plan-lib{font-size:11px;color:var(--text2);}
-
-/* API KEY STATUS */
-.api-status{position:fixed;bottom:24px;right:24px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:6px 12px;font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:0.8px;z-index:100;display:flex;align-items:center;gap:6px;}
-.api-dot{width:4px;height:4px;border-radius:50%;background:var(--emerald);}
-
-@media print{#sidebar,#header,.input-panel,.panel-header,.btn-action,.btn-row,.ai-analysis,.type-bar,.btn-header,.panel-tabs,.api-status{display:none!important;}#main{grid-column:1/-1;}body{background:#fff;color:#000;}}
-@media(max-width:900px){#app{grid-template-columns:1fr;grid-template-rows:60px auto 1fr;}#sidebar{display:none;}.journal-body{grid-template-columns:1fr;}.input-panel{max-height:380px;}.bilan-grid,.tiers-grid{grid-template-columns:1fr;}}
-</style>
-<base target="_blank">
-</head>
-<body>
-
-<!-- AUTH -->
-<div id="auth-overlay">
-  <div class="auth-bg"></div>
-  <div class="auth-box">
-    <div class="auth-logo"><div class="auth-logo-mark">C</div><div class="auth-logo-text">Comeo <span>AI</span></div></div>
-    <div class="auth-tagline">Comptabilité SYSCOHADA · Révisé 2023</div>
-    <div class="auth-tabs">
-      <div class="auth-tab active" onclick="switchAuth('login')">Connexion</div>
-      <div class="auth-tab" onclick="switchAuth('register')">Nouveau compte</div>
-    </div>
-    <form id="form-login" class="auth-form active">
-      <div class="auth-error" id="login-error"></div>
-      <div class="form-group"><label>Nom de l'entreprise</label><input type="text" id="login-entreprise" placeholder="Ex: SARL ABC" required></div>
-      <div class="form-group"><label>Mot de passe</label><input type="password" id="login-password" placeholder="••••••••" required></div>
-      <button type="submit" class="btn-primary" id="btn-login">Se connecter</button>
-      <div style="text-align:center;margin-top:12px;"><button type="button" class="btn-link" onclick="forgotPassword()">Mot de passe oublié ?</button></div>
-    </form>
-    <form id="form-register" class="auth-form">
-      <div class="auth-error" id="register-error"></div>
-      <div class="auth-success" id="register-success"></div>
-      <div class="form-group"><label>Nom de l'entreprise *</label><input type="text" id="reg-entreprise" placeholder="Ex: SARL ABC" required></div>
-      <div class="form-group"><label>Contact (email ou téléphone) *</label><input type="text" id="reg-contact" placeholder="contact@entreprise.ci" required></div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-        <div class="form-group"><label>Type d'entreprise</label>
-          <select id="reg-type"><option value="commerce">🏪 Commerce</option><option value="service">💼 Services</option><option value="industrie">🏭 Industrie</option><option value="banque">🏦 Banque</option><option value="sante">🏥 Santé</option><option value="education">🎓 Éducation</option><option value="ong">🌍 ONG</option><option value="agri">🌾 Agriculture</option><option value="immo">🏗️ Immobilier</option><option value="transport">🚚 Transport</option></select>
-        </div>
-        <div class="form-group"><label>Secteur d'activité</label><input type="text" id="reg-secteur" placeholder="Ex: Alimentation"></div>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-        <div class="form-group"><label>Pays</label>
-          <select id="reg-pays"><option value="CI">🇨🇮 Côte d'Ivoire</option><option value="SN">🇸🇳 Sénégal</option><option value="ML">🇲🇱 Mali</option><option value="BF">🇧🇫 Burkina Faso</option><option value="BJ">🇧🇯 Bénin</option><option value="TG">🇹🇬 Togo</option><option value="GN">🇬🇳 Guinée</option><option value="CM">🇨🇲 Cameroun</option><option value="GA">🇬🇦 Gabon</option><option value="CG">🇨🇬 Congo</option><option value="CD">🇨🇩 RD Congo</option><option value="autre">Autre</option></select>
-        </div>
-        <div class="form-group"><label>Ville</label><input type="text" id="reg-ville" placeholder="Ex: Abidjan"></div>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-        <div class="form-group"><label>RCCM</label><input type="text" id="reg-rccm" placeholder="CI-ABJ-2023-B-12345"></div>
-        <div class="form-group"><label>Régime fiscal</label><select id="reg-regime"><option value="reel">Réel Normal</option><option value="reel_simplifie">Réel Simplifié</option><option value="micro">Micro-entreprise</option><option value="forfait">Forfait</option><option value="exonere">Exonéré</option></select></div>
-      </div>
-      <div class="form-group"><label>Mot de passe *</label><input type="password" id="reg-password" placeholder="Min. 6 caractères" required minlength="6"></div>
-      <div class="form-group"><label>Confirmer le mot de passe *</label><input type="password" id="reg-password2" placeholder="Répétez le mot de passe" required minlength="6"></div>
-      <button type="submit" class="btn-primary" id="btn-register">Créer mon compte — 24h gratuit</button>
-      <div class="auth-footer" style="margin-top:12px;">Essai gratuit 24h · puis 2 000 FCFA/mois</div>
-    </form>
-  </div>
-</div>
-
-<!-- PAYWALL -->
-<div id="paywall-overlay">
-  <div class="paywall-box">
-    <div class="paywall-icon">⏳</div>
-    <div class="paywall-title">Votre essai est terminé</div>
-    <div class="paywall-text">Merci d'avoir testé <strong>Comeo AI Pro</strong>.<br>Continuez pour <strong>2 000 FCFA/mois</strong> seulement.</div>
-    <div class="paywall-btns">
-      <a class="btn-wave" href="https://pay.wave.com/m/M_ci_iqMcg8KwRE-W/c/ci/?amount=2000" target="_blank">💳 Payer avec Wave (2 000 FCFA)</a>
-      <a class="btn-whatsapp" href="https://wa.me/2250508463003?text=Bonjour%2C%20j%27ai%20effectu%C3%A9%20mon%20paiement%20Comeo%20AI.%20Mon%20entreprise%20%3A%20" target="_blank">📲 Confirmer sur WhatsApp</a>
-      <button class="btn-secondary" style="width:100%;margin-top:4px;" onclick="logout()">Se déconnecter</button>
-    </div>
-  </div>
-</div>
-
-<!-- APP -->
-<div id="app">
-  <div id="header">
-    <div class="logo-lockup"><div class="logo-mark">C</div><div class="logo-text">Comeo <em>AI</em> Pro</div></div>
-    <div class="header-divider"></div>
-    <div class="header-sub">SYSCOHADA · Révisé 2023</div>
-    <div class="header-right">
-      <span class="pill pill-gold" id="header-org">🏢 Entreprise</span>
-      <span class="pill" id="header-status">🟢 Actif</span>
-      <button class="btn-header" onclick="logout()"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Quitter</button>
-    </div>
-  </div>
-
-  <div id="sidebar">
-    <div class="sidebar-section">Principal</div>
-    <div class="sidebar-item active" onclick="showView('dashboard',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>Tableau de bord</div>
-    <div class="sidebar-item" onclick="showView('journal',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Journal</div>
-    <div class="sidebar-item" onclick="showView('grandlivre',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>Grand Livre</div>
-    <div class="sidebar-item" onclick="showView('balance',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>Balance</div>
-    <div class="sidebar-item" onclick="showView('bilan',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>Bilan</div>
-    <div class="sidebar-item" onclick="showView('resultat',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>Compte de Résultat</div>
-    <div class="sidebar-item" onclick="showView('tiers',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Tiers</div>
-    <div class="sidebar-item" onclick="showView('tresorerie',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>Trésorerie</div>
-    <div class="sidebar-item" onclick="showView('historique',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Historique</div>
-    <div class="sidebar-divider"></div>
-    <div class="sidebar-section">Réglages</div>
-    <div class="sidebar-item" onclick="showView('profil',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Profil Entreprise</div>
-    <div class="sidebar-divider"></div>
-    <div class="sidebar-section">Référence</div>
-    <div class="sidebar-item" onclick="showView('plan',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>Plan Comptable</div>
-    <div class="sidebar-item" onclick="showView('guide',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Guide des Opérations</div>
-  </div>
-
-  <div id="main">
-    <!-- DASHBOARD -->
-    <div id="view-dashboard" class="view active">
-      <div class="panel-top"><h2>Tableau de bord</h2><span style="color:var(--text3);font-family:var(--mono);font-size:10px;letter-spacing:1px;text-transform:uppercase;">Vue synthétique</span></div>
-      <div class="panel-body">
-        <div class="dashboard-grid">
-          <div class="stat-card"><div class="stat-label">Écritures ce mois</div><div class="stat-value" id="dash-nb-ecritures">0</div></div>
-          <div class="stat-card"><div class="stat-label">Total Débit</div><div class="stat-value pos" id="dash-total-debit">0 FCFA</div></div>
-          <div class="stat-card"><div class="stat-label">Total Crédit</div><div class="stat-value neg" id="dash-total-credit">0 FCFA</div></div>
-          <div class="stat-card"><div class="stat-label">Solde Trésorerie</div><div class="stat-value" id="dash-solde-treso">0 FCFA</div></div>
-        </div>
-        <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;"><div style="font-family:var(--mono);font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:1.5px;">Dernières écritures</div><div style="flex:1;height:1px;background:var(--border);"></div></div>
-        <div id="dash-last-ecritures"></div>
-      </div>
-    </div>
-
-    <!-- JOURNAL -->
-    <div id="view-journal" class="view">
-      <div class="panel-top"><h2>Journal Comptable</h2><span style="font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:0.8px;">IA · SYSCOHADA 2023</span></div>
-      <div class="type-bar">
-        <span class="type-bar-label">Secteur :</span>
-        <div class="type-chips">
-          <div class="e-chip active" data-type="commerce" onclick="selectEntreprise(this)">🏪 Commerce</div>
-          <div class="e-chip" data-type="service" onclick="selectEntreprise(this)">💼 Services</div>
-          <div class="e-chip" data-type="industrie" onclick="selectEntreprise(this)">🏭 Industrie</div>
-          <div class="e-chip" data-type="banque" onclick="selectEntreprise(this)">🏦 Banque</div>
-          <div class="e-chip" data-type="sante" onclick="selectEntreprise(this)">🏥 Santé</div>
-          <div class="e-chip" data-type="education" onclick="selectEntreprise(this)">🎓 Éducation</div>
-          <div class="e-chip" data-type="ong" onclick="selectEntreprise(this)">🌍 ONG</div>
-          <div class="e-chip" data-type="agri" onclick="selectEntreprise(this)">🌾 Agriculture</div>
-          <div class="e-chip" data-type="immo" onclick="selectEntreprise(this)">🏗️ Immobilier</div>
-          <div class="e-chip" data-type="transport" onclick="selectEntreprise(this)">🚚 Transport</div>
-        </div>
-        <div id="context-badge" style="font-family:var(--mono);font-size:10px;color:var(--gold);letter-spacing:0.5px;white-space:nowrap;">🏪 Commerce</div>
-      </div>
-      <div class="journal-body">
-        <div class="input-panel">
-          <div class="panel-tabs">
-            <div class="panel-tab active" onclick="switchJournalMode('ia',this)">⚡ Génération IA</div>
-            <div class="panel-tab" onclick="switchJournalMode('manuel',this)">✏️ Saisie manuelle</div>
-          </div>
-          <div id="journal-mode-ia" class="journal-mode active">
-            <div class="input-content">
-              <div class="form-group"><label>Opérations rapides</label><div class="quick-ops" id="quick-ops-container"></div></div>
-              <div class="form-group"><label>Description *</label><textarea id="op-description" rows="3" placeholder="Décrivez l'opération comptable..." style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);color:var(--text);font-family:var(--font);font-size:13px;padding:11px 14px;outline:none;width:100%;transition:border-color .2s;resize:vertical;"></textarea></div>
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-                <div class="form-group"><label>Date</label><input type="date" id="op-date"/></div>
-                <div class="form-group"><label>Référence</label><input type="text" id="op-ref" placeholder="FAC-001"/></div>
-              </div>
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-                <div class="form-group"><label>Montant (FCFA)</label><input type="text" id="op-montant" placeholder="1 500 000"/></div>
-                <div class="form-group"><label>Type</label><select id="op-type"></select></div>
-              </div>
-              <div class="form-group"><label>Infos complémentaires</label><input type="text" id="op-extra" placeholder="TVA 18%, escompte..."/></div>
-              <div class="btn-row">
-                <button class="btn-primary" id="btn-generate" onclick="generateJournal()" style="flex:1;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>Générer par IA</button>
-                <button class="btn-secondary" onclick="saveManualSimple()">Saisie rapide</button>
-              </div>
-            </div>
-          </div>
-          <div id="journal-mode-manuel" class="journal-mode">
-            <div class="input-content">
-              <div class="form-group"><label>Description</label><input type="text" id="manual-desc" placeholder="Libellé de l'écriture..."/></div>
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-                <div class="form-group"><label>Date</label><input type="date" id="manual-date"/></div>
-                <div class="form-group"><label>Référence</label><input type="text" id="manual-ref" placeholder="JNL-001"/></div>
-              </div>
-              <div class="form-group" style="margin-bottom:4px;"><label>Lignes d'écriture</label></div>
-              <table class="manual-table"><thead><tr><th>Compte</th><th>Libellé</th><th style="text-align:right">Débit</th><th style="text-align:right">Crédit</th><th></th></tr></thead><tbody id="manual-lines-body"></tbody></table>
-              <div class="btn-row" style="margin-top:8px;"><button class="btn-secondary" onclick="addManualLine()">+ Ligne</button><button class="btn-secondary" onclick="clearManualLines()">Réinitialiser</button></div>
-              <div class="manual-totals" id="manual-totals">Total Débit : 0 FCFA | Total Crédit : 0 FCFA</div>
-              <button class="btn-primary" onclick="saveManualMulti()">Enregistrer l'écriture</button>
-            </div>
-          </div>
-        </div>
-        <div class="output-panel">
-          <div class="panel-header"><div class="dot"></div>Résultat IA — SYSCOHADA 2023</div>
-          <div class="output-content" id="output-content">
-            <div class="empty-state"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="5 3 19 12 5 21 5 3"/></svg></div><h3>Prêt à générer</h3><p>Décrivez une opération et cliquez sur Générer par IA.</p></div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- GRAND LIVRE -->
-    <div id="view-grandlivre" class="view">
-      <div class="panel-top"><h2>Grand Livre</h2><input type="text" id="gl-search" placeholder="Rechercher un compte..." oninput="renderGrandLivre(this.value)" style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);color:var(--text);padding:8px 14px;outline:none;width:220px;font-size:12px;font-family:var(--mono);"><button class="btn-action" onclick="window.print()">🖨️ Imprimer</button></div>
-      <div class="panel-body" id="gl-body"></div>
-    </div>
-
-    <!-- BALANCE -->
-    <div id="view-balance" class="view">
-      <div class="panel-top"><h2>Balance des Comptes</h2><button class="btn-action" onclick="window.print()">🖨️ Imprimer</button><button class="btn-action" onclick="exportBalanceCSV()">CSV</button><button class="btn-action" onclick="exportBalanceExcel()">Excel</button><button class="btn-action" onclick="exportBalanceWord()">Word</button><button class="btn-action" onclick="exportBalancePDF()">PDF</button></div>
-      <div class="panel-body" id="balance-body"></div>
-    </div>
-
-    <!-- BILAN -->
-    <div id="view-bilan" class="view">
-      <div class="panel-top"><h2>Bilan — Actif / Passif</h2><button class="btn-action" onclick="window.print()">🖨️ Imprimer</button><button class="btn-action" onclick="exportBilanCSV()">CSV</button><button class="btn-action" onclick="exportBilanExcel()">Excel</button><button class="btn-action" onclick="exportBilanWord()">Word</button><button class="btn-action" onclick="exportBilanPDF()">PDF</button></div>
-      <div class="panel-body" id="bilan-body"></div>
-    </div>
-
-    <!-- COMPTE DE RESULTAT -->
-    <div id="view-resultat" class="view">
-      <div class="panel-top"><h2>Compte de Résultat</h2><button class="btn-action" onclick="window.print()">🖨️ Imprimer</button><button class="btn-action" onclick="exportResultatCSV()">CSV</button><button class="btn-action" onclick="exportResultatExcel()">Excel</button><button class="btn-action" onclick="exportResultatWord()">Word</button><button class="btn-action" onclick="exportResultatPDF()">PDF</button></div>
-      <div class="panel-body" id="resultat-body"></div>
-    </div>
-
-    <!-- TIERS -->
-    <div id="view-tiers" class="view">
-      <div class="panel-top"><h2>Tiers — Clients &amp; Fournisseurs</h2><button class="btn-action" onclick="window.print()">🖨️ Imprimer</button><button class="btn-action" onclick="exportTiersCSV()">CSV</button></div>
-      <div class="panel-body" id="tiers-body"></div>
-    </div>
-
-    <!-- TRESORERIE -->
-    <div id="view-tresorerie" class="view">
-      <div class="panel-top"><h2>Trésorerie</h2><button class="btn-action" onclick="window.print()">🖨️ Imprimer</button><button class="btn-action" onclick="exportTresorerieCSV()">CSV</button></div>
-      <div class="panel-body" id="tresorerie-body"></div>
-    </div>
-
-    <!-- HISTORIQUE -->
-    <div id="view-historique" class="view">
-      <div class="panel-top"><h2>Historique des Journaux</h2>
-        <input type="text" id="hist-search" placeholder="Rechercher..." oninput="renderHistorique(this.value)" style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);color:var(--text);padding:8px 14px;outline:none;width:200px;font-size:12px;font-family:var(--mono);">
-        <input type="month" id="hist-month" oninput="renderHistorique()" style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);color:var(--text);padding:8px 10px;outline:none;font-size:12px;font-family:var(--mono);">
-        <button class="btn-action" onclick="exportHistoriqueCSV()">CSV</button><button class="btn-action" onclick="window.print()">🖨️ Imprimer</button>
-      </div>
-      <div class="panel-body" id="historique-body"></div>
-    </div>
-
-    <!-- PROFIL -->
-    <div id="view-profil" class="view">
-      <div class="panel-top"><h2>Profil Entreprise</h2><button class="btn-action" onclick="saveProfilEntreprise()">💾 Enregistrer</button></div>
-      <div class="panel-body">
-        <div style="max-width:680px;display:flex;flex-direction:column;gap:16px;">
-          <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-lg);padding:20px;">
-            <div style="font-family:var(--mono);font-size:10px;color:var(--gold);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:16px;">Informations générales</div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-              <div class="form-group"><label>Nom de l'entreprise</label><input type="text" id="profil-nom" placeholder="SARL ABC"/></div>
-              <div class="form-group"><label>Contact</label><input type="text" id="profil-contact" placeholder="email ou téléphone"/></div>
-              <div class="form-group"><label>Type d'entreprise</label><select id="profil-type"><option value="commerce">🏪 Commerce</option><option value="service">💼 Services</option><option value="industrie">🏭 Industrie</option><option value="banque">🏦 Banque</option><option value="sante">🏥 Santé</option><option value="education">🎓 Éducation</option><option value="ong">🌍 ONG</option><option value="agri">🌾 Agriculture</option><option value="immo">🏗️ Immobilier</option><option value="transport">🚚 Transport</option></select></div>
-              <div class="form-group"><label>Secteur d'activité</label><input type="text" id="profil-secteur" placeholder="Alimentation, BTP..."/></div>
-              <div class="form-group"><label>Pays</label><select id="profil-pays"><option value="CI">🇨🇮 Côte d'Ivoire</option><option value="SN">🇸🇳 Sénégal</option><option value="ML">🇲🇱 Mali</option><option value="BF">🇧🇫 Burkina Faso</option><option value="BJ">🇧🇯 Bénin</option><option value="TG">🇹🇬 Togo</option><option value="GN">🇬🇳 Guinée</option><option value="CM">🇨🇲 Cameroun</option><option value="GA">🇬🇦 Gabon</option><option value="CG">🇨🇬 Congo</option><option value="CD">🇨🇩 RD Congo</option><option value="autre">Autre</option></select></div>
-              <div class="form-group"><label>Ville</label><input type="text" id="profil-ville" placeholder="Abidjan"/></div>
-              <div class="form-group"><label>RCCM</label><input type="text" id="profil-rccm" placeholder="CI-ABJ-2023-B-12345"/></div>
-              <div class="form-group"><label>Régime fiscal</label><select id="profil-regime"><option value="reel">Réel Normal</option><option value="reel_simplifie">Réel Simplifié</option><option value="micro">Micro-entreprise</option><option value="forfait">Forfait</option><option value="exonere">Exonéré</option></select></div>
-            </div>
-          </div>
-          <div id="profil-success" style="display:none;background:rgba(45,212,160,0.08);border:1px solid rgba(45,212,160,0.2);color:var(--emerald);font-family:var(--mono);font-size:12px;padding:12px 16px;border-radius:var(--r);letter-spacing:0.3px;">✓ Profil mis à jour avec succès.</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- PLAN COMPTABLE -->
-    <div id="view-plan" class="view">
-      <div class="panel-top"><h2>Plan Comptable SYSCOHADA 2023</h2><input type="text" id="plan-search" placeholder="Rechercher..." oninput="filterPlan(this.value)" style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);color:var(--text);padding:8px 14px;outline:none;width:220px;font-size:12px;font-family:var(--mono);"></div>
-      <div class="panel-body" id="plan-body"></div>
-    </div>
-
-    <!-- GUIDE -->
-    <div id="view-guide" class="view">
-      <div class="panel-top"><h2>Guide des Écritures Courantes</h2></div>
-      <div class="panel-body" id="guide-body"></div>
-    </div>
-  </div>
-</div>
-
-<!-- API KEY STATUS INDICATOR -->
-<div class="api-status" id="api-status-bar"><div class="api-dot" id="api-dot"></div><span id="api-status-text">API prête</span></div>
-
-<div id="toast"></div>
-
-<script>
-/* ============================================================
-   FIREBASE — DOUBLE BASE DE DONNÉES
-   DB1 (data-com-a94a8)  : écritures comptables
-   DB2 (livreur-21be8)   : abonnements & gestion clients
-============================================================ */
-var DB1_CONFIG = {
-  apiKey:"AIzaSyCPGgtXoDUycykLaTSee0S0yY0tkeJpqKI",
-  authDomain:"data-com-a94a8.firebaseapp.com",
-  databaseURL:"https://data-com-a94a8-default-rtdb.firebaseio.com",
-  projectId:"data-com-a94a8",
-  storageBucket:"data-com-a94a8.appspot.com",
-  messagingSenderId:"276904640935",
-  appId:"1:276904640935:web:9cd805aeba6c34c767f682"
+const firebaseConfig = {
+  apiKey: "AIzaSyCPGgtXoDUycykLaTSee0S0yY0tkeJpqKI",
+  authDomain: "data-com-a94a8.firebaseapp.com",
+  databaseURL: "https://data-com-a94a8-default-rtdb.firebaseio.com",
+  projectId: "data-com-a94a8",
+  storageBucket: "data-com-a94a8.appspot.com",
+  messagingSenderId: "276904640935",
+  appId: "1:276904640935:web:9cd805aeba6c34c767f682",
+  measurementId: "G-FYQCWY5G4S"
 };
 
-var DB2_CONFIG = {
-  apiKey:"AIzaSyC1pJG97RoIJL-zvrRP5OaJAIVkFNoMC1Q",
-  authDomain:"livreur-21be8.firebaseapp.com",
-  databaseURL:"https://livreur-21be8-default-rtdb.firebaseio.com",
-  projectId:"livreur-21be8",
-  storageBucket:"livreur-21be8.firebasestorage.app",
-  messagingSenderId:"330461481415",
-  appId:"1:330461481415:web:3c9987401062181f9731e2",
-  measurementId:"G-1KWC1NCJ45"
-};
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+window._db = db; window._fbCollection = collection; window._fbAddDoc = addDoc;
+window._fbGetDocs = getDocs; window._fbDeleteDoc = deleteDoc; window._fbDoc = doc;
+window._fbQuery = query; window._fbOrderBy = orderBy; window._fbSetDoc = setDoc;
+window._fbGetDoc = getDoc; window._fbReady = true;
+document.dispatchEvent(new Event('firebase-ready'));
 
-var db1 = null; // Comptabilité (écritures)
-var db2 = null; // Abonnements (gestion clients)
+// ══════════════════════════════════════════
+// CONFIGURATION SERVEUR — Chargée depuis Firestore (server_config)
+// Les clés API Groq et l'ordre des modèles sont gérés via server.html
+// JAMAIS de clé API en dur dans ce fichier
+// ══════════════════════════════════════════
+let GROQ_API_KEYS  = [];   // Chargées depuis server_config/groq_keys
+let GROQ_MODELS    = [];   // Chargées depuis server_config/models
+let groqKeyIdx     = 0;    // Index rotation clés
+let groqModelIdx   = 0;    // Index rotation modèles
+let serverConfigLoaded = false;
 
-/* ============================================================
-   GROQ API — ROTATION DES CLÉS
-   Les clés tournent automatiquement à chaque appel.
-   En cas d'erreur (rate limit), on passe à la suivante.
-============================================================ */
-var GROQ_KEYS = [
-  "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",
-  "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",
-  "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",
-  "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",
-  "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"
-];
+async function loadServerConfig() {
+  try {
+    const [keysSnap, modelsSnap] = await Promise.all([
+      getDoc(doc(db, 'server_config', 'groq_keys')),
+      getDoc(doc(db, 'server_config', 'models'))
+    ]);
 
-// Index courant de la clé (persisté en session)
-var _groqKeyIndex = 0;
-var _groqKeyUsageCount = {};
+    if (keysSnap.exists()) {
+      const rawKeys = keysSnap.data().keys || [];
+      GROQ_API_KEYS = rawKeys.map(k => k.value).filter(Boolean);
+    }
 
-/* Obtenir la prochaine clé disponible avec rotation */
-function getNextGroqKey(preferredIndex) {
-  var idx = (preferredIndex !== undefined) ? preferredIndex : _groqKeyIndex;
-  _groqKeyIndex = (idx + 1) % GROQ_KEYS.length;
-  return { key: GROQ_KEYS[idx], index: idx };
-}
+    if (modelsSnap.exists()) {
+      GROQ_MODELS = modelsSnap.data().list || [];
+    }
 
-/* Marquer une clé comme échouée et obtenir la suivante */
-function markKeyFailed(index) {
-  _groqKeyUsageCount[index] = (_groqKeyUsageCount[index] || 0) + 1;
-  var nextIdx = (index + 1) % GROQ_KEYS.length;
-  updateApiStatus('⚠ Rotation clé ' + (index+1) + '→' + (nextIdx+1), 'warn');
-  return nextIdx;
-}
+    // Valeurs par défaut si Firestore vide
+    if (GROQ_MODELS.length === 0) {
+      GROQ_MODELS = [
+        'llama-3.3-70b-versatile',
+        'qwen/qwen3-32b',
+        'meta-llama/llama-4-scout-17b-16e-instruct'
+      ];
+    }
 
-function updateApiStatus(text, type) {
-  var dot = document.getElementById('api-dot');
-  var label = document.getElementById('api-status-text');
-  if (!dot || !label) return;
-  label.textContent = text;
-  dot.style.background = type === 'warn' ? 'var(--gold)' : type === 'error' ? 'var(--rose)' : 'var(--emerald)';
-}
-
-/* ============================================================
-   PLAN COMPTABLE SYSCOHADA REVISE 2023
-============================================================ */
-var PLAN_COMPTABLE={
-"Classe 1 — Ressources durables":{
-"101":"Capital social","1011":"Capital souscrit, non appelé","1012":"Capital souscrit, appelé, non versé","1013":"Capital souscrit, appelé, versé, non amorti","1014":"Capital souscrit, appelé, versé, amorti","102":"Capital par dotation","103":"Capital personnel","104":"Compte de l'exploitant","105":"Primes liées au capital social","1051":"Primes d'émission","1052":"Primes d'apport","106":"Écarts de réévaluation","111":"Réserve légale","112":"Réserves statutaires","121":"Report à nouveau créditeur","129":"Report à nouveau débiteur","131":"Résultat net : Bénéfice","139":"Résultat net : Perte","141":"Subventions d'équipement","151":"Amortissements dérogatoires","161":"Emprunts obligataires","162":"Emprunts et dettes auprès des établissements de crédit","163":"Avances reçues de l'État","165":"Dépôts et cautionnements reçus","166":"Intérêts courus sur emprunts","172":"Dettes de location-acquisition / crédit-bail immobilier","173":"Dettes de location-acquisition / crédit-bail mobilier","191":"Provisions pour litiges","192":"Provisions pour garanties","194":"Provisions pour pertes de change","195":"Provisions pour impôts","196":"Provisions pour pensions"
-},
-"Classe 2 — Actif immobilisé":{
-"211":"Frais de développement","212":"Brevets, licences","213":"Logiciels et sites internet","215":"Marques","216":"Fonds commercial","217":"Droit au bail","221":"Terrains agricoles","222":"Terrains nus","223":"Terrains bâtis","231":"Bâtiments industriels sur sol propre","2311":"Bâtiments industriels","2312":"Bâtiments agricoles","2313":"Bâtiments administratifs","2314":"Bâtiments logement personnel","232":"Bâtiments sur sol d'autrui","233":"Ouvrages d'infrastructure","234":"Aménagements, agencements","241":"Matériel et outillage industriel","2411":"Matériel industriel","2412":"Outillage industriel","2413":"Matériel commercial","242":"Matériel et outillage agricole","244":"Matériel et mobilier","2441":"Matériel de bureau","2442":"Matériel informatique","2443":"Matériel bureautique","2444":"Mobilier de bureau","245":"Matériel de transport","2451":"Matériel automobile","2452":"Matériel ferroviaire","2455":"Matériel aérien","246":"Actifs biologiques","261":"Titres de participation exclusif","262":"Titres de participation conjoint","271":"Prêts et créances","272":"Prêts au personnel","275":"Dépôts et cautionnements versés","281":"Amortissements immos incorporelles","282":"Amortissements terrains","283":"Amortissements bâtiments","2831":"Amort. bâtiments industriels","2832":"Amort. bâtiments sur sol autrui","284":"Amortissements matériels","2841":"Amort. matériel industriel","2844":"Amort. matériel mobilier","2845":"Amort. matériel transport","291":"Dépréciations immos incorporelles","292":"Dépréciations immos corporelles","296":"Dépréciations titres participation"
-},
-"Classe 3 — Stocks":{
-"31":"Marchandises","311":"Marchandises A","312":"Marchandises B","32":"Matières premières","321":"Matières premières A","33":"Autres approvisionnements","331":"Matières consommables","332":"Fournitures de bureau","35":"Produits finis","351":"Produits finis A","37":"Produits intermédiaires","371":"Produits intermédiaires","372":"Produits résiduels","391":"Dépréciations stocks marchandises","392":"Dépréciations stocks matières","396":"Dépréciations stocks produits finis"
-},
-"Classe 4 — Tiers":{
-"401":"Fournisseurs, dettes en compte","4011":"Fournisseurs","4012":"Fournisseurs Groupe","4013":"Fournisseurs sous-traitants","4017":"Fournisseurs, retenues de garantie","402":"Fournisseurs, effets à payer","404":"Fournisseurs, acquisitions immobilisations","4041":"Fourn. immos incorporelles","4042":"Fourn. immos corporelles","408":"Fournisseurs, factures non parvenues","4081":"Factures non parvenues","409":"Fournisseurs débiteurs","4091":"Fourn. avances versées","411":"Clients","4111":"Clients","4112":"Clients Groupe","4117":"Clients, retenues de garantie","412":"Clients, effets à recevoir","4121":"Effets à recevoir","416":"Créances clients litigieuses","4161":"Créances litigieuses","4162":"Créances douteuses","418":"Clients, produits à recevoir","4181":"Factures à établir","419":"Clients créditeurs","4191":"Acomptes clients reçus","421":"Personnel, avances","4211":"Personnel, avances","4212":"Personnel, acomptes","422":"Personnel, rémunérations dues","423":"Personnel, oppositions","424":"Personnel, oeuvres sociales","4281":"Dettes provisionnées congés","431":"Sécurité sociale — CNPS","4311":"Prestations familiales","4312":"Accidents de travail","4313":"Retraite obligatoire CNPS","432":"Caisses retraite complémentaire","441":"État, impôt sur les bénéfices","442":"État, autres impôts","4421":"Impôts et taxes État","4426":"Droits de douane","4428":"Autres impôts et taxes","443":"État, T.V.A. facturée","4431":"TVA facturée sur ventes","4432":"TVA facturée sur prestations","4433":"TVA facturée sur travaux","444":"État, T.V.A. due ou crédit","4441":"État, TVA due","4449":"État, crédit TVA à reporter","445":"État, T.V.A. récupérable","4451":"TVA récup. sur immobilisations","4452":"TVA récup. sur achats","4453":"TVA récup. sur transport","4454":"TVA récup. sur services","447":"État, impôts retenus à la source","4471":"IGR/IRPP retenu","4472":"Impôts sur salaires","449":"État, créances et dettes diverses","4492":"Avances impôts versées","461":"Débiteurs divers","462":"Associés, comptes courants","465":"Associés, dividendes à payer","476":"Charges constatées d'avance","477":"Produits constatés d'avance","491":"Dépréciations comptes clients","499":"Provisions risques à court terme"
-},
-"Classe 5 — Trésorerie":{
-"501":"Titres du Trésor","502":"Actions (titres de placement)","511":"Effets à encaisser","521":"Banques locales","5211":"Banques locales — monnaie nationale","5215":"Banques en devises","522":"Banques autres États UEMOA","525":"Banques, dépôts à terme","531":"Chèques postaux (CCP)","532":"Trésor","551":"Monnaie électronique — carte carburant","552":"Monnaie électronique — téléphone","553":"Monnaie électronique — péage","571":"Caisse siège social","5711":"Caisse — monnaie nationale","5712":"Caisse en devises","572":"Caisse succursale A","581":"Régies d'avance","585":"Virements de fonds","590":"Dépréciations titres placement"
-},
-"Classe 6 — Charges des activités ordinaires":{
-"601":"Achats de marchandises","6011":"Achats marchandises — région","6012":"Achats marchandises — hors région","6015":"Frais sur achats marchandises","6019":"RRR obtenus sur marchandises","602":"Achats matières premières","6021":"Achats matières premières — région","6022":"Achats matières premières — hors région","603":"Variations des stocks achetés","6031":"Variations stocks marchandises","6032":"Variations stocks matières premières","604":"Achats stockés matières","6041":"Matières consommables","6042":"Matières combustibles","6047":"Fournitures de bureau","605":"Autres achats","6051":"Eau","6052":"Électricité","6053":"Autres énergies","6056":"Petit matériel outillage","612":"Transports sur ventes","614":"Transports du personnel","621":"Sous-traitance générale","622":"Locations, charges locatives","6222":"Locations bâtiments","6223":"Locations matériels","623":"Redevances location-acquisition","6232":"Crédit-bail immobilier","6233":"Crédit-bail mobilier","624":"Entretien, réparations","6241":"Entretien biens immobiliers","6242":"Entretien biens mobiliers","6243":"Maintenance","625":"Primes d'assurance","6251":"Assurances multirisques","6252":"Assurances transport","626":"Études, recherches","627":"Publicité, publications","6271":"Annonces, insertions","628":"Frais de télécommunications","6281":"Frais de téléphone","6282":"Internet et services numériques","629":"Autres services extérieurs","6291":"Frais bancaires et commissions","661":"Rémunérations du personnel","6611":"Appointements et salaires bruts","6612":"Primes et gratifications","6613":"Indemnités et avantages divers","664":"Charges sociales patronales CNPS","6641":"Cotisations patronales — prest. familiales","6642":"Cotisations patronales — accidents","6643":"Cotisations patronales — retraite","665":"Charges de formation","681":"Dotations amort. — immos corporelles","6811":"Dotations amort. bâtiments","6813":"Dotations amort. matériels industriels","6814":"Dotations amort. matériel mobilier","6815":"Dotations amort. matériel transport","682":"Dotations amort. — immos incorporelles","6821":"Dotations amort. frais développement","6822":"Dotations amort. brevets licences","691":"Dotations provisions pour risques","6941":"Dotations dépréciations stocks","6942":"Dotations dépréciations créances"
-},
-"Classe 7 — Produits des activités ordinaires":{
-"701":"Ventes de marchandises","7011":"Ventes marchandises — région","7012":"Ventes marchandises — hors région","7019":"RRR accordés sur ventes","702":"Ventes de produits finis","7021":"Ventes produits finis — région","703":"Variations stocks produits","7031":"Variations stocks produits finis","704":"Travaux facturés","705":"Services vendus","7051":"Services vendus — région","7052":"Services vendus — hors région","706":"Produits et recettes accessoires","721":"Production immobilisée","7211":"Production immos incorporelles","7212":"Production immos corporelles","741":"Subventions d'exploitation","7411":"Subventions État","7412":"Subventions collectivités","742":"Subventions d'équilibre","751":"Revenus immeubles","761":"Revenus de participation","762":"Revenus titres de placement","763":"Intérêts de prêts","765":"Escomptes obtenus","767":"Gains de change","771":"Produits cessions immos corporelles","772":"Produits cessions immos incorporelles","781":"Reprises amortissements","791":"Reprises provisions","7941":"Reprises dépréciations stocks","7942":"Reprises dépréciations créances"
-},
-"Classe 8 — Charges et produits HAO":{
-"811":"VNC cessions immos corporelles","812":"VNC cessions immos incorporelles","821":"Produits cessions immos corporelles","822":"Produits cessions immos incorporelles","831":"Charges H.A.O. diverses","841":"Produits H.A.O. divers","861":"Participation travailleurs bénéfices","871":"Impôt sur le résultat","8711":"Impôt minimum forfaitaire (I.M.F.)","8712":"IRPP","8713":"Impôts sur les sociétés (I.S.)"
-}
-};
-
-/* ============================================================
-   ENTREPRISE CONFIG
-============================================================ */
-var ENTREPRISE_CONFIG={
-  commerce:{label:'Commerce',quickOps:['Vente marchandises crédit','Achat marchandises crédit','Encaissement client','Règlement fournisseur','Variation stock marchandises','Salaires personnel','Dotation amortissement','TVA à décaisser','Acquisition immobilisation','Emprunt bancaire'],types:[{value:'',label:'Auto IA'},{value:'vente',label:'Vente'},{value:'achat',label:'Achat'},{value:'encaissement',label:'Encaissement client'},{value:'reglement_fourn',label:'Règlement fournisseur'},{value:'variation_stock',label:'Variation stock'},{value:'salaire',label:'Salaires'},{value:'amortissement',label:'Amortissement'},{value:'tva',label:'TVA'},{value:'immobilisation',label:'Immobilisation'},{value:'emprunt',label:'Emprunt'}]},
-  service:{label:'Services',quickOps:['Facturation prestation de service','Encaissement honoraires','Achat fournitures bureau','Salaires personnel','Loyer locaux professionnels','Dotation amortissement','TVA collectée','Acompte client reçu'],types:[{value:'',label:'Auto IA'},{value:'facturation',label:'Facturation'},{value:'encaissement',label:'Encaissement'},{value:'achat_fourniture',label:'Fournitures'},{value:'salaire',label:'Salaires'},{value:'loyer',label:'Loyer'},{value:'amortissement',label:'Amortissement'},{value:'tva',label:'TVA'}]},
-  industrie:{label:'Industrie',quickOps:['Achat matières premières','Consommation matières premières','Constatation produits finis','Vente produits finis','Variation stock PF','Sous-traitance industrielle','Amortissement matériel industriel','Salaires ouvriers','Énergie et combustibles'],types:[{value:'',label:'Auto IA'},{value:'achat_mp',label:'Achat MP'},{value:'production',label:'Production'},{value:'vente_pf',label:'Vente PF'},{value:'stock_mp',label:'Stock MP'},{value:'stock_pf',label:'Stock PF'},{value:'salaire',label:'Salaires'},{value:'amortissement',label:'Amortissement'}]},
-  banque:{label:'Banque',quickOps:['Dépôt client','Crédit court terme accordé','Intérêts sur prêts','Commissions sur services','Remboursement crédit','Dotation provisions créances','Opération de change'],types:[{value:'',label:'Auto IA'},{value:'depot',label:'Dépôts'},{value:'credit',label:'Crédits'},{value:'interets',label:'Intérêts'},{value:'commission',label:'Commissions'},{value:'change',label:'Change'}]},
-  sante:{label:'Santé',quickOps:['Recettes consultations','Facturation hospitalisation','Achat médicaments','Achat matériel médical','Salaires personnel médical','Subvention État santé'],types:[{value:'',label:'Auto IA'},{value:'recette_soins',label:'Recettes soins'},{value:'achat_medicaments',label:'Médicaments'},{value:'hospitalisation',label:'Hospitalisation'},{value:'salaire',label:'Salaires'},{value:'subvention',label:'Subvention'}]},
-  education:{label:'Éducation',quickOps:['Frais de scolarité encaissés','Subvention État éducation','Salaires enseignants','Achat fournitures scolaires','Achat matériel informatique'],types:[{value:'',label:'Auto IA'},{value:'frais_scolarite',label:'Scolarité'},{value:'subvention',label:'Subvention'},{value:'salaire_enseignant',label:'Salaires'},{value:'achat_fournitures',label:'Fournitures'}]},
-  ong:{label:'ONG',quickOps:['Subvention bailleur de fonds','Dépenses projet terrain','Salaires équipe projet','Don en espèces reçu','Cotisations membres'],types:[{value:'',label:'Auto IA'},{value:'subvention_projet',label:'Subvention'},{value:'depense_projet',label:'Dépenses projet'},{value:'salaire',label:'Salaires'},{value:'cotisation',label:'Cotisations'}]},
-  agri:{label:'Agriculture',quickOps:['Achat intrants agricoles','Vente de récoltes','Variation stock produits agricoles','Salaires saisonniers','Subvention agricole'],types:[{value:'',label:'Auto IA'},{value:'achat_intrants',label:'Intrants'},{value:'vente_recolte',label:'Vente récolte'},{value:'stock_agri',label:'Stock'},{value:'salaire_ouvrier',label:'Main-d\'oeuvre'}]},
-  immo:{label:'Immobilier',quickOps:['Facture avancement travaux','Achat matériaux construction','Sous-traitance BTP','Acompte reçu sur chantier','Retenue de garantie'],types:[{value:'',label:'Auto IA'},{value:'facturation_travaux',label:'Facturation travaux'},{value:'achat_materiaux',label:'Matériaux'},{value:'sous_traitance',label:'Sous-traitance'},{value:'acompte_chantier',label:'Acomptes'}]},
-  transport:{label:'Transport',quickOps:['Facturation transport','Achat carburant','Entretien véhicule','Amortissement véhicules','Salaires chauffeurs'],types:[{value:'',label:'Auto IA'},{value:'facturation_transport',label:'Facturation'},{value:'achat_carburant',label:'Carburant'},{value:'entretien',label:'Entretien'},{value:'salaire_chauffeur',label:'Salaires'}]}
-};
-
-/* ============================================================
-   UTILS
-============================================================ */
-function fmtAmount(n){if(!n)return '';return new Intl.NumberFormat('fr-FR').format(Math.round(n))+' FCFA';}
-function parseAmount(v){if(!v)return 0;return parseInt(String(v).replace(/[^0-9]/g,''))||0;}
-function todayDate(){return new Date().toISOString().split('T')[0];}
-function showToast(msg,dur){dur=dur||3000;var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._tid);t._tid=setTimeout(function(){t.classList.remove('show');},dur);}
-function genRef(){var now=new Date();return 'JNL-'+now.getFullYear()+String(now.getMonth()+1).padStart(2,'0')+String(now.getDate()).padStart(2,'0')+'-'+String(Math.floor(Math.random()*900)+100);}
-function escHtml(s){if(!s)return '';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-function hashPassword(str){var h=0;for(var i=0;i<str.length;i++){h=((h<<5)-h)+str.charCodeAt(i);h|=0;}return String(Math.abs(h));}
-
-function getPlanLibelle(compte){
-  if(!compte)return '';
-  var c=String(compte);
-  var classes=Object.values(PLAN_COMPTABLE);
-  for(var i=0;i<classes.length;i++){if(classes[i][c])return classes[i][c];}
-  for(var len=4;len>=2;len--){
-    var prefix=c.substring(0,len);
-    for(var j=0;j<classes.length;j++){if(classes[j][prefix])return classes[j][prefix];}
+    serverConfigLoaded = true;
+    console.log(`[COMEO] Config chargée — ${GROQ_API_KEYS.length} clé(s) Groq, ${GROQ_MODELS.length} modèle(s)`);
+  } catch (e) {
+    console.warn('[COMEO] Erreur chargement config serveur :', e.message);
+    // Fallback modèles uniquement (sans clé — l'IA sera désactivée)
+    GROQ_MODELS = ['llama-3.3-70b-versatile', 'qwen/qwen3-32b', 'meta-llama/llama-4-scout-17b-16e-instruct'];
   }
-  return '';
 }
 
-/* ============================================================
-   AUTH
-============================================================ */
-var currentUser=null,currentEntrepriseType='commerce',allEcritures=[];
+// ══════════════════════════════════════════
+// PLAN COMPTABLE SYSCOHADA RÉVISÉ 2017
+// ══════════════════════════════════════════
+const PC = {
+  "10":"CAPITAL","101":"CAPITAL SOCIAL","1011":"Capital souscrit, non appelé","1012":"Capital souscrit, appelé, non versé","1013":"Capital souscrit, appelé, versé, non amorti","1014":"Capital souscrit, appelé, versé, amorti","1018":"Capital souscrit soumis à des conditions particulières","102":"CAPITAL PAR DOTATION","1021":"Dotation initiale","1022":"Dotations complémentaires","1028":"Autres dotations","103":"CAPITAL PERSONNEL","104":"COMPTE DE L'EXPLOITANT","1041":"Apports temporaires","1042":"Opérations courantes","1043":"Rémunérations, impôts et autres charges personnelles","1047":"Prélèvements d'autoconsommation","1048":"Autres prélèvements","105":"PRIMES LIEES AU CAPITAL SOCIAL","1051":"Primes d'émission","1052":"Primes d'apport","1053":"Primes de fusion","1054":"Primes de conversion","1058":"Autres primes","106":"ECARTS DE REEVALUATION","1061":"Ecarts de réévaluation légale","1062":"Ecarts de réévaluation libre","109":"APPORTEURS, CAPITAL SOUSCRIT, NON APPELE",
+  "11":"RESERVES","111":"RESERVE LEGALE","112":"RESERVES STATUTAIRES OU CONTRACTUELLES","113":"RESERVES REGLEMENTEES","118":"AUTRES RESERVES","1181":"Réserves facultatives","1188":"Réserves diverses",
+  "12":"REPORT A NOUVEAU","121":"REPORT A NOUVEAU CREDITEUR","129":"REPORT A NOUVEAU DEBITEUR",
+  "13":"RESULTAT NET DE L'EXERCICE","130":"RESULTAT EN INSTANCE D'AFFECTATION","131":"RESULTAT NET : BENEFICE","139":"RESULTAT NET : PERTE",
+  "14":"SUBVENTIONS D'INVESTISSEMENT","141":"SUBVENTIONS D'EQUIPEMENT","148":"AUTRES SUBVENTIONS D'INVESTISSEMENT",
+  "15":"PROVISIONS REGLEMENTEES ET FONDS ASSIMILES","151":"AMORTISSEMENTS DEROGATOIRES","155":"PROVISIONS REGLEMENTEES RELATIVES AUX IMMOBILISATIONS","157":"PROVISIONS POUR INVESTISSEMENT",
+  "16":"EMPRUNTS ET DETTES ASSIMILEES","161":"EMPRUNTS OBLIGATAIRES","162":"EMPRUNTS ET DETTES AUPRES DES ETABLISSEMENTS DE CREDIT","163":"AVANCES RECUES DE L'ETAT","164":"AVANCES RECUES ET COMPTES COURANTS BLOQUES","165":"DEPOTS ET CAUTIONNEMENTS RECUS","166":"INTERETS COURUS","168":"AUTRES EMPRUNTS ET DETTES",
+  "17":"DETTES DE LOCATION-ACQUISITION","172":"DETTES DE LOCATION-ACQUISITION / CREDIT-BAIL IMMOBILIER","173":"DETTES DE LOCATION-ACQUISITION / CREDIT-BAIL MOBILIER",
+  "18":"DETTES LIEES A DES PARTICIPATIONS","181":"DETTES LIEES A DES PARTICIPATIONS","184":"COMPTES PERMANENTS BLOQUES DES ETABLISSEMENTS ET SUCCURSALES",
+  "19":"PROVISIONS POUR RISQUES ET CHARGES","191":"PROVISIONS POUR LITIGES","192":"PROVISIONS POUR GARANTIES DONNEES AUX CLIENTS","194":"PROVISIONS POUR PERTES DE CHANGE","195":"PROVISIONS POUR IMPOTS","196":"PROVISIONS POUR PENSIONS ET OBLIGATIONS SIMILAIRES","198":"AUTRES PROVISIONS POUR RISQUES ET CHARGES",
+  "21":"IMMOBILISATIONS INCORPORELLES","211":"FRAIS DE DEVELOPPEMENT","212":"BREVETS, LICENCES, CONCESSIONS ET DROITS SIMILAIRES","213":"LOGICIELS ET SITES INTERNET","215":"MARQUES","216":"FONDS COMMERCIAL","217":"DROIT AU BAIL","219":"AUTRES DROITS ET VALEURS INCORPORELS",
+  "22":"TERRAINS","221":"TERRAINS AGRICOLES ET FORESTIERS","222":"TERRAINS NUS","223":"TERRAINS BATIS","224":"TRAVAUX DE MISE EN VALEUR DES TERRAINS","228":"AUTRES TERRAINS",
+  "23":"BATIMENTS, INSTALLATIONS TECHNIQUES ET AGENCEMENTS","231":"BATIMENTS INDUSTRIELS, AGRICOLES, ADMINISTRATIFS ET COMMERCIAUX SUR SOL PROPRE","2311":"Bâtiments industriels","2312":"Bâtiments agricoles","2313":"Bâtiments administratifs et commerciaux","232":"BATIMENTS SUR SOL D'AUTRUI","234":"AMENAGEMENTS, AGENCEMENTS ET INSTALLATIONS TECHNIQUES","235":"AMENAGEMENTS DE BUREAUX","239":"BATIMENTS EN COURS",
+  "24":"MATERIEL, MOBILIER ET ACTIFS BIOLOGIQUES","241":"MATERIEL ET OUTILLAGE INDUSTRIEL ET COMMERCIAL","2411":"Matériel industriel","2412":"Outillage industriel","242":"MATERIEL ET OUTILLAGE AGRICOLE","244":"MATERIEL ET MOBILIER","2441":"Matériel de bureau","2442":"Matériel informatique","2443":"Matériel bureautique","2444":"Mobilier de bureau","2445":"Matériel et mobilier - immeubles de placement","245":"MATERIEL DE TRANSPORT","2451":"Matériel automobile","2452":"Matériel ferroviaire","2453":"Matériel fluvial, lagunaire","2454":"Matériel naval","2455":"Matériel aérien","246":"ACTIFS BIOLOGIQUES","248":"AUTRES MATERIELS ET MOBILIERS","249":"MATERIELS EN COURS",
+  "25":"AVANCES ET ACOMPTES VERSES SUR IMMOBILISATIONS","251":"Avances sur immobilisations incorporelles","252":"Avances sur immobilisations corporelles",
+  "26":"TITRES DE PARTICIPATION","261":"Titres contrôle exclusif","262":"Titres contrôle conjoint","263":"Titres influence notable","268":"Autres titres de participation",
+  "27":"AUTRES IMMOBILISATIONS FINANCIERES","271":"PRETS ET CREANCES","272":"PRETS AU PERSONNEL","273":"CREANCES SUR L'ETAT","274":"TITRES IMMOBILISES","275":"DEPOTS ET CAUTIONNEMENTS VERSES","276":"INTERETS COURUS","277":"CREANCES RATTACHEES A DES PARTICIPATIONS","278":"IMMOBILISATIONS FINANCIERES DIVERSES",
+  "28":"AMORTISSEMENTS","281":"AMORTISSEMENTS DES IMMOBILISATIONS INCORPORELLES","2811":"Amortissements frais de développement","2812":"Amortissements brevets, licences","2813":"Amortissements logiciels et sites internet","2815":"Amortissements fonds commercial","2818":"Amortissements autres droits","282":"AMORTISSEMENTS DES TERRAINS","2824":"Amortissements travaux de mise en valeur","283":"AMORTISSEMENTS DES BATIMENTS","2831":"Amortissements bâtiments sol propre","2832":"Amortissements bâtiments sol d'autrui","2834":"Amortissements installations techniques","2835":"Amortissements aménagements de bureaux","284":"AMORTISSEMENTS DU MATERIEL","2841":"Amortissements matériel industriel et commercial","2842":"Amortissements matériel agricole","2844":"Amortissements matériel et mobilier","2845":"Amortissements matériel de transport","2846":"Amortissements actifs biologiques","2848":"Amortissements autres matériels",
+  "29":"DEPRECIATIONS DES IMMOBILISATIONS","291":"Dépréciations immobilisations incorporelles","293":"Dépréciations bâtiments","294":"Dépréciations matériel","296":"Dépréciations titres de participation","297":"Dépréciations autres immobilisations financières",
+  "31":"MARCHANDISES","311":"MARCHANDISES A","312":"MARCHANDISES B","313":"ACTIFS BIOLOGIQUES","318":"MARCHANDISES HORS ACTIVITES ORDINAIRES",
+  "32":"MATIERES PREMIERES ET FOURNITURES LIEES","321":"MATIERES A","322":"MATIERES B","323":"FOURNITURES",
+  "33":"AUTRES APPROVISIONNEMENTS","331":"MATIERES CONSOMMABLES","332":"FOURNITURES D'ATELIER ET D'USINE","333":"FOURNITURES DE MAGASIN","334":"FOURNITURES DE BUREAU","335":"EMBALLAGES","338":"AUTRES MATIERES",
+  "34":"PRODUITS EN COURS","341":"Produits en cours","342":"Travaux en cours",
+  "35":"SERVICES EN COURS","351":"Etudes en cours","352":"Prestations de services en cours",
+  "36":"PRODUITS FINIS","361":"PRODUITS FINIS A","362":"PRODUITS FINIS B",
+  "37":"PRODUITS INTERMEDIAIRES ET RESIDUELS","371":"Produits intermédiaires","372":"Produits résiduels",
+  "38":"STOCKS EN COURS DE ROUTE","381":"Marchandises en cours de route","382":"Matières premières en cours de route","387":"Stock en consignation ou en dépôt",
+  "39":"DEPRECIATIONS DES STOCKS","391":"Dépréciations marchandises","392":"Dépréciations matières premières","393":"Dépréciations autres approvisionnements","396":"Dépréciations produits finis",
+  "40":"FOURNISSEURS ET COMPTES RATTACHES","401":"FOURNISSEURS, DETTES EN COMPTE","4011":"Fournisseurs","4012":"Fournisseurs Groupe","4013":"Fournisseurs sous-traitants","4016":"Fournisseurs, réserve de propriété","4017":"Fournisseurs, retenues de garantie","402":"FOURNISSEURS, EFFETS A PAYER","404":"FOURNISSEURS, ACQUISITIONS COURANTES D'IMMOBILISATIONS","4041":"Fournisseurs dettes en compte, immobilisations incorporelles","4042":"Fournisseurs dettes en compte, immobilisations corporelles","408":"FOURNISSEURS, FACTURES NON PARVENUES","409":"FOURNISSEURS DEBITEURS","4091":"Fournisseurs avances et acomptes versés","4094":"Fournisseurs créances pour emballages et matériels à rendre","4098":"Fournisseurs, rabais, remises, ristournes et autres avoirs à obtenir",
+  "41":"CLIENTS ET COMPTES RATTACHES","411":"CLIENTS","4111":"Clients","4112":"Clients – Groupe","4114":"Clients, Etat et Collectivités publiques","412":"CLIENTS, EFFETS A RECEVOIR EN PORTEFEUILLE","413":"CLIENTS, CHEQUES, EFFETS ET AUTRES VALEURS IMPAYES","414":"CREANCES SUR CESSIONS COURANTES D'IMMOBILISATIONS","415":"CLIENTS, EFFETS ESCOMPTES NON ECHUS","416":"CREANCES CLIENTS LITIGIEUSES OU DOUTEUSES","418":"CLIENTS, PRODUITS A RECEVOIR","419":"CLIENTS CREDITEURS","4191":"Clients, avances et acomptes reçus","4194":"Clients, dettes pour emballages et matériels consignés",
+  "42":"PERSONNEL","421":"PERSONNEL, AVANCES ET ACOMPTES","4211":"Personnel, avances","4212":"Personnel, acomptes","422":"PERSONNEL, REMUNERATIONS DUES","423":"PERSONNEL, OPPOSITIONS, SAISIES-ARRETS","424":"PERSONNEL, OEUVRES SOCIALES INTERNES","425":"REPRESENTANTS DU PERSONNEL","426":"PERSONNEL, PARTICIPATION AUX BENEFICES ET AU CAPITAL","427":"PERSONNEL – DEPOTS","428":"PERSONNEL, CHARGES A PAYER ET PRODUITS A RECEVOIR","4281":"Dettes provisionnées pour congés à payer","4286":"Autres charges à payer",
+  "43":"ORGANISMES SOCIAUX","431":"SECURITE SOCIALE","4311":"Prestations familiales","4312":"Accidents de travail","4313":"Caisse de retraite obligatoire","432":"CAISSES DE RETRAITE COMPLEMENTAIRE","433":"AUTRES ORGANISMES SOCIAUX","438":"ORGANISMES SOCIAUX, CHARGES A PAYER ET PRODUITS A RECEVOIR",
+  "44":"ETAT ET COLLECTIVITES PUBLIQUES","441":"ETAT, IMPOT SUR LES BENEFICES","442":"ETAT, AUTRES IMPOTS ET TAXES","4421":"Impôts et taxes d'Etat","4422":"Impôts et taxes collectivités publiques","4426":"Droits de douane","4428":"Autres impôts et taxes","443":"ETAT, T.V.A. FACTUREE","4431":"T.V.A. facturée sur ventes","4432":"T.V.A. facturée sur prestations de services","444":"ETAT, T.V.A. DUE OU CREDIT DE T.V.A.","4441":"Etat, T.V.A. due","4449":"Etat, crédit de T.V.A. à reporter","445":"ETAT, T.V.A. RECUPERABLE","4451":"T.V.A. récupérable sur immobilisations","4452":"T.V.A. récupérable sur achats","4453":"T.V.A. récupérable sur transport","4454":"T.V.A. récupérable sur services extérieurs","4455":"T.V.A. récupérable sur factures non parvenues","447":"ETAT, IMPOTS RETENUS A LA SOURCE","4471":"Impôt Général sur le revenu","4472":"Impôts sur salaires","4473":"Contribution nationale","4474":"Contribution nationale de solidarité","4478":"Autres impôts et contributions","448":"ETAT, CHARGES A PAYER ET PRODUITS A RECEVOIR","449":"ETAT, CREANCES ET DETTES DIVERSES","4491":"Etat, obligations cautionnées","4492":"Etat, avances et acomptes versés sur impôts","4494":"Etat, subventions d'investissement à recevoir","4495":"Etat, subventions d'exploitation à recevoir",
+  "45":"ORGANISMES INTERNATIONAUX","451":"OPERATIONS AVEC LES ORGANISMES AFRICAINS","452":"OPERATIONS AVEC LES AUTRES ORGANISMES INTERNATIONAUX",
+  "46":"APPORTEURS, ASSOCIES ET GROUPE","461":"APPORTEURS, OPERATIONS SUR LE CAPITAL","462":"ASSOCIES, COMPTES COURANTS","463":"ASSOCIES, OPERATIONS FAITES EN COMMUN ET GIE","465":"ASSOCIES, DIVIDENDES A PAYER","466":"GROUPE, COMPTES COURANTS","469":"ENTITE, DIVIDENDES A RECEVOIR",
+  "47":"DEBITEURS ET CREDITEURS DIVERS","471":"DEBITEURS ET CREDITEURS DIVERS","4711":"Débiteurs divers","4712":"Créditeurs divers","4715":"Rémunérations d'administrateurs non associés","472":"CREANCES ET DETTES SUR TITRES DE PLACEMENT","473":"INTERMEDIAIRES - OPERATIONS FAITES POUR COMPTE DE TIERS","474":"COMPTE DE REPARTITION PERIODIQUE DES CHARGES ET DES PRODUITS","476":"CHARGES CONSTATEES D'AVANCE","477":"PRODUITS CONSTATES D'AVANCE","478":"ECARTS DE CONVERSION - ACTIF","479":"ECARTS DE CONVERSION - PASSIF",
+  "48":"CREANCES ET DETTES HORS ACTIVITES ORDINAIRES (HAO)","481":"FOURNISSEURS D'INVESTISSEMENTS","4811":"Immobilisations incorporelles","4812":"Immobilisations corporelles","482":"FOURNISSEURS D'INVESTISSEMENTS, EFFETS A PAYER","485":"CREANCES SUR CESSIONS D'IMMOBILISATIONS","488":"AUTRES CREANCES HORS ACTIVITES ORDINAIRES",
+  "49":"DEPRECIATIONS ET PROVISIONS POUR RISQUES A COURT TERME","490":"Dépréciations comptes fournisseurs","491":"Dépréciations comptes clients","492":"Dépréciations comptes personnel","493":"Dépréciations comptes organismes sociaux","494":"Dépréciations comptes Etat","497":"Dépréciations comptes débiteurs divers","499":"PROVISIONS POUR RISQUES A COURT TERME",
+  "50":"TITRES DE PLACEMENT","501":"TITRES DU TRESOR ET BONS DE CAISSE A COURT TERME","502":"ACTIONS","503":"OBLIGATIONS","508":"AUTRES TITRES DE PLACEMENT ET CREANCES ASSIMILEES",
+  "51":"VALEURS A ENCAISSER","511":"EFFETS A ENCAISSER","512":"EFFETS A L'ENCAISSEMENT","513":"CHEQUES A ENCAISSER","514":"CHEQUES A L'ENCAISSEMENT","515":"CARTES DE CREDIT A ENCAISSER","518":"AUTRES VALEURS A L'ENCAISSEMENT",
+  "52":"BANQUES","521":"BANQUES LOCALES","5211":"Banques en monnaie nationale","5215":"Banques en devises","522":"BANQUES AUTRES ETATS REGION","523":"BANQUES AUTRES ETATS ZONE MONETAIRE","524":"BANQUES HORS ZONE MONETAIRE","525":"BANQUES DEPOT A TERME","526":"BANQUES, INTERETS COURUS",
+  "53":"ETABLISSEMENTS FINANCIERS ET ASSIMILES","531":"CHEQUES POSTAUX","532":"TRESOR","533":"SOCIETES DE GESTION ET D'INTERMEDIATION","538":"AUTRES ORGANISMES FINANCIERS",
+  "54":"INSTRUMENTS DE TRESORERIE","541":"OPTIONS DE TAUX D'INTERET","542":"OPTIONS DE TAUX DE CHANGE","545":"AVOIRS D'OR ET AUTRES METAUX PRECIEUX",
+  "55":"INSTRUMENTS DE MONNAIE ELECTRONIQUE","551":"MONNAIE ELECTRONIQUE - CARTE CARBURANT","552":"MONNAIE ELECTRONIQUE - TELEPHONE PORTABLE","553":"MONNAIE ELECTRONIQUE - CARTE PEAGE","554":"PORTE-MONNAIE ELECTRONIQUE","558":"AUTRES INSTRUMENTS DE MONNAIES ELECTRONIQUES",
+  "56":"BANQUES, CREDITS DE TRESORERIE ET D'ESCOMPTE","561":"CREDITS DE TRESORERIE","564":"ESCOMPTE DE CREDITS DE CAMPAGNE","565":"ESCOMPTE DE CREDITS ORDINAIRES",
+  "57":"CAISSE","571":"CAISSE SIEGE SOCIAL","5711":"Caisse en monnaie nationale","5712":"Caisse en devises","572":"CAISSE SUCCURSALE A","573":"CAISSE SUCCURSALE B",
+  "58":"REGIES D'AVANCES, ACCREDITIFS ET VIREMENTS","581":"REGIES D'AVANCE","582":"ACCREDITIFS","585":"VIREMENTS DE FONDS","588":"AUTRES VIREMENTS INTERNES",
+  "59":"DEPRECIATIONS ET PROVISIONS POUR RISQUE A COURT TERME","590":"Dépréciations titres de placement","591":"Dépréciations titres et valeurs à encaisser","592":"Dépréciations comptes banques","599":"Provisions pour risque à court terme à caractère financier",
+  "60":"ACHATS ET VARIATIONS DE STOCKS","601":"ACHATS DE MARCHANDISES","6011":"dans la Région","6012":"hors Région","6015":"frais sur achats","6019":"Rabais, Remises et Ristournes obtenus","602":"ACHATS DE MATIERES PREMIERES ET FOURNITURES LIEES","6021":"dans la Région","6022":"hors Région","603":"VARIATIONS DES STOCKS DE BIENS ACHETES","6031":"Variations des stocks de marchandises","6032":"Variations des stocks de matières premières","6033":"Variations des stocks d'autres approvisionnements","604":"ACHATS STOCKES DE MATIERES ET FOURNITURES CONSOMMABLES","6041":"Matières consommables","6042":"Matières combustibles","6043":"Produits d'entretien","6044":"Fournitures d'atelier et d'usine","6046":"Fournitures de magasin","6047":"Fournitures de bureau","605":"AUTRES ACHATS","6051":"Fournitures non stockables – Eau","6052":"Fournitures non stockables - Electricité","6053":"Fournitures non stockables – Autres énergies","6054":"Fournitures d'entretien non stockables","6055":"Fournitures de bureau non stockables","6056":"Achats de petit matériel et outillage","6057":"Achats d'études et prestations de services","6058":"Achats de travaux, matériels et équipements","608":"ACHATS D'EMBALLAGES","6081":"Emballages perdus","6082":"Emballages récupérables non identifiables",
+  "61":"TRANSPORTS","612":"TRANSPORTS SUR VENTES","613":"TRANSPORTS POUR LE COMPTE DE TIERS","614":"TRANSPORTS DU PERSONNEL","616":"TRANSPORTS DE PLIS","618":"AUTRES FRAIS DE TRANSPORT","6181":"Voyages et déplacements","6182":"Transports entre établissements ou chantiers","6183":"Transports administratifs",
+  "62":"SERVICES EXTERIEURS","621":"SOUS-TRAITANCE GENERALE","622":"LOCATIONS, CHARGES LOCATIVES","6221":"Locations de terrains","6222":"Locations de bâtiments","6223":"Locations de matériels et outillages","6224":"Malis sur emballages","6225":"Locations d'emballages","6228":"Locations et charges locatives diverses","623":"REDEVANCES DE LOCATION-ACQUISITION","6232":"Crédit-bail immobilier","6233":"Crédit-bail mobilier","624":"ENTRETIEN, REPARATIONS, REMISE EN ETAT ET MAINTENANCE","6241":"Entretien et réparations des biens immobiliers","6242":"Entretien et réparations des biens mobiliers","6243":"Maintenance","625":"PRIMES D'ASSURANCE","6251":"Assurances multirisques","6252":"Assurances matériel de transport","6253":"Assurances risques d'exploitation","626":"ETUDES, RECHERCHES ET DOCUMENTATION","6261":"Etudes et recherches","6265":"Documentation générale","627":"PUBLICITE, PUBLICATIONS, RELATIONS PUBLIQUES","6271":"Annonces, insertions","6272":"Catalogues, imprimés publicitaires","628":"FRAIS DE TELECOMMUNICATIONS","6281":"Frais de téléphone","6282":"Frais de télex","6283":"Frais de télécopie","6288":"Autres frais de télécommunications",
+  "63":"AUTRES SERVICES EXTERIEURS","631":"FRAIS BANCAIRES","6311":"Frais sur titres (vente, garde)","6312":"Frais sur effets","6313":"Location de coffres","6315":"Commissions sur cartes de crédit","6316":"Frais d'émission d'emprunts","6318":"Autres frais bancaires","632":"REMUNERATIONS D'INTERMEDIAIRES ET DE CONSEILS","6322":"Commissions et courtages sur ventes","6324":"Honoraires des professions réglementées","6325":"Frais d'actes et de contentieux","6327":"Rémunérations des autres prestataires de services","633":"FRAIS DE FORMATION DU PERSONNEL","634":"REDEVANCES POUR BREVETS, LICENCES, LOGICIELS, CONCESSIONS, DROITS ET VALEURS SIMILAIRES","6342":"Redevances pour brevets, licences","6343":"Redevances pour logiciels","6344":"Redevances pour marques","6346":"Redevances pour concessions, droits et valeurs similaires","635":"COTISATIONS","6351":"Cotisations","637":"REMUNERATIONS DE PERSONNEL EXTERIEUR A L'ENTITE","6371":"Personnel intérimaire","6372":"Personnel détaché ou prêté à l'entité","638":"AUTRES CHARGES EXTERNES","6381":"Frais de recrutement du personnel","6382":"Frais de déménagement","6383":"Réceptions","6384":"Missions","6388":"Charges externes diverses",
+  "64":"IMPOTS ET TAXES","641":"IMPOTS ET TAXES DIRECTS","6411":"Impôts fonciers et taxes annexes","6412":"Patentes, licences et taxes annexes","6413":"Taxes sur appointements et salaires","6414":"Taxes d'apprentissage","6415":"Formation professionnelle continue","6418":"Autres impôts et taxes directs","645":"IMPOTS ET TAXES INDIRECTS","646":"DROITS D'ENREGISTREMENT","6461":"Droits de mutation","6462":"Droits de timbre","6463":"Taxes sur les véhicules de société","647":"PENALITES, AMENDES FISCALES","648":"AUTRES IMPOTS ET TAXES",
+  "65":"AUTRES CHARGES","651":"PERTES SUR CREANCES CLIENTS ET AUTRES DEBITEURS","654":"VALEURS COMPTABLES DES CESSIONS COURANTES D'IMMOBILISATIONS","6541":"Immobilisations incorporelles","6542":"Immobilisations corporelles","656":"PERTE DE CHANGE SUR CREANCES ET DETTES COMMERCIALES","657":"PENALITES ET AMENDES PENALES","658":"CHARGES DIVERSES","6581":"Indemnités de fonction et autres rémunérations d'administrateurs","6582":"Dons","6583":"Mécénat","6588":"Autres charges diverses","659":"CHARGES POUR DEPRECIATIONS ET PROVISIONS",
+  "66":"CHARGES DE PERSONNEL","661":"REMUNERATIONS DIRECTES VERSEES AU PERSONNEL NATIONAL","6611":"Appointements salaires et commissions","6612":"Primes et gratifications","6613":"Congés payés","6614":"Indemnités de préavis, de licenciement et de recherche d'embauche","6615":"Indemnités de maladie versées aux travailleurs","6616":"Supplément familial","6617":"Avantages en nature","6618":"Autres rémunérations directes","662":"REMUNERATIONS DIRECTES VERSEES AU PERSONNEL NON NATIONAL","663":"INDEMNITES FORFAITAIRES VERSEES AU PERSONNEL","6631":"Indemnités de logement","6632":"Indemnités de représentation","6633":"Indemnités d'expatriation","6634":"Indemnités de transport","6638":"Autres indemnités et avantages divers","664":"CHARGES SOCIALES","6641":"Charges sociales sur rémunération du personnel national","6642":"Charges sociales sur rémunération du personnel non national","666":"REMUNERATIONS ET CHARGES SOCIALES DE L'EXPLOITANT INDIVIDUEL","667":"REMUNERATION TRANSFEREE DE PERSONNEL EXTERIEUR","668":"AUTRES CHARGES SOCIALES","6681":"Versements aux Syndicats et Comités d'entreprise","6684":"Médecine du travail et pharmacie","6685":"Assurances et organismes de santé","6686":"Assurances retraite et fonds de pensions","6688":"Charges sociales diverses",
+  "67":"FRAIS FINANCIERS ET CHARGES ASSIMILEES","671":"INTERETS DES EMPRUNTS","6711":"Emprunts obligataires","6712":"Emprunts auprès des établissements de crédit","672":"INTERETS DANS LOYERS DE LOCATION ACQUISITION","673":"ESCOMPTES ACCORDES","674":"AUTRES INTERETS","6741":"Avances reçues et dépôts créditeurs","6742":"Comptes courants bloqués","6744":"Intérêts sur dettes commerciales","6745":"Intérêts bancaires et sur opérations de financement","675":"ESCOMPTES DES EFFETS DE COMMERCE","676":"PERTES DE CHANGE FINANCIERES","677":"PERTES SUR TITRES DE PLACEMENT","679":"CHARGES POUR DEPRECIATIONS ET PROVISIONS POUR RISQUES FINANCIERES",
+  "68":"DOTATIONS AUX AMORTISSEMENTS","681":"DOTATIONS AUX AMORTISSEMENTS D'EXPLOITATION","6812":"Dotations aux amortissements des immobilisations incorporelles","6813":"Dotations aux amortissements des immobilisations corporelles",
+  "69":"DOTATIONS AUX PROVISIONS ET AUX DEPRECIATIONS","691":"DOTATIONS AUX PROVISIONS ET AUX DEPRECIATIONS D'EXPLOITATION","6911":"Dotations aux provisions pour risques et charges","6913":"Dotations aux dépréciations des immobilisations incorporelles","6914":"Dotations aux dépréciations des immobilisations corporelles","697":"DOTATIONS AUX PROVISIONS ET AUX DEPRECIATIONS FINANCIERES","6971":"Dotations aux provisions pour risques et charges financiers","6972":"Dotations aux dépréciations des immobilisations financières",
+  "70":"VENTES","701":"VENTES DE MARCHANDISES","7011":"dans la Région","7012":"hors Région","7013":"aux entités du groupe dans la Région","7015":"sur internet","7019":"Rabais, remises, ristournes accordés","702":"VENTES DE PRODUITS FINIS","703":"VENTES DE PRODUITS INTERMEDIAIRES","704":"VENTES DE PRODUITS RESIDUELS","705":"TRAVAUX FACTURES","706":"SERVICES VENDUS","7061":"dans la Région","7062":"hors Région","707":"PRODUITS ACCESSOIRES","7071":"Ports, emballages perdus et autres frais facturés","7072":"Commissions et courtages","7073":"Locations et redevances de location - financement","7074":"Bonis sur reprises et cessions d'emballages","7075":"Mise à disposition de personnel","7076":"Redevances pour brevets, logiciels, marques et droits similaires","7077":"Services exploités dans l'intérêt du personnel","7078":"Autres produits accessoires",
+  "71":"SUBVENTIONS D'EXPLOITATION","711":"SUR PRODUITS A L'EXPORTATION","712":"SUR PRODUITS A L'IMPORTATION","713":"SUR PRODUITS DE PEREQUATION","714":"INDEMNITES ET SUBVENTIONS D'EXPLOITATION","718":"AUTRES SUBVENTIONS D'EXPLOITATION","7181":"Versées par l'Etat et les collectivités publiques","7182":"Versées par les organismes internationaux","7183":"Versées par des tiers",
+  "72":"PRODUCTION IMMOBILISEE","721":"IMMOBILISATIONS INCORPORELLES","722":"IMMOBILISATIONS CORPORELLES","724":"PRODUCTION AUTO-CONSOMMEE","726":"IMMOBILISATIONS FINANCIERES",
+  "73":"VARIATIONS DES STOCKS DE BIENS ET DE SERVICES PRODUITS","734":"VARIATIONS DES STOCKS DE PRODUITS EN COURS","736":"VARIATIONS DES STOCKS DE PRODUITS FINIS","737":"VARIATIONS DES STOCKS DE PRODUITS INTERMEDIAIRES ET RESIDUELS",
+  "75":"AUTRES PRODUITS","751":"PROFITS SUR CREANCES CLIENTS ET AUTRES DEBITEURS","754":"PRODUITS DES CESSIONS COURANTES D'IMMOBILISATIONS","7541":"Immobilisations incorporelles","7542":"Immobilisations corporelles","756":"GAINS DE CHANGE SUR CREANCES ET DETTES COMMERCIALES","758":"PRODUITS DIVERS","7581":"Indemnités de fonction et autres rémunérations d'administrateurs","7582":"Indemnités d'assurances reçues","7588":"Autres produits divers","759":"REPRISES DE CHARGES POUR DEPRECIATIONS ET PROVISIONS",
+  "77":"REVENUS FINANCIERS ET PRODUITS ASSIMILES","771":"INTERETS DE PRETS ET CREANCES DIVERSES","7712":"Intérêts de prêts","7713":"Intérêts sur créances diverses","772":"REVENUS DE PARTICIPATIONS ET AUTRES TITRES IMMOBILISES","7721":"Revenus des titres de participation","773":"ESCOMPTES OBTENUS","774":"REVENUS DE PLACEMENT","7745":"Revenus des obligations","7746":"Revenus des titres de placement","775":"INTERETS DANS LOYERS DE LOCATION-FINANCEMENT","776":"GAINS DE CHANGE FINANCIERS","777":"GAINS SUR CESSIONS DE TITRES DE PLACEMENT","778":"GAINS SUR RISQUES FINANCIERS","779":"REPRISES DE CHARGES POUR DEPRECIATIONS ET PROVISIONS FINANCIERES",
+  "78":"TRANSFERTS DE CHARGES","781":"TRANSFERTS DE CHARGES D'EXPLOITATION","787":"TRANSFERTS DE CHARGES FINANCIERES",
+  "79":"REPRISES DE PROVISIONS, DE DEPRECIATIONS ET AUTRES","791":"REPRISES DE PROVISIONS ET DEPRECIATIONS D'EXPLOITATION","797":"REPRISES DE PROVISIONS ET DEPRECIATIONS FINANCIERES","799":"REPRISES DE SUBVENTIONS D'INVESTISSEMENT",
+  "81":"VALEURS COMPTABLES DES CESSIONS D'IMMOBILISATIONS","811":"IMMOBILISATIONS INCORPORELLES","812":"IMMOBILISATIONS CORPORELLES","816":"IMMOBILISATIONS FINANCIERES",
+  "82":"PRODUITS DES CESSIONS D'IMMOBILISATIONS","821":"IMMOBILISATIONS INCORPORELLES","822":"IMMOBILISATIONS CORPORELLES","826":"IMMOBILISATIONS FINANCIERES",
+  "83":"CHARGES HORS ACTIVITES ORDINAIRES","831":"CHARGES H.A.O. CONSTATEES","833":"CHARGES LIEES AUX OPERATIONS DE RESTRUCTURATION","834":"PERTES SUR CREANCES H.A.O.","835":"DONS ET LIBERALITES ACCORDES","836":"ABANDONS DE CREANCES CONSENTIS","837":"CHARGES LIEES AUX OPERATIONS DE LIQUIDATION",
+  "84":"PRODUITS HORS ACTIVITES ORDINAIRES","841":"PRODUITS H.A.O CONSTATES","843":"PRODUITS LIES AUX OPERATIONS DE RESTRUCTURATION","845":"DONS ET LIBERALITES OBTENUS","846":"ABANDONS DE CREANCES OBTENUS","848":"TRANSFERTS DE CHARGES H.A.O","849":"REPRISES DE CHARGES POUR DEPRECIATIONS ET PROVISIONS H.A.O.",
+  "85":"DOTATIONS HORS ACTIVITES ORDINAIRES","851":"DOTATIONS AUX PROVISIONS REGLEMENTEES","852":"DOTATIONS AUX AMORTISSEMENTS H.A.O.","853":"DOTATIONS AUX DEPRECIATIONS H.A.O.","854":"DOTATIONS AUX PROVISIONS POUR RISQUES ET CHARGES H.A.O.","858":"AUTRES DOTATIONS H.A.O.",
+  "86":"REPRISES DE CHARGES, PROVISIONS ET DEPRECIATIONS HAO","861":"REPRISES DE PROVISIONS REGLEMENTEES","862":"REPRISES D'AMORTISSEMENTS H.A.O","863":"REPRISES DE DEPRECIATIONS H.A.O.","864":"REPRISES DE PROVISIONS POUR RISQUES ET CHARGES H.A.O.","868":"AUTRES REPRISES H.A.O.",
+  "87":"PARTICIPATION DES TRAVAILLEURS","871":"PARTICIPATION LEGALE AUX BENEFICES","874":"PARTICIPATION CONTRACTUELLE AUX BENEFICES",
+  "89":"IMPOTS SUR LE RESULTAT","891":"IMPOTS SUR LES BENEFICES DE L'EXERCICE","8911":"Activités exercées dans l'Etat","8912":"Activités exercées dans les autres Etats de la Région","892":"RAPPEL D'IMPOTS SUR RESULTATS ANTERIEURS","895":"IMPOT MINIMUM FORFAITAIRE (I.M.F.)","899":"DEGREVEMENTS ET ANNULATIONS D'IMPOTS SUR RESULTATS ANTERIEURS",
+  "90":"ENGAGEMENTS OBTENUS ET ENGAGEMENTS ACCORDES","901":"ENGAGEMENTS DE FINANCEMENT OBTENUS","902":"ENGAGEMENTS DE GARANTIE OBTENUS","903":"ENGAGEMENTS RECIPROQUES","904":"AUTRES ENGAGEMENTS OBTENUS","905":"ENGAGEMENTS DE FINANCEMENT ACCORDES","906":"ENGAGEMENTS DE GARANTIE ACCORDES","907":"ENGAGEMENTS RECIPROQUES","908":"AUTRES ENGAGEMENTS ACCORDES"
+};
 
-function switchAuth(tab){
-  document.querySelectorAll('.auth-tab').forEach(function(t){t.classList.remove('active');});
-  document.querySelectorAll('.auth-form').forEach(function(f){f.classList.remove('active');});
-  var tabs=document.querySelectorAll('.auth-tab');
-  if(tab==='login')tabs[0].classList.add('active');else tabs[1].classList.add('active');
-  document.getElementById('form-'+tab).classList.add('active');
+const CLASS_NAMES = { '1':'Capitaux','2':'Immobilisations','3':'Stocks','4':'Tiers','5':'Trésorerie','6':'Charges','7':'Produits','8':'Spéciaux' };
+const NATURE_MAP  = { '1':'Passif','2':'Actif','3':'Actif','4':'Mixte','5':'Actif','6':'Charge','7':'Produit','8':'Spécial' };
+const JOURNAL_NAMES = { 'AC':'Achats','VE':'Ventes','BQ':'Banque','CA':'Caisse','OD':'Opérations Diverses','IN':'Inventaire','AN':'À Nouveau' };
+const JOURNAL_ICONS = { 'AC':'🛒','VE':'💰','BQ':'🏦','CA':'💵','OD':'📋','IN':'📦','AN':'📂' };
+
+// ══════════════════════════════════════════
+// TRI DÉBIT AVANT CRÉDIT — NORME SYSCOHADA
+// ══════════════════════════════════════════
+function sortLignesDebitAvantCredit(lignes) {
+  return [...lignes].sort((a, b) => {
+    const aIsDebit = (parseFloat(a.debit) || 0) > 0;
+    const bIsDebit = (parseFloat(b.debit) || 0) > 0;
+    if (aIsDebit && !bIsDebit) return -1;
+    if (!aIsDebit && bIsDebit) return 1;
+    return 0;
+  });
 }
 
-/* Inscription — écrit dans DB1 (comptabilité) ET DB2 (abonnements) */
-function doRegister(){
-  var err=document.getElementById('register-error'),suc=document.getElementById('register-success');
-  err.style.display='none';suc.style.display='none';
-  var nom=document.getElementById('reg-entreprise').value.trim();
-  var contact=document.getElementById('reg-contact').value.trim();
-  var pass=document.getElementById('reg-password').value;
-  var pass2=document.getElementById('reg-password2').value;
-  if(!nom||!contact||!pass){err.textContent='Tous les champs requis.';err.style.display='block';return;}
-  if(pass.length<6){err.textContent='Mot de passe trop court (min 6).';err.style.display='block';return;}
-  if(pass!==pass2){err.textContent='Les mots de passe ne correspondent pas.';err.style.display='block';return;}
-  var btn=document.getElementById('btn-register');btn.disabled=true;btn.textContent='Création...';
-  db1.collection('users').where('nom_entreprise','==',nom).get().then(function(snap){
-    if(!snap.empty){err.textContent='Cette entreprise existe déjà.';err.style.display='block';btn.disabled=false;btn.textContent='Créer mon compte — 24h gratuit';return;}
-    var now=Date.now();
-    var userData={
-      nom_entreprise:nom,
-      contact:contact,
-      password_hash:hashPassword(pass),
-      created_at:now,
-      trial_ends_at:now+86400000, // 24h essai gratuit
-      is_subscribed:false,
-      subscription_ends_at:0,
-      subscription_type:'none', // 'monthly' | 'annual' | 'none'
-      last_payment_date:0,
-      payment_amount:0,
-      type_entreprise:document.getElementById('reg-type').value||'commerce',
-      secteur:document.getElementById('reg-secteur').value.trim(),
-      pays:document.getElementById('reg-pays').value||'CI',
-      ville:document.getElementById('reg-ville').value.trim(),
-      rccm:document.getElementById('reg-rccm').value.trim(),
-      regime_fiscal:document.getElementById('reg-regime').value||'reel'
+function getStepLabel(ecr) {
+  const jnl = ecr.journal;
+  if (jnl === 'IN') return 'Mouvement de stock';
+  if (jnl === 'AC') return 'Constatation facture achat';
+  if (jnl === 'VE') return 'Constatation facture vente';
+  if (jnl === 'BQ') return 'Règlement banque';
+  if (jnl === 'CA') return 'Règlement caisse';
+  if (jnl === 'OD') return 'Opération diverse';
+  if (jnl === 'AN') return 'À nouveau';
+  return ecr.libelle || 'Écriture';
+}
+
+// ── État global ──
+let ecritures = [], lignes = [], pieceCounter = 1, currentProfile = null, isAILoading = false;
+let exportFormat = 'pdf';
+let ecrQueue = [], ecrQueueIdx = 0;
+let currentGroupId = null;
+let conversationHistory = [];
+
+// ══════════════════════════════════════════
+// MOBILE SIDEBAR
+// ══════════════════════════════════════════
+function toggleMobileSidebar() {
+  document.getElementById('mainSidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('show');
+}
+function closeMobileSidebar() {
+  document.getElementById('mainSidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('show');
+}
+
+// ══════════════════════════════════════════
+// SYSTEM PROMPT — RAISONNEMENT STRUCTURÉ
+// ══════════════════════════════════════════
+function buildSystemPrompt(ctx) {
+  const { nbEcritures, companyName, exercice, totalDebit, totalCredit, comptesSoldes, allDates, ecrituresResume } = ctx;
+  const today = new Date().toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+  return `Tu es COMEO AI — Expert-Comptable Diplômé et Commissaire aux Comptes agréé en Côte d'Ivoire, membre de l'ONECCA-CI. Tu maîtrises parfaitement le SYSCOHADA Révisé 2017 et le droit fiscal ivoirien.
+
+════════════════════════════════════════════
+🧠 MÉTHODE DE RAISONNEMENT OBLIGATOIRE
+════════════════════════════════════════════
+
+Avant de produire TOUTE écriture, tu DOIS raisonner en silence selon ces étapes :
+
+ÉTAPE 1 — IDENTIFIER L'OPÉRATION
+  → Quelle est la nature exacte de l'opération ? (achat, vente, salaire, immobilisation, emprunt...)
+  → L'opération est-elle HT ou TTC ? Si TTC : HT = TTC ÷ 1,18 | TVA = TTC × 18/118
+  → Qui paie / qui reçoit ? Quelle est la contrepartie financière ?
+
+ÉTAPE 2 — COMPTER LES ÉCRITURES NÉCESSAIRES
+  → Combien d'écritures cette opération requiert-elle ? (1, 2 ou 3 ?)
+  → Ne JAMAIS générer moins d'écritures que nécessaire
+  → Vérifier : y a-t-il un mouvement de stock ? Un règlement ? Une constatation de dette ?
+
+ÉTAPE 3 — CHOISIR LES COMPTES EXACTS
+  → Classe 6 pour charges, Classe 7 pour produits, Classe 2 pour immobilisations
+  → JAMAIS 601 pour un véhicule/ordinateur/mobilier → utiliser 2451/2442/2444
+  → JAMAIS 511/512/513 pour un règlement par chèque → utiliser 521
+  → TVA : 4452 achats courants | 4451 immobilisations | 4453 transports | 4454 services
+
+ÉTAPE 4 — VÉRIFIER L'ÉQUILIBRE
+  → Σ DÉBITS = Σ CRÉDITS dans chaque écriture (tolérance : 0 FCFA)
+  → Les lignes débitrices TOUJOURS en premier (norme SYSCOHADA)
+
+ÉTAPE 5 — FORMATER EN JSON
+  → Utiliser EXACTEMENT le format ###ECRITURE### décrit ci-dessous
+
+════════════════════════════════════════════
+📋 SCHÉMAS OBLIGATOIRES PAR TYPE D'OPÉRATION
+════════════════════════════════════════════
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📌 ACHAT MARCHANDISES À CRÉDIT (3 écritures)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ÉCRITURE 1 [AC] — Constatation facture :
+  DÉBIT  601   Achats de marchandises                    [HT]
+  DÉBIT  4452  TVA récupérable sur achats 18%            [TVA]
+  CRÉDIT 401   Fournisseurs                              [TTC]
+
+ÉCRITURE 2 [IN] — Entrée en stock :
+  DÉBIT  311   Marchandises A                            [HT]
+  CRÉDIT 6031  Variation des stocks de marchandises      [HT]
+
+ÉCRITURE 3 [BQ ou CA] — Règlement :
+  DÉBIT  401   Fournisseurs                              [TTC]
+  CRÉDIT 521   Banques locales                           [TTC]
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📌 VENTE MARCHANDISES (3 écritures)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ÉCRITURE 1 [VE] — Facturation client :
+  DÉBIT  411   Clients                                   [TTC]
+  CRÉDIT 701   Ventes de marchandises                    [HT]
+  CRÉDIT 4431  TVA facturée sur ventes 18%               [TVA]
+
+ÉCRITURE 2 [IN] — Sortie de stock au coût d'achat :
+  DÉBIT  6031  Variation des stocks de marchandises      [coût HT]
+  CRÉDIT 311   Marchandises A                            [coût HT]
+
+ÉCRITURE 3 [BQ/CA] — Encaissement :
+  DÉBIT  521   Banques locales (ou 571 Caisse)           [TTC]
+  CRÉDIT 411   Clients                                   [TTC]
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📌 PAIEMENT SALAIRES (2 écritures minimum)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ÉCRITURE 1 [OD] :
+  DÉBIT  661   Rémunérations directes personnel national [brut]
+  CRÉDIT 422   Personnel, rémunérations dues             [net à payer]
+  CRÉDIT 431   Sécurité sociale — CNPS salarial 7,7%    [retenue CNPS]
+  CRÉDIT 447   Impôts retenus à la source                [retenue fiscale]
+
+ÉCRITURE 2 [BQ] :
+  DÉBIT  422   Personnel, rémunérations dues             [net à payer]
+  CRÉDIT 521   Banques locales                           [net à payer]
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📌 ACHAT IMMOBILISATION (2 écritures)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Véhicule → 2451 | Informatique → 2442 | Mobilier → 2444 | Matériel → 2441
+
+ÉCRITURE 1 [AC] :
+  DÉBIT  24xx  Immobilisation                            [HT]
+  DÉBIT  4451  TVA récupérable sur immobilisations 18%   [TVA]
+  CRÉDIT 401   Fournisseurs                              [TTC]
+
+ÉCRITURE 2 [BQ] :
+  DÉBIT  401   Fournisseurs                              [TTC]
+  CRÉDIT 521   Banques locales                           [TTC]
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📌 EMPRUNT BANCAIRE (2 écritures)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ÉCRITURE 1 [BQ] :
+  DÉBIT  521   Banques locales                           [montant emprunté]
+  CRÉDIT 162   Emprunts auprès établissements de crédit  [montant emprunté]
+
+ÉCRITURE 2 [BQ] — Remboursement :
+  DÉBIT  162   Emprunts                                  [capital]
+  DÉBIT  671   Intérêts des emprunts                     [intérêts]
+  CRÉDIT 521   Banques locales                           [mensualité]
+
+════════════════════════════════════════════
+🔢 CALCULS FISCAUX — CÔTE D'IVOIRE
+════════════════════════════════════════════
+TVA standard       : 18%
+HT connu           : TVA = HT × 0,18 | TTC = HT × 1,18
+TTC connu          : HT = ARRONDI(TTC ÷ 1,18) | TVA = TTC - HT
+CNPS salarial      : 7,7% | CNPS patronal : 16% | TPA : 0,4% | CN : 1,5%/1,6%
+IS                 : 25% | IMF : 0,5% CA HT (min 3 000 000 FCFA/an)
+RÈGLE : Toujours arrondir à l'entier — JAMAIS de centimes en FCFA.
+
+════════════════════════════════════════════
+✅ COMPTES CORRECTS — RÉFÉRENCE
+════════════════════════════════════════════
+Chèque/virement → 521 (JAMAIS 511/512/513) | Espèces → 571 | Mobile Money → 552
+TVA achats → 4452 | TVA immob → 4451 | TVA transport → 4453 | TVA services → 4454
+TVA ventes → 4431 | TVA services vendus → 4432
+Véhicule → 2451 | Informatique → 2442 | Mobilier → 2444 | Matériel → 2441
+Amort véhicule → 2845 | Amort mobilier → 2844 | Amort industriel → 2841
+Salaires dus → 422 | Avances salaires → 4211
+Dette fournisseur → 401 | Créance client → 411
+
+════════════════════════════════════════════
+🔴 RÈGLES ABSOLUES
+════════════════════════════════════════════
+1. Chaque écriture DOIT être parfaitement équilibrée : Σ DÉBITS = Σ CRÉDITS
+2. Lignes DÉBITRICES toujours EN PREMIER (norme SYSCOHADA)
+3. JAMAIS de décimales — FCFA entiers uniquement
+4. TOUJOURS générer TOUTES les écritures nécessaires
+5. Explication textuelle AVANT les blocs ###ECRITURE###
+
+════════════════════════════════════════════
+📂 CONTEXTE ENTREPRISE EN TEMPS RÉEL
+════════════════════════════════════════════
+Entreprise    : ${companyName}
+Exercice      : ${exercice}
+Date du jour  : ${today}
+Nb écritures  : ${nbEcritures}
+Total Débit   : ${totalDebit} FCFA
+Total Crédit  : ${totalCredit} FCFA
+${comptesSoldes ? `Soldes comptes principaux : ${comptesSoldes}` : ''}
+${ecrituresResume ? `Dernières opérations : ${ecrituresResume}` : ''}
+${allDates ? `Période couverte : ${allDates}` : ''}
+
+════════════════════════════════════════════
+📝 FORMAT JSON — STRICT
+════════════════════════════════════════════
+###ECRITURE###{"journal":"XX","libelle":"Libellé précis","lignes":[
+{"compte":"XXXX","libelle":"Libellé du compte","debit":MONTANT,"credit":0},
+{"compte":"XXXX","libelle":"Libellé du compte","debit":0,"credit":MONTANT}
+]}
+
+Journaux : AC | VE | BQ | CA | OD | IN | AN
+
+════════════════════════════════════════════
+🔍 FILTRES ET NAVIGATION
+════════════════════════════════════════════
+Journal   : ###FILTRE###{"type":"journal","dateDebut":"YYYY-MM-DD","dateFin":"YYYY-MM-DD","journal":"","compte":""}
+Balance   : ###FILTRE###{"type":"balance","dateDebut":"","dateFin":"","journal":"","compte":""}
+Grand livre : ###FILTRE###{"type":"grandlivre","dateDebut":"","dateFin":"","journal":"","compte":"XXX"}
+Bilan     : ###FILTRE###{"type":"bilan","dateDebut":"","dateFin":"YYYY-MM-DD","journal":"","compte":""}`;
+}
+
+// ══════════════════════════════════════════
+// AUTH
+// ══════════════════════════════════════════
+function switchTab(t) {
+  document.getElementById('tab-login').classList.toggle('active', t === 'login');
+  document.getElementById('tab-register').classList.toggle('active', t === 'register');
+  document.getElementById('form-login').style.display = t === 'login' ? 'flex' : 'none';
+  document.getElementById('form-register').style.display = t === 'register' ? 'flex' : 'none';
+}
+
+async function doRegister() {
+  const company = document.getElementById('r-company').value.trim();
+  const compte701 = document.getElementById('r-compte701').value.trim() || '701';
+  const exercice = document.getElementById('r-exercice').value.trim() || '2024';
+  const pass = document.getElementById('r-pass').value;
+  const err = document.getElementById('r-err');
+  err.classList.remove('show');
+  if (!company) { err.textContent = "Nom d'entreprise requis"; err.classList.add('show'); return; }
+  if (pass.length < 4) { err.textContent = 'Mot de passe trop court (4 caractères min.)'; err.classList.add('show'); return; }
+  const profileId = company.toLowerCase().replace(/[^a-z0-9]/g, '_');
+  try {
+    await waitForFirebase();
+    const docRef = window._fbDoc(window._db, 'profiles', profileId);
+    const snap = await window._fbGetDoc(docRef);
+    if (snap.exists()) { err.textContent = "Ce nom d'entreprise existe déjà."; err.classList.add('show'); return; }
+    await window._fbSetDoc(docRef, { company, compte701, exercice, password: btoa(pass), createdAt: new Date().toISOString() });
+    toast('Profil créé avec succès ! Connectez-vous.', 'success');
+    switchTab('login');
+    document.getElementById('l-company').value = company;
+  } catch (e) { err.textContent = 'Erreur : ' + e.message; err.classList.add('show'); }
+}
+
+async function doLogin() {
+  const company = document.getElementById('l-company').value.trim();
+  const pass = document.getElementById('l-pass').value;
+  const err = document.getElementById('l-err');
+  err.classList.remove('show');
+  if (!company || !pass) { err.textContent = 'Remplissez tous les champs'; err.classList.add('show'); return; }
+  const profileId = company.toLowerCase().replace(/[^a-z0-9]/g, '_');
+  try {
+    await waitForFirebase();
+    const docRef = window._fbDoc(window._db, 'profiles', profileId);
+    const snap = await window._fbGetDoc(docRef);
+    if (!snap.exists()) { err.textContent = 'Entreprise introuvable.'; err.classList.add('show'); return; }
+    const profile = snap.data();
+    if (atob(profile.password) !== pass) { err.textContent = 'Mot de passe incorrect'; err.classList.add('show'); return; }
+    currentProfile = { ...profile, id: profileId };
+    localStorage.setItem('syscohada_session', JSON.stringify({ profileId, company }));
+    conversationHistory = [];
+    await loadApp();
+  } catch (e) { err.textContent = 'Erreur : ' + e.message; err.classList.add('show'); }
+}
+
+function doLogout() {
+  if (!confirm('Se déconnecter ?')) return;
+  localStorage.removeItem('syscohada_session');
+  currentProfile = null; ecritures = []; conversationHistory = [];
+  document.getElementById('appShell').style.display = 'none';
+  document.getElementById('authOverlay').style.display = 'flex';
+}
+
+function waitForFirebase() {
+  return new Promise(r => {
+    if (window._fbReady) { r(); return; }
+    document.addEventListener('firebase-ready', r, { once: true });
+  });
+}
+
+async function loadApp() {
+  document.getElementById('authOverlay').style.display = 'none';
+  document.getElementById('appShell').style.display = 'grid';
+  document.getElementById('topCompanyName').textContent = currentProfile.company;
+  document.getElementById('exerciceYear').value = currentProfile.exercice || '2024';
+  // Charger la config serveur (clés API) si pas encore fait
+  if (!serverConfigLoaded) await loadServerConfig();
+  await loadEcrituresFromFirestore();
+  updateStats(); renderPlanComptable(); initSaisie();
+}
+
+// ══════════════════════════════════════════
+// FIRESTORE
+// ══════════════════════════════════════════
+async function loadEcrituresFromFirestore() {
+  try {
+    const col = window._fbCollection(window._db, 'profiles', currentProfile.id, 'ecritures');
+    const q = window._fbQuery(col, window._fbOrderBy('date', 'asc'));
+    const snap = await window._fbGetDocs(q);
+    ecritures = [];
+    snap.forEach(d => ecritures.push({ ...d.data(), _docId: d.id }));
+    pieceCounter = ecritures.length + 1;
+  } catch (e) { toast('Erreur chargement : ' + e.message, 'error'); }
+}
+
+async function saveEcritureToFirestore(ecriture) {
+  try {
+    const col = window._fbCollection(window._db, 'profiles', currentProfile.id, 'ecritures');
+    const docRef = await window._fbAddDoc(col, ecriture);
+    ecriture._docId = docRef.id;
+    return docRef.id;
+  } catch (e) { toast('Erreur sauvegarde : ' + e.message, 'error'); return null; }
+}
+
+async function deleteEcritureFromFirestore(docId) {
+  try {
+    await window._fbDeleteDoc(window._fbDoc(window._db, 'profiles', currentProfile.id, 'ecritures', docId));
+  } catch (e) { toast('Erreur suppression : ' + e.message, 'error'); }
+}
+
+// ══════════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════════
+const VIEW_KEYS = {
+  dashboard: 'tableau', saisie: 'saisie', journal: 'journal',
+  grandlivre: 'grand', balance: 'balance', bilan: 'bilan',
+  resultat: 'résultat', tresorerie: 'trésor', plancomptable: 'plan'
+};
+const RENDERERS = {
+  journal: renderJournal, grandlivre: renderGrandLivre, balance: renderBalance,
+  bilan: renderBilan, resultat: renderResultat, tresorerie: renderTresorerie,
+  plancomptable: renderPlanComptable, saisie: initSaisie
+};
+
+function navigate(view) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('view-' + view).classList.add('active');
+  const key = VIEW_KEYS[view] || view;
+  document.querySelectorAll('.nav-item').forEach(n => {
+    if (n.textContent.toLowerCase().includes(key)) n.classList.add('active');
+  });
+  if (RENDERERS[view]) RENDERERS[view]();
+}
+
+// ══════════════════════════════════════════
+// STATS
+// ══════════════════════════════════════════
+function updateStats() {
+  let tD = 0, tC = 0;
+  ecritures.forEach(e => e.lignes.forEach(l => { tD += l.debit || 0; tC += l.credit || 0; }));
+  const all = ecritures.flatMap(e => e.lignes);
+  const prod = all.filter(l => l.compte?.[0] === '7').reduce((s, l) => s + (l.credit || 0), 0);
+  const chg = all.filter(l => l.compte?.[0] === '6').reduce((s, l) => s + (l.debit || 0), 0);
+  const res = prod - chg;
+  const eq = Math.abs(tD - tC) < 0.01;
+  document.getElementById('s-ecritures').textContent = ecritures.length;
+  document.getElementById('s-debit').textContent = fn(tD);
+  document.getElementById('s-credit').textContent = fn(tC);
+  const eqEl = document.getElementById('s-equil');
+  eqEl.textContent = eq ? '✓ Équilibré' : '✗ Déséquilibré';
+  eqEl.className = 'val ' + (eq ? 'g' : 'r');
+  document.getElementById('dash-nb').textContent = ecritures.length;
+  document.getElementById('dash-debit').textContent = fs(tD);
+  document.getElementById('dash-credit').textContent = fs(tC);
+  const re = document.getElementById('dash-res');
+  re.textContent = fs(res);
+  re.style.color = res >= 0 ? 'var(--green)' : 'var(--red)';
+  const yr = document.getElementById('exerciceYear').value;
+  const bd = document.getElementById('bilanDate');
+  const ry = document.getElementById('resultatYear');
+  if (bd) bd.textContent = '31/12/' + yr;
+  if (ry) ry.textContent = yr;
+}
+
+function fn(n) { return Number(n || 0).toLocaleString('fr-FR', { maximumFractionDigits: 0 }); }
+function fs(n) {
+  const a = Math.abs(n);
+  if (a >= 1e9) return (n / 1e9).toFixed(1) + ' Md FCFA';
+  if (a >= 1e6) return (n / 1e6).toFixed(1) + ' M FCFA';
+  if (a >= 1e3) return (n / 1e3).toFixed(0) + ' K FCFA';
+  return (n || 0).toFixed(0) + ' FCFA';
+}
+
+// ══════════════════════════════════════════
+// SAISIE
+// ══════════════════════════════════════════
+function initSaisie() {
+  document.getElementById('ecr-date').value = new Date().toISOString().split('T')[0];
+  document.getElementById('ecr-piece').placeholder = 'N°' + String(pieceCounter).padStart(5, '0');
+  if (lignes.length === 0) { addLigne(); addLigne(); }
+  renderLignes(); updateQueueBar();
+}
+
+function addLigne(compte = '', libelle = '', debit = '', credit = '') {
+  lignes.push({ compte, libelle, debit, credit }); renderLignes();
+}
+function removeLigne(i) { lignes.splice(i, 1); renderLignes(); }
+
+// ══════════════════════════════════════════
+// AUTO SAVE
+// ══════════════════════════════════════════
+async function autoSaveAllEcritures() {
+  if (ecrQueue.length === 0) { toast("Aucune écriture en file d'attente", 'error'); return; }
+  const total = ecrQueue.length;
+  const bar = document.getElementById('autoSaveBar');
+  const msg = document.getElementById('autoSaveMsg');
+  const prog = document.getElementById('autoSaveProgress');
+  bar.classList.add('show');
+  const date = document.getElementById('ecr-date').value || new Date().toISOString().split('T')[0];
+  const groupId = 'grp_' + Date.now();
+  const groupLib = ecrQueue[0]?.libelle || 'Opération ' + new Date().toLocaleDateString('fr-FR');
+  let saved = 0;
+  const errors = [];
+
+  for (let i = 0; i < ecrQueue.length; i++) {
+    const ecr = ecrQueue[i];
+    msg.innerHTML = `<strong>Enregistrement ${i + 1}/${total}</strong> — [${ecr.journal}] ${ecr.libelle || 'Écriture ' + (i + 1)}`;
+    prog.style.width = ((i / total) * 100) + '%';
+    const valid = (ecr.lignes || []).filter(l => l.compte && (l.debit || l.credit));
+    if (valid.length < 2) { errors.push(`Écriture ${i + 1} : moins de 2 lignes valides`); continue; }
+    let d = 0, c = 0;
+    valid.forEach(l => { d += Math.round(parseFloat(l.debit) || 0); c += Math.round(parseFloat(l.credit) || 0); });
+    if (Math.abs(d - c) > 2) { errors.push(`Écriture ${i + 1} [${ecr.journal}] : non équilibrée (Δ ${Math.abs(d - c)} FCFA)`); continue; }
+    const piece = 'N°' + String(pieceCounter).padStart(5, '0');
+    const lignesSorted = sortLignesDebitAvantCredit(valid);
+    const ecriture = {
+      id: Date.now() + i, date, journal: ecr.journal || 'OD', piece,
+      libelle: ecr.libelle || 'Écriture IA',
+      groupId, groupLibelle: groupLib, groupSize: total, groupIdx: i,
+      createdAt: new Date().toISOString(),
+      lignes: lignesSorted.map(l => ({
+        compte: String(l.compte),
+        libelle: l.libelle || PC[String(l.compte)] || '',
+        debit: Math.round(parseFloat(l.debit) || 0),
+        credit: Math.round(parseFloat(l.credit) || 0)
+      }))
     };
+    const docId = await saveEcritureToFirestore(ecriture);
+    if (docId) { ecritures.push(ecriture); pieceCounter++; saved++; }
+    await new Promise(r => setTimeout(r, 150));
+  }
 
-    // Écriture simultanée dans DB1 (gestion interne) et DB2 (abonnements)
-    var p1=db1.collection('users').add(userData);
-    var p2=db2.collection('abonnements').add({
-      nom_entreprise:nom,
-      contact:contact,
-      created_at:now,
-      trial_ends_at:now+86400000,
-      is_subscribed:false,
-      subscription_type:'none',
-      subscription_ends_at:0,
-      last_payment_date:0,
-      payment_amount:0,
-      pays:document.getElementById('reg-pays').value||'CI',
-      ville:document.getElementById('reg-ville').value.trim(),
-      type_entreprise:document.getElementById('reg-type').value||'commerce',
-      statut:'trial' // 'trial' | 'active' | 'expired'
-    });
-
-    Promise.all([p1,p2]).then(function(){
-      suc.textContent='Compte créé ! Essai 24h actif. Connectez-vous.';
-      suc.style.display='block';
-      setTimeout(function(){switchAuth('login');},1500);
-    }).catch(function(e){
-      err.textContent='Erreur : '+e.message;err.style.display='block';
-    }).finally(function(){
-      btn.disabled=false;btn.textContent='Créer mon compte — 24h gratuit';
-    });
-  }).catch(function(e){err.textContent='Erreur : '+e.message;err.style.display='block';btn.disabled=false;btn.textContent='Créer mon compte — 24h gratuit';});
-}
-
-/* Connexion — vérifie dans DB1 et synchronise l'abonnement depuis DB2 */
-function doLogin(){
-  var err=document.getElementById('login-error');err.style.display='none';
-  var nom=document.getElementById('login-entreprise').value.trim();
-  var pass=document.getElementById('login-password').value;
-  if(!nom||!pass){err.textContent='Remplissez tous les champs.';err.style.display='block';return;}
-  var btn=document.getElementById('btn-login');btn.disabled=true;btn.textContent='Connexion...';
-
-  db1.collection('users').where('nom_entreprise','==',nom).limit(1).get().then(function(snap){
-    if(snap.empty){err.textContent='Entreprise non trouvée.';err.style.display='block';btn.disabled=false;btn.textContent='Se connecter';return;}
-    var doc=snap.docs[0],data=doc.data();
-    if(data.password_hash!==hashPassword(pass)){err.textContent='Mot de passe incorrect.';err.style.display='block';btn.disabled=false;btn.textContent='Se connecter';return;}
-
-    // Synchroniser le statut d'abonnement depuis DB2
-    db2.collection('abonnements').where('nom_entreprise','==',nom).limit(1).get().then(function(snap2){
-      var abonnement={};
-      if(!snap2.empty){
-        abonnement=snap2.docs[0].data();
-        // Mettre à jour DB1 avec les infos d'abonnement de DB2
-        if(abonnement.is_subscribed!==undefined){
-          db1.collection('users').doc(doc.id).update({
-            is_subscribed:abonnement.is_subscribed,
-            subscription_ends_at:abonnement.subscription_ends_at||0,
-            subscription_type:abonnement.subscription_type||'none',
-            last_payment_date:abonnement.last_payment_date||0,
-            payment_amount:abonnement.payment_amount||0
-          });
-        }
-      }
-      currentUser=Object.assign({id:doc.id},data,{
-        is_subscribed:abonnement.is_subscribed!==undefined?abonnement.is_subscribed:data.is_subscribed,
-        subscription_ends_at:abonnement.subscription_ends_at||data.subscription_ends_at||0,
-        subscription_type:abonnement.subscription_type||data.subscription_type||'none'
-      });
-      afterLogin();
-      btn.disabled=false;btn.textContent='Se connecter';
-    }).catch(function(){
-      // Si DB2 inaccessible, utiliser les données de DB1
-      currentUser=Object.assign({id:doc.id},data);
-      afterLogin();
-      btn.disabled=false;btn.textContent='Se connecter';
-    });
-  }).catch(function(e){err.textContent='Erreur : '+e.message;err.style.display='block';btn.disabled=false;btn.textContent='Se connecter';});
-}
-
-function forgotPassword(){var nom=document.getElementById('login-entreprise').value.trim();window.open('https://wa.me/2250508463003?text='+encodeURIComponent('Bonjour, j\'ai oublié mon mot de passe Comeo AI. Mon entreprise : '+(nom||'____')),'_blank');}
-
-function logout(){currentUser=null;allEcritures=[];document.getElementById('app').classList.remove('active');document.getElementById('auth-overlay').style.display='flex';document.getElementById('paywall-overlay').style.display='none';document.getElementById('login-password').value='';}
-
-function afterLogin(){
-  document.getElementById('auth-overlay').style.display='none';
-  document.getElementById('app').classList.add('active');
-  document.getElementById('header-org').textContent='🏢 '+currentUser.nom_entreprise;
-  currentEntrepriseType=currentUser.type_entreprise||'commerce';
-  document.getElementById('profil-nom').value=currentUser.nom_entreprise||'';
-  document.getElementById('profil-contact').value=currentUser.contact||'';
-  document.getElementById('profil-type').value=currentUser.type_entreprise||'commerce';
-  document.getElementById('profil-secteur').value=currentUser.secteur||'';
-  document.getElementById('profil-pays').value=currentUser.pays||'CI';
-  document.getElementById('profil-ville').value=currentUser.ville||'';
-  document.getElementById('profil-rccm').value=currentUser.rccm||'';
-  document.getElementById('profil-regime').value=currentUser.regime_fiscal||'reel';
-  updateSubscriptionStatus();
-  loadEcritures();
-}
-
-function updateSubscriptionStatus(){
-  var now=Date.now();
-  var trialActive=now<currentUser.trial_ends_at;
-  var subActive=currentUser.is_subscribed&&now<currentUser.subscription_ends_at;
-  var badge=document.getElementById('header-status');
-  if(trialActive){
-    var h=Math.ceil((currentUser.trial_ends_at-now)/3600000);
-    badge.className='pill pill-warn';badge.textContent='⏳ Essai : '+h+'h';
-  } else if(subActive){
-    var j=Math.ceil((currentUser.subscription_ends_at-now)/86400000);
-    var typeLabel=currentUser.subscription_type==='annual'?'Annuel':'Mensuel';
-    badge.className='pill pill-gold';badge.textContent='✅ '+typeLabel+' ('+j+'j)';
+  prog.style.width = '100%';
+  await new Promise(r => setTimeout(r, 400));
+  bar.classList.remove('show');
+  ecrQueue = []; ecrQueueIdx = 0; lignes = [];
+  updateQueueBar(); hideMultiEcrBanner(); hideSaisieNotif(); dismissFillBanner();
+  updateStats();
+  if (errors.length > 0) {
+    toast(`⚠️ ${saved}/${total} écritures enregistrées — ${errors.length} erreur(s)`, 'error');
   } else {
-    badge.className='pill pill-warn';badge.textContent='🔒 Expiré';
-    showPaywall();
+    toast(`✅ ${saved} écriture${saved > 1 ? 's' : ''} enregistrée${saved > 1 ? 's' : ''} !`, 'success');
+  }
+  setTimeout(() => { navigate('journal'); renderJournal(); }, 500);
+  initSaisie();
+}
+
+async function autoSaveAllFromNotif() { hideSaisieNotif(); await autoSaveAllEcritures(); }
+
+function setEcritureQueue(ecritures_ai) {
+  ecrQueue = ecritures_ai; ecrQueueIdx = 0;
+  if (ecrQueue.length > 0) { loadEcritureFromQueue(0); updateQueueBar(); }
+}
+
+function loadEcritureFromQueue(idx) {
+  if (idx >= ecrQueue.length) return;
+  const ecr = ecrQueue[idx];
+  const lignesSorted = sortLignesDebitAvantCredit(ecr.lignes || []);
+  lignes = lignesSorted.map(l => ({
+    compte: String(l.compte || ''),
+    libelle: l.libelle || PC[String(l.compte)] || '',
+    debit: Math.round(parseFloat(l.debit) || 0),
+    credit: Math.round(parseFloat(l.credit) || 0)
+  }));
+  const jSelect = document.getElementById('ecr-journal');
+  if (jSelect && ecr.journal) jSelect.value = ecr.journal;
+  const libInput = document.getElementById('ecr-libelle');
+  if (libInput && ecr.libelle) libInput.value = ecr.libelle;
+  const dateInput = document.getElementById('ecr-date');
+  if (dateInput && !dateInput.value) dateInput.value = new Date().toISOString().split('T')[0];
+  renderLignes();
+  const banner = document.getElementById('aiFillBanner');
+  const desc = document.getElementById('aiFillDesc');
+  const num = document.getElementById('aiFillNum');
+  if (banner && desc) {
+    desc.textContent = ecr.libelle || 'Écriture préparée par COMEO AI';
+    if (num) num.textContent = ecrQueue.length > 1 ? `(${idx + 1}/${ecrQueue.length})` : '';
+    banner.classList.add('show');
   }
 }
 
-function showPaywall(){document.getElementById('paywall-overlay').style.display='flex';}
-setInterval(function(){if(currentUser)updateSubscriptionStatus();},60000);
-
-/* ============================================================
-   DATA — ÉCRITURES (DB1)
-============================================================ */
-function loadEcritures(){
-  if(!currentUser)return;
-  db1.collection('ecritures').where('user_id','==',currentUser.id).get().then(function(snap){
-    allEcritures=snap.docs.map(function(d){
-      var data=d.data();
-      if(data.ecritures&&Array.isArray(data.ecritures)&&(!data.lignes||!data.lignes.length)){
-        data.lignes=[];data.ecritures.forEach(function(ec){(ec.lignes||[]).forEach(function(l){data.lignes.push(l);});});
-      }
-      return Object.assign({id:d.id},data);
-    });
-    allEcritures.sort(function(a,b){return(b.date||'').localeCompare(a.date||'');});
-    renderDashboard();renderGrandLivre();renderBalance();renderBilan();renderResultat();renderTiers();renderTresorerie();
-  }).catch(function(e){showToast('Erreur chargement : '+e.message);});
+function updateQueueBar() {
+  const bar = document.getElementById('saisieQueueBar');
+  if (!bar) return;
+  const counter = document.getElementById('sqbCounter');
+  const remaining = ecrQueue.length - ecrQueueIdx;
+  if (remaining > 0) {
+    bar.classList.add('show');
+    if (counter) counter.textContent = remaining + ' écriture' + (remaining > 1 ? 's' : '');
+    const btnAll = document.getElementById('btnValidateAll');
+    if (btnAll) btnAll.style.display = remaining > 1 ? 'inline-flex' : 'none';
+  } else { bar.classList.remove('show'); }
 }
 
-function saveEcriture(data){
-  if(!currentUser)return Promise.resolve();
-  var payload=Object.assign({},data);
-  if(payload.ecritures&&Array.isArray(payload.ecritures)){
-    payload.lignes=[];payload.ecritures.forEach(function(ec){(ec.lignes||[]).forEach(function(l){payload.lignes.push(l);});});
+function skipToNextEcriture() {
+  ecrQueueIdx++;
+  if (ecrQueueIdx < ecrQueue.length) {
+    loadEcritureFromQueue(ecrQueueIdx); updateQueueBar();
+    toast('Écriture ' + (ecrQueueIdx + 1) + '/' + ecrQueue.length + ' chargée', 'info');
+  } else {
+    ecrQueue = []; ecrQueueIdx = 0; lignes = []; addLigne(); addLigne(); renderLignes();
+    updateQueueBar(); dismissFillBanner();
   }
-  var doc=Object.assign({},payload,{user_id:currentUser.id,created_at:Date.now()});
-  return db1.collection('ecritures').add(doc).then(function(ref){
-    doc.id=ref.id;allEcritures.unshift(doc);allEcritures.sort(function(a,b){return(b.date||'').localeCompare(a.date||'');});
-    renderDashboard();renderGrandLivre();renderBalance();renderBilan();renderResultat();renderTiers();renderTresorerie();
-    showToast('✓ Écriture enregistrée');return doc;
+}
+
+function dismissFillBanner() { const b = document.getElementById('aiFillBanner'); if (b) b.classList.remove('show'); }
+
+function showMultiEcrBanner(ecritures_ai) {
+  const banner = document.getElementById('multiEcrBanner');
+  const list = document.getElementById('mebList');
+  const title = document.getElementById('mebTitle');
+  if (!banner) return;
+  title.textContent = `COMEO AI a préparé ${ecritures_ai.length} écriture${ecritures_ai.length > 1 ? 's' : ''} liées`;
+  list.innerHTML = ecritures_ai.map((e, i) =>
+    `<li><span class="meb-n">${i + 1}</span><span class="meb-jnl">${e.journal || 'OD'}</span><span>${e.libelle || 'Écriture ' + (i + 1)}</span></li>`
+  ).join('');
+  banner.classList.add('show');
+  setTimeout(() => banner.classList.remove('show'), 60000);
+}
+function hideMultiEcrBanner() { const b = document.getElementById('multiEcrBanner'); if (b) b.classList.remove('show'); }
+
+function showSaisieNotif(libelle, count) {
+  const notif = document.getElementById('saisieNotif');
+  const body = document.getElementById('saisieNotifBody');
+  if (!notif) return;
+  body.textContent = count > 1
+    ? `${count} écritures liées préparées. Cliquez "Tout enregistrer" pour les grouper.`
+    : `"${libelle || 'Écriture'}" — Vérifiez et enregistrez.`;
+  notif.classList.add('show');
+  setTimeout(() => notif.classList.remove('show'), 15000);
+}
+function hideSaisieNotif() { const n = document.getElementById('saisieNotif'); if (n) n.classList.remove('show'); }
+
+function goToSaisie() {
+  hideSaisieNotif(); navigate('saisie');
+  setTimeout(() => {
+    const card = document.querySelector('#view-saisie .card:last-of-type');
+    if (card) card.scrollIntoView({ behavior: 'smooth' });
+  }, 200);
+}
+
+// ══════════════════════════════════════════
+// RENDER LIGNES
+// ══════════════════════════════════════════
+function renderLignes() {
+  const tbody = document.getElementById('lignesBody');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+  const cardContainer = document.getElementById('lignesCardContainer');
+  if (cardContainer) cardContainer.innerHTML = '';
+
+  lignes.forEach((l, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><div class="asw">
+        <input type="text" value="${l.compte}" placeholder="Compte…" style="width:100%;font-family:var(--font-mono)"
+          oninput="lignes[${i}].compte=this.value;updateAccountSuggest(${i},this,'table')"
+          onblur="hideDropdown('t-${i}')">
+        <div class="adrop" id="drop-t-${i}"></div>
+      </div></td>
+      <td><input type="text" value="${l.libelle || ''}" placeholder="Libellé…" style="width:100%" oninput="lignes[${i}].libelle=this.value"></td>
+      <td><input type="text" value="${l.debit || ''}" placeholder="0" style="text-align:right;width:100%;font-family:var(--font-mono)"
+        oninput="lignes[${i}].debit=parseFloat(this.value.replace(/[^0-9.]/g,''))||0;updateBalance()"></td>
+      <td><input type="text" value="${l.credit || ''}" placeholder="0" style="text-align:right;width:100%;font-family:var(--font-mono)"
+        oninput="lignes[${i}].credit=parseFloat(this.value.replace(/[^0-9.]/g,''))||0;updateBalance()"></td>
+      <td><button class="del-line" onclick="removeLigne(${i})">✕</button></td>`;
+    tbody.appendChild(tr);
+
+    if (cardContainer) {
+      const card = document.createElement('div');
+      card.className = 'ligne-card';
+      card.innerHTML = `
+        <div class="ligne-card-row">
+          <div class="ligne-card-field">
+            <div class="ligne-card-label">Compte</div>
+            <div style="position:relative">
+              <input class="ligne-card-input" type="text" value="${l.compte}" placeholder="Compte…" style="font-family:var(--font-mono)"
+                oninput="lignes[${i}].compte=this.value;updateAccountSuggest(${i},this,'card')"
+                onblur="hideDropdown('c-${i}')">
+              <div class="adrop" id="drop-c-${i}"></div>
+            </div>
+          </div>
+          <div class="ligne-card-field">
+            <div class="ligne-card-label">Libellé</div>
+            <input class="ligne-card-input" type="text" value="${l.libelle || ''}" placeholder="Libellé…" oninput="lignes[${i}].libelle=this.value">
+          </div>
+        </div>
+        <div class="ligne-card-row">
+          <div class="ligne-card-field">
+            <div class="ligne-card-label" style="color:var(--blue)">Débit (FCFA)</div>
+            <input class="ligne-card-input" type="number" value="${l.debit || ''}" placeholder="0" style="font-family:var(--font-mono)"
+              oninput="lignes[${i}].debit=parseFloat(this.value)||0;updateBalance()">
+          </div>
+          <div class="ligne-card-field">
+            <div class="ligne-card-label" style="color:var(--green)">Crédit (FCFA)</div>
+            <input class="ligne-card-input" type="number" value="${l.credit || ''}" placeholder="0" style="font-family:var(--font-mono)"
+              oninput="lignes[${i}].credit=parseFloat(this.value)||0;updateBalance()">
+          </div>
+        </div>
+        <div class="ligne-card-actions">
+          <button class="del-line" style="opacity:.6" onclick="removeLigne(${i})">✕ Supprimer</button>
+        </div>`;
+      cardContainer.appendChild(card);
+    }
   });
+  updateBalance();
 }
 
-/* ============================================================
-   DASHBOARD
-============================================================ */
-function renderDashboard(){
-  var now=new Date(),ym=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
-  var thisMonth=allEcritures.filter(function(e){return e.date&&e.date.startsWith(ym);});
-  var totalDebit=0,totalCredit=0,soldeTreso=0;
-  thisMonth.forEach(function(e){(e.lignes||[]).forEach(function(l){totalDebit+=l.debit||0;totalCredit+=l.credit||0;});});
-  allEcritures.forEach(function(e){(e.lignes||[]).forEach(function(l){if(String(l.compte||'').match(/^5[0-9]/))soldeTreso+=(l.debit||0)-(l.credit||0);});});
-  document.getElementById('dash-nb-ecritures').textContent=thisMonth.length;
-  document.getElementById('dash-total-debit').textContent=fmtAmount(totalDebit);
-  document.getElementById('dash-total-credit').textContent=fmtAmount(totalCredit);
-  document.getElementById('dash-solde-treso').textContent=fmtAmount(soldeTreso);
-  var last=allEcritures.slice(0,5);
-  if(!last.length){document.getElementById('dash-last-ecritures').innerHTML='<div style="color:var(--text3);font-family:var(--mono);font-size:12px;padding:10px;">Aucune écriture.</div>';return;}
-  var html='<table class="data-table"><thead><tr><th>Date</th><th>Réf</th><th>Description</th><th style="text-align:right">Débit</th><th style="text-align:right">Crédit</th></tr></thead><tbody>';
-  last.forEach(function(e){var td=0,tc=0;(e.lignes||[]).forEach(function(l){td+=l.debit||0;tc+=l.credit||0;});html+='<tr><td>'+escHtml(e.date)+'</td><td>'+escHtml(e.reference)+'</td><td>'+escHtml(e.description||e.titre)+'</td><td class="col-debit">'+fmtAmount(td)+'</td><td class="col-credit">'+fmtAmount(tc)+'</td></tr>';});
-  document.getElementById('dash-last-ecritures').innerHTML=html+'</tbody></table>';
+function updateAccountSuggest(idx, input, mode) {
+  const q = input.value.toLowerCase().trim();
+  const dropId = mode === 'card' ? 'c-' + idx : 't-' + idx;
+  const drop = document.getElementById('drop-' + dropId);
+  if (!drop) return;
+  if (!q || q.length < 2) { drop.classList.remove('open'); return; }
+  const matches = Object.entries(PC)
+    .filter(([code, lib]) => code.startsWith(q) || lib.toLowerCase().includes(q))
+    .slice(0, 12);
+  if (!matches.length) { drop.classList.remove('open'); return; }
+  drop.innerHTML = matches.map(([code, lib]) =>
+    `<div class="aoption" onmousedown="selectAccount(${idx},'${code}','${lib.replace(/'/g, "\\'")}')">
+      <span class="code">${code}</span><span class="name">${lib.substring(0, 46)}</span>
+    </div>`).join('');
+  drop.classList.add('open');
 }
 
-/* ============================================================
-   NAVIGATION
-============================================================ */
-function showView(id,el){
-  document.querySelectorAll('.view').forEach(function(v){v.classList.remove('active');});
-  document.querySelectorAll('.sidebar-item').forEach(function(s){s.classList.remove('active');});
-  document.getElementById('view-'+id).classList.add('active');
-  if(el)el.classList.add('active');
-  var renders={grandlivre:renderGrandLivre,balance:renderBalance,bilan:renderBilan,resultat:renderResultat,tiers:renderTiers,tresorerie:renderTresorerie,dashboard:renderDashboard,plan:renderPlan,guide:renderGuide,historique:renderHistorique};
-  if(renders[id])renders[id]();
+function selectAccount(idx, code, lib) {
+  lignes[idx].compte = code;
+  if (!lignes[idx].libelle) lignes[idx].libelle = lib.substring(0, 54);
+  renderLignes();
 }
-function switchJournalMode(mode,el){document.querySelectorAll('.panel-tab').forEach(function(t){t.classList.remove('active');});document.querySelectorAll('.journal-mode').forEach(function(m){m.classList.remove('active');});if(el)el.classList.add('active');document.getElementById('journal-mode-'+mode).classList.add('active');}
-
-/* ============================================================
-   SAISIE RAPIDE
-============================================================ */
-function saveManualSimple(){
-  var desc=document.getElementById('op-description').value.trim();
-  var date=document.getElementById('op-date').value||todayDate();
-  var ref=document.getElementById('op-ref').value.trim()||genRef();
-  var montant=parseAmount(document.getElementById('op-montant').value);
-  if(!desc||!montant){showToast('Remplissez la description et le montant');return;}
-  var ecriture={titre:desc,date:date,reference:ref,description:desc,type_entreprise:currentEntrepriseType,lignes:[{compte:'601',libelle:'Charge / Achat',debit:montant,credit:0},{compte:'5211',libelle:'Banque — monnaie nationale',debit:0,credit:montant}]};
-  saveEcriture(ecriture);
-  document.getElementById('output-content').innerHTML='<div class="journal-card"><div class="journal-card-header"><div class="journal-card-title">Écriture rapide enregistrée</div><div class="equilibre-ok">✓ Enregistré</div></div><div style="padding:14px;color:var(--text2);font-size:13px;font-family:var(--mono);">'+escHtml(desc)+' — '+fmtAmount(montant)+'</div></div>';
+function hideDropdown(id) {
+  setTimeout(() => { const d = document.getElementById('drop-' + id); if (d) d.classList.remove('open'); }, 200);
 }
 
-/* ============================================================
-   SAISIE MANUELLE MULTI-LIGNES
-============================================================ */
-var manualLines=[];
-function initManualLines(){manualLines=[{compte:'',libelle:'',debit:'',credit:''}];renderManualLines();}
-function renderManualLines(){
-  var tbody=document.getElementById('manual-lines-body'),html='';
-  manualLines.forEach(function(line,idx){
-    html+='<tr><td><input type="text" value="'+escHtml(line.compte)+'" onchange="updateManualLine('+idx+',\'compte\',this.value)" placeholder="4011"/></td><td><input type="text" value="'+escHtml(line.libelle)+'" onchange="updateManualLine('+idx+',\'libelle\',this.value)" placeholder="Libellé"/></td><td><input type="text" class="mono" value="'+escHtml(line.debit)+'" onchange="updateManualLine('+idx+',\'debit\',this.value)" placeholder="0"/></td><td><input type="text" class="mono" value="'+escHtml(line.credit)+'" onchange="updateManualLine('+idx+',\'credit\',this.value)" placeholder="0"/></td><td style="text-align:center"><button class="btn-secondary" style="padding:2px 8px;font-size:11px;" onclick="removeManualLine('+idx+')">×</button></td></tr>';
-  });
-  tbody.innerHTML=html;updateManualTotals();
-}
-function updateManualLine(idx,field,value){manualLines[idx][field]=value;updateManualTotals();}
-function addManualLine(){manualLines.push({compte:'',libelle:'',debit:'',credit:''});renderManualLines();}
-function removeManualLine(idx){if(manualLines.length<=1)return;manualLines.splice(idx,1);renderManualLines();}
-function clearManualLines(){initManualLines();}
-function updateManualTotals(){
-  var td=0,tc=0;
-  manualLines.forEach(function(l){td+=parseAmount(l.debit);tc+=parseAmount(l.credit);});
-  var ok=Math.abs(td-tc)<1;
-  document.getElementById('manual-totals').innerHTML='Total Débit : <span class="'+(ok?'ok':'err')+'">'+fmtAmount(td)+'</span> | Total Crédit : <span class="'+(ok?'ok':'err')+'">'+fmtAmount(tc)+'</span>'+(ok?' <span class="ok">✓</span>':' <span class="err">✗</span>');
-}
-function saveManualMulti(){
-  var desc=document.getElementById('manual-desc').value.trim();
-  var date=document.getElementById('manual-date').value||todayDate();
-  var ref=document.getElementById('manual-ref').value.trim()||genRef();
-  var td=0,tc=0,lignes=[];
-  manualLines.forEach(function(l){var d=parseAmount(l.debit),c=parseAmount(l.credit);if(!l.compte&&d===0&&c===0)return;td+=d;tc+=c;lignes.push({compte:l.compte||'5211',libelle:l.libelle||'-',debit:d,credit:c});});
-  if(!lignes.length){showToast('Aucune ligne à enregistrer');return;}
-  if(Math.abs(td-tc)>1){showToast('Débit et Crédit doivent être égaux');return;}
-  if(!desc){showToast('Veuillez saisir un libellé');return;}
-  saveEcriture({titre:desc,date:date,reference:ref,description:desc,type_entreprise:currentEntrepriseType,lignes:lignes});
-  document.getElementById('output-content').innerHTML='<div class="journal-card"><div class="journal-card-header"><div class="journal-card-title">Écriture enregistrée</div><div class="equilibre-ok">✓ Équilibre</div></div><div style="padding:14px;color:var(--text2);font-size:13px;font-family:var(--mono);">'+escHtml(desc)+' — '+lignes.length+' ligne(s)</div></div>';
-  initManualLines();
+function updateBalance() {
+  let d = 0, c = 0;
+  lignes.forEach(l => { d += parseFloat(l.debit) || 0; c += parseFloat(l.credit) || 0; });
+  const s = d - c;
+  const tdd = document.getElementById('totalDebitDisplay');
+  const tcd = document.getElementById('totalCreditDisplay');
+  const el = document.getElementById('soldeDisplay');
+  if (tdd) tdd.textContent = fn(d);
+  if (tcd) tcd.textContent = fn(c);
+  if (el) { el.textContent = fn(Math.abs(s)); el.className = 'val ' + (Math.abs(s) < 0.01 ? 'bok' : 'bbad'); }
 }
 
-/* ============================================================
-   ENTREPRISE SELECT
-============================================================ */
-function selectEntreprise(el){document.querySelectorAll('.e-chip').forEach(function(c){c.classList.remove('active');});el.classList.add('active');currentEntrepriseType=el.dataset.type;document.getElementById('context-badge').textContent=ENTREPRISE_CONFIG[currentEntrepriseType].label;renderQuickOps();renderTypeSelect();}
-function renderQuickOps(){var type=currentEntrepriseType||'commerce';document.getElementById('quick-ops-container').innerHTML=ENTREPRISE_CONFIG[type].quickOps.map(function(op){return '<span class="quick-chip" onclick="setQuick(\''+op.replace(/'/g,"\\'")+'\')">' + op + '</span>';}).join('');}
-function renderTypeSelect(){var type=currentEntrepriseType||'commerce';document.getElementById('op-type').innerHTML=ENTREPRISE_CONFIG[type].types.map(function(t){return '<option value="'+t.value+'">'+t.label+'</option>';}).join('');}
-function setQuick(text){document.getElementById('op-description').value=text;}
-
-/* ============================================================
-   PLAN COMPTABLE
-============================================================ */
-function renderPlan(filter){
-  filter=filter||'';var fl=filter.toLowerCase();
-  var body=document.getElementById('plan-body'),html='';
-  Object.entries(PLAN_COMPTABLE).forEach(function(entry){
-    var items=Object.entries(entry[1]).filter(function(kv){return !fl||kv[0].includes(fl)||kv[1].toLowerCase().includes(fl);});
-    if(!items.length)return;
-    html+='<div style="margin-bottom:22px;"><div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;"><div style="font-family:var(--mono);font-size:10px;color:var(--gold);text-transform:uppercase;letter-spacing:1.5px;font-weight:500;">'+escHtml(entry[0])+'</div><div style="flex:1;height:1px;background:var(--border);"></div></div><div class="plan-grid">';
-    items.forEach(function(kv){html+='<div class="plan-item"><span class="plan-num">'+escHtml(kv[0])+'</span><span class="plan-lib">'+escHtml(kv[1])+'</span></div>';});
-    html+='</div></div>';
-  });
-  body.innerHTML=html||'<div style="padding:30px;text-align:center;color:var(--text3);font-family:var(--mono);">Aucun compte trouvé</div>';
-}
-function filterPlan(val){renderPlan(val);}
-
-/* ============================================================
-   GUIDE DES OPÉRATIONS
-============================================================ */
-var GUIDE_DATA=[
-  {section:"Ventes (Commerce & Industrie)",ops:[
-    {title:"Vente marchandises crédit — HT + TVA 18%",entries:[{c:"4111",l:"Clients (TTC)",d:1,cr:0},{c:"7011",l:"Ventes de marchandises",d:0,cr:1},{c:"4431",l:"T.V.A. facturée sur ventes",d:0,cr:1}]},
-    {title:"Vente prestations de service — avec TVA",entries:[{c:"4111",l:"Clients (TTC)",d:1,cr:0},{c:"705",l:"Services vendus",d:0,cr:1},{c:"4432",l:"T.V.A. facturée sur prestations",d:0,cr:1}]},
-    {title:"Encaissement règlement client",entries:[{c:"5211",l:"Banques locales — monnaie nationale",d:1,cr:0},{c:"4111",l:"Clients",d:0,cr:1}]}
-  ]},
-  {section:"Achats & Fournisseurs",ops:[
-    {title:"Achat marchandises crédit — HT + TVA",entries:[{c:"6011",l:"Achats de marchandises — région",d:1,cr:0},{c:"4452",l:"T.V.A. récupérable sur achats",d:1,cr:0},{c:"4011",l:"Fournisseurs",d:0,cr:1}]},
-    {title:"Achat matières premières",entries:[{c:"6021",l:"Achats matières premières — région",d:1,cr:0},{c:"4452",l:"T.V.A. récupérable sur achats",d:1,cr:0},{c:"4011",l:"Fournisseurs",d:0,cr:1}]},
-    {title:"Règlement fournisseur par banque",entries:[{c:"4011",l:"Fournisseurs",d:1,cr:0},{c:"5211",l:"Banques locales — monnaie nationale",d:0,cr:1}]}
-  ]},
-  {section:"Salaires & Charges sociales",ops:[
-    {title:"Constatation des salaires bruts",entries:[{c:"6611",l:"Appointements et salaires bruts",d:1,cr:0},{c:"4471",l:"IGR/IRPP retenu à la source",d:0,cr:1},{c:"4313",l:"CNPS — cotisations salariales retraite",d:0,cr:1},{c:"422",l:"Personnel, rémunérations dues (net)",d:0,cr:1}]},
-    {title:"Cotisations patronales CNPS",entries:[{c:"6641",l:"Cotisations patronales — prest. familiales",d:1,cr:0},{c:"6642",l:"Cotisations patronales — accidents",d:1,cr:0},{c:"6643",l:"Cotisations patronales — retraite",d:1,cr:0},{c:"431",l:"Sécurité sociale — CNPS",d:0,cr:1}]},
-    {title:"Paiement salaires nets",entries:[{c:"422",l:"Personnel, rémunérations dues",d:1,cr:0},{c:"5211",l:"Banques locales — monnaie nationale",d:0,cr:1}]}
-  ]},
-  {section:"Immobilisations & Amortissements",ops:[
-    {title:"Acquisition matériel de transport au comptant",entries:[{c:"2451",l:"Matériel automobile",d:1,cr:0},{c:"4451",l:"T.V.A. récupérable sur immobilisations",d:1,cr:0},{c:"5211",l:"Banques locales — monnaie nationale",d:0,cr:1}]},
-    {title:"Dotation aux amortissements matériel",entries:[{c:"6815",l:"Dotations amort. matériel de transport",d:1,cr:0},{c:"2845",l:"Amortissements du matériel de transport",d:0,cr:1}]},
-    {title:"Acquisition matériel informatique crédit",entries:[{c:"2442",l:"Matériel informatique",d:1,cr:0},{c:"4451",l:"T.V.A. récupérable sur immobilisations",d:1,cr:0},{c:"4042",l:"Fournisseurs — immobilisations corporelles",d:0,cr:1}]}
-  ]},
-  {section:"TVA & Fiscalité",ops:[
-    {title:"Liquidation TVA mensuelle",entries:[{c:"4431",l:"T.V.A. facturée sur ventes",d:1,cr:0},{c:"4432",l:"T.V.A. facturée sur prestations",d:1,cr:0},{c:"4452",l:"T.V.A. récupérable sur achats",d:0,cr:1},{c:"4451",l:"T.V.A. récupérable sur immos",d:0,cr:1},{c:"4441",l:"État, T.V.A. due",d:0,cr:1}]},
-    {title:"Paiement TVA à l'État",entries:[{c:"4441",l:"État, T.V.A. due",d:1,cr:0},{c:"5211",l:"Banques locales — monnaie nationale",d:0,cr:1}]},
-    {title:"Impôt sur les bénéfices (IS)",entries:[{c:"8713",l:"Impôts sur les sociétés (I.S.)",d:1,cr:0},{c:"441",l:"État, impôt sur les bénéfices",d:0,cr:1}]}
-  ]},
-  {section:"Trésorerie & Financement",ops:[
-    {title:"Emprunt bancaire reçu",entries:[{c:"5211",l:"Banques locales — monnaie nationale",d:1,cr:0},{c:"162",l:"Emprunts — établissements de crédit",d:0,cr:1}]},
-    {title:"Remboursement annuité emprunt",entries:[{c:"162",l:"Emprunts — établissements de crédit",d:1,cr:0},{c:"6291",l:"Intérêts sur emprunts",d:1,cr:0},{c:"5211",l:"Banques locales — monnaie nationale",d:0,cr:1}]},
-    {title:"Virement de fonds caisse → banque",entries:[{c:"585",l:"Virements de fonds",d:1,cr:0},{c:"5711",l:"Caisse — monnaie nationale",d:0,cr:1},{c:"5211",l:"Banques locales — monnaie nationale",d:1,cr:0},{c:"585",l:"Virements de fonds",d:0,cr:1}]}
-  ]}
-];
-
-function renderGuide(){
-  var body=document.getElementById('guide-body'),html='';
-  GUIDE_DATA.forEach(function(sec){
-    html+='<div style="margin-bottom:28px;"><div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;"><div style="font-family:var(--serif);font-size:16px;color:var(--text);font-weight:400;font-style:italic;">'+escHtml(sec.section)+'</div><div style="flex:1;height:1px;background:var(--border);"></div></div><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px;">';
-    sec.ops.forEach(function(op){
-      html+='<div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;"><div style="font-family:var(--mono);font-size:11px;color:var(--text2);font-weight:500;margin-bottom:8px;letter-spacing:0.3px;">'+escHtml(op.title)+'</div><div style="display:flex;flex-direction:column;gap:3px;">';
-      op.entries.forEach(function(e){html+='<div style="display:flex;gap:8px;font-family:var(--mono);font-size:10px;letter-spacing:0.3px;"><span style="color:var(--gold);min-width:36px;">'+e.c+'</span><span style="color:var(--text3);flex:1;">'+escHtml(e.l)+'</span>'+(e.d?'<span style="color:var(--debit);">D</span>':'<span style="opacity:0;">D</span>')+(e.cr?'<span style="color:var(--credit);">C</span>':'<span style="opacity:0;">C</span>')+'</div>';});
-      html+='</div></div>';
-    });
-    html+='</div></div>';
-  });
-  body.innerHTML=html;
-}
-
-/* ============================================================
-   GRAND LIVRE
-============================================================ */
-function renderGrandLivre(filter){
-  filter=filter||'';
-  var body=document.getElementById('gl-body');
-  if(!allEcritures.length){body.innerHTML='<div class="empty-state"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div><h3>Grand Livre vide</h3><p>Saisissez des écritures dans le Journal.</p></div>';return;}
-  var byCompte={};
-  allEcritures.forEach(function(e){(e.lignes||[]).forEach(function(l){var c=String(l.compte||'');if(!c)return;if(filter&&!c.includes(filter)&&!getPlanLibelle(c).toLowerCase().includes(filter.toLowerCase()))return;if(!byCompte[c])byCompte[c]={libelle:getPlanLibelle(c)||l.libelle,lignes:[]};byCompte[c].lignes.push({date:e.date,ref:e.reference,desc:e.description||e.titre,debit:l.debit||0,credit:l.credit||0});});});
-  var comptes=Object.keys(byCompte).sort();
-  if(!comptes.length){body.innerHTML='<div style="padding:20px;color:var(--text3);font-family:var(--mono);">Aucun compte trouvé.</div>';return;}
-  var html='';
-  comptes.forEach(function(c){
-    var data=byCompte[c],solde=0,td=0,tc=0,rows='';
-    data.lignes.sort(function(a,b){return(a.date||'').localeCompare(b.date||'');}).forEach(function(l){solde+=(l.debit||0)-(l.credit||0);td+=l.debit||0;tc+=l.credit||0;rows+='<tr><td>'+escHtml(l.date)+'</td><td>'+escHtml(l.ref)+'</td><td>'+escHtml(l.desc)+'</td><td class="col-debit">'+fmtAmount(l.debit)+'</td><td class="col-credit">'+fmtAmount(l.credit)+'</td><td class="col-solde">'+fmtAmount(solde)+'</td></tr>';});
-    html+='<div class="gl-compte"><div class="gl-compte-header"><span class="gl-compte-num">'+escHtml(c)+'</span><span class="gl-compte-lib">'+escHtml(data.libelle)+'</span><div class="gl-compte-totals"><span style="color:var(--debit)">D: '+fmtAmount(td)+'</span><span style="color:var(--credit)">C: '+fmtAmount(tc)+'</span><span style="color:var(--text)">Solde: '+fmtAmount(solde)+'</span></div></div><table class="data-table"><thead><tr><th>Date</th><th>Réf</th><th>Description</th><th style="text-align:right">Débit</th><th style="text-align:right">Crédit</th><th style="text-align:right">Solde</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
-  });
-  body.innerHTML=html;
-}
-
-/* ============================================================
-   BALANCE
-============================================================ */
-function getByCompte(){
-  var byCompte={};
-  allEcritures.forEach(function(e){(e.lignes||[]).forEach(function(l){var c=String(l.compte||'');if(!c)return;if(!byCompte[c])byCompte[c]={libelle:getPlanLibelle(c)||l.libelle,td:0,tc:0};byCompte[c].td+=l.debit||0;byCompte[c].tc+=l.credit||0;});});
-  return byCompte;
-}
-
-function renderBalance(){
-  var body=document.getElementById('balance-body');
-  if(!allEcritures.length){body.innerHTML='<div class="empty-state"><h3>Balance vide</h3><p>Des écritures sont nécessaires.</p></div>';return;}
-  var byCompte=getByCompte(),comptes=Object.keys(byCompte).sort(),totalTD=0,totalTC=0,rows='';
-  comptes.forEach(function(c){var d=byCompte[c];totalTD+=d.td;totalTC+=d.tc;var solde=d.td-d.tc;rows+='<tr><td class="col-compte">'+escHtml(c)+'</td><td class="col-libelle">'+escHtml(d.libelle)+'</td><td class="col-debit">'+fmtAmount(d.td)+'</td><td class="col-credit">'+fmtAmount(d.tc)+'</td><td class="col-solde">'+(solde>=0?fmtAmount(solde):'')+'</td><td class="col-solde">'+(solde<0?fmtAmount(-solde):'')+'</td></tr>';});
-  body.innerHTML='<table class="data-table"><thead><tr><th>Compte</th><th>Libellé</th><th style="text-align:right">Total Débit</th><th style="text-align:right">Total Crédit</th><th style="text-align:right">Solde D</th><th style="text-align:right">Solde C</th></tr></thead><tbody>'+rows+'</tbody><tfoot><tr style="border-top:1px solid var(--border2);"><td colspan="2" style="padding:10px 12px;font-weight:700;color:var(--text);">TOTAL GÉNÉRAL</td><td class="col-debit">'+fmtAmount(totalTD)+'</td><td class="col-credit">'+fmtAmount(totalTC)+'</td><td class="col-solde">'+(totalTD>=totalTC?fmtAmount(totalTD-totalTC):'')+'</td><td class="col-solde">'+(totalTC>totalTD?fmtAmount(totalTC-totalTD):'')+'</td></tr></tfoot></table>';
-}
-
-function exportBalanceCSV(){var csv='Compte;Libelle;Total Debit;Total Credit;Solde D;Solde C\n';var byCompte=getByCompte();Object.keys(byCompte).sort().forEach(function(c){var d=byCompte[c];var sd=d.td-d.tc;csv+=c+';"'+d.libelle+'";'+d.td+';'+d.tc+';'+(sd>=0?sd:'')+';'+(sd<0?-sd:'')+'\n';});downloadCSV(csv,'balance_'+todayDate()+'.csv');}
-
-/* ============================================================
-   BILAN
-============================================================ */
-function renderBilan(){
-  var body=document.getElementById('bilan-body');
-  if(!allEcritures.length){body.innerHTML='<div class="empty-state"><h3>Bilan vide</h3><p>Des écritures sont nécessaires.</p></div>';return;}
-  var byCompte=getByCompte(),actif=[],passif=[],totalActif=0,totalPassifRaw=0;
-  Object.keys(byCompte).sort().forEach(function(c){var d=byCompte[c];var solde=d.td-d.tc;var cl=c.charAt(0);if(cl==='6'||cl==='7'||cl==='8')return;if(solde>0){actif.push({compte:c,libelle:d.libelle,montant:solde});totalActif+=solde;}else if(solde<0){passif.push({compte:c,libelle:d.libelle,montant:-solde});totalPassifRaw+=(-solde);}});
-  var resultat=totalActif-totalPassifRaw,totalPassif=totalPassifRaw+resultat;
-  var htmlActif='',groupedA={};actif.forEach(function(a){var cl=a.compte.charAt(0);if(!groupedA[cl])groupedA[cl]=[];groupedA[cl].push(a);});
-  ['2','3','4','5','1'].forEach(function(cl){if(!groupedA[cl])return;htmlActif+='<div class="bilan-section"><div class="bilan-section-title">'+escHtml(_classeName(cl))+'</div>';groupedA[cl].forEach(function(a){htmlActif+='<div class="bilan-row"><span class="label">'+escHtml(a.compte)+' — '+escHtml(a.libelle)+'</span><span class="value">'+fmtAmount(a.montant)+'</span></div>';});htmlActif+='</div>';});
-  var htmlPassif='',groupedP={};passif.forEach(function(p){var cl=p.compte.charAt(0);if(!groupedP[cl])groupedP[cl]=[];groupedP[cl].push(p);});
-  ['1','4','5'].forEach(function(cl){if(!groupedP[cl])return;htmlPassif+='<div class="bilan-section"><div class="bilan-section-title">'+escHtml(_classeName(cl))+'</div>';groupedP[cl].forEach(function(p){htmlPassif+='<div class="bilan-row"><span class="label">'+escHtml(p.compte)+' — '+escHtml(p.libelle)+'</span><span class="value">'+fmtAmount(p.montant)+'</span></div>';});htmlPassif+='</div>';});
-  var resLabel=resultat>=0?"Résultat — Bénéfice":"Résultat — Perte";
-  htmlPassif+='<div class="bilan-section"><div class="bilan-section-title">Capitaux propres</div><div class="bilan-row"><span class="label" style="color:'+(resultat>=0?'var(--debit)':'var(--credit)')+'">'+resLabel+'</span><span class="value" style="color:'+(resultat>=0?'var(--debit)':'var(--credit)')+'">'+fmtAmount(Math.abs(resultat))+'</span></div></div>';
-  var eqOk=Math.abs(totalActif-totalPassif)<1;
-  var eqBadge=eqOk?'<span class="equilibre-ok">✓ Actif = Passif</span>':'<span class="equilibre-err">✗ Déséquilibre</span>';
-  body.innerHTML='<div class="bilan-grid"><div class="bilan-card"><div class="bilan-card-header"><span>ACTIF</span>'+eqBadge+'</div>'+htmlActif+'<div class="bilan-total-row"><span>TOTAL ACTIF</span><span class="value">'+fmtAmount(totalActif)+'</span></div></div><div class="bilan-card"><div class="bilan-card-header"><span>PASSIF</span>'+eqBadge+'</div>'+htmlPassif+'<div class="bilan-total-row"><span>TOTAL PASSIF</span><span class="value">'+fmtAmount(totalPassif)+'</span></div></div></div>';
-}
-
-function _classeName(c){return{'1':'Classe 1 — Ressources durables','2':'Classe 2 — Actif immobilisé','3':'Classe 3 — Stocks','4':'Classe 4 — Tiers','5':'Classe 5 — Trésorerie'}[c]||'Classe '+c;}
-
-function exportBilanCSV(){var csv='Section;Compte;Libelle;Montant\n';var byCompte=getByCompte();var totalActif=0,totalPassifRaw=0;Object.keys(byCompte).sort().forEach(function(c){var d=byCompte[c];var solde=d.td-d.tc;var cl=c.charAt(0);if(cl==='6'||cl==='7'||cl==='8')return;if(solde>0){csv+='ACTIF;'+c+';"'+d.libelle+'";'+solde+'\n';totalActif+=solde;}else if(solde<0){csv+='PASSIF;'+c+';"'+d.libelle+'";'+(-solde)+'\n';totalPassifRaw+=(-solde);}});var resultat=totalActif-totalPassifRaw;csv+='PASSIF;131/139;"Resultat";'+resultat+'\n';downloadCSV(csv,'bilan_'+todayDate()+'.csv');}
-
-/* ============================================================
-   COMPTE DE RÉSULTAT
-============================================================ */
-function renderResultat(){
-  var body=document.getElementById('resultat-body');
-  if(!allEcritures.length){body.innerHTML='<div class="empty-state"><h3>Résultat vide</h3><p>Des écritures sont nécessaires.</p></div>';return;}
-  var byCompte=getByCompte(),charges=[],produits=[],totalCharges=0,totalProduits=0;
-  Object.keys(byCompte).sort().forEach(function(c){var d=byCompte[c];var cl=c.charAt(0);if(cl==='6'){var m=d.td-d.tc;if(m!==0){charges.push({compte:c,libelle:d.libelle,montant:m});totalCharges+=m;}}if(cl==='7'){var m2=d.tc-d.td;if(m2!==0){produits.push({compte:c,libelle:d.libelle,montant:m2});totalProduits+=m2;}}});
-  var resultat=totalProduits-totalCharges;
-  var resColor=resultat>=0?'var(--debit)':'var(--credit)';
-  var htmlCharges='';charges.forEach(function(ch){htmlCharges+='<div class="bilan-row"><span class="label">'+escHtml(ch.compte)+' — '+escHtml(ch.libelle)+'</span><span class="value" style="color:var(--credit)">'+fmtAmount(ch.montant)+'</span></div>';});
-  var htmlProduits='';produits.forEach(function(pr){htmlProduits+='<div class="bilan-row"><span class="label">'+escHtml(pr.compte)+' — '+escHtml(pr.libelle)+'</span><span class="value" style="color:var(--debit)">'+fmtAmount(pr.montant)+'</span></div>';});
-  body.innerHTML='<div class="bilan-grid"><div class="bilan-card"><div class="bilan-card-header">CHARGES (Classe 6)</div><div class="bilan-section">'+htmlCharges+'</div><div class="bilan-total-row"><span>TOTAL CHARGES</span><span class="value" style="color:var(--credit)">'+fmtAmount(totalCharges)+'</span></div></div><div class="bilan-card"><div class="bilan-card-header">PRODUITS (Classe 7)</div><div class="bilan-section">'+htmlProduits+'</div><div class="bilan-total-row"><span>TOTAL PRODUITS</span><span class="value" style="color:var(--debit)">'+fmtAmount(totalProduits)+'</span></div></div></div><div style="margin-top:16px;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r-lg);padding:20px 24px;display:flex;justify-content:space-between;align-items:center;"><span style="font-family:var(--serif);font-size:18px;font-weight:400;font-style:italic;color:var(--text);">Résultat de l\'exercice</span><div style="text-align:right;"><span style="font-family:var(--mono);font-weight:500;font-size:20px;color:'+resColor+';">'+(resultat>=0?'+':'')+fmtAmount(resultat)+'</span><div style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:3px;letter-spacing:0.5px;">'+(resultat>=0?'BÉNÉFICE':'PERTE')+'</div></div></div>';
-}
-
-function exportResultatCSV(){var csv='Type;Compte;Libelle;Montant\n';var byCompte=getByCompte();var totalC=0,totalP=0;Object.keys(byCompte).sort().forEach(function(c){var d=byCompte[c];var cl=c.charAt(0);if(cl==='6'){var m=d.td-d.tc;if(m!==0){csv+='CHARGE;'+c+';"'+d.libelle+'";'+m+'\n';totalC+=m;}}if(cl==='7'){var m2=d.tc-d.td;if(m2!==0){csv+='PRODUIT;'+c+';"'+d.libelle+'";'+m2+'\n';totalP+=m2;}}});csv+='RESULTAT;;;'+(totalP-totalC)+'\n';downloadCSV(csv,'resultat_'+todayDate()+'.csv');}
-
-/* ============================================================
-   TIERS
-============================================================ */
-function renderTiers(){
-  var body=document.getElementById('tiers-body');
-  if(!allEcritures.length){body.innerHTML='<div class="empty-state"><h3>Aucun tiers</h3><p>Les clients et fournisseurs apparaîtront ici.</p></div>';return;}
-  var byCompte=getByCompte(),clients=[],fournisseurs=[],totalClients=0,totalFourn=0;
-  Object.keys(byCompte).sort().forEach(function(c){var d=byCompte[c];var solde=d.td-d.tc;if(c.startsWith('411')&&solde>0){clients.push({compte:c,libelle:d.libelle,montant:solde});totalClients+=solde;}if(c.startsWith('401')&&solde<0){fournisseurs.push({compte:c,libelle:d.libelle,montant:-solde});totalFourn+=(-solde);}});
-  var htmlC='';clients.forEach(function(cl){htmlC+='<div class="bilan-row"><span class="label">'+escHtml(cl.compte)+' — '+escHtml(cl.libelle)+'</span><span class="value" style="color:var(--debit)">'+fmtAmount(cl.montant)+'</span></div>';});
-  var htmlF='';fournisseurs.forEach(function(f){htmlF+='<div class="bilan-row"><span class="label">'+escHtml(f.compte)+' — '+escHtml(f.libelle)+'</span><span class="value" style="color:var(--credit)">'+fmtAmount(f.montant)+'</span></div>';});
-  body.innerHTML='<div class="tiers-grid"><div class="bilan-card"><div class="bilan-card-header">CLIENTS (Comptes 411)</div><div class="bilan-section">'+htmlC+'</div><div class="bilan-total-row"><span>TOTAL À RECOUVRER</span><span class="value" style="color:var(--debit)">'+fmtAmount(totalClients)+'</span></div></div><div class="bilan-card"><div class="bilan-card-header">FOURNISSEURS (Comptes 401)</div><div class="bilan-section">'+htmlF+'</div><div class="bilan-total-row"><span>TOTAL À PAYER</span><span class="value" style="color:var(--credit)">'+fmtAmount(totalFourn)+'</span></div></div></div>';
-}
-
-function exportTiersCSV(){var csv='Type;Compte;Libelle;Montant\n';var byCompte=getByCompte();Object.keys(byCompte).sort().forEach(function(c){var d=byCompte[c];var solde=d.td-d.tc;if(c.startsWith('411')&&solde>0){csv+='CLIENT;'+c+';"'+d.libelle+'";'+solde+'\n';}if(c.startsWith('401')&&solde<0){csv+='FOURNISSEUR;'+c+';"'+d.libelle+'";'+(-solde)+'\n';}});downloadCSV(csv,'tiers_'+todayDate()+'.csv');}
-
-/* ============================================================
-   TRÉSORERIE
-============================================================ */
-function renderTresorerie(){
-  var body=document.getElementById('tresorerie-body');
-  var tresoComptes=[];allEcritures.forEach(function(e){(e.lignes||[]).forEach(function(l){var c=String(l.compte||'');if(c.match(/^5[0-9]/))tresoComptes.push(c);});});
-  var unique=tresoComptes.filter(function(v,i,a){return a.indexOf(v)===i;}).sort();
-  if(!unique.length){body.innerHTML='<div class="empty-state"><h3>Trésorerie vide</h3><p>Les comptes de classe 5 apparaissent ici.</p></div>';return;}
-  var html='';
-  unique.forEach(function(c){
-    var td=0,tc=0,solde=0,rows='';
-    allEcritures.forEach(function(e){(e.lignes||[]).forEach(function(l){if(String(l.compte||'')!==c)return;td+=l.debit||0;tc+=l.credit||0;solde+=(l.debit||0)-(l.credit||0);rows+='<tr><td>'+escHtml(e.date)+'</td><td>'+escHtml(e.reference)+'</td><td>'+escHtml(e.description||e.titre)+'</td><td class="col-debit">'+fmtAmount(l.debit)+'</td><td class="col-credit">'+fmtAmount(l.credit)+'</td><td class="col-solde">'+fmtAmount(solde)+'</td></tr>';});});
-    html+='<div class="gl-compte"><div class="gl-compte-header"><span class="gl-compte-num">'+escHtml(c)+'</span><span class="gl-compte-lib">'+(getPlanLibelle(c)||'Compte '+c)+'</span><div class="gl-compte-totals"><span style="color:var(--debit)">D: '+fmtAmount(td)+'</span><span style="color:var(--credit)">C: '+fmtAmount(tc)+'</span><span style="color:var(--text)">Solde: '+fmtAmount(solde)+'</span></div></div><table class="data-table"><thead><tr><th>Date</th><th>Réf</th><th>Description</th><th style="text-align:right">Débit</th><th style="text-align:right">Crédit</th><th style="text-align:right">Solde</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
-  });
-  body.innerHTML=html;
-}
-
-function exportTresorerieCSV(){var csv='Date;Reference;Description;Compte;Debit;Credit\n';allEcritures.forEach(function(e){(e.lignes||[]).forEach(function(l){var c=String(l.compte||'');if(!c.match(/^5[0-9]/))return;csv+=e.date+';"'+(e.reference||'')+'";"'+(e.description||e.titre||'').replace(/"/g,'""')+'";'+c+';'+(l.debit||0)+';'+(l.credit||0)+'\n';});});downloadCSV(csv,'tresorerie_'+todayDate()+'.csv');}
-
-/* ============================================================
-   HISTORIQUE
-============================================================ */
-function renderHistorique(search){
-  var body=document.getElementById('historique-body');
-  var monthFilter=document.getElementById('hist-month')?document.getElementById('hist-month').value:'';
-  var q=(search||(document.getElementById('hist-search')?document.getElementById('hist-search').value:'')||'').toLowerCase();
-  if(!allEcritures.length){body.innerHTML='<div class="empty-state"><h3>Aucune écriture</h3><p>Les journaux enregistrés apparaîtront ici.</p></div>';return;}
-  var filtered=allEcritures.filter(function(e){var mm=!monthFilter||(e.date&&e.date.startsWith(monthFilter));var mq=!q||(e.description||'').toLowerCase().includes(q)||(e.titre||'').toLowerCase().includes(q)||(e.reference||'').toLowerCase().includes(q)||(e.lignes||[]).some(function(l){return(l.compte||'').includes(q)||(l.libelle||'').toLowerCase().includes(q);});return mm&&mq;});
-  if(!filtered.length){body.innerHTML='<div style="padding:30px;text-align:center;color:var(--text3);font-family:var(--mono);font-size:12px;">Aucune écriture pour ces critères.</div>';return;}
-  var byDate={};filtered.forEach(function(e){var d=e.date||'Sans date';if(!byDate[d])byDate[d]=[];byDate[d].push(e);});
-  var dates=Object.keys(byDate).sort(function(a,b){return b.localeCompare(a);});
-  var html='<div style="font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:0.8px;text-transform:uppercase;margin-bottom:16px;">'+filtered.length+' écriture(s)</div>';
-  dates.forEach(function(date){
-    var ecritures=byDate[date];
-    html+='<div style="margin-bottom:28px;"><div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;"><span style="font-family:var(--mono);font-size:10px;background:var(--gold-glow2);border:1px solid rgba(212,168,83,0.2);color:var(--gold);padding:4px 14px;border-radius:100px;letter-spacing:0.5px;">'+escHtml(date)+'</span><div style="flex:1;height:1px;background:var(--border);"></div><span style="font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:0.5px;text-transform:uppercase;">'+ecritures.length+' écriture(s)</span></div>';
-    ecritures.forEach(function(e){
-      var lignes=e.lignes||[];var totD=lignes.reduce(function(s,l){return s+(l.debit||0);},0);var totC=lignes.reduce(function(s,l){return s+(l.credit||0);},0);var eq=Math.abs(totD-totC)<1;
-      var rows='';lignes.forEach(function(l){var planLib=getPlanLibelle(l.compte||'');var libDisplay=escHtml(l.libelle||'');if(planLib&&planLib!==l.libelle)libDisplay+='<span class="col-sub">'+escHtml(planLib)+'</span>';rows+='<tr><td class="col-compte">'+escHtml(l.compte||'')+'</td><td class="col-libelle">'+libDisplay+'</td><td class="col-debit">'+(l.debit?fmtAmount(l.debit):'<span class="col-empty">—</span>')+'</td><td class="col-credit">'+(l.credit?fmtAmount(l.credit):'<span class="col-empty">—</span>')+'</td></tr>';});
-      html+='<div class="journal-card"><div class="journal-card-header"><div style="flex:1;"><div class="journal-card-title">'+escHtml(e.titre||e.description||'Écriture sans titre')+'</div>'+(e.analyse?'<div style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:3px;letter-spacing:0.3px;">'+escHtml(e.analyse)+'</div>':'')+'</div><div class="journal-card-date">'+escHtml(e.date||'')+'</div>'+(e.reference?'<div class="journal-card-ref">'+escHtml(e.reference)+'</div>':'')+'<div class="'+(eq?'equilibre-ok':'equilibre-err')+'">'+(eq?'✓ Équilibre':'✗ Déséquilibre')+'</div></div><table class="data-table"><thead><tr><th style="width:80px">Compte</th><th>Libellé</th><th style="text-align:right;width:130px">Débit</th><th style="text-align:right;width:130px">Crédit</th></tr></thead><tbody>'+rows+'</tbody></table><div class="journal-totals"><div class="total-item"><span class="total-label">Total Débit</span><span class="total-debit">'+fmtAmount(totD)+'</span></div><div class="total-item"><span class="total-label">Total Crédit</span><span class="total-credit">'+fmtAmount(totC)+'</span></div></div></div>';
-    });
-    html+='</div>';
-  });
-  body.innerHTML=html;
-}
-
-function exportHistoriqueCSV(){var csv='Date;Reference;Description;Compte;Libelle;Debit;Credit\n';allEcritures.forEach(function(e){(e.lignes||[]).forEach(function(l){csv+=e.date+';'+(e.reference||'')+';"'+(e.description||e.titre||'').replace(/"/g,'""')+'";"'+(l.compte||'')+'";"'+(getPlanLibelle(l.compte)||l.libelle||'').replace(/"/g,'""')+'";'+(l.debit||0)+';'+(l.credit||0)+'\n';});});downloadCSV(csv,'historique_journal_'+todayDate()+'.csv');}
-
-/* ============================================================
-   PROFIL
-============================================================ */
-function saveProfilEntreprise(){
-  if(!currentUser)return;
-  var nom=document.getElementById('profil-nom').value.trim();
-  if(!nom){showToast('Le nom est requis');return;}
-  var updateData={
-    nom_entreprise:nom,
-    contact:document.getElementById('profil-contact').value.trim(),
-    type_entreprise:document.getElementById('profil-type').value,
-    secteur:document.getElementById('profil-secteur').value.trim(),
-    pays:document.getElementById('profil-pays').value,
-    ville:document.getElementById('profil-ville').value.trim(),
-    rccm:document.getElementById('profil-rccm').value.trim(),
-    regime_fiscal:document.getElementById('profil-regime').value,
-    updated_at:Date.now()
+// ══════════════════════════════════════════
+// VALIDATION MANUELLE
+// ══════════════════════════════════════════
+async function saveEcriture() {
+  const date = document.getElementById('ecr-date').value;
+  const journal = document.getElementById('ecr-journal').value;
+  const piece = document.getElementById('ecr-piece').value || 'N°' + String(pieceCounter).padStart(5, '0');
+  const libelle = document.getElementById('ecr-libelle').value;
+  if (!date) { toast('Veuillez saisir une date', 'error'); return; }
+  const valid = lignes.filter(l => l.compte && (l.debit || l.credit));
+  if (valid.length < 2) { toast('Au moins 2 lignes requises', 'error'); return; }
+  let d = 0, c = 0;
+  valid.forEach(l => { d += parseFloat(l.debit) || 0; c += parseFloat(l.credit) || 0; });
+  if (Math.abs(d - c) > 0.01) {
+    toast(`Écriture non équilibrée — Débit: ${fn(d)} / Crédit: ${fn(c)} — Différence: ${fn(Math.abs(d - c))} FCFA`, 'error');
+    return;
+  }
+  let groupInfo = {};
+  if (ecrQueue.length > 0 && currentGroupId) {
+    groupInfo = { groupId: currentGroupId, groupLibelle: ecrQueue[0]?.libelle || libelle, groupSize: ecrQueue.length, groupIdx: ecrQueueIdx };
+  }
+  const lignesSorted = sortLignesDebitAvantCredit(valid);
+  const ecriture = {
+    id: Date.now(), date, journal, piece, libelle, ...groupInfo,
+    createdAt: new Date().toISOString(),
+    lignes: lignesSorted.map(l => ({
+      compte: String(l.compte),
+      libelle: l.libelle || PC[String(l.compte)] || '',
+      debit: Math.round(parseFloat(l.debit) || 0),
+      credit: Math.round(parseFloat(l.credit) || 0)
+    }))
   };
-  // Mise à jour simultanée DB1 et DB2
-  var p1=db1.collection('users').doc(currentUser.id).update(updateData);
-  var p2=db2.collection('abonnements').where('nom_entreprise','==',currentUser.nom_entreprise).limit(1).get().then(function(snap2){
-    if(!snap2.empty){return db2.collection('abonnements').doc(snap2.docs[0].id).update({nom_entreprise:nom,type_entreprise:updateData.type_entreprise,pays:updateData.pays,ville:updateData.ville,updated_at:Date.now()});}
-  });
-  Promise.all([p1,p2]).then(function(){
-    currentUser.nom_entreprise=nom;
-    currentUser.type_entreprise=document.getElementById('profil-type').value;
-    currentEntrepriseType=currentUser.type_entreprise;
-    document.getElementById('header-org').textContent='🏢 '+nom;
-    var s=document.getElementById('profil-success');s.style.display='block';
-    setTimeout(function(){s.style.display='none';},3000);
-    showToast('✓ Profil mis à jour');
-  }).catch(function(e){showToast('Erreur : '+e.message);});
-}
-
-/* ============================================================
-   EXPORT UTILITAIRES
-============================================================ */
-function downloadCSV(csv,filename){var blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'});var url=URL.createObjectURL(blob);var a=document.createElement('a');a.href=url;a.download=filename;a.click();URL.revokeObjectURL(url);showToast('Export effectué');}
-function getEnteteEntreprise(){if(!currentUser)return '';return '<div style="margin-bottom:18px;border-bottom:2px solid #d4a853;padding-bottom:10px;"><h1 style="margin:0;font-size:18pt;color:#0c0e14;">'+escHtml(currentUser.nom_entreprise||'')+'</h1><div style="color:#555;font-size:10pt;margin-top:4px;">'+(currentUser.rccm?'RCCM: '+escHtml(currentUser.rccm)+' | ':'')+escHtml(currentUser.regime_fiscal||'')+' | '+escHtml(currentUser.ville||'')+', '+escHtml(currentUser.pays||'CI')+'</div></div>';}
-
-function _buildBilanTable(){var byCompte=getByCompte();var actif=[],passif=[],totalActif=0,totalPassifRaw=0;Object.keys(byCompte).sort().forEach(function(c){var d=byCompte[c];var solde=d.td-d.tc;var cl=c.charAt(0);if(cl==='6'||cl==='7'||cl==='8')return;if(solde>0){actif.push({compte:c,libelle:d.libelle,montant:solde});totalActif+=solde;}else if(solde<0){passif.push({compte:c,libelle:d.libelle,montant:-solde});totalPassifRaw+=(-solde);}});var resultat=totalActif-totalPassifRaw;var html='<table border="1" style="width:100%;border-collapse:collapse;"><thead><tr><th>Compte Actif</th><th>Libellé</th><th>Montant</th><th>Compte Passif</th><th>Libellé</th><th>Montant</th></tr></thead><tbody>';var maxLen=Math.max(actif.length,passif.length+1);for(var i=0;i<maxLen;i++){var a=actif[i]||null;var p=passif[i]||null;if(i===passif.length)p={compte:'131/139',libelle:"Résultat exercice",montant:resultat};html+='<tr>';if(a){html+='<td>'+escHtml(a.compte)+'</td><td>'+escHtml(a.libelle)+'</td><td style="text-align:right">'+fmtAmount(a.montant)+'</td>';}else{html+='<td></td><td></td><td></td>';}if(p){html+='<td>'+escHtml(p.compte)+'</td><td>'+escHtml(p.libelle)+'</td><td style="text-align:right">'+fmtAmount(p.montant)+'</td>';}else{html+='<td></td><td></td><td></td>';}html+='</tr>';}html+='<tr style="font-weight:bold"><td colspan="2">TOTAL ACTIF</td><td style="text-align:right">'+fmtAmount(totalActif)+'</td><td colspan="2">TOTAL PASSIF</td><td style="text-align:right">'+fmtAmount(totalPassifRaw+resultat)+'</td></tr></tbody></table>';return html;}
-
-function _buildResultatTable(){var byCompte=getByCompte();var charges=[],produits=[],totalC=0,totalP=0;Object.keys(byCompte).sort().forEach(function(c){var d=byCompte[c];var cl=c.charAt(0);if(cl==='6'){var m=d.td-d.tc;if(m!==0){charges.push({compte:c,libelle:d.libelle,montant:m});totalC+=m;}}if(cl==='7'){var m2=d.tc-d.td;if(m2!==0){produits.push({compte:c,libelle:d.libelle,montant:m2});totalP+=m2;}}});var resultat=totalP-totalC;var html='<table border="1" style="width:100%;border-collapse:collapse;"><thead><tr><th>Charges (Cl.6)</th><th>Libellé</th><th>Montant</th><th>Produits (Cl.7)</th><th>Libellé</th><th>Montant</th></tr></thead><tbody>';var maxLen=Math.max(charges.length,produits.length);for(var i=0;i<maxLen;i++){var ch=charges[i]||null;var pr=produits[i]||null;html+='<tr>';if(ch){html+='<td>'+escHtml(ch.compte)+'</td><td>'+escHtml(ch.libelle)+'</td><td style="text-align:right">'+fmtAmount(ch.montant)+'</td>';}else{html+='<td></td><td></td><td></td>';}if(pr){html+='<td>'+escHtml(pr.compte)+'</td><td>'+escHtml(pr.libelle)+'</td><td style="text-align:right">'+fmtAmount(pr.montant)+'</td>';}else{html+='<td></td><td></td><td></td>';}html+='</tr>';}html+='<tr style="font-weight:bold"><td colspan="2">TOTAL CHARGES</td><td style="text-align:right">'+fmtAmount(totalC)+'</td><td colspan="2">TOTAL PRODUITS</td><td style="text-align:right">'+fmtAmount(totalP)+'</td></tr>';html+='<tr style="font-weight:bold;background:#f0f4ff"><td colspan="3">RÉSULTAT '+(resultat>=0?'BÉNÉFICE':'PERTE')+'</td><td colspan="3" style="text-align:right">'+fmtAmount(Math.abs(resultat))+'</td></tr></tbody></table>';return html;}
-
-function exportWord(contenu,nomFichier){var html='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>'+nomFichier+'</title><style>body{font-family:Arial,sans-serif;font-size:12pt;margin:2cm;}table{border-collapse:collapse;width:100%;}th,td{border:1px solid #ccc;padding:6px 10px;}th{background:#f5f0e8;font-weight:bold;}h2{color:#8b6820;}</style></head><body>'+contenu+'</body></html>';var blob=new Blob(['\ufeff'+html],{type:'application/msword;charset=utf-8'});var url=URL.createObjectURL(blob);var a=document.createElement('a');a.href=url;a.download=nomFichier+'.doc';a.click();URL.revokeObjectURL(url);showToast('Export Word effectué');}
-function exportExcel(tableHtml,nomFichier){var html='<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="UTF-8"></head><body>'+tableHtml+'</body></html>';var blob=new Blob(['\ufeff'+html],{type:'application/vnd.ms-excel;charset=utf-8'});var url=URL.createObjectURL(blob);var a=document.createElement('a');a.href=url;a.download=nomFichier+'.xls';a.click();URL.revokeObjectURL(url);showToast('Export Excel effectué');}
-function exportPDF(contenu,nomFichier){var w=window.open('','_blank','width=900,height=700');if(!w){showToast('Autorisez les popups pour le PDF');return;}w.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>'+nomFichier+'</title><style>body{font-family:Arial,sans-serif;font-size:11pt;margin:1.5cm;background:#fff;color:#000;}table{border-collapse:collapse;width:100%;}th,td{border:1px solid #ccc;padding:5px 8px;}th{background:#f5f0e8;}h2{color:#8b6820;}@media print{button{display:none!important;}}</style></head><body>'+contenu+'<br/><button onclick="window.print()" style="margin-top:20px;padding:10px 24px;background:#d4a853;color:#000;border:none;border-radius:8px;font-size:13px;cursor:pointer;font-weight:700;">🖨️ Imprimer / PDF</button></body></html>');w.document.close();}
-
-function exportBalanceWord(){var t=document.querySelector('#balance-body table');if(!t){showToast('Aucune balance');return;}exportWord(getEnteteEntreprise()+'<h2>Balance des Comptes — SYSCOHADA 2023</h2>'+t.outerHTML,'balance_'+todayDate());}
-function exportBalanceExcel(){var t=document.querySelector('#balance-body table');if(!t){showToast('Aucune balance');return;}exportExcel(t.outerHTML,'balance_'+todayDate());}
-function exportBalancePDF(){var t=document.querySelector('#balance-body table');exportPDF(getEnteteEntreprise()+'<h2>Balance des Comptes — SYSCOHADA 2023</h2>'+(t?t.outerHTML:''),'balance_'+todayDate());}
-function exportBilanExcel(){if(!allEcritures.length){showToast('Aucune donnée');return;}exportExcel(_buildBilanTable(),'bilan_'+todayDate());}
-function exportBilanWord(){if(!allEcritures.length){showToast('Aucune donnée');return;}exportWord(getEnteteEntreprise()+'<h2>Bilan — SYSCOHADA 2023</h2>'+_buildBilanTable(),'bilan_'+todayDate());}
-function exportBilanPDF(){if(!allEcritures.length){showToast('Aucune donnée');return;}exportPDF(getEnteteEntreprise()+'<h2>Bilan — SYSCOHADA 2023</h2>'+_buildBilanTable(),'bilan_'+todayDate());}
-function exportResultatExcel(){if(!allEcritures.length){showToast('Aucune donnée');return;}exportExcel(_buildResultatTable(),'resultat_'+todayDate());}
-function exportResultatWord(){if(!allEcritures.length){showToast('Aucune donnée');return;}exportWord(getEnteteEntreprise()+'<h2>Compte de Résultat — SYSCOHADA 2023</h2>'+_buildResultatTable(),'resultat_'+todayDate());}
-function exportResultatPDF(){if(!allEcritures.length){showToast('Aucune donnée');return;}exportPDF(getEnteteEntreprise()+'<h2>Compte de Résultat — SYSCOHADA 2023</h2>'+_buildResultatTable(),'resultat_'+todayDate());}
-
-/* ============================================================
-   GROQ AI — ROTATION DES CLÉS INTELLIGENTE
-   Chaque appel utilise la clé suivante dans la rotation.
-   En cas d'erreur 429 (rate limit), la clé suivante est essayée.
-   Jusqu'à GROQ_KEYS.length tentatives par appel.
-============================================================ */
-var SYSTEM_GENERATE=`Tu es Comeo AI, expert-comptable OHADA certifié, spécialiste du PLAN COMPTABLE SYSCOHADA RÉVISÉ 2023 (OHADA).
-Tu utilises EXCLUSIVEMENT les numéros de comptes du SYSCOHADA 2023 ci-dessous. NE JAMAIS inventer de numéros.
-
-COMPTES CLÉS SYSCOHADA 2023 :
-CLASSE 1 : 101(Capital social), 111(Réserve légale), 121(Report à nouveau créditeur), 131(Résultat bénéfice), 139(Résultat perte), 141(Subventions d'équipement), 162(Emprunts établissements de crédit), 165(Dépôts et cautionnements reçus)
-CLASSE 2 : 211(Frais de développement), 213(Logiciels), 231(Bâtiments sur sol propre), 2311(Bâtiments industriels), 2313(Bâtiments administratifs), 2451(Matériel automobile), 2442(Matériel informatique), 2441(Matériel de bureau), 2444(Mobilier de bureau), 2831(Amort. bâtiments), 2841(Amort. matériel industriel), 2844(Amort. matériel mobilier), 2845(Amort. matériel transport)
-CLASSE 3 : 31(Marchandises), 311(Marchandises A), 32(Matières premières), 35(Produits finis), 351(Produits finis A)
-CLASSE 4 FOURNISSEURS : 4011(Fournisseurs ordinaires), 4012(Fournisseurs Groupe), 4013(Fournisseurs sous-traitants), 4017(Retenues garantie fourn.), 402(Fournisseurs effets à payer), 4041(Fourn. immos incorporelles), 4042(Fourn. immos corporelles), 4081(Fourn. factures non parvenues), 4091(Fourn. avances versées)
-CLASSE 4 CLIENTS : 4111(Clients ordinaires), 4112(Clients Groupe), 4117(Retenues garantie clients), 4121(Effets à recevoir), 4161(Créances litigieuses), 4162(Créances douteuses), 4181(Factures à établir), 4191(Acomptes clients reçus)
-CLASSE 4 PERSONNEL : 4211(Personnel avances), 4212(Personnel acomptes), 422(Personnel rémunérations dues), 4281(Dettes provisionnées congés)
-CLASSE 4 ORGANISMES SOCIAUX : 431(CNPS sécurité sociale), 4311(Prestations familiales CNPS), 4312(Accidents travail CNPS), 4313(Retraite obligatoire CNPS)
-CLASSE 4 ÉTAT : 441(Impôt sur bénéfices), 4421(Impôts et taxes État), 4426(Droits de douane), 4431(TVA facturée sur ventes), 4432(TVA facturée sur prestations), 4433(TVA facturée sur travaux), 4441(TVA due à l'État), 4451(TVA récupérable sur immos), 4452(TVA récupérable sur achats), 4453(TVA récupérable transport), 4454(TVA récupérable services), 4471(IGR/IRPP retenu à la source), 4472(Impôts sur salaires), 4492(Avances impôts versées)
-CLASSE 5 : 5211(Banques locales monnaie nationale), 5215(Banques en devises), 531(Chèques postaux CCP), 5711(Caisse monnaie nationale), 5712(Caisse devises), 552(Monnaie électronique téléphone), 585(Virements de fonds)
-CLASSE 6 ACHATS : 6011(Achats marchandises région), 6012(Achats marchandises hors région), 6021(Achats matières premières région), 6031(Variations stocks marchandises), 6032(Variations stocks matières premières), 6041(Matières consommables), 6042(Matières combustibles), 6047(Fournitures de bureau), 6051(Eau), 6052(Électricité), 6056(Petit matériel outillage)
-CLASSE 6 SERVICES : 621(Sous-traitance générale), 6222(Locations bâtiments), 6223(Locations matériels), 6232(Crédit-bail immobilier), 6233(Crédit-bail mobilier), 6241(Entretien biens immobiliers), 6242(Entretien biens mobiliers), 6243(Maintenance), 6251(Assurances multirisques), 6252(Assurances transport), 6261(Études et recherches), 6271(Annonces insertions), 6281(Frais téléphone), 6291(Frais bancaires commissions)
-CLASSE 6 PERSONNEL : 6611(Appointements salaires bruts), 6612(Primes et gratifications), 6641(Cotisations patronales prestations familiales), 6642(Cotisations patronales accidents), 6643(Cotisations patronales retraite)
-CLASSE 6 AMORTISSEMENTS : 6811(Amort. bâtiments), 6812(Amort. aménagements), 6813(Amort. matériels industriels), 6814(Amort. matériel mobilier), 6815(Amort. matériel transport), 6821(Amort. frais développement), 6822(Amort. brevets licences), 6941(Dépréciations stocks), 6942(Dépréciations créances clients)
-CLASSE 7 : 7011(Ventes marchandises région), 7012(Ventes marchandises hors région), 705(Services vendus), 7051(Services région), 7031(Variation stocks PF), 721(Production immobilisée), 741(Subventions d'exploitation), 7411(Subventions État), 761(Dividendes revenus participations), 7942(Reprises dépréciations créances)
-CLASSE 8 : 811(VNC cessions immos corp.), 821(Produits cessions immos corp.), 8713(Impôts sur sociétés IS), 861(Participation travailleurs bénéfices)
-
-RÈGLES ABSOLUES :
-1. JSON valide uniquement, guillemets doubles obligatoires
-2. TVA OHADA = 18% : TTC donné → HT = ARRONDI(TTC/1.18,0), TVA = TTC - HT
-3. DÉBIT avant CRÉDIT dans chaque écriture
-4. Équilibre strict : somme(debit) = somme(credit) pour CHAQUE écriture
-5. Toujours utiliser les comptes à 3 ou 4 chiffres selon le plan ci-dessus
-6. N'utilise JAMAIS de comptes inventés
-
-RETOURNE UNIQUEMENT CE JSON :
-{"titre":"","date":"","reference":"","type_entreprise":"","ecritures":[{"etape":"","lignes":[{"compte":"","libelle":"","debit":0,"credit":0}]}],"analyse":"","notes":""}`;
-
-var SYSTEM_DETECT=`Tu es expert-comptable OHADA SYSCOHADA 2023. Analyse l'opération et détermine les étapes comptables.
-CRITIQUE: JSON valide uniquement, guillemets doubles.
-RETOURNE: {"etapes":["Étape 1","Étape 2"],"titre":"Titre court","analyse":"Explication","notes":""}`;
-
-var SYSTEM_ETAPE=`Tu es Comeo AI, expert-comptable OHADA SYSCOHADA 2023. Génère l'écriture COMPLÈTE et ÉQUILIBRÉE pour l'étape demandée.
-Lignes débitrices EN PREMIER. TVA=18%. Équilibre obligatoire.
-Utilise EXCLUSIVEMENT les numéros SYSCOHADA 2023 : 4011,4111,5211,6011,7011,4431,4452,4441,6611,422,4313,4471,6641,6642,6643,2451,2442,6815,2845,4042,4451 etc.
-JSON valide uniquement.
-RETOURNE: {"etape":"","lignes":[{"compte":"","libelle":"","debit":0,"credit":0}]}`;
-
-function _sanitize(str){return str.replace(/\\/g,' ').replace(/[\u0000-\u001F\u007F-\u009F]/g,' ').replace(/\t/g,' ').replace(/\r\n/g,' ').replace(/\r/g,' ').replace(/\n/g,' ').replace(/"/g,"'").replace(/[^\x20-\x7E\xA0-\uFFFF]/g,' ').trim();}
-
-/**
- * Appel Groq avec rotation automatique des clés.
- * @param {string} systemPrompt
- * @param {string} userMessage
- * @param {number} maxTokens
- * @param {number} attemptKeyIndex - index de départ pour cette tentative
- * @param {number} attempts - nombre de tentatives restantes
- */
-function _groqFetchWithRotation(systemPrompt, userMessage, maxTokens, attemptKeyIndex, attempts) {
-  if(attempts <= 0) return Promise.reject(new Error('Toutes les clés API sont temporairement limitées. Réessayez dans 1 minute.'));
-  var keyInfo = getNextGroqKey(attemptKeyIndex);
-  updateApiStatus('Clé '+(keyInfo.index+1)+'/'+GROQ_KEYS.length+' active', 'ok');
-  return fetch("https://api.groq.com/openai/v1/chat/completions",{
-    method:"POST",
-    headers:{"Content-Type":"application/json","Authorization":"Bearer "+keyInfo.key},
-    body:JSON.stringify({
-      model:"llama-3.3-70b-versatile",
-      max_tokens:maxTokens||1400,
-      temperature:0.05,
-      messages:[
-        {role:"system",content:_sanitize(systemPrompt)},
-        {role:"user",content:_sanitize(userMessage)}
-      ]
-    })
-  }).then(function(res){
-    if(res.status===429||res.status===503||res.status===502){
-      // Rate limit ou erreur serveur — passer à la clé suivante
-      var nextIdx = markKeyFailed(keyInfo.index);
-      return _groqFetchWithRotation(systemPrompt, userMessage, maxTokens, nextIdx, attempts-1);
-    }
-    return res.json().then(function(data){
-      if(data.error){
-        // Erreur API (ex: clé invalide) — rotation
-        var nextIdx = markKeyFailed(keyInfo.index);
-        if(data.error.code==='rate_limit_exceeded'||data.error.type==='rate_limit_exceeded'){
-          return _groqFetchWithRotation(systemPrompt, userMessage, maxTokens, nextIdx, attempts-1);
-        }
-        throw new Error('API Groq: '+(data.error.message||'Erreur inconnue'));
-      }
-      if(!data.choices||!data.choices[0]||!data.choices[0].message)throw new Error('Réponse Groq invalide');
-      var content=data.choices[0].message.content||'';
-      updateApiStatus('Clé '+(keyInfo.index+1)+' OK', 'ok');
-      return content.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g,' ').trim();
-    });
-  }).catch(function(err){
-    if(err.message.indexOf('Toutes les clés')!==-1)throw err;
-    var nextIdx = markKeyFailed(keyInfo.index);
-    return _groqFetchWithRotation(systemPrompt, userMessage, maxTokens, nextIdx, attempts-1);
-  });
-}
-
-function _groqFetch(keyIndex, systemPrompt, userMessage, maxTokens) {
-  // Lance avec la clé spécifiée, autorise rotation sur toutes les clés
-  return _groqFetchWithRotation(systemPrompt, userMessage, maxTokens, keyIndex, GROQ_KEYS.length);
-}
-
-function _parseJSON(raw){
-  var clean=raw.replace(/```json\s*/gi,'').replace(/```\s*/gi,'').trim();
-  var js=clean.indexOf('{'),je=clean.lastIndexOf('}');
-  if(js===-1)throw new Error('Cliquez sur générer pour confirmer analyse MARCIO DEV');
-  clean=clean.slice(js,je+1);
-  try{return JSON.parse(clean);}catch(e0){}
-  try{
-    var fixed=clean.replace(/'/g,'"').replace(/,\s*([\]}])/g,'$1').replace(/("(?:[^"\\]|\\.)*")/g,function(m){return m.replace(/\n/g,'\\n').replace(/\r/g,'\\r').replace(/\t/g,'\\t');}).replace(/\\(?!["\\/bfnrtu])/g,' ').replace(/[\u0000-\u001F\u007F]/g,' ');
-    return JSON.parse(fixed);
-  }catch(e1){}
-  try{
-    var rebuilt='',inStr=false,esc=false;
-    for(var i=0;i<clean.length;i++){var ch=clean[i];if(esc){rebuilt+=ch;esc=false;continue;}if(ch==='\\'){esc=true;rebuilt+=ch;continue;}if(ch==='"'){inStr=!inStr;rebuilt+=ch;continue;}if(ch==="'"){inStr=!inStr;rebuilt+='"';continue;}if(inStr){if(ch==='\n'){rebuilt+='\\n';continue;}if(ch==='\r'){rebuilt+='\\r';continue;}if(ch==='\t'){rebuilt+='\\t';continue;}if(ch.charCodeAt(0)<32)continue;}rebuilt+=ch;}
-    rebuilt=rebuilt.replace(/,\s*([\]}])/g,'$1');
-    return JSON.parse(rebuilt);
-  }catch(e2){throw new Error('Veillez cliquez sur générer pour valider');}
-}
-
-function groqCall(userMessage){
-  // Détection des étapes — clé courante
-  var startKey = _groqKeyIndex;
-  return _groqFetch(startKey, SYSTEM_DETECT, userMessage, 600).then(function(rawDetect){
-    var detect=_parseJSON(rawDetect);var etapes=detect.etapes||[];
-    if(etapes.length<=1){
-      return _groqFetch(_groqKeyIndex, SYSTEM_GENERATE, userMessage, 2200).then(function(raw){return _parseJSON(raw);});
-    }
-    showToast('⚙️ '+etapes.length+' étapes — rotation des clés...',5000);
-    var promises=etapes.map(function(etape,i){
-      // Chaque étape utilise la clé suivante dans la rotation
-      var kIdx=(startKey+i)%GROQ_KEYS.length;
-      var msg=userMessage+'\n\nContexte: '+etapes.join(' | ')+'\nGénère UNIQUEMENT l\'écriture équilibrée pour : '+etape;
-      return _groqFetch(kIdx, SYSTEM_ETAPE, msg, 1000).then(function(raw){
-        var parsed=_parseJSON(raw);parsed.etape=parsed.etape||etape;return parsed;
-      });
-    });
-    return Promise.all(promises).then(function(ecrituresParEtape){
-      var lignesGlobales=[];ecrituresParEtape.forEach(function(ec){(ec.lignes||[]).forEach(function(l){lignesGlobales.push(l);});});
-      return{titre:detect.titre||'',analyse:detect.analyse||'',notes:detect.notes||'',ecritures:ecrituresParEtape,lignes:lignesGlobales};
-    });
-  });
-}
-
-var isGenerating=false;
-function generateJournal(){
-  if(isGenerating)return;
-  var desc=document.getElementById('op-description').value.trim();
-  var date=document.getElementById('op-date').value||todayDate();
-  var ref=document.getElementById('op-ref').value.trim()||genRef();
-  var montant=document.getElementById('op-montant').value.trim();
-  var type=document.getElementById('op-type').value;
-  var extra=document.getElementById('op-extra').value.trim();
-  if(!desc){showToast("Décrivez l'opération");return;}
-  isGenerating=true;
-  document.getElementById('btn-generate').disabled=true;
-  var cfg=ENTREPRISE_CONFIG[currentEntrepriseType];
-  document.getElementById('output-content').innerHTML='<div class="loading-state"><div class="spinner"></div><div style="font-family:var(--mono);font-size:12px;letter-spacing:0.5px;">Analyse SYSCOHADA 2023 en cours... <span id="api-key-indicator" style="color:var(--gold);">Clé '+((_groqKeyIndex%GROQ_KEYS.length)+1)+'/'+GROQ_KEYS.length+'</span></div></div>';
-  var userMsg='SECTEUR: '+cfg.label+'\nOPERATION: '+desc;
-  if(montant)userMsg+='\nMontant: '+montant+' FCFA';
-  if(type)userMsg+='\nType: '+type;
-  if(extra)userMsg+='\nDétails: '+extra;
-  userMsg+='\nDate: '+date+' | Réf: '+ref;
-  userMsg+='\nIMPORTANT: Utilise les numéros de comptes SYSCOHADA 2023 exacts. Banque = 5211, Clients = 4111, Fournisseurs = 4011, TVA collectée = 4431, TVA récup. achats = 4452, TVA récup. immos = 4451, Salaires = 6611, CNPS = 431, IRPP = 4471.';
-  groqCall(userMsg).then(function(data){
-    var result=(typeof data==='string')?_parseJSON(data):data;
-    result.type_entreprise=cfg.label;result.date=date;result.reference=ref;result.description=desc;
-    renderJournal(result,desc,date,ref);
-    return saveEcriture(result);
-  }).catch(function(err){
-    document.getElementById('output-content').innerHTML='<div class="empty-state"><div class="empty-icon" style="border-color:rgba(244,97,122,0.2);background:rgba(244,97,122,0.06)"><svg viewBox="0 0 24 24" fill="none" stroke="var(--rose)" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div><h3 style="color:var(--rose)">Erreur</h3><p>'+escHtml(err.message)+'</p></div>';
-    updateApiStatus('Erreur', 'error');
-    showToast('Erreur : '+err.message);
-  }).finally(function(){isGenerating=false;document.getElementById('btn-generate').disabled=false;});
-}
-
-function renderJournal(result,opDesc,date,ref){
-  var ecritures=result.ecritures||[];
-  var isMulti=ecritures.length>0&&Array.isArray(ecritures[0]&&ecritures[0].lignes);
-  var cardsHTML='';
-  if(isMulti){
-    ecritures.forEach(function(ec,idx){
-      var lignes=ec.lignes||[];
-      var totD=lignes.reduce(function(s,l){return s+(l.debit||0);},0);var totC=lignes.reduce(function(s,l){return s+(l.credit||0);},0);var eq=Math.abs(totD-totC)<1;
-      var rows='';
-      lignes.forEach(function(e){var planLib=getPlanLibelle(e.compte||'');rows+='<tr><td class="col-compte">'+escHtml(e.compte||'')+'</td><td class="col-libelle">'+escHtml(e.libelle||'')+(planLib&&planLib!==e.libelle?'<span class="col-sub">'+escHtml(planLib)+'</span>':'')+'</td><td class="col-debit">'+(e.debit?fmtAmount(e.debit):'<span class="col-empty">—</span>')+'</td><td class="col-credit">'+(e.credit?fmtAmount(e.credit):'<span class="col-empty">—</span>')+'</td></tr>';});
-      cardsHTML+='<div class="journal-card"><div class="journal-card-header"><div class="journal-card-title"><span style="background:var(--gold-glow2);border:1px solid rgba(212,168,83,0.2);color:var(--gold);font-family:var(--mono);font-size:9px;padding:2px 8px;border-radius:4px;margin-right:8px;letter-spacing:0.5px;">ÉCR. '+(idx+1)+'</span>'+escHtml(ec.etape||'')+'</div><div class="'+(eq?'equilibre-ok':'equilibre-err')+'">'+(eq?'✓ Équilibre':'✗ Déséq.')+'</div></div><table class="data-table"><thead><tr><th style="width:80px">Compte</th><th>Libellé</th><th style="text-align:right;width:120px">Débit</th><th style="text-align:right;width:120px">Crédit</th></tr></thead><tbody>'+rows+'</tbody></table><div class="journal-totals"><div class="total-item"><span class="total-label">Total Débit</span><span class="total-debit">'+fmtAmount(totD)+'</span></div><div class="total-item"><span class="total-label">Total Crédit</span><span class="total-credit">'+fmtAmount(totC)+'</span></div></div></div>';
-    });
-    if(ecritures.length>1){cardsHTML='<div style="background:rgba(212,168,83,0.05);border:1px solid rgba(212,168,83,0.15);border-radius:var(--r);padding:10px 14px;margin-bottom:14px;font-family:var(--mono);font-size:11px;color:var(--text2);letter-spacing:0.3px;"><span style="color:var(--gold);font-weight:500;">'+ecritures.length+' écriture(s) — Clés rotatives utilisées</span></div>'+cardsHTML;}
+  const docId = await saveEcritureToFirestore(ecriture);
+  if (!docId) return;
+  ecritures.push(ecriture); pieceCounter++; updateStats(); dismissFillBanner();
+  toast(`✓ Écriture [${JOURNAL_NAMES[journal] || journal}] enregistrée — Pièce ${piece}`, 'success');
+  ecrQueueIdx++;
+  if (ecrQueueIdx < ecrQueue.length) {
+    loadEcritureFromQueue(ecrQueueIdx); updateQueueBar();
+    toast(`→ Écriture ${ecrQueueIdx + 1}/${ecrQueue.length} prête à valider`, 'info');
   } else {
-    var lignes=ecritures,totD=lignes.reduce(function(s,l){return s+(l.debit||0);},0),totC=lignes.reduce(function(s,l){return s+(l.credit||0);},0),eq=Math.abs(totD-totC)<1,rows='';
-    lignes.forEach(function(e){var planLib=getPlanLibelle(e.compte||'');rows+='<tr><td class="col-compte">'+escHtml(e.compte||'')+'</td><td class="col-libelle">'+escHtml(e.libelle||'')+(planLib&&planLib!==e.libelle?'<span class="col-sub">'+escHtml(planLib)+'</span>':'')+'</td><td class="col-debit">'+(e.debit?fmtAmount(e.debit):'<span class="col-empty">—</span>')+'</td><td class="col-credit">'+(e.credit?fmtAmount(e.credit):'<span class="col-empty">—</span>')+'</td></tr>';});
-    cardsHTML='<div class="journal-card"><div class="journal-card-header"><div class="journal-card-title">'+escHtml(result.titre||opDesc)+'</div><div class="journal-card-date">'+escHtml(result.date||date)+'</div><div class="journal-card-ref">'+escHtml(result.reference||ref)+'</div><div class="'+(eq?'equilibre-ok':'equilibre-err')+'">'+(eq?'✓ Équilibre':'✗ Déséquilibre')+'</div></div><table class="data-table"><thead><tr><th style="width:80px">Compte</th><th>Libellé</th><th style="text-align:right;width:120px">Débit</th><th style="text-align:right;width:120px">Crédit</th></tr></thead><tbody>'+rows+'</tbody></table><div class="journal-totals"><div class="total-item"><span class="total-label">Total Débit</span><span class="total-debit">'+fmtAmount(totD)+'</span></div><div class="total-item"><span class="total-label">Total Crédit</span><span class="total-credit">'+fmtAmount(totC)+'</span></div></div></div>';
+    ecrQueue = []; ecrQueueIdx = 0; currentGroupId = null; lignes = []; updateQueueBar();
+    document.getElementById('ecr-libelle').value = '';
+    document.getElementById('ecr-piece').value = '';
+    hideSaisieNotif(); initSaisie();
   }
-  document.getElementById('output-content').innerHTML='<div class="ai-analysis"><div class="ai-analysis-header"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>Analyse IA · SYSCOHADA 2023 · '+escHtml(result.type_entreprise||'')+'</div><div class="ai-analysis-text">'+escHtml(result.analyse||'').replace(/\n/g,'<br>')+'</div>'+(result.notes?'<div style="margin-top:8px;font-family:var(--mono);font-size:10px;color:var(--text3);">'+escHtml(result.notes)+'</div>':'')+'</div>'+cardsHTML+'<div class="btn-row" style="margin-top:8px;"><button class="btn-action" onclick="window.print()">🖨️ Imprimer</button><button class="btn-action" onclick="exportCurrentJournalCSV()">CSV</button><button class="btn-action" onclick="exportCurrentJournalExcel()">Excel</button><button class="btn-action" onclick="exportCurrentJournalWord()">Word</button><button class="btn-action" onclick="exportCurrentJournalPDF()">PDF</button></div>';
-  window._lastJournalResult=result;
 }
 
-function exportCurrentJournalCSV(){if(window._lastJournalResult)exportJournalCSV(window._lastJournalResult);}
-function exportJournalCSV(result){var csv='Ecriture;Compte;Libelle;Debit;Credit\n';var ec=result.ecritures||[];if(ec.length>0&&ec[0]&&Array.isArray(ec[0].lignes)){ec.forEach(function(e,i){(e.lignes||[]).forEach(function(l){csv+='"'+(e.etape||'Ecriture '+(i+1))+'";'+l.compte+';"'+(l.libelle||'').replace(/"/g,'""')+'";'+(l.debit||0)+';'+(l.credit||0)+'\n';});});}else{ec.forEach(function(l){csv+='"";'+l.compte+';"'+(l.libelle||'').replace(/"/g,'""')+'";'+(l.debit||0)+';'+(l.credit||0)+'\n';});}downloadCSV(csv,'journal_'+(result.reference||'export')+'.csv');}
-function exportCurrentJournalWord(){if(!window._lastJournalResult){showToast('Aucune écriture');return;}var r=window._lastJournalResult;var html=getEnteteEntreprise()+'<h2>Journal — '+escHtml(r.titre||r.description||'')+'</h2>';(r.ecritures||[]).forEach(function(ec,i){html+='<h3>Écriture '+(i+1)+' : '+escHtml(ec.etape||'')+'</h3><table><thead><tr><th>Compte</th><th>Libellé</th><th>Débit</th><th>Crédit</th></tr></thead><tbody>';(ec.lignes||[]).forEach(function(l){html+='<tr><td>'+escHtml(l.compte)+'</td><td>'+escHtml(l.libelle)+'</td><td>'+fmtAmount(l.debit)+'</td><td>'+fmtAmount(l.credit)+'</td></tr>';});html+='</tbody></table>';});exportWord(html,'journal_'+(r.reference||todayDate()));}
-function exportCurrentJournalExcel(){if(!window._lastJournalResult){showToast('Aucune écriture');return;}var r=window._lastJournalResult;var html='<table><thead><tr><th>Étape</th><th>Compte</th><th>Libellé</th><th>Débit</th><th>Crédit</th></tr></thead><tbody>';(r.ecritures||[]).forEach(function(ec,i){(ec.lignes||[]).forEach(function(l){html+='<tr><td>'+escHtml(ec.etape||'Écriture '+(i+1))+'</td><td>'+escHtml(l.compte)+'</td><td>'+escHtml(l.libelle)+'</td><td>'+fmtAmount(l.debit)+'</td><td>'+fmtAmount(l.credit)+'</td></tr>';});});html+='</tbody></table>';exportExcel(html,'journal_'+(r.reference||todayDate()));}
-function exportCurrentJournalPDF(){if(!window._lastJournalResult){showToast('Aucune écriture');return;}var r=window._lastJournalResult;var html=getEnteteEntreprise()+'<h2>Journal — '+escHtml(r.titre||r.description||'')+'</h2>';(r.ecritures||[]).forEach(function(ec,i){html+='<h3>Écriture '+(i+1)+' : '+escHtml(ec.etape||'')+'</h3><table><thead><tr><th>Compte</th><th>Libellé</th><th>Débit</th><th>Crédit</th></tr></thead><tbody>';(ec.lignes||[]).forEach(function(l){html+='<tr><td>'+escHtml(l.compte)+'</td><td>'+escHtml(l.libelle)+'</td><td>'+fmtAmount(l.debit)+'</td><td>'+fmtAmount(l.credit)+'</td></tr>';});html+='</tbody></table>';});exportPDF(html,'journal_'+(r.reference||todayDate()));}
+// ══════════════════════════════════════════
+// FILTRAGE COMMUN
+// ══════════════════════════════════════════
+function getEcrituresFiltrees(opts = {}) {
+  const { dateDebut, dateFin, journal, compte } = opts;
+  return ecritures.filter(e => {
+    if (dateDebut && e.date < dateDebut) return false;
+    if (dateFin && e.date > dateFin) return false;
+    if (journal && e.journal !== journal) return false;
+    if (compte) return e.lignes.some(l => l.compte && l.compte.startsWith(compte));
+    return true;
+  });
+}
 
-/* ============================================================
-   INIT
-============================================================ */
-window.addEventListener('load',function(){
-  if(typeof firebase==='undefined'){
-    document.getElementById('auth-overlay').innerHTML='<div style="color:var(--rose);font-family:var(--mono);padding:40px;text-align:center;position:relative;z-index:1;"><h2>⚠️ Erreur de chargement</h2><p style="margin-top:12px;color:var(--text2);">Firebase n\'a pas pu se charger.<br>Vérifiez votre connexion.</p><button onclick="location.reload()" style="margin-top:20px;padding:12px 24px;background:var(--gold);color:#0c0e14;border:none;border-radius:10px;font-weight:700;cursor:pointer;font-family:var(--font);">Recharger</button></div>';
+// ══════════════════════════════════════════
+// JOURNAL
+// ══════════════════════════════════════════
+function resetJournalFiltre() {
+  document.getElementById('jnl-date-debut').value = '';
+  document.getElementById('jnl-date-fin').value = '';
+  document.getElementById('journalFilter').value = '';
+  document.getElementById('journalSearch').value = '';
+  const a = document.getElementById('journal-analyse');
+  if (a) a.style.display = 'none';
+  renderJournal();
+}
+
+function formatDateFR(dateStr) {
+  if (!dateStr) return '';
+  const [y, m, d] = dateStr.split('-');
+  const mois = ['', 'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
+  return `${parseInt(d)} ${mois[parseInt(m)]} ${y}`;
+}
+
+function renderJournal() {
+  const search = (document.getElementById('journalSearch')?.value || '').toLowerCase();
+  const filter = document.getElementById('journalFilter')?.value || '';
+  const dateDebut = document.getElementById('jnl-date-debut')?.value || '';
+  const dateFin = document.getElementById('jnl-date-fin')?.value || '';
+  const content = document.getElementById('journalContent');
+  const footer = document.getElementById('journal-totaux-footer');
+  if (!content) return;
+
+  const ecFiltrees = getEcrituresFiltrees({ dateDebut, dateFin, journal: filter });
+  const ecFiltered = ecFiltrees.filter(e => {
+    if (!search) return true;
+    if ((e.libelle || '').toLowerCase().includes(search)) return true;
+    if ((e.groupLibelle || '').toLowerCase().includes(search)) return true;
+    if ((e.piece || '').toLowerCase().includes(search)) return true;
+    return e.lignes.some(l =>
+      (l.compte || '').includes(search) ||
+      (l.libelle || '').toLowerCase().includes(search) ||
+      (PC[l.compte] || '').toLowerCase().includes(search)
+    );
+  });
+
+  if (!ecFiltered.length) {
+    content.innerHTML = `<div class="empty-state"><div class="icon">≡</div><p>Aucune écriture pour cette sélection</p></div>`;
+    if (footer) footer.style.display = 'none';
     return;
   }
 
-  // Initialisation Firebase DB1 — Comptabilité
-  var app1;
-  if(!firebase.apps.find(function(a){return a.name==='db1';})){
-    app1=firebase.initializeApp(DB1_CONFIG,'db1');
-  } else {
-    app1=firebase.app('db1');
+  const groupMap = {};
+  const soloList = [];
+  ecFiltered.forEach(e => {
+    if (e.groupId) {
+      if (!groupMap[e.groupId]) groupMap[e.groupId] = [];
+      groupMap[e.groupId].push(e);
+    } else { soloList.push(e); }
+  });
+
+  const groups = [];
+  Object.values(groupMap).forEach(ecrs => {
+    const sorted = [...ecrs].sort((a, b) => (a.groupIdx || 0) - (b.groupIdx || 0));
+    groups.push({ type: 'groupe', date: sorted[0].date, ecritures: sorted, libelle: sorted[0].groupLibelle || sorted[0].libelle || 'Opération', isGroupe: true });
+  });
+  soloList.forEach(e => {
+    groups.push({ type: 'solo', date: e.date, ecritures: [e], libelle: e.libelle || 'Écriture', isGroupe: false });
+  });
+  groups.sort((a, b) => a.date.localeCompare(b.date) || (a.ecritures[0].createdAt || '').localeCompare(b.ecritures[0].createdAt || ''));
+
+  const byDate = {};
+  groups.forEach(g => { if (!byDate[g.date]) byDate[g.date] = []; byDate[g.date].push(g); });
+
+  let totalD = 0, totalC = 0, totalLignes = 0, totalEcritures = 0;
+  let html = '';
+
+  Object.keys(byDate).sort().forEach(date => {
+    html += `<div class="jnl-date-sep">
+      <div class="jnl-date-sep-line"></div>
+      <div class="jnl-date-sep-label">📅 ${formatDateFR(date)}</div>
+      <div class="jnl-date-sep-line"></div>
+    </div>`;
+
+    byDate[date].forEach(group => {
+      let groupD = 0, groupC = 0;
+      group.ecritures.forEach(e => {
+        e.lignes.forEach(l => { groupD += l.debit || 0; groupC += l.credit || 0; });
+        totalLignes += e.lignes.length; totalEcritures++;
+      });
+      totalD += groupD; totalC += groupC;
+      const mainJournal = group.ecritures[0]?.journal || 'OD';
+      const icon = JOURNAL_ICONS[mainJournal] || '📋';
+      const docIds = group.ecritures.map(e => `'${e._docId}'`).join(',');
+      const ecrIds = group.ecritures.map(e => e.id).join(',');
+
+      if (group.isGroupe) {
+        html += `<div class="jnl-groupe">
+          <div class="jnl-groupe-header">
+            <div class="jnl-groupe-icon">${icon}</div>
+            <div class="jnl-groupe-info">
+              <div class="jnl-groupe-libelle" title="${(group.libelle || '').replace(/"/g, '&quot;')}">${group.libelle}</div>
+              <div class="jnl-groupe-meta">${date} · ${group.ecritures.length} écritures liées · ${group.ecritures.map(e => e.piece || '—').join(' · ')}</div>
+            </div>
+            <div class="jnl-groupe-total">
+              <div class="jnl-groupe-total-label">Montant total</div>
+              <div class="jnl-groupe-total-val">${fn(groupD)} FCFA</div>
+            </div>
+            <span class="jnl-groupe-badge-count">${group.ecritures.length} écriture${group.ecritures.length > 1 ? 's' : ''}</span>
+            <button class="jnl-groupe-del" onclick="deleteGroupe([${docIds}],[${ecrIds}])" title="Supprimer tout le groupe">✕ Tout supprimer</button>
+          </div>
+          <div class="jnl-groupe-body">
+            ${group.ecritures.map((e, eIdx) => renderEcritureInGroupe(e, eIdx, group.ecritures.length)).join('')}
+          </div>
+        </div>`;
+      } else {
+        const e = group.ecritures[0];
+        let eD = 0, eC = 0;
+        e.lignes.forEach(l => { eD += l.debit || 0; eC += l.credit || 0; });
+        const equil = Math.abs(eD - eC) < 1;
+        const jnlCls = e.journal || 'OD';
+        html += `<div class="jnl-groupe">
+          <div class="jnl-groupe-header">
+            <div class="jnl-groupe-icon">${JOURNAL_ICONS[jnlCls] || '📋'}</div>
+            <div class="jnl-groupe-info">
+              <div class="jnl-groupe-libelle">${e.libelle || '<em style="opacity:.4">Sans libellé</em>'}</div>
+              <div class="jnl-groupe-meta">${date} · ${e.piece || '—'} · ${JOURNAL_NAMES[jnlCls] || jnlCls}</div>
+            </div>
+            <div class="jnl-groupe-total">
+              <div class="jnl-groupe-total-label">Débit / Crédit</div>
+              <div class="jnl-groupe-total-val" style="font-size:11px">
+                <span style="color:#60a5fa">${fn(eD)}</span> / <span style="color:#4ade80">${fn(eC)}</span>
+              </div>
+            </div>
+            <span class="jnl-step-equil ${equil ? 'ok' : 'nok'}">${equil ? '✓ EQ' : '✗ NEQ'}</span>
+            <button class="jnl-groupe-del" onclick="deleteEcriture('${e._docId}',${e.id})" title="Supprimer">✕</button>
+          </div>
+          <div class="jnl-groupe-body">${renderEcritureInGroupe(e, 0, 1)}</div>
+        </div>`;
+      }
+    });
+  });
+
+  content.innerHTML = html;
+  if (footer) {
+    footer.style.display = 'block';
+    document.getElementById('jnl-nb-groupes').textContent = groups.length;
+    document.getElementById('jnl-nb-ecr').textContent = totalEcritures;
+    document.getElementById('jnl-nb-lignes').textContent = totalLignes;
+    document.getElementById('jnl-total-debit').textContent = fn(totalD) + ' FCFA';
+    document.getElementById('jnl-total-credit').textContent = fn(totalC) + ' FCFA';
+    const eqEl = document.getElementById('jnl-equil-label');
+    if (eqEl) {
+      const balanced = Math.abs(totalD - totalC) < 1;
+      eqEl.textContent = balanced ? '✓ Équilibré' : '✗ Déséquilibré';
+      eqEl.className = 'jnl-footer-val ' + (balanced ? 'eq' : 'neq');
+    }
   }
-  db1=firebase.firestore(app1);
+}
 
-  // Initialisation Firebase DB2 — Abonnements
-  var app2;
-  if(!firebase.apps.find(function(a){return a.name==='db2';})){
-    app2=firebase.initializeApp(DB2_CONFIG,'db2');
-  } else {
-    app2=firebase.app('db2');
+function renderEcritureInGroupe(e, eIdx, totalInGroupe) {
+  let eD = 0, eC = 0;
+  e.lignes.forEach(l => { eD += l.debit || 0; eC += l.credit || 0; });
+  const equil = Math.abs(eD - eC) < 1;
+  const jnlCls = e.journal || 'OD';
+  const stepLabel = getStepLabel(e);
+  const lignesAffichage = sortLignesDebitAvantCredit(e.lignes);
+  return `<div class="jnl-ecriture type-${jnlCls}">
+    <div class="jnl-ecriture-subheader">
+      ${totalInGroupe > 1 ? `<span class="jnl-step-badge">${eIdx + 1}</span>` : ''}
+      <span class="jnl-step-jnl-badge ${jnlCls}">${jnlCls}</span>
+      <span class="jnl-step-label">${stepLabel}</span>
+      <span class="jnl-step-piece">${e.piece || '—'} · ${JOURNAL_NAMES[jnlCls] || jnlCls}</span>
+      <span class="jnl-step-totaux" style="margin-left:auto">
+        <span style="color:#60a5fa">${fn(eD)}</span> / <span style="color:#4ade80">${fn(eC)}</span>
+      </span>
+      <span class="jnl-step-equil ${equil ? 'ok' : 'nok'}">${equil ? '✓' : '✗'}</span>
+      <button class="jnl-step-del" onclick="deleteEcriture('${e._docId}',${e.id})" title="Supprimer cette écriture">✕</button>
+    </div>
+    <div class="jnl-ecriture-body">
+      <table class="jnl-lignes-table">
+        <thead><tr>
+          <th style="width:200px">Compte</th>
+          <th>Libellé</th>
+          <th class="right" style="width:140px">Débit (FCFA)</th>
+          <th class="right" style="width:140px">Crédit (FCFA)</th>
+        </tr></thead>
+        <tbody>
+          ${lignesAffichage.map(l => `
+            <tr>
+              <td><div class="jnl-compte-badge">
+                <span class="jnl-compte-code">${l.compte}</span>
+                <span class="jnl-compte-name" title="${PC[l.compte] || ''}">${(PC[l.compte] || '').substring(0, 22)}</span>
+              </div></td>
+              <td><span class="jnl-libelle-ligne">${l.libelle || e.libelle || '—'}</span></td>
+              <td class="jnl-debit-cell">${l.debit ? fn(l.debit) : '<span style="color:var(--line2)">—</span>'}</td>
+              <td class="jnl-credit-cell">${l.credit ? fn(l.credit) : '<span style="color:var(--line2)">—</span>'}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </div>`;
+}
+
+async function deleteGroupe(docIds, ids) {
+  if (!confirm(`Supprimer ce groupe de ${docIds.length} écriture${docIds.length > 1 ? 's' : ''} ?`)) return;
+  for (const docId of docIds) await deleteEcritureFromFirestore(docId);
+  ids.forEach(id => { ecritures = ecritures.filter(e => e.id !== id); });
+  updateStats(); renderJournal();
+  toast(`${docIds.length} écriture${docIds.length > 1 ? 's' : ''} supprimée${docIds.length > 1 ? 's' : ''}`, 'info');
+}
+
+async function deleteEcriture(docId, id) {
+  if (!confirm('Supprimer cette écriture ?')) return;
+  await deleteEcritureFromFirestore(docId);
+  ecritures = ecritures.filter(e => e.id !== id);
+  updateStats(); renderJournal(); toast('Écriture supprimée', 'info');
+}
+
+// ══════════════════════════════════════════
+// GRAND LIVRE
+// ══════════════════════════════════════════
+function getMap(opts = {}) {
+  const ecFiltrees = opts.filtrer ? getEcrituresFiltrees(opts) : ecritures;
+  const map = {};
+  ecFiltrees.forEach(e => e.lignes.forEach(l => {
+    if (!l.compte) return;
+    if (!map[l.compte]) map[l.compte] = { debit: 0, credit: 0, mvts: [] };
+    map[l.compte].debit += l.debit || 0;
+    map[l.compte].credit += l.credit || 0;
+    map[l.compte].mvts.push({
+      date: e.date, piece: e.piece || '', journal: e.journal,
+      libelle: l.libelle || e.libelle || '',
+      debit: l.debit || 0, credit: l.credit || 0
+    });
+  }));
+  return map;
+}
+
+function resetGLFiltre() {
+  document.getElementById('gl-date-debut').value = '';
+  document.getElementById('gl-date-fin').value = '';
+  document.getElementById('glSearch').value = '';
+  renderGrandLivre();
+}
+
+function renderGrandLivre() {
+  const search = document.getElementById('glSearch')?.value?.toLowerCase() || '';
+  const dateDebut = document.getElementById('gl-date-debut')?.value || '';
+  const dateFin = document.getElementById('gl-date-fin')?.value || '';
+  const opts = (dateDebut || dateFin) ? { filtrer: true, dateDebut, dateFin } : {};
+  const map = getMap(opts);
+  const content = document.getElementById('grandLivreContent');
+  if (!content) return;
+  const comptes = Object.keys(map).sort();
+  if (!comptes.length) { content.innerHTML = '<div class="empty-state"><div class="icon">⊞</div><p>Aucun mouvement</p></div>'; return; }
+  const filtered = comptes.filter(c => !search || c.includes(search) || (PC[c] || '').toLowerCase().includes(search));
+  content.innerHTML = filtered.map(code => {
+    const acc = map[code], s = acc.debit - acc.credit, lib = PC[code] || 'Compte ' + code, isD = s >= 0;
+    return `<div class="gl-account">
+      <div class="gl-account-header" onclick="toggleGL('gl-${code}')">
+        <span class="gl-code">${code}</span>
+        <span class="gl-name">${lib.substring(0, 46)}</span>
+        <span style="color:rgba(255,255,255,.3);font-size:10px;font-family:var(--font-mono);margin-right:6px">${acc.mvts.length} mvt${acc.mvts.length > 1 ? 's' : ''}</span>
+        <span class="gl-balance ${isD ? 'debit' : 'credit'}">${isD ? 'Sd' : 'Sc'} ${fn(Math.abs(s))} FCFA</span>
+      </div>
+      <div id="gl-${code}" style="display:none">
+        <div style="overflow-x:auto">
+        <table class="dt">
+          <thead><tr><th>Date</th><th>Jnl</th><th>Pièce</th><th>Libellé</th>
+            <th style="text-align:right">Débit</th><th style="text-align:right">Crédit</th>
+            <th style="text-align:right">Solde progressif</th></tr></thead>
+          <tbody>${acc.mvts.map((m, i) => {
+            const rD = acc.mvts.slice(0, i + 1).reduce((s, x) => s + x.debit, 0);
+            const rC = acc.mvts.slice(0, i + 1).reduce((s, x) => s + x.credit, 0);
+            const rs = rD - rC;
+            return `<tr>
+              <td style="font-family:var(--font-mono);font-size:10px">${m.date}</td>
+              <td><span class="ct">${m.journal}</span></td>
+              <td style="font-family:var(--font-mono);font-size:9.5px;color:var(--muted)">${m.piece}</td>
+              <td>${m.libelle}</td>
+              <td class="debit">${m.debit ? fn(m.debit) : ''}</td>
+              <td class="credit">${m.credit ? fn(m.credit) : ''}</td>
+              <td style="text-align:right;font-family:var(--font-mono);font-size:11px;color:${rs >= 0 ? '#60a5fa' : '#4ade80'}">
+                ${rs >= 0 ? 'Sd ' : 'Sc '}${fn(Math.abs(rs))}</td>
+            </tr>`;
+          }).join('')}
+          <tr class="total-row">
+            <td colspan="4" style="text-align:right;font-weight:700">TOTAUX</td>
+            <td class="debit">${fn(acc.debit)}</td>
+            <td class="credit">${fn(acc.credit)}</td>
+            <td style="text-align:right;font-family:var(--font-mono);color:${isD ? '#60a5fa' : '#4ade80'}">
+              ${isD ? 'Sd ' : 'Sc '}${fn(Math.abs(s))}</td>
+          </tr></tbody>
+        </table></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+function toggleGL(id) { const el = document.getElementById(id); if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none'; }
+
+// ══════════════════════════════════════════
+// BALANCE
+// ══════════════════════════════════════════
+function resetBalanceFiltre() {
+  document.getElementById('bal-date-debut').value = '';
+  document.getElementById('bal-date-fin').value = '';
+  document.getElementById('bal-journal').value = '';
+  document.getElementById('bal-classe').value = '';
+  const a = document.getElementById('balance-analyse');
+  if (a) a.style.display = 'none';
+  renderBalance();
+}
+
+function renderBalance() {
+  const dateDebut = document.getElementById('bal-date-debut')?.value || '';
+  const dateFin = document.getElementById('bal-date-fin')?.value || '';
+  const journal = document.getElementById('bal-journal')?.value || '';
+  const classe = document.getElementById('bal-classe')?.value || '';
+  const opts = (dateDebut || dateFin || journal) ? { filtrer: true, dateDebut, dateFin, journal } : {};
+  const map = getMap(opts);
+  const tbody = document.getElementById('balanceBody');
+  if (!tbody) return;
+  let comptes = Object.keys(map).sort();
+  if (classe) comptes = comptes.filter(c => c.startsWith(classe));
+  if (!comptes.length) {
+    tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><p>Aucune donnée pour cette sélection</p></div></td></tr>';
+    return;
   }
-  db2=firebase.firestore(app2);
+  let tD = 0, tC = 0, tSD = 0, tSC = 0;
+  const rows = comptes.map(code => {
+    const acc = map[code], s = acc.debit - acc.credit, sd = s > 0 ? s : 0, sc = s < 0 ? -s : 0;
+    tD += acc.debit; tC += acc.credit; tSD += sd; tSC += sc;
+    return `<tr>
+      <td><span class="ct">${code}</span></td>
+      <td style="font-size:11px">${(PC[code] || '').substring(0, 42)}</td>
+      <td class="debit">${fn(acc.debit)}</td>
+      <td class="credit">${fn(acc.credit)}</td>
+      <td style="text-align:right;font-family:var(--font-mono);color:#2563eb">${sd ? fn(sd) : ''}</td>
+      <td style="text-align:right;font-family:var(--font-mono);color:#16a34a">${sc ? fn(sc) : ''}</td>
+    </tr>`;
+  });
+  rows.push(`<tr class="total-row"><td colspan="2">TOTAUX GÉNÉRAUX</td>
+    <td class="debit">${fn(tD)}</td><td class="credit">${fn(tC)}</td>
+    <td style="text-align:right;font-family:var(--font-mono)">${fn(tSD)}</td>
+    <td style="text-align:right;font-family:var(--font-mono)">${fn(tSC)}</td>
+  </tr>`);
+  tbody.innerHTML = rows.join('');
+}
 
-  // Init UI
-  document.getElementById('op-date').value=todayDate();
-  document.getElementById('manual-date').value=todayDate();
-  renderQuickOps();renderTypeSelect();renderPlan();renderGuide();initManualLines();
+// ══════════════════════════════════════════
+// BILAN
+// ══════════════════════════════════════════
+function renderBilan() {
+  const dateArrete = document.getElementById('bilan-date-arrete')?.value;
+  const opts = dateArrete ? { filtrer: true, dateFin: dateArrete } : {};
+  const map = getMap(opts);
+  const content = document.getElementById('bilanContent');
+  if (!content) return;
+  if (!Object.keys(map).length) {
+    content.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="icon">⊠</div><p>Saisissez des écritures pour générer le bilan</p></div>';
+    return;
+  }
+  const actif = {
+    immob: { title: 'ACTIF IMMOBILISÉ', comptes: [] },
+    stocks: { title: 'STOCKS ET EN-COURS', comptes: [] },
+    creances: { title: 'CRÉANCES ET EMPLOIS ASSIMILÉS', comptes: [] },
+    treso: { title: 'TRÉSORERIE-ACTIF', comptes: [] }
+  };
+  const passif = {
+    cap: { title: 'CAPITAUX PROPRES ET RESSOURCES ASSIMILÉES', comptes: [] },
+    df: { title: 'DETTES FINANCIÈRES ET RESSOURCES ASSIMILÉES', comptes: [] },
+    dct: { title: 'PASSIF CIRCULANT', comptes: [] },
+    tp: { title: 'TRÉSORERIE-PASSIF', comptes: [] }
+  };
+  Object.entries(map).forEach(([code, acc]) => {
+    const s = acc.debit - acc.credit;
+    const cl = code[0];
+    const e = { code, lib: (PC[code] || code).substring(0, 40), solde: Math.abs(s) };
+    if (cl === '2') { if (s > 0) actif.immob.comptes.push(e); }
+    else if (cl === '3') { if (s > 0) actif.stocks.comptes.push(e); }
+    else if (cl === '4') { if (s > 0) actif.creances.comptes.push(e); else if (s < 0) passif.dct.comptes.push({ ...e, solde: Math.abs(s) }); }
+    else if (cl === '5') { if (s > 0) actif.treso.comptes.push(e); else passif.tp.comptes.push({ ...e, solde: Math.abs(s) }); }
+    else if (cl === '1') { const n = parseInt(code); (n <= 160 ? passif.cap : passif.df).comptes.push({ code, lib: (PC[code] || code).substring(0, 40), solde: Math.abs(s) }); }
+  });
+  const rc = sections => sections.map(s => {
+    if (!s.comptes.length) return '';
+    const total = s.comptes.reduce((sum, c) => sum + c.solde, 0);
+    return `<div class="bilan-section">
+      <div class="bilan-section-title">${s.title}</div>
+      ${s.comptes.map(c => `<div class="bilan-line"><span class="acc-code">${c.code}</span><span class="acc-name">${c.lib}</span><span class="acc-amount">${fn(c.solde)}</span></div>`).join('')}
+      <div class="bilan-line" style="font-weight:700;border-bottom:none;margin-top:3px">
+        <span class="acc-code"></span><span class="acc-name" style="color:var(--ink)">Sous-total</span><span class="acc-amount">${fn(total)}</span>
+      </div>
+    </div>`;
+  }).join('');
+  const tA = [...actif.immob.comptes, ...actif.stocks.comptes, ...actif.creances.comptes, ...actif.treso.comptes].reduce((s, c) => s + c.solde, 0);
+  const tP = [...passif.cap.comptes, ...passif.df.comptes, ...passif.dct.comptes, ...passif.tp.comptes].reduce((s, c) => s + c.solde, 0);
+  const label = dateArrete ? `Arrêté au ${dateArrete}` : `Exercice ${document.getElementById('exerciceYear').value}`;
+  content.innerHTML = `
+    <div class="bilan-col"><div class="bilan-col-header actif">ACTIF — ${label}</div>${rc(Object.values(actif))}<div class="bilan-total"><span>TOTAL ACTIF</span><span>${fn(tA)} FCFA</span></div></div>
+    <div class="bilan-col"><div class="bilan-col-header passif">PASSIF — ${label}</div>${rc(Object.values(passif))}<div class="bilan-total"><span>TOTAL PASSIF</span><span>${fn(tP)} FCFA</span></div></div>`;
+}
 
-  document.getElementById('op-description').addEventListener('keydown',function(e){if(e.key==='Enter'&&e.ctrlKey){e.preventDefault();generateJournal();}});
-  document.getElementById('form-login').addEventListener('submit',function(e){e.preventDefault();doLogin();});
-  document.getElementById('form-register').addEventListener('submit',function(e){e.preventDefault();doRegister();});
+// ══════════════════════════════════════════
+// RÉSULTAT
+// ══════════════════════════════════════════
+function renderResultat() {
+  const map = getMap();
+  const content = document.getElementById('resultatContent');
+  if (!content) return;
+  if (!Object.keys(map).length) { content.innerHTML = '<div class="empty-state"><div class="icon">↗</div><p>Aucune donnée</p></div>'; return; }
+  const gt = pfx => Object.entries(map).filter(([c]) => pfx.some(p => c.startsWith(p))).reduce((s, [, a]) => s + (a.debit - a.credit), 0);
+  const ventes = Math.abs(gt(['701', '702', '703', '704', '705']));
+  const prodsAcc = Math.abs(gt(['707']));
+  const autrProd = Math.abs(gt(['75', '718', '711']));
+  const transports = gt(['612', '614']);
+  const servExt = gt(['621', '622', '624', '625', '626', '627', '628', '631', '632', '634', '635', '638']);
+  const impTaxes = gt(['641', '645']);
+  const autresChg = gt(['651', '654', '658']);
+  const personnel = gt(['661', '662', '663', '664']);
+  const dap = gt(['681', '691', '697']);
+  const revFin = Math.abs(gt(['771', '772', '773', '774', '776', '777']));
+  const chgFin = gt(['671', '673', '674', '676']);
+  const haoP = Math.abs(gt(['821', '822', '841']));
+  const haoC = gt(['811', '812', '831', '834', '839', '851', '852', '854']);
+  const imp = gt(['891', '895']);
+  const mc = ventes - Math.abs(gt(['601'])) - gt(['6031']);
+  const ca = ventes + prodsAcc;
+  const va = ca + autrProd - Math.abs(gt(['601', '602', '604', '605', '608'])) - gt(['6031', '6032']) - transports - servExt - impTaxes - autresChg;
+  const ebe = va - personnel;
+  const re = ebe - dap;
+  const rf = revFin - chgFin;
+  const rao = re + rf;
+  const rhao = haoP - haoC;
+  const res = rao + rhao - imp;
+  const rr = (lbl, val, cls = '') => `<div class="rrow ${cls}"><span>${lbl}</span><span class="amount ${val >= 0 ? 'pos' : 'neg'}">${fn(Math.abs(val))} FCFA${val < 0 ? ' (−)' : ''}</span></div>`;
+  content.innerHTML = `<div class="rlist">
+    <div class="rrow header"><span>COMPTE DE RÉSULTAT — SYSCOHADA Révisé 2017</span><span></span></div>
+    ${rr('Ventes de marchandises (701)', ventes, 'sub')}
+    ${rr('Achats + Var. stocks (601+6031)', -(Math.abs(gt(['601'])) + gt(['6031'])), 'sub')}
+    ${rr('→ Marge commerciale (XA)', mc, 'total')}
+    ${rr('Produits accessoires (707+75)', prodsAcc + autrProd, 'sub')}
+    ${rr('→ CA net et autres produits (XB)', ca, 'total')}
+    ${rr('Transports + Services extérieurs', -(transports + servExt), 'sub')}
+    ${rr('Impôts et taxes (641+645)', -(impTaxes + autresChg), 'sub')}
+    ${rr('→ Valeur ajoutée brute (XC)', va, 'total')}
+    ${rr('Charges de personnel (661–664)', -personnel, 'sub')}
+    ${rr("→ E.B.E. — Excédent Brut d'Exploitation (XD)", ebe, 'total')}
+    ${rr('Dotations amort. et prov. (681+691)', -dap, 'sub')}
+    ${rr("→ Résultat d'exploitation (RE — XE)", re, 'total')}
+    <div class="divider"></div>
+    <div class="rrow header"><span>RÉSULTAT FINANCIER</span><span></span></div>
+    ${rr('Revenus financiers (77)', revFin, 'sub')}
+    ${rr('Charges financières (67)', -chgFin, 'sub')}
+    ${rr('→ Résultat financier (RF — XF)', rf, 'total')}
+    ${rr('→ Résultat des Activités Ordinaires (RAO — XG)', rao, 'total')}
+    <div class="divider"></div>
+    <div class="rrow header"><span>RÉSULTAT H.A.O.</span><span></span></div>
+    ${rr('Produits HAO', haoP, 'sub')}
+    ${rr('Charges HAO', -haoC, 'sub')}
+    ${rr('→ RHAO (XH)', rhao, 'total')}
+    <div class="divider"></div>
+    ${rr('IS / IBP — Impôt sur les Bénéfices (891) — Taux CI : 25%', -imp, 'sub')}
+    <div class="rrow result">
+      <span>${res >= 0 ? "✓ RÉSULTAT NET DE L'EXERCICE — BÉNÉFICE" : "✗ RÉSULTAT NET DE L'EXERCICE — PERTE"}</span>
+      <span class="amount ${res >= 0 ? 'pos' : 'neg'}">${fn(Math.abs(res))} FCFA</span>
+    </div>
+  </div>`;
+}
 
-  updateApiStatus('API prête · '+GROQ_KEYS.length+' clés', 'ok');
+// ══════════════════════════════════════════
+// TRÉSORERIE
+// ══════════════════════════════════════════
+function renderTresorerie() {
+  const map = getMap();
+  const content = document.getElementById('tresorerieContent');
+  if (!content) return;
+  const tc = Object.entries(map).filter(([c]) => c.startsWith('5'));
+  if (!tc.length) { content.innerHTML = '<div class="empty-state"><div class="icon">◎</div><p>Aucun mouvement de trésorerie</p></div>'; return; }
+  const total = tc.reduce((s, [, a]) => s + (a.debit - a.credit), 0);
+  content.innerHTML = `<div class="rlist">
+    <div class="rrow header"><span>COMPTES DE TRÉSORERIE — CLASSE 5 — SYSCOHADA</span><span></span></div>
+    <div class="rrow header" style="font-size:10px;opacity:.5"><span>Mobile Money (Orange Money, MTN MoMo, Wave, Moov) → Compte 552</span><span></span></div>
+    ${tc.map(([code, acc]) => {
+      const s = acc.debit - acc.credit;
+      return `<div class="rrow sub"><span><span class="ct">${code}</span><span style="margin-left:6px">${(PC[code] || '').substring(0, 34)}</span></span><span class="amount ${s >= 0 ? 'pos' : 'neg'}">${fn(Math.abs(s))} FCFA${s < 0 ? ' (Créditeur)' : ''}</span></div>`;
+    }).join('')}
+    <div class="rrow result"><span>Trésorerie nette totale</span><span class="amount ${total >= 0 ? 'pos' : 'neg'}">${fn(Math.abs(total))} FCFA</span></div>
+  </div>`;
+}
+
+// ══════════════════════════════════════════
+// PLAN COMPTABLE
+// ══════════════════════════════════════════
+function renderPlanComptable() {
+  const search = document.getElementById('pcSearch')?.value?.toLowerCase() || '';
+  const cls = document.getElementById('pcClass')?.value || '';
+  const tbody = document.getElementById('pcBody');
+  if (!tbody) return;
+  const entries = Object.entries(PC).filter(([code, lib]) => {
+    if (cls && !code.startsWith(cls)) return false;
+    if (search && !code.includes(search) && !lib.toLowerCase().includes(search)) return false;
+    return true;
+  }).slice(0, 300);
+  if (!entries.length) { tbody.innerHTML = '<tr><td colspan="4"><div class="empty-state"><p>Aucun compte trouvé</p></div></td></tr>'; return; }
+  tbody.innerHTML = entries.map(([code, lib]) => {
+    const cl = code[0], isH = lib === lib.toUpperCase() && lib.length > 3, pad = (code.length - 1) * 10;
+    return `<tr>
+      <td><span class="ct">${code}</span></td>
+      <td style="padding-left:${Math.min(pad, 30)}px;font-weight:${isH ? '600' : '400'};color:${isH ? 'var(--ink)' : 'var(--slate)'}">${lib.substring(0, 70)}</td>
+      <td style="color:var(--muted);font-size:11px">${CLASS_NAMES[cl] || ''}</td>
+      <td><span style="font-size:10px;padding:2px 7px;border-radius:3px;background:var(--surface3);color:var(--muted)">${NATURE_MAP[cl] || ''}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════
+// EXPORT PDF / WORD
+// ══════════════════════════════════════════
+function openExportModal() { const m = document.getElementById('exportModal'); if (m) m.style.display = 'flex'; selectExport('pdf'); }
+function closeExportModal() { const m = document.getElementById('exportModal'); if (m) m.style.display = 'none'; }
+function selectExport(fmt) {
+  exportFormat = fmt;
+  document.getElementById('opt-pdf')?.classList.toggle('selected', fmt === 'pdf');
+  document.getElementById('opt-word')?.classList.toggle('selected', fmt === 'word');
+}
+function doExport() { closeExportModal(); if (exportFormat === 'pdf') exportPDF(); else exportWord(); }
+
+function exportPDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const yr = document.getElementById('exerciceYear').value;
+  const company = currentProfile?.company || 'Entreprise';
+  const pageW = 210;
+  const now = new Date().toLocaleDateString('fr-FR');
+  doc.setFillColor(10, 11, 16); doc.rect(0, 0, pageW, 22, 'F');
+  doc.setTextColor(212, 168, 83); doc.setFontSize(14); doc.setFont('helvetica', 'bold');
+  doc.text('SYSCOHADA Pro v4 — Révisé 2017', 14, 10);
+  doc.setFontSize(7); doc.setFont('helvetica', 'normal');
+  doc.text('COMEO AI — Expert-Comptable Ivoirien | ONECCA-CI', 14, 16);
+  doc.setTextColor(255, 255, 255); doc.setFontSize(8);
+  doc.text(company, pageW - 14, 10, { align: 'right' });
+  doc.text('Exercice ' + yr + ' | Monnaie : FCFA (XOF)', pageW - 14, 16, { align: 'right' });
+  doc.setTextColor(10, 11, 16); doc.setFontSize(16); doc.setFont('helvetica', 'bold');
+  doc.text('JOURNAL GÉNÉRAL', 14, 34);
+  doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(130, 128, 112);
+  doc.text('Édité le ' + now, 14, 40);
+  doc.setDrawColor(212, 168, 83); doc.setLineWidth(0.5); doc.line(14, 43, pageW - 14, 43);
+  const tableData = [];
+  let totalD = 0, totalC = 0;
+  ecritures.forEach(e => {
+    const lignesSorted = sortLignesDebitAvantCredit(e.lignes);
+    lignesSorted.forEach(l => {
+      tableData.push([e.date, e.journal, e.piece || '', l.compte, (PC[l.compte] || '').substring(0, 28), l.libelle || e.libelle || '', l.debit ? fn(l.debit) : '', l.credit ? fn(l.credit) : '']);
+      totalD += l.debit || 0; totalC += l.credit || 0;
+    });
+  });
+  doc.autoTable({
+    startY: 48,
+    head: [['Date', 'Jnl', 'N° Pièce', 'Compte', 'Libellé compte', 'Libellé opération', 'Débit FCFA', 'Crédit FCFA']],
+    body: tableData,
+    foot: [['', '', '', '', '', 'TOTAUX', fn(totalD), fn(totalC)]],
+    styles: { font: 'helvetica', fontSize: 7.5, cellPadding: 2.5 },
+    headStyles: { fillColor: [10, 11, 16], textColor: [212, 168, 83], fontStyle: 'bold', fontSize: 7 },
+    footStyles: { fillColor: [30, 34, 54], textColor: [212, 168, 83], fontStyle: 'bold', fontSize: 8 },
+    alternateRowStyles: { fillColor: [250, 248, 244] },
+    columnStyles: {
+      0: { cellWidth: 18 }, 1: { cellWidth: 10, halign: 'center' }, 2: { cellWidth: 18 },
+      3: { cellWidth: 16, fontStyle: 'bold' }, 4: { cellWidth: 28 }, 5: { cellWidth: 36 },
+      6: { cellWidth: 22, halign: 'right' }, 7: { cellWidth: 22, halign: 'right' }
+    },
+    margin: { left: 14, right: 14 }
+  });
+  doc.save(`SYSCOHADA_v4_${company.replace(/\s+/g, '_')}_${yr}.pdf`);
+  toast('✓ PDF exporté avec succès', 'success');
+}
+
+function exportWord() {
+  const yr = document.getElementById('exerciceYear').value;
+  const company = currentProfile?.company || 'Entreprise';
+  const now = new Date().toLocaleDateString('fr-FR');
+  let jRows = '', totalD = 0, totalC = 0;
+  ecritures.forEach(e => {
+    const lignesSorted = sortLignesDebitAvantCredit(e.lignes);
+    lignesSorted.forEach(l => {
+      jRows += `<tr><td>${e.date}</td><td>${e.journal}</td><td>${e.piece || ''}</td><td>${l.compte}</td><td>${(PC[l.compte] || '').substring(0, 28)}</td><td>${l.libelle || e.libelle || ''}</td><td style="text-align:right">${l.debit ? fn(l.debit) : ''}</td><td style="text-align:right">${l.credit ? fn(l.credit) : ''}</td></tr>`;
+      totalD += l.debit || 0; totalC += l.credit || 0;
+    });
+  });
+  const th = 'background:#0a0b10;color:#d4a853;padding:6px 10px;text-align:left;font-size:9pt;text-transform:uppercase';
+  const td = 'border-bottom:1px solid #e0dbd0;padding:5px 10px';
+  const html = `<html><head><meta charset="utf-8"><style>body{font-family:'Segoe UI',Arial,sans-serif;font-size:11pt}table{width:100%;border-collapse:collapse;margin-bottom:20pt}th{${th}}td{${td}}tr:nth-child(even) td{background:#faf8f4}</style></head>
+  <body>
+  <h1 style="font-family:Georgia,serif;font-size:16pt;color:#0a0b10">SYSCOHADA Pro v4 — ${company} — Exercice ${yr}</h1>
+  <p>Édité le ${now} | COMEO AI — Expert-Comptable Ivoirien | Monnaie : FCFA (XOF)</p>
+  <h2>Journal Général</h2>
+  <table><thead><tr><th>Date</th><th>Jnl</th><th>Pièce</th><th>Compte</th><th>Libellé compte</th><th>Libellé</th><th>Débit</th><th>Crédit</th></tr></thead>
+  <tbody>${jRows}</tbody>
+  <tfoot><tr><td colspan="6" style="font-weight:bold;text-align:right">TOTAUX</td><td style="font-weight:bold;text-align:right">${fn(totalD)}</td><td style="font-weight:bold;text-align:right">${fn(totalC)}</td></tr></tfoot></table>
+  </body></html>`;
+  const blob = new Blob([html], { type: 'application/msword;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `SYSCOHADA_v4_${company.replace(/\s+/g, '_')}_${yr}.doc`;
+  a.click(); URL.revokeObjectURL(url);
+  toast('✓ Document Word exporté', 'success');
+}
+
+// ══════════════════════════════════════════
+// CORRECTEUR AUTOMATIQUE DE COMPTES
+// ══════════════════════════════════════════
+const MOTS_IMMOBILISATIONS = ['véhicule','camion','voiture','moto','transport','automobile','ordinateur','informatique','bureau','mobilier','matériel','machine','équipement','installation','bâtiment','terrain'];
+const COMPTES_IMMOB = { 'véhicule':'2451','camion':'2451','voiture':'2451','moto':'2451','automobile':'2451','transport':'2451','ordinateur':'2442','informatique':'2442','bureau':'2441','mobilier':'2444','matériel':'2441','machine':'2411','équipement':'2411' };
+
+function corrigerComptesErreurs(lignes) {
+  return lignes.map(l => {
+    const code = String(l.compte || '');
+    const lib = (l.libelle || '').toLowerCase();
+    let newCode = code;
+    if ((code === '607' || code === '6058' || code === '601') && l.debit > 0) {
+      const motTrouve = MOTS_IMMOBILISATIONS.find(m => lib.includes(m));
+      if (motTrouve && !lib.includes('marchandis')) { newCode = COMPTES_IMMOB[motTrouve] || '2411'; }
+    }
+    if (['221','222','223','224'].includes(code) && l.credit > 0) newCode = '2845';
+    if (['511','512','513','514'].includes(code)) newCode = '521';
+    if (code === '4452' && l.debit > 0) {
+      const libEcr = lib.toLowerCase();
+      if (['véhicule','camion','ordinateur','mobilier','matériel','machine','équipement'].some(m => libEcr.includes(m))) {
+        newCode = '4451';
+      }
+    }
+    return { ...l, compte: newCode, libelle: l.libelle || PC[newCode] || l.libelle };
+  });
+}
+
+// ══════════════════════════════════════════
+// COMEO AI — Clés chargées depuis Firestore
+// ══════════════════════════════════════════
+function handleAiKey(e, ctx) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendToAI(ctx); } }
+
+function quickAI(text) {
+  const input = document.getElementById('aiInput');
+  if (input) input.value = text;
+  navigate('dashboard');
+  sendToAI('dashboard');
+}
+
+function buildAIContext() {
+  let tD = 0, tC = 0;
+  ecritures.forEach(e => e.lignes.forEach(l => { tD += l.debit || 0; tC += l.credit || 0; }));
+  const map = getMap();
+  const comptesSoldes = Object.entries(map).slice(0, 12).map(([c, a]) => {
+    const s = a.debit - a.credit;
+    return `${c}:${s >= 0 ? 'Sd' : 'Sc'}${fn(Math.abs(s))}FCFA`;
+  }).join(' | ');
+  const dernieres = ecritures.slice(-5).map(e => `${e.date}[${e.journal}]${e.libelle || '—'}`).join('; ');
+  const allDates = [...new Set(ecritures.map(e => e.date))].sort().join(', ');
+  return {
+    nbEcritures: ecritures.length,
+    companyName: currentProfile?.company || 'Entreprise',
+    exercice: document.getElementById('exerciceYear')?.value || '2024',
+    totalDebit: fn(tD),
+    totalCredit: fn(tC),
+    comptesSoldes,
+    ecrituresResume: dernieres,
+    allDates
+  };
+}
+
+async function sendToAI(context) {
+  if (isAILoading) return;
+
+  // ── Vérification clés disponibles ──
+  if (GROQ_API_KEYS.length === 0) {
+    appendMsg(context, 'ai',
+      '⚠️ <strong>COMEO AI non configuré.</strong><br>Aucune clé API Groq n\'est enregistrée. ' +
+      'Rendez-vous sur <strong>server.html</strong> (interface administrateur) pour ajouter vos clés API Groq.'
+    );
+    return;
+  }
+
+  const inputId = context === 'dashboard' ? 'aiInput' : `aiInput-${context}`;
+  const input = document.getElementById(inputId);
+  const msg = input?.value?.trim();
+  if (!msg) return;
+  isAILoading = true; input.value = '';
+  const sendBtnId = context === 'dashboard' ? 'aiSendBtn' : null;
+  if (sendBtnId) { const btn = document.getElementById(sendBtnId); if (btn) btn.disabled = true; }
+  appendMsg(context, 'user', msg);
+  const tid = appendTyping(context);
+  const ctxData = buildAIContext();
+  const systemPrompt = buildSystemPrompt(ctxData);
+
+  conversationHistory.push({ role: 'user', content: msg });
+  if (conversationHistory.length > 20) conversationHistory = conversationHistory.slice(-20);
+
+  try {
+    let response, lastError;
+
+    // Rotation clés × rotation modèles
+    const totalAttempts = GROQ_API_KEYS.length * GROQ_MODELS.length;
+    for (let attempt = 0; attempt < Math.min(totalAttempts, 6); attempt++) {
+      const keyToUse   = GROQ_API_KEYS[(groqKeyIdx + attempt) % GROQ_API_KEYS.length];
+      const modelToUse = GROQ_MODELS[(groqModelIdx + Math.floor(attempt / GROQ_API_KEYS.length)) % GROQ_MODELS.length];
+      try {
+        response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${keyToUse}` },
+          body: JSON.stringify({
+            model: modelToUse,
+            max_tokens: 6000,
+            temperature: 0.02,
+            top_p: 0.95,
+            messages: [
+              { role: 'system', content: systemPrompt },
+              ...conversationHistory
+            ]
+          })
+        });
+        if (response.ok) {
+          groqKeyIdx   = (groqKeyIdx + attempt) % GROQ_API_KEYS.length;
+          groqModelIdx = (groqModelIdx + Math.floor(attempt / GROQ_API_KEYS.length)) % GROQ_MODELS.length;
+          break;
+        }
+        const errData = await response.json().catch(() => ({}));
+        lastError = errData.error?.message || 'Erreur ' + response.status;
+        if (lastError.includes('decommissioned') || lastError.includes('deprecated') || response.status === 404) {
+          toast(`⚠️ Modèle/clé ${attempt + 1} indisponible → bascule...`, 'info');
+          continue;
+        }
+        break;
+      } catch (e) { lastError = e.message; }
+    }
+
+    removeTyping(context, tid);
+    if (!response || !response.ok) throw new Error(lastError || 'Toutes les clés/modèles sont indisponibles');
+
+    const data = await response.json();
+    const fullText = data.choices?.[0]?.message?.content || 'Pas de réponse.';
+
+    conversationHistory.push({ role: 'assistant', content: fullText });
+
+    // Traitement FILTRE
+    const filtreMarker = fullText.indexOf('###FILTRE###');
+    if (filtreMarker !== -1) {
+      const displayText = fullText.substring(0, filtreMarker).trim();
+      const jsonStr = fullText.substring(filtreMarker + 12).trim();
+      if (displayText) appendMsg(context, 'ai', displayText);
+      try {
+        const clean = jsonStr.replace(/```json|```/g, '').trim();
+        const jsonMatch = clean.match(/(\{[\s\S]*?\})/);
+        if (jsonMatch) { const filtre = JSON.parse(jsonMatch[1]); applyFiltreAndNavigate(filtre, context); }
+      } catch (pe) { console.warn('Filtre parse error:', pe); }
+
+    // Traitement ÉCRITURE
+    } else if (fullText.includes('###ECRITURE###')) {
+      const parts = fullText.split('###ECRITURE###');
+      const textBeforeFirst = parts[0].trim();
+      const ecrituresAI = [];
+      for (let i = 1; i < parts.length; i++) {
+        const segment = parts[i].trim();
+        const jsonMatch = segment.match(/(\{[\s\S]*\})/);
+        if (jsonMatch) {
+          try {
+            const cleanJson = jsonMatch[1].replace(/```json|```/g, '').trim();
+            const ecr = JSON.parse(cleanJson);
+            if (ecr.lignes && ecr.lignes.length >= 2) {
+              let d = 0, c = 0;
+              ecr.lignes.forEach(l => { d += Math.round(parseFloat(l.debit) || 0); c += Math.round(parseFloat(l.credit) || 0); });
+              ecr.lignes = sortLignesDebitAvantCredit(
+                ecr.lignes.map(l => ({ ...l, debit: Math.round(parseFloat(l.debit) || 0), credit: Math.round(parseFloat(l.credit) || 0) }))
+              );
+              ecr.lignes = corrigerComptesErreurs(ecr.lignes);
+              if (Math.abs(d - c) <= 5) ecrituresAI.push(ecr);
+              else console.warn(`Écriture ${i} rejetée — Déséquilibre : ${Math.abs(d - c)} FCFA`);
+            }
+          } catch (pe) { console.warn('JSON parse error écriture', i, ':', pe.message); }
+        }
+      }
+      if (textBeforeFirst) appendMsg(context, 'ai', textBeforeFirst);
+      if (ecrituresAI.length === 0) {
+        appendMsg(context, 'ai', '⚠️ Aucune écriture équilibrée extraite. Veuillez reformuler votre demande ou préciser les montants.');
+      } else {
+        currentGroupId = 'grp_' + Date.now();
+        const confirmMsg = `✅ <strong>${ecrituresAI.length} écriture${ecrituresAI.length > 1 ? 's' : ''} liées</strong> préparées et groupées :<br>` +
+          ecrituresAI.map((e, i) => `<br><strong>${i + 1}. [${e.journal}]</strong> ${e.libelle}`).join('') +
+          `<br><br>⚡ Cliquez <strong>"Tout enregistrer"</strong> pour valider toutes les écritures en un clic.`;
+        appendMsg(context, 'ai', confirmMsg);
+        setEcritureQueue(ecrituresAI);
+        if (context === 'saisie') {
+          toast(`✨ ${ecrituresAI.length} écriture${ecrituresAI.length > 1 ? 's' : ''} préparée${ecrituresAI.length > 1 ? 's' : ''}`, 'info');
+        } else {
+          showMultiEcrBanner(ecrituresAI);
+          showSaisieNotif(ecrituresAI[0]?.libelle || msg.substring(0, 40), ecrituresAI.length);
+        }
+      }
+    } else {
+      appendMsg(context, 'ai', fullText);
+    }
+  } catch (err) {
+    removeTyping(context, tid);
+    conversationHistory.pop();
+    appendMsg(context, 'ai', `⚠️ Incident technique : ${err.message} — Veuillez réessayer.`);
+  }
+  isAILoading = false;
+  if (sendBtnId) { const btn = document.getElementById(sendBtnId); if (btn) btn.disabled = false; }
+}
+
+function applyFiltreAndNavigate(filtre, context) {
+  const { type, dateDebut, dateFin, journal, compte } = filtre;
+  if (type === 'journal') {
+    navigate('journal');
+    if (dateDebut) document.getElementById('jnl-date-debut').value = dateDebut;
+    if (dateFin) document.getElementById('jnl-date-fin').value = dateFin;
+    if (journal) document.getElementById('journalFilter').value = journal;
+    renderJournal();
+    const analyseEl = document.getElementById('journal-analyse');
+    if (analyseEl) {
+      analyseEl.style.display = 'block';
+      const label = dateDebut === dateFin ? formatDateFR(dateDebut) : `${formatDateFR(dateDebut)} au ${formatDateFR(dateFin)}`;
+      analyseEl.innerHTML = `<div class="analyse-title">📋 Journal — ${label || 'Exercice complet'}</div>Affichage des écritures pour la période demandée.`;
+    }
+  } else if (type === 'balance') {
+    navigate('balance');
+    if (dateDebut) document.getElementById('bal-date-debut').value = dateDebut;
+    if (dateFin) document.getElementById('bal-date-fin').value = dateFin;
+    if (journal) document.getElementById('bal-journal').value = journal;
+    renderBalance();
+  } else if (type === 'grandlivre') {
+    navigate('grandlivre');
+    if (dateDebut) document.getElementById('gl-date-debut').value = dateDebut;
+    if (dateFin) document.getElementById('gl-date-fin').value = dateFin;
+    if (compte) document.getElementById('glSearch').value = compte;
+    renderGrandLivre();
+    if (compte) setTimeout(() => { const el = document.getElementById('gl-' + compte); if (el) el.style.display = 'block'; }, 200);
+  } else if (type === 'bilan') {
+    navigate('bilan');
+    if (dateFin) document.getElementById('bilan-date-arrete').value = dateFin;
+    renderBilan();
+  }
+}
+
+// ── Affichage messages ──
+function appendMsg(context, role, text) {
+  const msgId = context === 'dashboard' ? 'aiMessages' : `aiMessages-${context}`;
+  const c = document.getElementById(msgId);
+  if (!c) return;
+  const d = document.createElement('div');
+  d.className = 'msg ' + role;
+  d.innerHTML = `<div class="msg-av">${role === 'ai' ? 'CA' : 'U'}</div><div class="msg-body">${fmt(text)}</div>`;
+  c.appendChild(d); c.scrollTop = c.scrollHeight;
+}
+function appendTyping(context) {
+  const id = 't' + Date.now();
+  const msgId = context === 'dashboard' ? 'aiMessages' : `aiMessages-${context}`;
+  const c = document.getElementById(msgId);
+  if (!c) return id;
+  const d = document.createElement('div');
+  d.className = 'msg ai'; d.id = id;
+  d.innerHTML = `<div class="msg-av">CA</div><div class="msg-body"><div class="typing"><span></span><span></span><span></span></div></div>`;
+  c.appendChild(d); c.scrollTop = c.scrollHeight;
+  return id;
+}
+function removeTyping(context, id) { const el = document.getElementById(id); if (el) el.remove(); }
+
+function fmt(text) {
+  if (!text) return '';
+  return text
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    .replace(/`(.*?)`/g, '<code>$1</code>')
+    .replace(/\n\n/g, '<br><br>').replace(/\n/g, '<br>')
+    .replace(/&lt;table&gt;/gi, '<table>').replace(/&lt;\/table&gt;/gi, '</table>')
+    .replace(/&lt;thead&gt;/gi, '<thead>').replace(/&lt;\/thead&gt;/gi, '</thead>')
+    .replace(/&lt;tbody&gt;/gi, '<tbody>').replace(/&lt;\/tbody&gt;/gi, '</tbody>')
+    .replace(/&lt;tfoot&gt;/gi, '<tfoot>').replace(/&lt;\/tfoot&gt;/gi, '</tfoot>')
+    .replace(/&lt;tr&gt;/gi, '<tr>').replace(/&lt;\/tr&gt;/gi, '</tr>')
+    .replace(/&lt;th(&gt;|(\s[^&]*)&gt;)/gi, (_, m) => '<th' + m.replace(/&gt;/g, '>').replace(/&lt;/g, '<'))
+    .replace(/&lt;\/th&gt;/gi, '</th>')
+    .replace(/&lt;td(&gt;|(\s[^&]*)&gt;)/gi, (_, m) => '<td' + m.replace(/&gt;/g, '>').replace(/&lt;/g, '<'))
+    .replace(/&lt;\/td&gt;/gi, '</td>')
+    .replace(/&lt;strong&gt;/gi, '<strong>').replace(/&lt;\/strong&gt;/gi, '</strong>')
+    .replace(/&lt;em&gt;/gi, '<em>').replace(/&lt;\/em&gt;/gi, '</em>')
+    .replace(/&lt;br&gt;/gi, '<br>').replace(/&lt;br\/&gt;/gi, '<br>');
+}
+
+// ══════════════════════════════════════════
+// TOAST
+// ══════════════════════════════════════════
+function toast(message, type = 'info') {
+  const c = document.getElementById('toastContainer') || document.getElementById('toast');
+  if (!c) return;
+  const d = document.createElement('div');
+  d.className = 'toast ' + type;
+  const icons = { success: '✓', error: '✕', info: 'i' };
+  const colors = { success: '#4ade80', error: '#f87171', info: '#d4a853' };
+  d.innerHTML = `<span style="font-weight:700;color:${colors[type] || colors.info}">${icons[type] || 'i'}</span><span>${message}</span>`;
+  c.appendChild(d);
+  setTimeout(() => d.style.opacity = '0', 3500);
+  setTimeout(() => d.remove(), 4100);
+}
+
+// ══════════════════════════════════════════
+// INIT SESSION
+// ══════════════════════════════════════════
+document.addEventListener('firebase-ready', async () => {
+  // Charger la config serveur dès le démarrage (avant même le login)
+  await loadServerConfig();
+  const session = localStorage.getItem('syscohada_session');
+  if (session) {
+    try {
+      const { profileId } = JSON.parse(session);
+      const docRef = window._fbDoc(window._db, 'profiles', profileId);
+      const snap = await window._fbGetDoc(docRef);
+      if (snap.exists()) {
+        currentProfile = { ...snap.data(), id: profileId };
+        conversationHistory = [];
+        await loadApp();
+      }
+    } catch (e) { localStorage.removeItem('syscohada_session'); }
+  }
 });
-</script>
-</body>
-</html>
+
+// ══════════════════════════════════════════
+// EXPOSITION GLOBALE
+// ══════════════════════════════════════════
+window.sendToAI             = sendToAI;
+window.handleAiKey          = handleAiKey;
+window.quickAI              = quickAI;
+window.doLogin              = doLogin;
+window.doRegister           = doRegister;
+window.doLogout             = doLogout;
+window.switchTab            = switchTab;
+window.navigate             = navigate;
+window.addLigne             = addLigne;
+window.removeLigne          = removeLigne;
+window.saveEcriture         = saveEcriture;
+window.updateAccountSuggest = updateAccountSuggest;
+window.selectAccount        = selectAccount;
+window.hideDropdown         = hideDropdown;
+window.updateBalance        = updateBalance;
+window.autoSaveAllEcritures = autoSaveAllEcritures;
+window.autoSaveAllFromNotif = autoSaveAllFromNotif;
+window.skipToNextEcriture   = skipToNextEcriture;
+window.dismissFillBanner    = dismissFillBanner;
+window.hideMultiEcrBanner   = hideMultiEcrBanner;
+window.hideSaisieNotif      = hideSaisieNotif;
+window.goToSaisie           = goToSaisie;
+window.toggleGL             = toggleGL;
+window.deleteEcriture       = deleteEcriture;
+window.deleteGroupe         = deleteGroupe;
+window.openExportModal      = openExportModal;
+window.closeExportModal     = closeExportModal;
+window.selectExport         = selectExport;
+window.doExport             = doExport;
+window.renderJournal        = renderJournal;
+window.renderGrandLivre     = renderGrandLivre;
+window.renderBalance        = renderBalance;
+window.renderBilan          = renderBilan;
+window.renderResultat       = renderResultat;
+window.renderTresorerie     = renderTresorerie;
+window.renderPlanComptable  = renderPlanComptable;
+window.resetJournalFiltre   = resetJournalFiltre;
+window.resetGLFiltre        = resetGLFiltre;
+window.resetBalanceFiltre   = resetBalanceFiltre;
+window.updateStats          = updateStats;
+window.toggleMobileSidebar  = toggleMobileSidebar;
+window.closeMobileSidebar   = closeMobileSidebar;
