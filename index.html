@@ -1,1485 +1,1128 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>ArchBIM Studio — Modélisation 3D & BIM Nouvelle Génération</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet"/>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root {
-      --bg: #07090d;
-      --bg2: #0d1117;
-      --bg3: #111520;
-      --surface: #161c2e;
-      --surface2: #1e2640;
-      --border: rgba(255,255,255,0.06);
-      --border2: rgba(255,255,255,0.11);
-      --accent: #f5a623;
-      --accent2: #e8863a;
-      --blue: #4a9eff;
-      --blue2: #2d7dd2;
-      --teal: #00d4b4;
-      --text: #e8eaf0;
-      --text2: #8b92a8;
-      --text3: #454e6a;
-      --ff-head: 'Syne', sans-serif;
-      --ff-body: 'DM Sans', sans-serif;
-      --r: 12px;
-      --r2: 20px;
-    }
-    html { scroll-behavior: smooth; }
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: var(--ff-body);
-      font-size: 16px;
-      line-height: 1.6;
-      overflow-x: hidden;
-      cursor: none;
-    }
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ArchBIM Studio — 3D BIM Nouvelle Génération</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#07090d;--bg2:#0d1117;--bg3:#111520;
+  --surface:#161c2e;--surface2:#1e2640;
+  --border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.11);
+  --accent:#f5a623;--accent2:#e8863a;
+  --blue:#4a9eff;--teal:#00d4b4;
+  --text:#e8eaf0;--text2:#8b92a8;--text3:#454e6a;
+  --ff-h:'Syne',sans-serif;--ff-b:'DM Sans',sans-serif;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--ff-b);overflow-x:hidden;cursor:none}
+#cur{width:10px;height:10px;background:var(--accent);border-radius:50%;position:fixed;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:width .15s,height .15s}
+#cur-r{width:36px;height:36px;border:1.5px solid rgba(245,166,35,.5);border-radius:50%;position:fixed;pointer-events:none;z-index:9998;transform:translate(-50%,-50%)}
+::-webkit-scrollbar{width:3px}::-webkit-scrollbar-thumb{background:var(--accent);border-radius:3px}
 
-    /* ── CURSOR ── */
-    #cursor { width:10px;height:10px;background:var(--accent);border-radius:50%;position:fixed;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:width .15s,height .15s,background .15s; }
-    #cursor-ring { width:36px;height:36px;border:1.5px solid rgba(245,166,35,0.5);border-radius:50%;position:fixed;pointer-events:none;z-index:9998;transform:translate(-50%,-50%); }
+nav{position:fixed;top:0;left:0;right:0;z-index:1000;padding:0 48px;height:64px;display:flex;align-items:center;justify-content:space-between;background:rgba(7,9,13,.9);backdrop-filter:blur(24px);border-bottom:1px solid var(--border)}
+.logo{display:flex;align-items:center;gap:10px;font-family:var(--ff-h);font-size:1.15rem;font-weight:800;letter-spacing:-.02em;color:var(--text);text-decoration:none}
+.logo-ico{width:32px;height:32px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:8px;display:grid;place-items:center;font-size:.85rem}
+.nav-links{display:flex;gap:28px;list-style:none}
+.nav-links a{color:var(--text2);text-decoration:none;font-size:.87rem;font-weight:500;transition:color .2s}
+.nav-links a:hover{color:var(--text)}
+.nav-cta{display:flex;gap:10px}
+.btn-g{padding:8px 18px;border:1px solid var(--border2);border-radius:8px;color:var(--text2);background:transparent;font-family:var(--ff-b);font-size:.85rem;font-weight:500;cursor:pointer;transition:all .2s}
+.btn-g:hover{background:var(--surface);color:var(--text)}
+.btn-a{padding:8px 20px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:8px;color:#1a0e00;font-family:var(--ff-b);font-size:.85rem;font-weight:700;cursor:pointer;transition:transform .15s,box-shadow .15s}
+.btn-a:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(245,166,35,.35)}
+.btn-p{padding:14px 28px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:10px;color:#1a0e00;font-family:var(--ff-b);font-size:.95rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px;transition:transform .15s,box-shadow .15s}
+.btn-p:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(245,166,35,.4)}
+.btn-s{padding:14px 28px;background:var(--surface);border:1px solid var(--border2);border-radius:10px;color:var(--text);font-family:var(--ff-b);font-size:.95rem;font-weight:500;cursor:pointer;transition:all .2s}
+.btn-s:hover{background:var(--surface2)}
 
-    /* ── NOISE ── */
-    body::before { content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:8000;opacity:0.35; }
+/* HERO */
+.hero-wrap{max-width:1360px;margin:0 auto;padding:110px 48px 60px;min-height:100vh;display:grid;grid-template-columns:1fr 1.05fr;gap:60px;align-items:center;position:relative}
+.hero-grid-bg{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.018) 1px,transparent 1px);background-size:48px 48px;mask-image:radial-gradient(ellipse 80% 80% at 50% 50%,black 20%,transparent 80%)}
+.badge{display:inline-flex;align-items:center;gap:8px;background:rgba(245,166,35,.1);border:1px solid rgba(245,166,35,.25);border-radius:100px;padding:5px 14px;font-size:.77rem;font-weight:600;color:var(--accent);letter-spacing:.05em;text-transform:uppercase;margin-bottom:28px}
+.badge-dot{width:6px;height:6px;background:var(--accent);border-radius:50%;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.7)}}
+h1{font-family:var(--ff-h);font-size:clamp(2.4rem,4vw,3.8rem);font-weight:800;line-height:1.05;letter-spacing:-.03em;margin-bottom:24px}
+h1 .l{display:block;overflow:hidden}
+h1 .l span{display:block;animation:su .7s cubic-bezier(.16,1,.3,1) both}
+h1 .l:nth-child(2) span{animation-delay:.1s}
+h1 .l:nth-child(3) span{animation-delay:.2s}
+@keyframes su{from{transform:translateY(100%);opacity:0}to{transform:translateY(0);opacity:1}}
+h1 em{font-style:normal;color:var(--accent)}
+.hero-desc{color:var(--text2);font-size:1.05rem;font-weight:300;line-height:1.7;max-width:420px;margin-bottom:40px;animation:fi .8s .4s both}
+@keyframes fi{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.hero-actions{display:flex;gap:16px;margin-bottom:48px;animation:fi .8s .5s both}
+.hero-stats{display:flex;gap:36px;animation:fi .8s .6s both}
+.sn{font-family:var(--ff-h);font-size:1.6rem;font-weight:800;letter-spacing:-.03em}
+.sl{font-size:.77rem;color:var(--text3);margin-top:2px}
 
-    /* ── SCROLLBAR ── */
-    ::-webkit-scrollbar { width:4px; }
-    ::-webkit-scrollbar-track { background:var(--bg); }
-    ::-webkit-scrollbar-thumb { background:var(--accent);border-radius:4px; }
+/* 3D VIEWER */
+.viewer-box{background:var(--bg3);border:1px solid var(--border2);border-radius:20px;overflow:hidden;box-shadow:0 40px 80px rgba(0,0,0,.7);animation:fi .9s .3s both}
+.vbar{background:var(--bg2);border-bottom:1px solid var(--border);padding:0 14px;height:38px;display:flex;align-items:center;gap:6px}
+.vdot{width:10px;height:10px;border-radius:50%}
+.vdot.r{background:#ff5f57}.vdot.y{background:#ffbd2e}.vdot.g{background:#28c840}
+.vtabs{display:flex;gap:2px;margin-left:12px}
+.vtab{padding:4px 12px;font-size:.72rem;border-radius:6px 6px 0 0;cursor:pointer;transition:all .2s;color:var(--text3);font-family:var(--ff-b);border:none;background:transparent}
+.vtab.on{background:var(--accent);color:#1a0e00;font-weight:700}
+.vbar-right{margin-left:auto;display:flex;gap:5px}
+.vbtn{width:26px;height:26px;background:var(--surface);border:1px solid var(--border);border-radius:6px;display:grid;place-items:center;cursor:pointer;font-size:.68rem;color:var(--text2);transition:all .2s;user-select:none}
+.vbtn:hover,.vbtn.on{background:rgba(245,166,35,.15);border-color:rgba(245,166,35,.3);color:var(--accent)}
+.canvas-wrap{position:relative}
+#cv{display:block;width:100%;height:400px;cursor:grab;touch-action:none}
+#cv:active{cursor:grabbing}
 
-    /* ── NAV ── */
-    nav { position:fixed;top:0;left:0;right:0;z-index:1000;padding:0 40px;height:64px;display:flex;align-items:center;justify-content:space-between;background:rgba(7,9,13,0.88);backdrop-filter:blur(24px) saturate(1.5);border-bottom:1px solid var(--border); }
-    .nav-logo { display:flex;align-items:center;gap:10px;font-family:var(--ff-head);font-size:1.15rem;font-weight:800;letter-spacing:-0.02em;color:var(--text);text-decoration:none; }
-    .nav-logo-icon { width:32px;height:32px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:8px;display:grid;place-items:center;font-size:0.85rem; }
-    .nav-links { display:flex;align-items:center;gap:28px;list-style:none; }
-    .nav-links a { color:var(--text2);text-decoration:none;font-size:0.87rem;font-weight:500;transition:color .2s; }
-    .nav-links a:hover { color:var(--text); }
-    .nav-cta { display:flex;align-items:center;gap:10px; }
-    .btn-ghost { padding:8px 18px;border:1px solid var(--border2);border-radius:8px;color:var(--text2);background:transparent;font-family:var(--ff-body);font-size:0.85rem;font-weight:500;cursor:pointer;transition:all .2s; }
-    .btn-ghost:hover { background:var(--surface);color:var(--text); }
-    .btn-accent { padding:8px 20px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:8px;color:#1a0e00;font-family:var(--ff-body);font-size:0.85rem;font-weight:700;cursor:pointer;transition:transform .15s,box-shadow .15s; }
-    .btn-accent:hover { transform:translateY(-1px);box-shadow:0 8px 24px rgba(245,166,35,0.35); }
-    .btn-primary { padding:14px 28px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:10px;color:#1a0e00;font-family:var(--ff-body);font-size:0.95rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px;transition:transform .15s,box-shadow .15s; }
-    .btn-primary:hover { transform:translateY(-2px);box-shadow:0 12px 32px rgba(245,166,35,0.4); }
-    .btn-secondary { padding:14px 28px;background:var(--surface);border:1px solid var(--border2);border-radius:10px;color:var(--text);font-family:var(--ff-body);font-size:0.95rem;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:8px;transition:all .2s; }
-    .btn-secondary:hover { background:var(--surface2);border-color:rgba(255,255,255,0.2); }
+/* overlays */
+.ov-info{position:absolute;top:10px;right:10px;background:rgba(7,9,13,.93);border:1px solid var(--border2);border-radius:10px;padding:12px 16px;font-size:.71rem;color:var(--text2);backdrop-filter:blur(10px);min-width:158px;pointer-events:none}
+.ov-title{font-family:var(--ff-h);font-size:.66rem;font-weight:700;color:var(--accent);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px}
+.ov-row{display:flex;justify-content:space-between;gap:14px;padding:3px 0;border-bottom:1px solid var(--border)}
+.ov-row:last-child{border-bottom:none}
+.ov-val{color:var(--text);font-weight:500}
+.ov-mode{position:absolute;top:10px;left:10px;background:rgba(7,9,13,.9);border:1px solid var(--border2);border-radius:8px;padding:7px 12px;font-size:.69rem;color:var(--text2);backdrop-filter:blur(8px);display:flex;align-items:center;gap:6px;pointer-events:none}
+.ov-dot{width:6px;height:6px;border-radius:50%;background:var(--teal);animation:pulse 1.5s infinite}
+.ov-hint{position:absolute;bottom:50px;left:50%;transform:translateX(-50%);background:rgba(7,9,13,.85);border:1px solid var(--border2);border-radius:100px;padding:5px 16px;font-size:.68rem;color:var(--text3);display:flex;gap:14px;backdrop-filter:blur(8px);white-space:nowrap;pointer-events:none}
+.hk{background:var(--surface);border:1px solid var(--border2);border-radius:4px;padding:1px 6px;font-size:.64rem;color:var(--text2)}
+.ov-axes{position:absolute;bottom:50px;right:10px;background:rgba(7,9,13,.85);border:1px solid var(--border2);border-radius:8px;padding:7px 12px;font-size:.7rem;display:flex;gap:10px;backdrop-filter:blur(8px);pointer-events:none}
+.ax{font-weight:700}.ax-x{color:#ff6b6b}.ax-y{color:#69db7c}.ax-z{color:#74c0fc}
+.explode-panel{position:absolute;bottom:50px;left:10px;background:rgba(7,9,13,.93);border:1px solid var(--border2);border-radius:10px;padding:10px 14px;font-size:.69rem;color:var(--text2);backdrop-filter:blur(8px);display:none}
+.ep-label{font-size:.63rem;color:var(--text3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em}
+.ep-row{display:flex;align-items:center;gap:10px}
+#xsl{width:100px;accent-color:var(--accent)}
 
-    /* ── HERO ── */
-    .hero { min-height:100vh;padding:100px 40px 60px;display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center;position:relative;overflow:hidden;max-width:1400px;margin:0 auto; }
-    .hero-bg { position:fixed;inset:0;background:radial-gradient(ellipse 70% 70% at 65% 40%,rgba(74,158,255,0.04) 0%,transparent 60%),radial-gradient(ellipse 50% 50% at 20% 80%,rgba(245,166,35,0.04) 0%,transparent 55%);pointer-events:none;z-index:0; }
-    .hero-grid { position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.02) 1px,transparent 1px);background-size:50px 50px;mask-image:radial-gradient(ellipse 80% 80% at 50% 50%,black 20%,transparent 80%); }
-    .hero-left { position:relative;z-index:2; }
-    .hero-badge { display:inline-flex;align-items:center;gap:8px;background:rgba(245,166,35,0.1);border:1px solid rgba(245,166,35,0.25);border-radius:100px;padding:5px 14px;font-size:0.78rem;font-weight:600;color:var(--accent);letter-spacing:0.05em;text-transform:uppercase;margin-bottom:28px; }
-    .hero-badge-dot { width:6px;height:6px;background:var(--accent);border-radius:50%;animation:pulse 2s infinite; }
-    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.5;transform:scale(0.7)} }
-    .hero h1 { font-family:var(--ff-head);font-size:clamp(2.4rem,4vw,3.8rem);font-weight:800;line-height:1.05;letter-spacing:-0.03em;margin-bottom:24px; }
-    .hero h1 .line { display:block;overflow:hidden; }
-    .hero h1 .line span { display:block;animation:slideUp 0.7s cubic-bezier(0.16,1,0.3,1) both; }
-    .hero h1 .line:nth-child(2) span { animation-delay:0.1s; }
-    .hero h1 .line:nth-child(3) span { animation-delay:0.2s; }
-    @keyframes slideUp { from{transform:translateY(100%);opacity:0}to{transform:translateY(0);opacity:1} }
-    .hero h1 em { font-style:normal;color:var(--accent); }
-    .hero-desc { color:var(--text2);font-size:1.05rem;font-weight:300;line-height:1.7;max-width:420px;margin-bottom:40px;animation:fadeIn 0.8s 0.4s both; }
-    @keyframes fadeIn { from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none} }
-    .hero-actions { display:flex;align-items:center;gap:16px;margin-bottom:52px;animation:fadeIn 0.8s 0.5s both; }
-    .hero-stats { display:flex;gap:36px;animation:fadeIn 0.8s 0.6s both; }
-    .stat-num { font-family:var(--ff-head);font-size:1.6rem;font-weight:800;color:var(--text);letter-spacing:-0.03em; }
-    .stat-label { font-size:0.78rem;color:var(--text3);font-weight:400;margin-top:2px; }
+.vfooter{padding:10px 14px;display:flex;gap:8px;background:var(--bg2);border-top:1px solid var(--border)}
+.chip{padding:4px 12px;background:var(--surface);border:1px solid var(--border);border-radius:100px;font-size:.71rem;color:var(--text2);display:flex;align-items:center;gap:5px;cursor:pointer;transition:all .2s}
+.chip:hover{border-color:rgba(245,166,35,.3);color:var(--text)}
+.chip.on{background:rgba(245,166,35,.12);border-color:rgba(245,166,35,.3);color:var(--accent)}
+.chip-dot{width:5px;height:5px;border-radius:50%;background:currentColor}
 
-    /* ── 3D VIEWER HERO ── */
-    .hero-right { position:relative;z-index:2;animation:fadeIn 0.9s 0.3s both; }
-    .viewer-wrapper {
-      background: var(--bg3);
-      border: 1px solid var(--border2);
-      border-radius: var(--r2);
-      overflow: hidden;
-      box-shadow: 0 40px 80px rgba(0,0,0,0.7), 0 0 0 1px var(--border);
-      position: relative;
-    }
-    .viewer-toolbar {
-      background: var(--bg2);
-      border-bottom: 1px solid var(--border);
-      padding: 0 14px;
-      height: 38px;
-      display: flex; align-items: center; gap: 8px;
-    }
-    .vp-dot { width:10px;height:10px;border-radius:50%;flex-shrink:0; }
-    .vp-dot.r{background:#ff5f57} .vp-dot.y{background:#ffbd2e} .vp-dot.g{background:#28c840}
-    .viewer-tabs { display:flex;gap:2px;margin-left:12px; }
-    .viewer-tab { padding:4px 12px;font-size:0.72rem;border-radius:6px 6px 0 0;cursor:pointer;transition:all .2s;color:var(--text3);font-family:var(--ff-body);border:none;background:transparent; }
-    .viewer-tab.active { background:var(--accent);color:#1a0e00;font-weight:700; }
-    .viewer-toolbar-right { margin-left:auto;display:flex;gap:6px; }
-    .vt-btn { width:26px;height:26px;background:var(--surface);border:1px solid var(--border);border-radius:6px;display:grid;place-items:center;cursor:pointer;font-size:0.7rem;color:var(--text2);transition:all .2s; }
-    .vt-btn:hover { background:var(--surface2);color:var(--text); }
-    .vt-btn.active { background:rgba(245,166,35,0.15);border-color:rgba(245,166,35,0.3);color:var(--accent); }
+/* MARQUEE */
+.mq{padding:26px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);overflow:hidden}
+.mq-track{display:flex;animation:mq 28s linear infinite;width:max-content}
+@keyframes mq{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.mq-item{padding:0 36px;display:flex;align-items:center;gap:12px;color:var(--text3);font-size:.81rem;font-weight:500;white-space:nowrap;letter-spacing:.02em}
 
-    #three-canvas-hero { display:block;width:100%;height:400px;cursor:grab; }
-    #three-canvas-hero:active { cursor:grabbing; }
+/* SECTIONS */
+section{padding:96px 48px}
+.sec-label{font-size:.74rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:14px}
+.sec-title{font-family:var(--ff-h);font-size:clamp(1.8rem,3vw,2.8rem);font-weight:800;letter-spacing:-.03em;line-height:1.1;margin-bottom:16px}
+.sec-sub{color:var(--text2);font-size:1rem;font-weight:300;max-width:500px;line-height:1.7}
+.rv{opacity:0;transform:translateY(20px);transition:opacity .6s,transform .6s}
+.rv.vis{opacity:1;transform:none}
+.rv.d1{transition-delay:.1s}.rv.d2{transition-delay:.2s}.rv.d3{transition-delay:.3s}
 
-    .viewer-overlay-info {
-      position:absolute;top:50px;right:12px;
-      background:rgba(7,9,13,0.92);border:1px solid var(--border2);border-radius:10px;padding:12px 16px;font-size:0.72rem;color:var(--text2);backdrop-filter:blur(10px);min-width:160px;
-    }
-    .oi-title { font-family:var(--ff-head);font-size:0.68rem;font-weight:700;color:var(--accent);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:8px; }
-    .oi-row { display:flex;justify-content:space-between;gap:16px;padding:3px 0;border-bottom:1px solid var(--border); }
-    .oi-row:last-child { border-bottom:none; }
-    .oi-val { color:var(--text);font-weight:500; }
-    .viewer-overlay-hint {
-      position:absolute;bottom:12px;left:50%;transform:translateX(-50%);
-      background:rgba(7,9,13,0.85);border:1px solid var(--border2);border-radius:100px;padding:6px 16px;font-size:0.7rem;color:var(--text3);display:flex;gap:14px;backdrop-filter:blur(8px);white-space:nowrap;
-    }
-    .hint-item { display:flex;align-items:center;gap:5px; }
-    .hint-key { background:var(--surface);border:1px solid var(--border2);border-radius:4px;padding:1px 6px;font-size:0.65rem;color:var(--text2); }
-    .viewer-explode-bar {
-      position:absolute;bottom:44px;left:12px;
-      background:rgba(7,9,13,0.92);border:1px solid var(--border2);border-radius:10px;padding:10px 14px;font-size:0.7rem;color:var(--text2);backdrop-filter:blur(8px);
-    }
-    .explode-label { font-size:0.65rem;color:var(--text3);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.06em; }
-    .explode-row { display:flex;align-items:center;gap:10px; }
-    #explode-slider { width:100px;accent-color:var(--accent); }
-    .axis-badge { position:absolute;bottom:44px;right:12px;background:rgba(7,9,13,0.85);border:1px solid var(--border2);border-radius:8px;padding:7px 12px;font-size:0.7rem;display:flex;gap:10px;backdrop-filter:blur(8px); }
-    .axis-x{color:#ff6b6b;font-weight:700} .axis-y{color:#69db7c;font-weight:700} .axis-z{color:#74c0fc;font-weight:700}
-    .viewer-footer { padding:10px 14px;display:flex;gap:8px;background:var(--bg2);border-top:1px solid var(--border); }
-    .tool-chip { padding:4px 12px;background:var(--surface);border:1px solid var(--border);border-radius:100px;font-size:0.72rem;color:var(--text2);display:flex;align-items:center;gap:5px;cursor:pointer;transition:all .2s; }
-    .tool-chip:hover { border-color:rgba(245,166,35,0.3);color:var(--text); }
-    .tool-chip.active { background:rgba(245,166,35,0.12);border-color:rgba(245,166,35,0.3);color:var(--accent); }
-    .tool-chip-dot { width:5px;height:5px;border-radius:50%;background:currentColor; }
+/* FEATURES */
+.feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;background:var(--border);border:1px solid var(--border);border-radius:20px;overflow:hidden}
+.fc{background:var(--bg);padding:40px 36px;position:relative;transition:background .25s}
+.fc:hover{background:var(--bg3)}
+.fc::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent),transparent);opacity:0;transition:opacity .3s}
+.fc:hover::after{opacity:1}
+.fi{width:48px;height:48px;border-radius:12px;display:grid;place-items:center;margin-bottom:22px;font-size:1.3rem}
+.fi.o{background:rgba(245,166,35,.12);border:1px solid rgba(245,166,35,.2)}
+.fi.b{background:rgba(74,158,255,.1);border:1px solid rgba(74,158,255,.2)}
+.fi.t{background:rgba(0,212,180,.1);border:1px solid rgba(0,212,180,.2)}
+.ft{font-family:var(--ff-h);font-size:1.05rem;font-weight:700;margin-bottom:10px}
+.fd{font-size:.88rem;color:var(--text2);line-height:1.65;font-weight:300}
 
-    /* ── MARQUEE ── */
-    .marquee-section { padding:28px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);overflow:hidden; }
-    .marquee-track { display:flex;gap:0;animation:marquee 28s linear infinite;width:max-content; }
-    @keyframes marquee { from{transform:translateX(0)}to{transform:translateX(-50%)} }
-    .marquee-item { padding:0 36px;display:flex;align-items:center;gap:12px;color:var(--text3);font-size:0.82rem;font-weight:500;white-space:nowrap;letter-spacing:0.02em; }
+/* SHOWCASE */
+.show-inner{display:grid;grid-template-columns:1fr 1.1fr;gap:80px;align-items:center;max-width:1200px;margin:0 auto}
+.show-list{list-style:none;margin-top:32px;display:flex;flex-direction:column;gap:14px}
+.show-list li{display:flex;align-items:flex-start;gap:12px;font-size:.9rem;color:var(--text2);line-height:1.5}
+.chk{width:18px;height:18px;min-width:18px;border-radius:50%;background:rgba(245,166,35,.12);border:1.5px solid var(--accent);display:grid;place-items:center;margin-top:2px;font-size:.55rem;color:var(--accent)}
+.show-list li strong{color:var(--text);font-weight:500}
+.show-win{background:var(--bg3);border:1px solid var(--border2);border-radius:20px;overflow:hidden;box-shadow:0 32px 64px rgba(0,0,0,.5);position:relative}
+.sw-hdr{background:var(--bg);border-bottom:1px solid var(--border);padding:10px 16px;display:flex;align-items:center;gap:10px}
+.sw-dots{display:flex;gap:6px}
+.sw-d{width:9px;height:9px;border-radius:50%}
+.sw-d.r{background:#ff5f57}.sw-d.y{background:#ffbd2e}.sw-d.g{background:#28c840}
+.sw-ttl{flex:1;text-align:center;font-size:.71rem;color:var(--text3)}
+.sw-vtabs{display:flex;gap:4px}
+.sw-vt{padding:3px 10px;font-size:.67rem;border-radius:4px;cursor:pointer;color:var(--text3);border:1px solid transparent;transition:all .2s;background:transparent}
+.sw-vt.on{background:rgba(245,166,35,.12);border-color:rgba(245,166,35,.3);color:var(--accent)}
+.sw-body{display:flex;height:300px}
+.sw-side{width:166px;min-width:166px;background:var(--bg);border-right:1px solid var(--border);padding:12px;overflow-y:auto;font-size:.72rem}
+.sw-grp{margin-bottom:12px}
+.sw-glbl{font-size:.61rem;font-weight:700;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;padding:3px 6px;margin-bottom:3px}
+.sw-item{display:flex;align-items:center;gap:6px;padding:4px 8px;border-radius:5px;color:var(--text2);cursor:pointer;transition:all .15s}
+.sw-item:hover{background:var(--surface);color:var(--text)}
+.sw-item.on{background:rgba(245,166,35,.1);color:var(--accent)}
+.sw-main{flex:1;position:relative;background:#070a0f;overflow:hidden}
+#cv2{display:block;width:100%;height:100%;cursor:grab;touch-action:none}
+#cv2:active{cursor:grabbing}
+.sw-props{width:146px;min-width:146px;background:var(--bg);border-left:1px solid var(--border);padding:12px}
+.spl{font-size:.61rem;font-weight:700;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px}
+.spr{display:flex;justify-content:space-between;padding:3px 0;color:var(--text2);border-bottom:1px solid rgba(255,255,255,.04);font-size:.67rem}
+.spr span:last-child{color:var(--accent);font-weight:500}
+.stag{position:absolute;top:-14px;right:-20px;background:linear-gradient(135deg,var(--blue),#2d7dd2);border-radius:10px;padding:10px 16px;font-size:.74rem;font-weight:600;color:#fff;box-shadow:0 8px 24px rgba(74,158,255,.35)}
 
-    /* ── SHARED SECTIONS ── */
-    section { padding:100px 40px; }
-    .section-label { font-size:0.75rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--accent);margin-bottom:14px; }
-    .section-title { font-family:var(--ff-head);font-size:clamp(1.8rem,3vw,2.8rem);font-weight:800;letter-spacing:-0.03em;line-height:1.1;margin-bottom:16px; }
-    .section-sub { color:var(--text2);font-size:1rem;font-weight:300;max-width:500px;line-height:1.7; }
-    .reveal { opacity:0;transform:translateY(20px);transition:opacity 0.6s ease,transform 0.6s ease; }
-    .reveal.visible { opacity:1;transform:none; }
-    .reveal-d1 { transition-delay:0.1s; }
-    .reveal-d2 { transition-delay:0.2s; }
-    .reveal-d3 { transition-delay:0.3s; }
+/* WORKFLOW */
+.wf-hdr{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:end;margin-bottom:56px}
+.wf-steps{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;background:var(--border);border-radius:20px;overflow:hidden}
+.wf-s{background:var(--bg3);padding:30px 26px;position:relative;transition:background .25s}
+.wf-s:hover{background:var(--surface)}
+.wf-n{font-family:var(--ff-h);font-size:3rem;font-weight:800;color:rgba(255,255,255,.04);line-height:1;margin-bottom:14px;letter-spacing:-.05em}
+.wf-ico{font-size:1.4rem;margin-bottom:12px}
+.wf-t{font-family:var(--ff-h);font-size:.93rem;font-weight:700;margin-bottom:8px}
+.wf-d{font-size:.81rem;color:var(--text2);line-height:1.6;font-weight:300}
+.wf-con{position:absolute;top:50%;right:-1px;width:22px;height:1px;background:linear-gradient(90deg,var(--accent),transparent);z-index:1}
 
-    /* ── FEATURES ── */
-    .features { background:var(--bg); }
-    .features-header { text-align:center;margin-bottom:72px; }
-    .features-header .section-sub { margin:0 auto; }
-    .features-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:2px;background:var(--border);border:1px solid var(--border);border-radius:var(--r2);overflow:hidden; }
-    .feature-card { background:var(--bg);padding:40px 36px;position:relative;transition:background .25s; }
-    .feature-card:hover { background:var(--bg3); }
-    .feature-card::after { content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent),transparent);opacity:0;transition:opacity .3s; }
-    .feature-card:hover::after { opacity:1; }
-    .feat-icon { width:48px;height:48px;border-radius:12px;display:grid;place-items:center;margin-bottom:22px;font-size:1.3rem; }
-    .feat-icon.orange { background:rgba(245,166,35,0.12);border:1px solid rgba(245,166,35,0.2); }
-    .feat-icon.blue { background:rgba(74,158,255,0.1);border:1px solid rgba(74,158,255,0.2); }
-    .feat-icon.teal { background:rgba(0,212,180,0.1);border:1px solid rgba(0,212,180,0.2); }
-    .feat-title { font-family:var(--ff-head);font-size:1.05rem;font-weight:700;margin-bottom:10px;color:var(--text); }
-    .feat-desc { font-size:0.88rem;color:var(--text2);line-height:1.65;font-weight:300; }
+/* PRICING */
+.pr-hdr{text-align:center;margin-bottom:56px}
+.pr-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;max-width:980px;margin:0 auto}
+.pc{background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:34px 30px;position:relative;transition:transform .25s,box-shadow .25s}
+.pc:hover{transform:translateY(-4px);box-shadow:0 20px 40px rgba(0,0,0,.3)}
+.pc.ft{background:var(--surface);border-color:var(--accent);border-width:1.5px}
+.pc.ft::before{content:'POPULAIRE';position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,var(--accent),var(--accent2));color:#1a0e00;font-size:.64rem;font-weight:800;letter-spacing:.08em;padding:4px 12px;border-radius:100px}
+.pp{font-size:.77rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin-bottom:8px}
+.pc.ft .pp{color:var(--accent)}
+.pa{font-family:var(--ff-h);font-size:2.4rem;font-weight:800;letter-spacing:-.04em;margin-bottom:4px}
+.pa sup{font-size:1rem;vertical-align:super}
+.prd{font-size:.79rem;color:var(--text3);margin-bottom:22px}
+.pdiv{height:1px;background:var(--border);margin-bottom:22px}
+.pfl{list-style:none;margin-bottom:30px}
+.pfl li{display:flex;align-items:center;gap:10px;padding:5px 0;font-size:.84rem;color:var(--text2)}
+.pfl li::before{content:'✓';width:18px;height:18px;min-width:18px;border-radius:50%;background:rgba(0,212,180,.1);border:1px solid rgba(0,212,180,.25);display:grid;place-items:center;font-size:.63rem;color:var(--teal)}
+.pfl li.off{color:var(--text3)}
+.pfl li.off::before{content:'—';background:rgba(255,255,255,.03);border-color:rgba(255,255,255,.05);color:var(--text3)}
+.pbtn{width:100%;padding:12px;border-radius:10px;font-family:var(--ff-b);font-size:.9rem;font-weight:600;cursor:pointer;transition:all .2s}
+.pbtn.ol{background:transparent;border:1px solid var(--border2);color:var(--text2)}
+.pbtn.ol:hover{background:var(--surface);color:var(--text)}
+.pbtn.fl{background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;color:#1a0e00}
+.pbtn.fl:hover{box-shadow:0 8px 24px rgba(245,166,35,.3);transform:translateY(-1px)}
 
-    /* ── SHOWCASE — real interactive 3D interior ── */
-    .showcase { background:var(--bg2);position:relative;overflow:hidden; }
-    .showcase-inner { display:grid;grid-template-columns:1fr 1.1fr;gap:80px;align-items:center;max-width:1200px;margin:0 auto; }
-    .showcase-list { list-style:none;margin-top:32px;display:flex;flex-direction:column;gap:14px; }
-    .showcase-list li { display:flex;align-items:flex-start;gap:12px;font-size:0.9rem;color:var(--text2);line-height:1.5; }
-    .showcase-list li .check { width:18px;height:18px;min-width:18px;border-radius:50%;background:rgba(245,166,35,0.12);border:1.5px solid var(--accent);display:grid;place-items:center;margin-top:2px;font-size:0.55rem;color:var(--accent); }
-    .showcase-list li strong { color:var(--text);font-weight:500; }
-    .showcase-visual { position:relative; }
-    .showcase-window { background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r2);overflow:hidden;box-shadow:0 32px 64px rgba(0,0,0,0.5); }
-    .sw-header { background:var(--bg);border-bottom:1px solid var(--border);padding:10px 16px;display:flex;align-items:center;gap:12px; }
-    .sw-dots { display:flex;gap:6px; }
-    .sw-dot { width:9px;height:9px;border-radius:50%; }
-    .sw-dot.r{background:#ff5f57} .sw-dot.y{background:#ffbd2e} .sw-dot.g{background:#28c840}
-    .sw-title-bar { flex:1;text-align:center;font-size:0.72rem;color:var(--text3); }
-    .sw-view-tabs { display:flex;gap:4px; }
-    .sw-view-tab { padding:3px 10px;font-size:0.68rem;border-radius:4px;cursor:pointer;color:var(--text3);border:1px solid transparent;transition:all .2s; }
-    .sw-view-tab.active { background:rgba(245,166,35,0.12);border-color:rgba(245,166,35,0.3);color:var(--accent); }
-    .sw-body { display:flex;height:300px; }
-    .sw-sidebar { width:170px;min-width:170px;background:var(--bg);border-right:1px solid var(--border);padding:12px;overflow-y:auto; }
-    .sw-tree-group { margin-bottom:14px; }
-    .sw-tree-label { font-size:0.62rem;font-weight:700;color:var(--text3);letter-spacing:0.08em;text-transform:uppercase;padding:4px 6px;margin-bottom:4px; }
-    .sw-tree-item { display:flex;align-items:center;gap:6px;padding:4px 8px;border-radius:5px;font-size:0.72rem;color:var(--text2);cursor:pointer;transition:all .15s; }
-    .sw-tree-item:hover { background:var(--surface);color:var(--text); }
-    .sw-tree-item.active { background:rgba(245,166,35,0.1);color:var(--accent); }
-    .sw-main { flex:1;position:relative;background:#080b10;overflow:hidden; }
-    #three-canvas-showcase { display:block;width:100%;height:100%;cursor:grab; }
-    #three-canvas-showcase:active { cursor:grabbing; }
-    .sw-props { width:150px;min-width:150px;background:var(--bg);border-left:1px solid var(--border);padding:12px;font-size:0.68rem; }
-    .sw-prop-label { font-size:0.62rem;font-weight:700;color:var(--text3);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:8px; }
-    .sw-prop-row { display:flex;justify-content:space-between;padding:3px 0;color:var(--text2);border-bottom:1px solid rgba(255,255,255,0.04);font-size:0.68rem; }
-    .sw-prop-row span:last-child { color:var(--accent);font-weight:500; }
-    .showcase-tag { position:absolute;top:-14px;right:-20px;background:linear-gradient(135deg,var(--blue),var(--blue2));border-radius:10px;padding:10px 16px;font-size:0.75rem;font-weight:600;color:white;box-shadow:0 8px 24px rgba(74,158,255,0.35); }
+/* TESTI */
+.te-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;max-width:1200px;margin:56px auto 0}
+.tc{background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:30px 26px;transition:border-color .3s}
+.tc:hover{border-color:rgba(245,166,35,.25)}
+.ts{color:var(--accent);font-size:.88rem;letter-spacing:2px;margin-bottom:14px}
+.tt{font-size:.88rem;color:var(--text2);line-height:1.7;font-weight:300;margin-bottom:22px;font-style:italic}
+.tt em{font-style:normal;color:var(--text);font-weight:500}
+.ta{display:flex;align-items:center;gap:12px}
+.tav{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;font-size:.73rem;font-weight:700;color:#fff}
+.tn{font-size:.87rem;font-weight:600}
+.tro{font-size:.74rem;color:var(--text3)}
 
-    /* ── WORKFLOW ── */
-    .workflow { background:var(--bg); }
-    .workflow-inner { max-width:1200px;margin:0 auto; }
-    .workflow-header { display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:end;margin-bottom:60px; }
-    .workflow-steps { display:grid;grid-template-columns:repeat(4,1fr);gap:2px;background:var(--border);border-radius:var(--r2);overflow:hidden; }
-    .wf-step { background:var(--bg3);padding:32px 28px;position:relative;transition:background .25s; }
-    .wf-step:hover { background:var(--surface); }
-    .wf-num { font-family:var(--ff-head);font-size:3rem;font-weight:800;color:rgba(255,255,255,0.04);line-height:1;margin-bottom:16px;letter-spacing:-0.05em; }
-    .wf-icon { font-size:1.4rem;margin-bottom:14px; }
-    .wf-title { font-family:var(--ff-head);font-size:0.95rem;font-weight:700;margin-bottom:8px; }
-    .wf-desc { font-size:0.82rem;color:var(--text2);line-height:1.6;font-weight:300; }
-    .wf-connector { position:absolute;top:50%;right:-1px;width:24px;height:1px;background:linear-gradient(90deg,var(--accent),transparent);z-index:1; }
+/* CTA */
+.cta{text-align:center;position:relative;overflow:hidden}
+.cta-bg{position:absolute;inset:0;background:radial-gradient(ellipse 60% 60% at 50% 50%,rgba(245,166,35,.06) 0%,transparent 65%);pointer-events:none}
+.cta-acts{display:flex;justify-content:center;gap:16px;flex-wrap:wrap;margin-top:40px}
 
-    /* ── PRICING ── */
-    .pricing { background:var(--bg2); }
-    .pricing-header { text-align:center;margin-bottom:60px; }
-    .pricing-header .section-sub { margin:0 auto; }
-    .pricing-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:20px;max-width:1000px;margin:0 auto; }
-    .price-card { background:var(--bg3);border:1px solid var(--border);border-radius:var(--r2);padding:36px 32px;position:relative;transition:transform .25s,box-shadow .25s; }
-    .price-card:hover { transform:translateY(-4px);box-shadow:0 20px 40px rgba(0,0,0,0.3); }
-    .price-card.featured { background:var(--surface);border-color:var(--accent);border-width:1.5px; }
-    .price-card.featured::before { content:'POPULAIRE';position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,var(--accent),var(--accent2));color:#1a0e00;font-size:0.65rem;font-weight:800;letter-spacing:0.08em;padding:4px 12px;border-radius:100px; }
-    .price-plan { font-size:0.78rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--text3);margin-bottom:8px; }
-    .price-card.featured .price-plan { color:var(--accent); }
-    .price-amount { font-family:var(--ff-head);font-size:2.4rem;font-weight:800;letter-spacing:-0.04em;margin-bottom:4px; }
-    .price-amount sup { font-size:1rem;vertical-align:super; }
-    .price-period { font-size:0.8rem;color:var(--text3);margin-bottom:24px; }
-    .price-divider { height:1px;background:var(--border);margin-bottom:24px; }
-    .price-features { list-style:none;margin-bottom:32px; }
-    .price-features li { display:flex;align-items:center;gap:10px;padding:6px 0;font-size:0.85rem;color:var(--text2); }
-    .price-features li::before { content:'✓';width:18px;height:18px;min-width:18px;border-radius:50%;background:rgba(0,212,180,0.1);border:1px solid rgba(0,212,180,0.25);display:grid;place-items:center;font-size:0.65rem;color:var(--teal); }
-    .price-features li.off { color:var(--text3); }
-    .price-features li.off::before { content:'—';background:rgba(255,255,255,0.03);border-color:rgba(255,255,255,0.06);color:var(--text3); }
-    .price-btn { width:100%;padding:12px;border-radius:10px;font-family:var(--ff-body);font-size:0.9rem;font-weight:600;cursor:pointer;transition:all .2s; }
-    .price-btn.outline { background:transparent;border:1px solid var(--border2);color:var(--text2); }
-    .price-btn.outline:hover { background:var(--surface);color:var(--text); }
-    .price-btn.filled { background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;color:#1a0e00; }
-    .price-btn.filled:hover { box-shadow:0 8px 24px rgba(245,166,35,0.3);transform:translateY(-1px); }
+/* FOOTER */
+footer{background:var(--bg);border-top:1px solid var(--border);padding:56px 48px 30px}
+.ft-inner{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:56px;max-width:1200px;margin:0 auto 44px}
+.ft-desc{font-size:.86rem;color:var(--text3);line-height:1.7;margin-top:14px;max-width:220px}
+.ft-ct{font-family:var(--ff-h);font-size:.77rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text2);margin-bottom:14px}
+.ft-col ul{list-style:none}
+.ft-col ul li{margin-bottom:9px}
+.ft-col ul li a{color:var(--text3);text-decoration:none;font-size:.86rem;transition:color .2s}
+.ft-col ul li a:hover{color:var(--text)}
+.ft-bot{display:flex;justify-content:space-between;align-items:center;padding-top:26px;border-top:1px solid var(--border);max-width:1200px;margin:0 auto}
+.ft-copy{font-size:.79rem;color:var(--text3)}
+.ft-soc{display:flex;gap:8px}
+.socb{width:32px;height:32px;background:var(--surface);border:1px solid var(--border);border-radius:8px;display:grid;place-items:center;color:var(--text3);text-decoration:none;font-size:.74rem;transition:all .2s}
+.socb:hover{background:var(--surface2);color:var(--text)}
 
-    /* ── TESTIMONIALS ── */
-    .testimonials { background:var(--bg); }
-    .testi-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:20px;max-width:1200px;margin:60px auto 0; }
-    .testi-card { background:var(--bg3);border:1px solid var(--border);border-radius:var(--r2);padding:32px 28px;transition:border-color .3s; }
-    .testi-card:hover { border-color:rgba(245,166,35,0.25); }
-    .testi-stars { color:var(--accent);font-size:0.9rem;letter-spacing:2px;margin-bottom:16px; }
-    .testi-text { font-size:0.9rem;color:var(--text2);line-height:1.7;font-weight:300;margin-bottom:24px;font-style:italic; }
-    .testi-text em { font-style:normal;color:var(--text);font-weight:500; }
-    .testi-author { display:flex;align-items:center;gap:12px; }
-    .testi-avatar { width:38px;height:38px;border-radius:50%;display:grid;place-items:center;font-size:0.75rem;font-weight:700;color:white; }
-    .testi-name { font-size:0.88rem;font-weight:600;color:var(--text); }
-    .testi-role { font-size:0.75rem;color:var(--text3); }
-
-    /* ── CTA ── */
-    .cta-section { background:var(--bg2);text-align:center;position:relative;overflow:hidden; }
-    .cta-bg { position:absolute;inset:0;background:radial-gradient(ellipse 60% 60% at 50% 50%,rgba(245,166,35,0.06) 0%,transparent 65%);pointer-events:none; }
-    .cta-actions { display:flex;justify-content:center;gap:16px;flex-wrap:wrap; }
-
-    /* ── FOOTER ── */
-    footer { background:var(--bg);border-top:1px solid var(--border);padding:60px 40px 32px; }
-    .footer-inner { display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:60px;max-width:1200px;margin:0 auto 48px; }
-    .footer-desc { font-size:0.87rem;color:var(--text3);line-height:1.7;margin-top:16px;max-width:240px; }
-    .footer-col-title { font-family:var(--ff-head);font-size:0.78rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text2);margin-bottom:16px; }
-    .footer-col ul { list-style:none; }
-    .footer-col ul li { margin-bottom:10px; }
-    .footer-col ul li a { color:var(--text3);text-decoration:none;font-size:0.87rem;transition:color .2s; }
-    .footer-col ul li a:hover { color:var(--text); }
-    .footer-bottom { display:flex;justify-content:space-between;align-items:center;padding-top:28px;border-top:1px solid var(--border);max-width:1200px;margin:0 auto; }
-    .footer-copy { font-size:0.8rem;color:var(--text3); }
-    .footer-socials { display:flex;gap:8px; }
-    .social-btn { width:32px;height:32px;background:var(--surface);border:1px solid var(--border);border-radius:8px;display:grid;place-items:center;color:var(--text3);text-decoration:none;font-size:0.75rem;transition:all .2s; }
-    .social-btn:hover { background:var(--surface2);color:var(--text);border-color:var(--border2); }
-
-    /* ── SECTION WRAPPER FULL WIDTH ── */
-    .full-section { padding: 100px 0; }
-    .full-section > * { max-width:1200px;margin-left:auto;margin-right:auto;padding:0 40px; }
-
-    /* ── X-RAY / SECTION MODE ── */
-    .xray-active canvas { filter: none; }
-
-    /* Mode indicator */
-    .mode-badge {
-      position:absolute;top:50px;left:12px;
-      background:rgba(7,9,13,0.92);border:1px solid var(--border2);border-radius:8px;padding:8px 12px;font-size:0.7rem;color:var(--text2);backdrop-filter:blur(8px);
-      display:flex;align-items:center;gap:6px;
-    }
-    .mode-dot { width:6px;height:6px;border-radius:50%;background:var(--teal);animation:pulse 1.5s infinite; }
-
-    @media(max-width:1100px){
-      .hero{grid-template-columns:1fr;gap:40px}
-      .features-grid{grid-template-columns:repeat(2,1fr)}
-      .showcase-inner{grid-template-columns:1fr}
-      .workflow-steps{grid-template-columns:repeat(2,1fr)}
-      .pricing-grid{grid-template-columns:1fr}
-      .testi-grid{grid-template-columns:1fr}
-      .footer-inner{grid-template-columns:1fr 1fr}
-    }
-    @media(max-width:700px){
-      nav{padding:0 20px}
-      .nav-links{display:none}
-      .hero{padding:80px 20px 40px}
-      section{padding:60px 20px}
-      .features-grid{grid-template-columns:1fr}
-      .workflow-steps{grid-template-columns:1fr}
-      .footer-inner{grid-template-columns:1fr}
-    }
-  </style>
+@media(max-width:1100px){.hero-wrap{grid-template-columns:1fr}.feat-grid{grid-template-columns:repeat(2,1fr)}.show-inner{grid-template-columns:1fr}.wf-steps{grid-template-columns:repeat(2,1fr)}.pr-grid{grid-template-columns:1fr}.te-grid{grid-template-columns:1fr}.ft-inner{grid-template-columns:1fr 1fr}}
+@media(max-width:700px){nav{padding:0 20px}.nav-links{display:none}section{padding:60px 20px}.hero-wrap{padding:80px 20px 40px}.feat-grid{grid-template-columns:1fr}.wf-steps{grid-template-columns:1fr}.ft-inner{grid-template-columns:1fr}}
+</style>
 </head>
 <body>
+<div id="cur"></div><div id="cur-r"></div>
 
-<div id="cursor"></div>
-<div id="cursor-ring"></div>
-<div class="hero-bg"></div>
-
-<!-- ── NAV ── -->
 <nav>
-  <a class="nav-logo" href="#">
-    <div class="nav-logo-icon">⬡</div>
-    ArchBIM Studio
-  </a>
-  <ul class="nav-links">
-    <li><a href="#">Fonctionnalités</a></li>
-    <li><a href="#">Showcase</a></li>
-    <li><a href="#">Workflow</a></li>
-    <li><a href="#">Tarifs</a></li>
-  </ul>
-  <div class="nav-cta">
-    <button class="btn-ghost">Se connecter</button>
-    <button class="btn-accent">Essai gratuit</button>
-  </div>
+  <a class="logo" href="#"><div class="logo-ico">⬡</div>ArchBIM Studio</a>
+  <ul class="nav-links"><li><a href="#">Fonctionnalités</a></li><li><a href="#">Showcase</a></li><li><a href="#">Workflow</a></li><li><a href="#">Tarifs</a></li></ul>
+  <div class="nav-cta"><button class="btn-g">Se connecter</button><button class="btn-a">Essai gratuit</button></div>
 </nav>
 
-<!-- ── HERO ── -->
-<div style="max-width:1400px;margin:0 auto;padding:100px 40px 0;min-height:100vh;display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center;position:relative;">
-  <div class="hero-grid"></div>
-
-  <div class="hero-left">
-    <div class="hero-badge">
-      <div class="hero-badge-dot"></div>
-      Nouvelle génération BIM 2025
-    </div>
+<div class="hero-wrap">
+  <div class="hero-grid-bg"></div>
+  <div style="position:relative;z-index:2">
+    <div class="badge"><div class="badge-dot"></div>Nouvelle génération BIM 2025</div>
     <h1>
-      <span class="line"><span>Modélisez. Visualisez.</span></span>
-      <span class="line"><span>Explorez en <em>3D</em></span></span>
-      <span class="line"><span>en temps réel.</span></span>
+      <span class="l"><span>Modélisez. Visualisez.</span></span>
+      <span class="l"><span>Explorez en <em>3D</em></span></span>
+      <span class="l"><span>en temps réel.</span></span>
     </h1>
-    <p class="hero-desc">ArchBIM révolutionne la modélisation BIM avec un moteur 3D interactif. Tournez, zoomez, pénétrez à l'intérieur de chaque bâtiment. Collaborez en temps réel avec toute votre équipe.</p>
-    <div class="hero-actions">
-      <button class="btn-primary">Démarrer gratuitement →</button>
-      <button class="btn-secondary">▶ Voir une démo</button>
-    </div>
+    <p class="hero-desc">ArchBIM révolutionne la modélisation BIM avec un moteur 3D interactif. Tournez, zoomez, pénétrez à l'intérieur. Collaborez en temps réel.</p>
+    <div class="hero-actions"><button class="btn-p">Démarrer gratuitement →</button><button class="btn-s">▶ Voir une démo</button></div>
     <div class="hero-stats">
-      <div class="stat-item">
-        <div class="stat-num">48k+</div>
-        <div class="stat-label">Architectes actifs</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-num">2.4M</div>
-        <div class="stat-label">Projets créés</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-num">99.9%</div>
-        <div class="stat-label">Disponibilité</div>
-      </div>
+      <div><div class="sn">48k+</div><div class="sl">Architectes actifs</div></div>
+      <div><div class="sn">2.4M</div><div class="sl">Projets créés</div></div>
+      <div><div class="sn">99.9%</div><div class="sl">Disponibilité</div></div>
     </div>
   </div>
 
-  <div class="hero-right">
-    <div class="viewer-wrapper">
-      <div class="viewer-toolbar">
-        <div class="vp-dot r"></div>
-        <div class="vp-dot y"></div>
-        <div class="vp-dot g"></div>
-        <div class="viewer-tabs">
-          <button class="viewer-tab active" data-mode="exterior">Extérieur</button>
-          <button class="viewer-tab" data-mode="interior">Intérieur</button>
-          <button class="viewer-tab" data-mode="wireframe">Filaire</button>
-          <button class="viewer-tab" data-mode="xray">RX</button>
+  <div style="position:relative;z-index:2">
+    <div class="viewer-box">
+      <div class="vbar">
+        <div class="vdot r"></div><div class="vdot y"></div><div class="vdot g"></div>
+        <div class="vtabs">
+          <button class="vtab on" data-m="ext">Extérieur</button>
+          <button class="vtab" data-m="int">Intérieur</button>
+          <button class="vtab" data-m="wf">Filaire</button>
+          <button class="vtab" data-m="rx">Rayons X</button>
         </div>
-        <div class="viewer-toolbar-right">
-          <div class="vt-btn" id="btn-reset" title="Réinitialiser vue">⊙</div>
-          <div class="vt-btn" id="btn-explode-toggle" title="Vue explosée">💥</div>
-          <div class="vt-btn active" id="btn-sun" title="Soleil">☀</div>
+        <div class="vbar-right">
+          <div class="vbtn" id="breset">⊙</div>
+          <div class="vbtn" id="bexpl">💥</div>
+          <div class="vbtn on" id="bsun">☀</div>
         </div>
       </div>
-      <div style="position:relative">
-        <canvas id="three-canvas-hero"></canvas>
-
-        <div class="viewer-overlay-info" id="hero-info-panel">
-          <div class="oi-title" id="hero-info-title">RÉSIDENCE AURA</div>
-          <div class="oi-row"><span>Niveau</span><span class="oi-val">RDC + R+1</span></div>
-          <div class="oi-row"><span>Surface</span><span class="oi-val">285 m²</span></div>
-          <div class="oi-row"><span>Hauteur</span><span class="oi-val">7.2 m</span></div>
-          <div class="oi-row"><span>Volume</span><span class="oi-val">1 620 m³</span></div>
+      <div class="canvas-wrap">
+        <canvas id="cv"></canvas>
+        <div class="ov-info" id="ov-info">
+          <div class="ov-title" id="ov-title">RÉSIDENCE AURA</div>
+          <div class="ov-row"><span>Niveau</span><span class="ov-val" id="ov-r1v">RDC + R+1</span></div>
+          <div class="ov-row"><span id="ov-r2k">Surface</span><span class="ov-val" id="ov-r2v">285 m²</span></div>
+          <div class="ov-row"><span id="ov-r3k">Hauteur</span><span class="ov-val" id="ov-r3v">7.2 m</span></div>
+          <div class="ov-row"><span id="ov-r4k">Volume</span><span class="ov-val" id="ov-r4v">1 620 m³</span></div>
         </div>
-
-        <div class="mode-badge" id="mode-badge">
-          <div class="mode-dot"></div>
-          <span id="mode-label">Vue 3D — Glissez pour tourner</span>
+        <div class="ov-mode"><div class="ov-dot"></div><span id="ov-mode-lbl">Vue 3D — Glissez pour tourner</span></div>
+        <div class="explode-panel" id="expl-panel">
+          <div class="ep-label">Vue explosée</div>
+          <div class="ep-row"><input type="range" id="xsl" min="0" max="100" value="0"/><span id="xsl-val" style="color:var(--accent);font-size:.7rem">0%</span></div>
         </div>
-
-        <div class="explode-bar viewer-explode-bar" id="explode-bar" style="display:none">
-          <div class="explode-label">Vue explosée</div>
-          <div class="explode-row">
-            <input type="range" id="explode-slider" min="0" max="100" value="0"/>
-            <span id="explode-val" style="color:var(--accent);font-size:0.7rem">0%</span>
-          </div>
-        </div>
-
-        <div class="axis-badge">
-          <span class="axis-x">X</span>
-          <span class="axis-y">Y</span>
-          <span class="axis-z">Z</span>
-        </div>
-        <div class="viewer-overlay-hint">
-          <span class="hint-item"><span class="hint-key">Clic</span> Tourner</span>
-          <span class="hint-item"><span class="hint-key">Scroll</span> Zoom</span>
-          <span class="hint-item"><span class="hint-key">Shift+Clic</span> Déplacer</span>
-        </div>
+        <div class="ov-axes"><span class="ax ax-x">X</span><span class="ax ax-y">Y</span><span class="ax ax-z">Z</span></div>
+        <div class="ov-hint"><span><span class="hk">Clic</span> Tourner</span><span><span class="hk">Scroll</span> Zoom</span><span><span class="hk">Shift+Clic</span> Pan</span></div>
       </div>
-      <div class="viewer-footer">
-        <div class="tool-chip active" data-layer="structure"><div class="tool-chip-dot"></div>Structure</div>
-        <div class="tool-chip active" data-layer="facade"><div class="tool-chip-dot"></div>Façade</div>
-        <div class="tool-chip active" data-layer="toiture"><div class="tool-chip-dot"></div>Toiture</div>
-        <div class="tool-chip" data-layer="mep"><div class="tool-chip-dot"></div>MEP</div>
-        <div class="tool-chip active" data-layer="terrain"><div class="tool-chip-dot"></div>Terrain</div>
+      <div class="vfooter">
+        <div class="chip on" data-l="structure"><div class="chip-dot"></div>Structure</div>
+        <div class="chip on" data-l="facade"><div class="chip-dot"></div>Façade</div>
+        <div class="chip on" data-l="roof"><div class="chip-dot"></div>Toiture</div>
+        <div class="chip" data-l="mep"><div class="chip-dot"></div>MEP</div>
+        <div class="chip on" data-l="terrain"><div class="chip-dot"></div>Terrain</div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ── MARQUEE ── -->
-<div class="marquee-section">
-  <div class="marquee-track">
-    <div class="marquee-item">⬡ Revit Import</div><div class="marquee-item">— ⬡ —</div>
-    <div class="marquee-item">⬡ Export IFC 4.0</div><div class="marquee-item">— ⬡ —</div>
-    <div class="marquee-item">⬡ Rendu IA Temps Réel</div><div class="marquee-item">— ⬡ —</div>
-    <div class="marquee-item">⬡ Collaboration Cloud</div><div class="marquee-item">— ⬡ —</div>
-    <div class="marquee-item">⬡ Calcul Thermique</div><div class="marquee-item">— ⬡ —</div>
-    <div class="marquee-item">⬡ SketchUp Compatible</div><div class="marquee-item">— ⬡ —</div>
-    <div class="marquee-item">⬡ AutoCAD DWG</div><div class="marquee-item">— ⬡ —</div>
-    <div class="marquee-item">⬡ Revit Import</div><div class="marquee-item">— ⬡ —</div>
-    <div class="marquee-item">⬡ Export IFC 4.0</div><div class="marquee-item">— ⬡ —</div>
-    <div class="marquee-item">⬡ Rendu IA Temps Réel</div><div class="marquee-item">— ⬡ —</div>
-    <div class="marquee-item">⬡ Collaboration Cloud</div><div class="marquee-item">— ⬡ —</div>
-    <div class="marquee-item">⬡ Calcul Thermique</div><div class="marquee-item">— ⬡ —</div>
-    <div class="marquee-item">⬡ SketchUp Compatible</div><div class="marquee-item">— ⬡ —</div>
-    <div class="marquee-item">⬡ AutoCAD DWG</div><div class="marquee-item">— ⬡ —</div>
-  </div>
-</div>
+<!-- MARQUEE -->
+<div class="mq"><div class="mq-track">
+  <div class="mq-item">⬡ Revit Import</div><div class="mq-item">— ⬡ —</div>
+  <div class="mq-item">⬡ Export IFC 4.0</div><div class="mq-item">— ⬡ —</div>
+  <div class="mq-item">⬡ Rendu IA Temps Réel</div><div class="mq-item">— ⬡ —</div>
+  <div class="mq-item">⬡ Collaboration Cloud</div><div class="mq-item">— ⬡ —</div>
+  <div class="mq-item">⬡ Calcul Thermique</div><div class="mq-item">— ⬡ —</div>
+  <div class="mq-item">⬡ SketchUp Compatible</div><div class="mq-item">— ⬡ —</div>
+  <div class="mq-item">⬡ AutoCAD DWG</div><div class="mq-item">— ⬡ —</div>
+  <div class="mq-item">⬡ Revit Import</div><div class="mq-item">— ⬡ —</div>
+  <div class="mq-item">⬡ Export IFC 4.0</div><div class="mq-item">— ⬡ —</div>
+  <div class="mq-item">⬡ Rendu IA Temps Réel</div><div class="mq-item">— ⬡ —</div>
+  <div class="mq-item">⬡ Collaboration Cloud</div><div class="mq-item">— ⬡ —</div>
+  <div class="mq-item">⬡ Calcul Thermique</div><div class="mq-item">— ⬡ —</div>
+  <div class="mq-item">⬡ SketchUp Compatible</div><div class="mq-item">— ⬡ —</div>
+  <div class="mq-item">⬡ AutoCAD DWG</div><div class="mq-item">— ⬡ —</div>
+</div></div>
 
-<!-- ── FEATURES ── -->
-<section class="features">
-  <div class="features-header">
-    <div class="section-label reveal">Fonctionnalités</div>
-    <h2 class="section-title reveal reveal-d1">Tout ce dont vous avez besoin,<br>dans un seul outil.</h2>
-    <p class="section-sub reveal reveal-d2">De la conception initiale à la livraison finale, ArchBIM couvre l'intégralité du cycle BIM avec une précision inégalée.</p>
+<!-- FEATURES -->
+<section style="background:var(--bg)">
+  <div style="text-align:center;margin-bottom:68px">
+    <div class="sec-label rv">Fonctionnalités</div>
+    <h2 class="sec-title rv d1">Tout ce dont vous avez besoin,<br>dans un seul outil.</h2>
+    <p class="sec-sub rv d2" style="margin:0 auto">De la conception initiale à la livraison finale, ArchBIM couvre l'intégralité du cycle BIM.</p>
   </div>
-  <div class="features-grid">
-    <div class="feature-card reveal">
-      <div class="feat-icon orange">⬡</div>
-      <div class="feat-title">Modélisation 3D Native</div>
-      <p class="feat-desc">Moteur géométrique haute performance avec snapping intelligent, opérations booléennes et historique d'édition non-destructif.</p>
-    </div>
-    <div class="feature-card reveal reveal-d1">
-      <div class="feat-icon blue">🔗</div>
-      <div class="feat-title">BIM Paramétrique</div>
-      <p class="feat-desc">Objets intelligents liés aux données. Quantitatifs automatiques, nomenclatures en temps réel, cohérence garantie du modèle.</p>
-    </div>
-    <div class="feature-card reveal reveal-d2">
-      <div class="feat-icon teal">✦</div>
-      <div class="feat-title">Rendu IA Instantané</div>
-      <p class="feat-desc">Générez des visuels photoréalistes en 30 secondes. Styles architecturaux multiples, éclairage automatique, ambiances personnalisables.</p>
-    </div>
-    <div class="feature-card reveal">
-      <div class="feat-icon teal">☁</div>
-      <div class="feat-title">Collaboration Temps Réel</div>
-      <p class="feat-desc">Multi-utilisateur simultané avec conflits résolus automatiquement. Commentaires contextuels ancrés en 3D sur le modèle.</p>
-    </div>
-    <div class="feature-card reveal reveal-d1">
-      <div class="feat-icon orange">⟳</div>
-      <div class="feat-title">Interopérabilité Totale</div>
-      <p class="feat-desc">Import/export IFC, DWG, RVT, SKP, DXF. Synchronisation bidirectionnelle avec Revit. API ouverte pour vos workflows métier.</p>
-    </div>
-    <div class="feature-card reveal reveal-d2">
-      <div class="feat-icon blue">📐</div>
-      <div class="feat-title">Plans & Coupes Auto</div>
-      <p class="feat-desc">Plans, façades et coupes générés automatiquement depuis le modèle 3D. Mise en page directement dans l'outil, export PDF.</p>
-    </div>
+  <div class="feat-grid">
+    <div class="fc rv"><div class="fi o">⬡</div><div class="ft">Modélisation 3D Native</div><p class="fd">Moteur géométrique haute performance avec snapping intelligent, opérations booléennes et historique non-destructif.</p></div>
+    <div class="fc rv d1"><div class="fi b">🔗</div><div class="ft">BIM Paramétrique</div><p class="fd">Objets intelligents liés aux données. Quantitatifs automatiques, nomenclatures en temps réel, cohérence garantie.</p></div>
+    <div class="fc rv d2"><div class="fi t">✦</div><div class="ft">Rendu IA Instantané</div><p class="fd">Générez des visuels photoréalistes en 30 secondes. Styles architecturaux multiples, éclairage automatique.</p></div>
+    <div class="fc rv"><div class="fi t">☁</div><div class="ft">Collaboration Temps Réel</div><p class="fd">Multi-utilisateur simultané. Commentaires contextuels ancrés en 3D directement sur le modèle.</p></div>
+    <div class="fc rv d1"><div class="fi o">⟳</div><div class="ft">Interopérabilité Totale</div><p class="fd">Import/export IFC, DWG, RVT, SKP. Synchronisation bidirectionnelle Revit. API ouverte.</p></div>
+    <div class="fc rv d2"><div class="fi b">📐</div><div class="ft">Plans & Coupes Auto</div><p class="fd">Plans, façades et coupes générés automatiquement depuis le modèle 3D. Export PDF direct.</p></div>
   </div>
 </section>
 
-<!-- ── SHOWCASE — 3D INTERACTIVE ── -->
-<section class="showcase">
-  <div class="showcase-inner">
-    <div class="showcase-text">
-      <div class="section-label reveal">Visualisation Révolutionnaire</div>
-      <h2 class="section-title reveal reveal-d1">Entrez dans vos bâtiments.<br>Naviguez librement.</h2>
-      <ul class="showcase-list">
-        <li class="reveal reveal-d1"><div class="check">✓</div><div><strong>Vue intérieure complète</strong> — Naviguez à l'intérieur de chaque pièce, changez les matériaux en temps réel</div></li>
-        <li class="reveal reveal-d2"><div class="check">✓</div><div><strong>Vue explosée paramétrique</strong> — Décomposez chaque corps du bâtiment pour l'analyse constructive</div></li>
-        <li class="reveal reveal-d3"><div class="check">✓</div><div><strong>Rayons X & coupes dynamiques</strong> — Coupez à n'importe quel plan pour visualiser les réseaux cachés</div></li>
-        <li class="reveal" style="transition-delay:.4s"><div class="check">✓</div><div><strong>Arbre BIM interactif</strong> — Sélectionnez, isolez ou masquez chaque élément par clic</div></li>
+<!-- SHOWCASE -->
+<section style="background:var(--bg2)">
+  <div class="show-inner">
+    <div>
+      <div class="sec-label rv">Visualisation Révolutionnaire</div>
+      <h2 class="sec-title rv d1">Entrez dans vos bâtiments.<br>Naviguez librement.</h2>
+      <ul class="show-list">
+        <li class="rv d1"><div class="chk">✓</div><div><strong>Vue intérieure complète</strong> — Naviguez à l'intérieur de chaque pièce, changez matériaux en temps réel</div></li>
+        <li class="rv d2"><div class="chk">✓</div><div><strong>Vue explosée paramétrique</strong> — Décomposez chaque corps du bâtiment pour l'analyse constructive</div></li>
+        <li class="rv d3"><div class="chk">✓</div><div><strong>Rayons X & coupes dynamiques</strong> — Coupez à n'importe quel plan pour visualiser les réseaux cachés</div></li>
+        <li class="rv" style="transition-delay:.4s"><div class="chk">✓</div><div><strong>Arbre BIM interactif</strong> — Sélectionnez, isolez ou masquez chaque élément par clic</div></li>
       </ul>
     </div>
-    <div class="showcase-visual reveal reveal-d2">
-      <div class="showcase-window">
-        <div class="sw-header">
-          <div class="sw-dots">
-            <div class="sw-dot r"></div>
-            <div class="sw-dot y"></div>
-            <div class="sw-dot g"></div>
-          </div>
-          <div class="sw-title-bar">Résidence Aura — Coupe transversale</div>
-          <div class="sw-view-tabs">
-            <div class="sw-view-tab active" data-sw="perspective">3D</div>
-            <div class="sw-view-tab" data-sw="section">Coupe</div>
-            <div class="sw-view-tab" data-sw="top">Plan</div>
+    <div style="position:relative" class="rv d2">
+      <div class="show-win">
+        <div class="sw-hdr">
+          <div class="sw-dots"><div class="sw-d r"></div><div class="sw-d y"></div><div class="sw-d g"></div></div>
+          <div class="sw-ttl">Résidence Aura — Vue intérieure</div>
+          <div class="sw-vtabs">
+            <div class="sw-vt on" data-sv="p">3D</div>
+            <div class="sw-vt" data-sv="s">Coupe</div>
+            <div class="sw-vt" data-sv="t">Plan</div>
           </div>
         </div>
         <div class="sw-body">
-          <div class="sw-sidebar">
-            <div class="sw-tree-group">
-              <div class="sw-tree-label">Structure</div>
-              <div class="sw-tree-item active" data-mesh="walls">▣ Murs porteurs</div>
-              <div class="sw-tree-item active" data-mesh="slabs">▭ Dalles</div>
-              <div class="sw-tree-item active" data-mesh="columns">⬡ Poteaux</div>
+          <div class="sw-side">
+            <div class="sw-grp"><div class="sw-glbl">Structure</div>
+              <div class="sw-item on" data-p="walls">▣ Murs porteurs</div>
+              <div class="sw-item on" data-p="slabs">▭ Dalles</div>
+              <div class="sw-item on" data-p="cols">⬡ Poteaux</div>
             </div>
-            <div class="sw-tree-group">
-              <div class="sw-tree-label">Enveloppe</div>
-              <div class="sw-tree-item active" data-mesh="facade">◫ Façade</div>
-              <div class="sw-tree-item active" data-mesh="roof">⌂ Toiture</div>
-              <div class="sw-tree-item" data-mesh="glazing">◻ Vitrages</div>
+            <div class="sw-grp"><div class="sw-glbl">Enveloppe</div>
+              <div class="sw-item on" data-p="facade">◫ Façade</div>
+              <div class="sw-item on" data-p="roof">⌂ Toiture</div>
+              <div class="sw-item" data-p="glaz">◻ Vitrages</div>
             </div>
-            <div class="sw-tree-group">
-              <div class="sw-tree-label">Aménagement</div>
-              <div class="sw-tree-item active" data-mesh="interior">⬛ Intérieur</div>
-              <div class="sw-tree-item" data-mesh="furniture">⊞ Mobilier</div>
+            <div class="sw-grp"><div class="sw-glbl">Aménagement</div>
+              <div class="sw-item on" data-p="int">⬛ Intérieur</div>
+              <div class="sw-item" data-p="furn">⊞ Mobilier</div>
             </div>
-            <div class="sw-tree-group">
-              <div class="sw-tree-label">Terrain</div>
-              <div class="sw-tree-item active" data-mesh="ground">▬ Sol</div>
-              <div class="sw-tree-item" data-mesh="landscaping">❧ Végétation</div>
+            <div class="sw-grp"><div class="sw-glbl">Terrain</div>
+              <div class="sw-item on" data-p="ground">▬ Sol</div>
+              <div class="sw-item" data-p="land">❧ Végétation</div>
             </div>
           </div>
-          <div class="sw-main">
-            <canvas id="three-canvas-showcase"></canvas>
-          </div>
+          <div class="sw-main"><canvas id="cv2"></canvas></div>
           <div class="sw-props">
-            <div class="sw-prop-label">Propriétés</div>
-            <div class="sw-prop-row"><span>Type</span><span id="sw-prop-type">Mur</span></div>
-            <div class="sw-prop-row"><span>Matériau</span><span id="sw-prop-mat">Béton</span></div>
-            <div class="sw-prop-row"><span>Épaisseur</span><span id="sw-prop-thick">0.20 m</span></div>
-            <div class="sw-prop-row"><span>Hauteur</span><span id="sw-prop-h">3.20 m</span></div>
-            <div class="sw-prop-row"><span>Surface</span><span id="sw-prop-s">12.4 m²</span></div>
-            <div class="sw-prop-row"><span>Résistance</span><span id="sw-prop-r">R=3.5</span></div>
+            <div class="spl">Propriétés</div>
+            <div class="spr"><span>Type</span><span id="p-type">Mur</span></div>
+            <div class="spr"><span>Matériau</span><span id="p-mat">Béton</span></div>
+            <div class="spr"><span>Épais.</span><span id="p-thick">0.20 m</span></div>
+            <div class="spr"><span>Hauteur</span><span id="p-h">3.20 m</span></div>
+            <div class="spr"><span>Surface</span><span id="p-s">12.4 m²</span></div>
+            <div class="spr"><span>Résist.</span><span id="p-r">R=3.5</span></div>
           </div>
         </div>
       </div>
-      <div class="showcase-tag">✦ Vue Temps Réel</div>
+      <div class="stag">✦ Vue Temps Réel</div>
     </div>
   </div>
 </section>
 
-<!-- ── WORKFLOW ── -->
-<section class="workflow">
-  <div class="workflow-inner">
-    <div class="workflow-header">
-      <div>
-        <div class="section-label reveal">Processus</div>
-        <h2 class="section-title reveal reveal-d1">4 étapes pour un projet BIM complet.</h2>
-      </div>
-      <p class="section-sub reveal reveal-d1">Du croquis initial à la maquette numérique livrée, ArchBIM accompagne chaque phase de votre projet.</p>
+<!-- WORKFLOW -->
+<section style="background:var(--bg)">
+  <div style="max-width:1200px;margin:0 auto">
+    <div class="wf-hdr">
+      <div><div class="sec-label rv">Processus</div><h2 class="sec-title rv d1">4 étapes pour un projet BIM complet.</h2></div>
+      <p class="sec-sub rv d1">Du croquis initial à la maquette numérique livrée, ArchBIM accompagne chaque phase.</p>
     </div>
-    <div class="workflow-steps">
-      <div class="wf-step reveal">
-        <div class="wf-num">01</div>
-        <div class="wf-icon">✏️</div>
-        <div class="wf-title">Esquisse & Import</div>
-        <p class="wf-desc">Importez vos DWG/DXF ou démarrez ex-nihilo. Le moteur IA détecte automatiquement les murs, ouvertures et niveaux.</p>
-        <div class="wf-connector"></div>
-      </div>
-      <div class="wf-step reveal reveal-d1">
-        <div class="wf-num">02</div>
-        <div class="wf-icon">⬡</div>
-        <div class="wf-title">Modélisation 3D</div>
-        <p class="wf-desc">Construisez la maquette paramétrique. Chaque élément est lié à ses données : matériaux, performances, coûts.</p>
-        <div class="wf-connector"></div>
-      </div>
-      <div class="wf-step reveal reveal-d2">
-        <div class="wf-num">03</div>
-        <div class="wf-icon">✦</div>
-        <div class="wf-title">Visualisation & Rendu</div>
-        <p class="wf-desc">Explorez en temps réel, générez les visuels IA, produisez les coupes et plans depuis le modèle 3D.</p>
-        <div class="wf-connector"></div>
-      </div>
-      <div class="wf-step reveal reveal-d3">
-        <div class="wf-num">04</div>
-        <div class="wf-icon">📦</div>
-        <div class="wf-title">Export & Livraison</div>
-        <p class="wf-desc">Exportez en IFC, PDF, DWG. Partagez le viewer 3D en ligne. Générez automatiquement les nomenclatures et CCTP.</p>
-      </div>
+    <div class="wf-steps">
+      <div class="wf-s rv"><div class="wf-n">01</div><div class="wf-ico">✏️</div><div class="wf-t">Esquisse & Import</div><p class="wf-d">Importez DWG/DXF ou démarrez ex-nihilo. L'IA détecte automatiquement murs, ouvertures et niveaux.</p><div class="wf-con"></div></div>
+      <div class="wf-s rv d1"><div class="wf-n">02</div><div class="wf-ico">⬡</div><div class="wf-t">Modélisation 3D</div><p class="wf-d">Construisez la maquette paramétrique. Chaque élément est lié à ses données : matériaux, performances, coûts.</p><div class="wf-con"></div></div>
+      <div class="wf-s rv d2"><div class="wf-n">03</div><div class="wf-ico">✦</div><div class="wf-t">Visualisation & Rendu</div><p class="wf-d">Explorez en temps réel, générez les visuels IA, produisez coupes et plans depuis le modèle 3D.</p><div class="wf-con"></div></div>
+      <div class="wf-s rv d3"><div class="wf-n">04</div><div class="wf-ico">📦</div><div class="wf-t">Export & Livraison</div><p class="wf-d">Exportez IFC, PDF, DWG. Partagez le viewer 3D en ligne. Générez les nomenclatures et CCTP.</p></div>
     </div>
   </div>
 </section>
 
-<!-- ── PRICING ── -->
-<section class="pricing">
-  <div class="pricing-header">
-    <div class="section-label reveal">Tarifs</div>
-    <h2 class="section-title reveal reveal-d1">Simple, transparent, sans surprise.</h2>
-    <p class="section-sub reveal reveal-d2">Tous les plans incluent le moteur 3D interactif, la collaboration et les exports standards.</p>
-  </div>
-  <div class="pricing-grid">
-    <div class="price-card reveal">
-      <div class="price-plan">Starter</div>
-      <div class="price-amount"><sup>€</sup>0</div>
-      <div class="price-period">Pour toujours gratuit</div>
-      <div class="price-divider"></div>
-      <ul class="price-features">
-        <li>3 projets actifs</li>
-        <li>Viewer 3D interactif</li>
-        <li>Export IFC & DXF</li>
-        <li class="off">Rendu IA</li>
-        <li class="off">Collaboration temps réel</li>
-        <li class="off">API & Intégrations</li>
-      </ul>
-      <button class="price-btn outline">Commencer gratuitement</button>
-    </div>
-    <div class="price-card featured reveal reveal-d1">
-      <div class="price-plan">Professionnel</div>
-      <div class="price-amount"><sup>€</sup>49</div>
-      <div class="price-period">par mois, par utilisateur</div>
-      <div class="price-divider"></div>
-      <ul class="price-features">
-        <li>Projets illimités</li>
-        <li>Viewer 3D + Vue intérieure</li>
-        <li>Tous les formats d'export</li>
-        <li>Rendu IA (100/mois)</li>
-        <li>Collaboration 5 utilisateurs</li>
-        <li class="off">API & Intégrations avancées</li>
-      </ul>
-      <button class="price-btn filled">Essai gratuit 14 jours</button>
-    </div>
-    <div class="price-card reveal reveal-d2">
-      <div class="price-plan">Entreprise</div>
-      <div class="price-amount">Sur devis</div>
-      <div class="price-period">Contrat annuel</div>
-      <div class="price-divider"></div>
-      <ul class="price-features">
-        <li>Tout le plan Pro</li>
-        <li>Utilisateurs illimités</li>
-        <li>Rendu IA illimité</li>
-        <li>SSO & LDAP</li>
-        <li>API & Webhooks</li>
-        <li>Support dédié 24/7</li>
-      </ul>
-      <button class="price-btn outline">Nous contacter</button>
-    </div>
+<!-- PRICING -->
+<section style="background:var(--bg2)">
+  <div class="pr-hdr"><div class="sec-label rv">Tarifs</div><h2 class="sec-title rv d1">Simple, transparent, sans surprise.</h2><p class="sec-sub rv d2" style="margin:0 auto">Tous les plans incluent le moteur 3D interactif, la collaboration et les exports standards.</p></div>
+  <div class="pr-grid">
+    <div class="pc rv"><div class="pp">Starter</div><div class="pa"><sup>€</sup>0</div><div class="prd">Pour toujours gratuit</div><div class="pdiv"></div><ul class="pfl"><li>3 projets actifs</li><li>Viewer 3D interactif</li><li>Export IFC & DXF</li><li class="off">Rendu IA</li><li class="off">Collaboration temps réel</li></ul><button class="pbtn ol">Commencer gratuitement</button></div>
+    <div class="pc ft rv d1"><div class="pp">Professionnel</div><div class="pa"><sup>€</sup>49</div><div class="prd">par mois, par utilisateur</div><div class="pdiv"></div><ul class="pfl"><li>Projets illimités</li><li>Viewer 3D + Vue intérieure</li><li>Tous les formats d'export</li><li>Rendu IA (100/mois)</li><li>Collaboration 5 utilisateurs</li></ul><button class="pbtn fl">Essai gratuit 14 jours</button></div>
+    <div class="pc rv d2"><div class="pp">Entreprise</div><div class="pa">Sur devis</div><div class="prd">Contrat annuel</div><div class="pdiv"></div><ul class="pfl"><li>Tout le plan Pro</li><li>Utilisateurs illimités</li><li>Rendu IA illimité</li><li>SSO & LDAP</li><li>API & Webhooks</li></ul><button class="pbtn ol">Nous contacter</button></div>
   </div>
 </section>
 
-<!-- ── TESTIMONIALS ── -->
-<section class="testimonials">
-  <div style="text-align:center;margin-bottom:60px">
-    <div class="section-label reveal">Témoignages</div>
-    <h2 class="section-title reveal reveal-d1">Des professionnels font confiance à ArchBIM.</h2>
-  </div>
-  <div class="testi-grid">
-    <div class="testi-card reveal">
-      <div class="testi-stars">★★★★★</div>
-      <p class="testi-text">"ArchBIM a <em>transformé notre workflow</em>. La vue 3D interactive permet à nos clients de comprendre immédiatement le projet. Nous avons réduit les allers-retours de 60%."</p>
-      <div class="testi-author">
-        <div class="testi-avatar" style="background:linear-gradient(135deg,var(--accent),var(--accent2))">SL</div>
-        <div>
-          <div class="testi-name">Sophie Laurent</div>
-          <div class="testi-role">Architecte DPLG — Agence Luminal</div>
-        </div>
-      </div>
-    </div>
-    <div class="testi-card reveal reveal-d1">
-      <div class="testi-stars">★★★★★</div>
-      <p class="testi-text">"Je viens de SketchUp et ArchBIM m'offre <em>tout ce que j'aimais</em> dedans, plus le BIM par-dessus. Les exports IFC sont parfaits pour communiquer avec les bureaux d'études."</p>
-      <div class="testi-author">
-        <div class="testi-avatar" style="background:linear-gradient(135deg,var(--blue),var(--blue2))">TK</div>
-        <div>
-          <div class="testi-name">Thomas Keller</div>
-          <div class="testi-role">Designer d'intérieur — Studio TK</div>
-        </div>
-      </div>
-    </div>
-    <div class="testi-card reveal reveal-d2">
-      <div class="testi-stars">★★★★★</div>
-      <p class="testi-text">"Le rendu IA est <em>bluffant</em> pour les présentations clients. En 30 secondes on obtient des visuels de qualité. On a réduit nos délais de présentation de moitié."</p>
-      <div class="testi-author">
-        <div class="testi-avatar" style="background:linear-gradient(135deg,var(--teal),#00a890)">AB</div>
-        <div>
-          <div class="testi-name">Amina Boudiaf</div>
-          <div class="testi-role">Cheffe de projet — Groupe Vinci Immo</div>
-        </div>
-      </div>
-    </div>
+<!-- TESTI -->
+<section style="background:var(--bg)">
+  <div style="text-align:center"><div class="sec-label rv">Témoignages</div><h2 class="sec-title rv d1">Des professionnels font confiance à ArchBIM.</h2></div>
+  <div class="te-grid">
+    <div class="tc rv"><div class="ts">★★★★★</div><p class="tt">"ArchBIM a <em>transformé notre workflow</em>. La vue 3D interactive permet à nos clients de comprendre immédiatement le projet."</p><div class="ta"><div class="tav" style="background:linear-gradient(135deg,var(--accent),var(--accent2))">SL</div><div><div class="tn">Sophie Laurent</div><div class="tro">Architecte DPLG — Agence Luminal</div></div></div></div>
+    <div class="tc rv d1"><div class="ts">★★★★★</div><p class="tt">"Je viens de SketchUp et ArchBIM m'offre <em>tout ce que j'aimais</em> dedans, plus le BIM par-dessus. Les exports IFC sont parfaits."</p><div class="ta"><div class="tav" style="background:linear-gradient(135deg,var(--blue),#2d7dd2)">TK</div><div><div class="tn">Thomas Keller</div><div class="tro">Designer d'intérieur — Studio TK</div></div></div></div>
+    <div class="tc rv d2"><div class="ts">★★★★★</div><p class="tt">"Le rendu IA est <em>bluffant</em> pour les présentations clients. On a réduit nos délais de présentation de moitié."</p><div class="ta"><div class="tav" style="background:linear-gradient(135deg,var(--teal),#00a890)">AB</div><div><div class="tn">Amina Boudiaf</div><div class="tro">Cheffe de projet — Groupe Vinci Immo</div></div></div></div>
   </div>
 </section>
 
-<!-- ── CTA ── -->
-<section class="cta-section">
+<!-- CTA -->
+<section class="cta" style="background:var(--bg2)">
   <div class="cta-bg"></div>
-  <div style="position:relative;z-index:2;text-align:center">
-    <div class="section-label reveal">Prêt à commencer ?</div>
-    <h2 class="section-title reveal reveal-d1">Rejoignez 48 000 professionnels<br>qui font confiance à ArchBIM</h2>
-    <p class="section-sub reveal reveal-d2" style="margin:0 auto">14 jours d'essai gratuit sur le plan Professionnel. Aucune carte bancaire requise.</p>
-    <div class="cta-actions reveal reveal-d3" style="margin-top:40px">
-      <button class="btn-primary" style="font-size:1rem;padding:16px 36px">Démarrer gratuitement →</button>
-      <button class="btn-secondary" style="font-size:1rem;padding:16px 36px">Voir une démo en direct</button>
-    </div>
+  <div style="position:relative;z-index:2">
+    <div class="sec-label rv" style="text-align:center">Prêt à commencer ?</div>
+    <h2 class="sec-title rv d1" style="text-align:center">Rejoignez 48 000 professionnels<br>qui font confiance à ArchBIM</h2>
+    <p class="sec-sub rv d2" style="margin:0 auto;text-align:center">14 jours d'essai gratuit sur le plan Professionnel. Aucune carte bancaire requise.</p>
+    <div class="cta-acts rv d3"><button class="btn-p" style="font-size:1rem;padding:16px 36px">Démarrer gratuitement →</button><button class="btn-s" style="font-size:1rem;padding:16px 36px">Voir une démo en direct</button></div>
   </div>
 </section>
 
-<!-- ── FOOTER ── -->
 <footer>
-  <div class="footer-inner">
-    <div>
-      <a class="nav-logo" href="#"><div class="nav-logo-icon">⬡</div>ArchBIM Studio</a>
-      <p class="footer-desc">La plateforme BIM & 3D nouvelle génération pour architectes, designers et ingénieurs du bâtiment.</p>
-    </div>
-    <div class="footer-col">
-      <div class="footer-col-title">Produit</div>
-      <ul>
-        <li><a href="#">Fonctionnalités</a></li>
-        <li><a href="#">Nouveautés</a></li>
-        <li><a href="#">Roadmap</a></li>
-        <li><a href="#">Tarifs</a></li>
-        <li><a href="#">Intégrations</a></li>
-      </ul>
-    </div>
-    <div class="footer-col">
-      <div class="footer-col-title">Ressources</div>
-      <ul>
-        <li><a href="#">Documentation</a></li>
-        <li><a href="#">Tutoriels vidéo</a></li>
-        <li><a href="#">Bibliothèque 3D</a></li>
-        <li><a href="#">Blog</a></li>
-        <li><a href="#">Communauté</a></li>
-      </ul>
-    </div>
-    <div class="footer-col">
-      <div class="footer-col-title">Entreprise</div>
-      <ul>
-        <li><a href="#">À propos</a></li>
-        <li><a href="#">Carrières</a></li>
-        <li><a href="#">Partenaires</a></li>
-        <li><a href="#">Contact</a></li>
-        <li><a href="#">CGU & Confidentialité</a></li>
-      </ul>
-    </div>
+  <div class="ft-inner">
+    <div><a class="logo" href="#"><div class="logo-ico">⬡</div>ArchBIM Studio</a><p class="ft-desc">La plateforme BIM & 3D nouvelle génération pour architectes, designers et ingénieurs.</p></div>
+    <div class="ft-col"><div class="ft-ct">Produit</div><ul><li><a href="#">Fonctionnalités</a></li><li><a href="#">Nouveautés</a></li><li><a href="#">Roadmap</a></li><li><a href="#">Tarifs</a></li></ul></div>
+    <div class="ft-col"><div class="ft-ct">Ressources</div><ul><li><a href="#">Documentation</a></li><li><a href="#">Tutoriels</a></li><li><a href="#">Blog</a></li><li><a href="#">Communauté</a></li></ul></div>
+    <div class="ft-col"><div class="ft-ct">Entreprise</div><ul><li><a href="#">À propos</a></li><li><a href="#">Carrières</a></li><li><a href="#">Contact</a></li><li><a href="#">CGU</a></li></ul></div>
   </div>
-  <div class="footer-bottom">
-    <div class="footer-copy">© 2025 ArchBIM Studio — Tous droits réservés</div>
-    <div class="footer-socials">
-      <a class="social-btn" href="#">𝕏</a>
-      <a class="social-btn" href="#">in</a>
-      <a class="social-btn" href="#">yt</a>
-      <a class="social-btn" href="#">gh</a>
-    </div>
+  <div class="ft-bot">
+    <div class="ft-copy">© 2025 ArchBIM Studio — Tous droits réservés</div>
+    <div class="ft-soc"><a class="socb" href="#">𝕏</a><a class="socb" href="#">in</a><a class="socb" href="#">yt</a><a class="socb" href="#">gh</a></div>
   </div>
 </footer>
 
 <script>
-// ════════════════════════════════════════
-//  CURSOR
-// ════════════════════════════════════════
-const cursor = document.getElementById('cursor');
-const ring   = document.getElementById('cursor-ring');
+// ══════════════════════════════════════════
+// CURSOR
+// ══════════════════════════════════════════
+const cur=document.getElementById('cur'),curR=document.getElementById('cur-r');
 let rx=0,ry=0;
-document.addEventListener('mousemove',e=>{
-  cursor.style.left=e.clientX+'px'; cursor.style.top=e.clientY+'px';
+document.addEventListener('mousemove',e=>{cur.style.left=e.clientX+'px';cur.style.top=e.clientY+'px';});
+(function animC(){curR.style.left=rx+'px';curR.style.top=ry+'px';requestAnimationFrame(animC);})();
+document.addEventListener('mousemove',e=>{rx+=(e.clientX-rx)*.12;ry+=(e.clientY-ry)*.12;});
+document.querySelectorAll('a,button,.fc,.tc,.pc,.chip,.sw-item').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{cur.style.width='16px';cur.style.height='16px';curR.style.width='52px';curR.style.height='52px';curR.style.borderColor='rgba(245,166,35,.8)';});
+  el.addEventListener('mouseleave',()=>{cur.style.width='10px';cur.style.height='10px';curR.style.width='36px';curR.style.height='36px';curR.style.borderColor='rgba(245,166,35,.5)';});
 });
-function animCursor(){
-  ring.style.left=rx+'px'; ring.style.top=ry+'px';
-  requestAnimationFrame(animCursor);
+
+// ══════════════════════════════════════════
+// REVEAL
+// ══════════════════════════════════════════
+const rv=new IntersectionObserver(e=>e.forEach(x=>{if(x.isIntersecting)x.target.classList.add('vis');}),{threshold:.1});
+document.querySelectorAll('.rv').forEach(e=>rv.observe(e));
+window.addEventListener('scroll',()=>{const n=document.querySelector('nav');n.style.borderBottomColor=scrollY>40?'rgba(255,255,255,.1)':'rgba(255,255,255,.06)';});
+
+// ══════════════════════════════════════════
+// ─── PURE WebGL 3D ENGINE (no deps) ───
+// ══════════════════════════════════════════
+
+// ── Math utils ──
+const M={
+  identity:()=>new Float32Array([1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1]),
+  multiply:(a,b)=>{const r=new Float32Array(16);for(let i=0;i<4;i++)for(let j=0;j<4;j++){let s=0;for(let k=0;k<4;k++)s+=a[i*4+k]*b[k*4+j];r[i*4+j]=s;}return r;},
+  perspective:(fov,asp,near,far)=>{const f=1/Math.tan(fov/2),nf=1/(near-far);return new Float32Array([f/asp,0,0,0, 0,f,0,0, 0,0,(far+near)*nf,-1, 0,0,2*far*near*nf,0]);},
+  lookAt:(eye,ctr,up)=>{
+    let fx=ctr[0]-eye[0],fy=ctr[1]-eye[1],fz=ctr[2]-eye[2];
+    let fl=Math.sqrt(fx*fx+fy*fy+fz*fz);fx/=fl;fy/=fl;fz/=fl;
+    let sx=fy*up[2]-fz*up[1],sy=fz*up[0]-fx*up[2],sz=fx*up[1]-fy*up[0];
+    let sl=Math.sqrt(sx*sx+sy*sy+sz*sz);sx/=sl;sy/=sl;sz/=sl;
+    let ux=sy*fz-sz*fy,uy=sz*fx-sx*fz,uz=sx*fy-sy*fx;
+    return new Float32Array([sx,ux,-fx,0, sy,uy,-fy,0, sz,uz,-fz,0, -(sx*eye[0]+sy*eye[1]+sz*eye[2]),-(ux*eye[0]+uy*eye[1]+uz*eye[2]),fx*eye[0]+fy*eye[1]+fz*eye[2],1]);
+  },
+  translation:(tx,ty,tz)=>{const m=M.identity();m[12]=tx;m[13]=ty;m[14]=tz;return m;},
+  scale:(sx,sy,sz)=>{const m=M.identity();m[0]=sx;m[5]=sy;m[10]=sz;return m;},
+  rotY:(a)=>{const m=M.identity(),c=Math.cos(a),s=Math.sin(a);m[0]=c;m[2]=s;m[8]=-s;m[10]=c;return m;},
+  rotX:(a)=>{const m=M.identity(),c=Math.cos(a),s=Math.sin(a);m[5]=c;m[6]=-s;m[9]=s;m[10]=c;return m;},
+  normalMatrix:(mv)=>{
+    // 3x3 inverse transpose
+    const a=mv;
+    const b00=a[0]*a[5]-a[1]*a[4],b01=a[0]*a[6]-a[2]*a[4],b02=a[0]*a[7]-a[3]*a[4];
+    const b03=a[1]*a[6]-a[2]*a[5],b04=a[1]*a[7]-a[3]*a[5],b05=a[2]*a[7]-a[3]*a[6];
+    const b06=a[8]*a[13]-a[9]*a[12],b07=a[8]*a[14]-a[10]*a[12],b08=a[8]*a[15]-a[11]*a[12];
+    const b09=a[9]*a[14]-a[10]*a[13],b10=a[9]*a[15]-a[11]*a[13],b11=a[10]*a[15]-a[11]*a[14];
+    const det=b00*b11-b01*b10+b02*b09+b03*b08-b04*b07+b05*b06;
+    if(!det)return M.identity();
+    const d=1/det;
+    const nm=new Float32Array(9);
+    nm[0]=(a[5]*b11-a[6]*b10+a[7]*b09)*d;
+    nm[1]=(a[6]*b08-a[4]*b11-a[7]*b07)*d;
+    nm[2]=(a[4]*b10-a[5]*b08+a[7]*b06)*d;
+    nm[3]=(a[2]*b10-a[1]*b11-a[3]*b09)*d;
+    nm[4]=(a[0]*b11-a[2]*b08+a[3]*b07)*d;
+    nm[5]=(a[1]*b08-a[0]*b10-a[3]*b06)*d;
+    nm[6]=(a[1]*b05-a[2]*b04+a[3]*b03)*d;
+    nm[7]=(a[2]*b03-a[0]*b05-a[3]*b02)*d;
+    nm[8]=(a[0]*b04-a[1]*b03+a[2]*b01)*d;
+    return nm;
+  }
+};
+
+// ── Geometry builders ──
+function boxGeometry(w,h,d){
+  const hw=w/2,hh=h/2,hd=d/2;
+  // 6 faces, each a quad (2 triangles)
+  const verts=[],norms=[],indices=[];
+  const faces=[
+    // position offsets, normal
+    [[[-hw,-hh, hd],[hw,-hh, hd],[hw,hh, hd],[-hw,hh, hd]],[0,0,1]],
+    [[[hw,-hh,-hd],[-hw,-hh,-hd],[-hw,hh,-hd],[hw,hh,-hd]],[0,0,-1]],
+    [[[-hw,-hh,-hd],[-hw,-hh, hd],[-hw,hh, hd],[-hw,hh,-hd]],[-1,0,0]],
+    [[[hw,-hh, hd],[hw,-hh,-hd],[hw,hh,-hd],[hw,hh, hd]],[1,0,0]],
+    [[[-hw,hh, hd],[hw,hh, hd],[hw,hh,-hd],[-hw,hh,-hd]],[0,1,0]],
+    [[[hw,-hh, hd],[-hw,-hh, hd],[-hw,-hh,-hd],[hw,-hh,-hd]],[0,-1,0]],
+  ];
+  faces.forEach(([pts,n])=>{
+    const base=verts.length/3;
+    pts.forEach(p=>{verts.push(...p);norms.push(...n);});
+    indices.push(base,base+1,base+2, base,base+2,base+3);
+  });
+  return{verts:new Float32Array(verts),norms:new Float32Array(norms),indices:new Uint16Array(indices)};
 }
-document.addEventListener('mousemove',e=>{ rx+=(e.clientX-rx)*0.12; ry+=(e.clientY-ry)*0.12; });
-animCursor();
-document.querySelectorAll('a,button,.feature-card,.testi-card,.price-card,.tool-chip,.sw-tree-item').forEach(el=>{
-  el.addEventListener('mouseenter',()=>{ cursor.style.width='16px'; cursor.style.height='16px'; ring.style.width='52px'; ring.style.height='52px'; ring.style.borderColor='rgba(245,166,35,0.8)'; });
-  el.addEventListener('mouseleave',()=>{ cursor.style.width='10px'; cursor.style.height='10px'; ring.style.width='36px'; ring.style.height='36px'; ring.style.borderColor='rgba(245,166,35,0.5)'; });
-});
 
-// ════════════════════════════════════════
-//  SCROLL REVEAL
-// ════════════════════════════════════════
-const observer = new IntersectionObserver(entries=>{
-  entries.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('visible'); });
-},{threshold:0.1});
-document.querySelectorAll('.reveal').forEach(el=>observer.observe(el));
+function cylinderGeometry(rt,rb,h,segs){
+  const verts=[],norms=[],indices=[];
+  const hh=h/2;
+  for(let i=0;i<=segs;i++){
+    const a=i/segs*Math.PI*2,c=Math.cos(a),s=Math.sin(a);
+    verts.push(rt*c,hh,rt*s); norms.push(c,0,s);
+    verts.push(rb*c,-hh,rb*s); norms.push(c,0,s);
+    if(i<segs){const b=i*2;indices.push(b,b+1,b+2, b+1,b+3,b+2);}
+  }
+  // caps
+  const top=verts.length/3;
+  verts.push(0,hh,0); norms.push(0,1,0);
+  for(let i=0;i<segs;i++){const a=i/segs*Math.PI*2;verts.push(rt*Math.cos(a),hh,rt*Math.sin(a));norms.push(0,1,0);}
+  for(let i=0;i<segs;i++)indices.push(top,top+1+(i+1)%segs,top+1+i);
+  const bot=verts.length/3;
+  verts.push(0,-hh,0); norms.push(0,-1,0);
+  for(let i=0;i<segs;i++){const a=i/segs*Math.PI*2;verts.push(rb*Math.cos(a),-hh,rb*Math.sin(a));norms.push(0,-1,0);}
+  for(let i=0;i<segs;i++)indices.push(bot,bot+1+i,bot+1+(i+1)%segs);
+  return{verts:new Float32Array(verts),norms:new Float32Array(norms),indices:new Uint16Array(indices)};
+}
 
-// ════════════════════════════════════════
-//  NAV SCROLL
-// ════════════════════════════════════════
-window.addEventListener('scroll',()=>{
-  const nav=document.querySelector('nav');
-  nav.style.borderBottomColor=window.scrollY>40?'rgba(255,255,255,0.1)':'rgba(255,255,255,0.06)';
-});
+function sphereGeometry(r,lat,lon){
+  const verts=[],norms=[],indices=[];
+  for(let y=0;y<=lat;y++){
+    const theta=y/lat*Math.PI;
+    for(let x=0;x<=lon;x++){
+      const phi=x/lon*Math.PI*2;
+      const nx=Math.sin(theta)*Math.cos(phi),ny=Math.cos(theta),nz=Math.sin(theta)*Math.sin(phi);
+      verts.push(r*nx,r*ny,r*nz); norms.push(nx,ny,nz);
+    }
+  }
+  for(let y=0;y<lat;y++)for(let x=0;x<lon;x++){
+    const a=y*(lon+1)+x,b=a+lon+1;
+    indices.push(a,b,a+1, b,b+1,a+1);
+  }
+  return{verts:new Float32Array(verts),norms:new Float32Array(norms),indices:new Uint16Array(indices)};
+}
 
-// ════════════════════════════════════════
-//  THREE.JS — HERO BUILDING
-// ════════════════════════════════════════
-(function initHeroViewer(){
-  const canvas = document.getElementById('three-canvas-hero');
-  if(!canvas||!window.THREE) return;
+// ── Shader sources ──
+const VS=`
+attribute vec3 a_pos;
+attribute vec3 a_norm;
+uniform mat4 u_mvp;
+uniform mat4 u_mv;
+uniform mat3 u_nm;
+uniform vec4 u_color;
+uniform float u_alpha;
+varying vec3 v_norm;
+varying vec3 v_pos;
+void main(){
+  vec4 mv=u_mv*vec4(a_pos,1.0);
+  v_pos=mv.xyz;
+  v_norm=normalize(u_nm*a_norm);
+  gl_Position=u_mvp*vec4(a_pos,1.0);
+}`;
 
-  const W=canvas.clientWidth, H=400;
-  canvas.width=W*window.devicePixelRatio; canvas.height=H*window.devicePixelRatio;
-  canvas.style.width=W+'px'; canvas.style.height=H+'px';
+const FS=`
+precision mediump float;
+uniform vec4 u_color;
+uniform float u_alpha;
+uniform vec3 u_lightDir;
+uniform vec3 u_lightDir2;
+varying vec3 v_norm;
+varying vec3 v_pos;
+void main(){
+  vec3 n=normalize(v_norm);
+  float d1=max(dot(n,normalize(u_lightDir)),0.0);
+  float d2=max(dot(n,normalize(u_lightDir2)),0.0)*0.3;
+  float amb=0.35;
+  float diff=amb+d1*0.6+d2;
+  vec3 col=u_color.rgb*diff;
+  // rim
+  vec3 vdir=normalize(-v_pos);
+  float rim=pow(1.0-max(dot(n,vdir),0.0),3.0)*0.2;
+  col+=rim*vec3(0.3,0.5,0.8);
+  gl_FragColor=vec4(col,u_alpha);
+}`;
 
-  const renderer = new THREE.WebGLRenderer({canvas,antialias:true,alpha:true});
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
-  renderer.setSize(W,H);
-  renderer.shadowMap.enabled=true;
-  renderer.shadowMap.type=THREE.PCFSoftShadowMap;
-  renderer.toneMapping=THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure=1.1;
+const VS_WF=`
+attribute vec3 a_pos;
+uniform mat4 u_mvp;
+void main(){gl_Position=u_mvp*vec4(a_pos,1.0);}`;
+const FS_WF=`
+precision mediump float;
+uniform vec4 u_color;
+void main(){gl_FragColor=u_color;}`;
 
-  const scene = new THREE.Scene();
-  scene.background=new THREE.Color(0x0a0d12);
-  scene.fog=new THREE.FogExp2(0x0a0d12,0.012);
+// ── WebGL init ──
+function initGL(canvas){
+  const gl=canvas.getContext('webgl',{antialias:true,alpha:true,preserveDrawingBuffer:false});
+  if(!gl)return null;
+  return gl;
+}
 
-  const camera = new THREE.PerspectiveCamera(55,W/H,0.1,200);
-  camera.position.set(12,8,14);
-  camera.lookAt(0,2,0);
+function compileShader(gl,src,type){
+  const sh=gl.createShader(type);
+  gl.shaderSource(sh,src); gl.compileShader(sh);
+  return sh;
+}
+function createProgram(gl,vs,fs){
+  const p=gl.createProgram();
+  gl.attachShader(p,compileShader(gl,vs,gl.VERTEX_SHADER));
+  gl.attachShader(p,compileShader(gl,fs,gl.FRAGMENT_SHADER));
+  gl.linkProgram(p); return p;
+}
 
-  // Lights
-  const ambient=new THREE.AmbientLight(0x8899bb,0.4);
-  scene.add(ambient);
-  const sun=new THREE.DirectionalLight(0xfff5e0,1.8);
-  sun.position.set(20,30,15);
-  sun.castShadow=true;
-  sun.shadow.mapSize.set(2048,2048);
-  sun.shadow.camera.near=0.1; sun.shadow.camera.far=100;
-  sun.shadow.camera.left=-20; sun.shadow.camera.right=20;
-  sun.shadow.camera.top=20; sun.shadow.camera.bottom=-20;
-  sun.shadow.bias=-0.001;
-  scene.add(sun);
-  const fill=new THREE.DirectionalLight(0x4488ff,0.3);
-  fill.position.set(-10,5,-5);
-  scene.add(fill);
-  const rim=new THREE.PointLight(0xf5a623,0.6,30);
-  rim.position.set(-8,12,-8);
-  scene.add(rim);
+// ── Mesh class ──
+function createMesh(gl,geo,color,alpha,layer,name){
+  const vb=gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER,vb); gl.bufferData(gl.ARRAY_BUFFER,geo.verts,gl.STATIC_DRAW);
+  const nb=gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER,nb); gl.bufferData(gl.ARRAY_BUFFER,geo.norms,gl.STATIC_DRAW);
+  const ib=gl.createBuffer(); gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,ib); gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,geo.indices,gl.STATIC_DRAW);
+  return{vb,nb,ib,count:geo.indices.length,color,alpha:alpha||1,layer:layer||'misc',name:name||'',visible:true,
+    pos:[0,0,0],origPos:[0,0,0],modelMatrix:M.identity()};
+}
 
-  // Grid
-  const gridHelper=new THREE.GridHelper(40,40,0x1a2030,0x111820);
-  gridHelper.material.opacity=0.4; gridHelper.material.transparent=true;
-  scene.add(gridHelper);
+function setMeshPos(mesh,x,y,z){
+  mesh.pos=[x,y,z]; mesh.origPos=[x,y,z];
+  mesh.modelMatrix=M.translation(x,y,z);
+}
 
-  // ── BUILD THE BUILDING ──
-  const building = new THREE.Group();
-  scene.add(building);
-
-  const mats = {
-    concrete: new THREE.MeshLambertMaterial({color:0x2a3040}),
-    facade:   new THREE.MeshLambertMaterial({color:0x3a4555,roughness:0.8}),
-    roof:     new THREE.MeshLambertMaterial({color:0x1e2530}),
-    glass:    new THREE.MeshLambertMaterial({color:0x6ab0ff,transparent:true,opacity:0.35,side:THREE.DoubleSide}),
-    floor:    new THREE.MeshLambertMaterial({color:0x181e28}),
-    terrain:  new THREE.MeshLambertMaterial({color:0x1a2218}),
-    accent:   new THREE.MeshLambertMaterial({color:0xf5a623}),
-    interior: new THREE.MeshLambertMaterial({color:0x2c3040}),
-    wall_int: new THREE.MeshLambertMaterial({color:0x252c38}),
+// ── Scene builder ──
+function buildBuilding(gl){
+  const meshes=[];
+  // colors (rgb normalized)
+  const C={
+    concrete:[0.17,0.19,0.25], facade:[0.23,0.27,0.33], roof:[0.12,0.15,0.2],
+    glass:[0.42,0.69,1.0], floor:[0.11,0.13,0.17], terrain:[0.10,0.14,0.10],
+    accent:[0.96,0.65,0.14], wall_int:[0.15,0.18,0.22], brick:[0.18,0.12,0.07],
+    wood:[0.24,0.16,0.10], dark:[0.08,0.10,0.14], green:[0.18,0.3,0.13],
+    pipe_b:[0.29,0.62,1.0], pipe_t:[0.0,0.83,0.71]
   };
+  function add(geo,color,alpha,x,y,z,layer,name){
+    const m=createMesh(gl,geo,color,alpha,layer,name);
+    setMeshPos(m,x,y,z); meshes.push(m); return m;
+  }
+  function box(w,h,d,color,alpha,x,y,z,layer,name){return add(boxGeometry(w,h,d),color,alpha,x,y,z,layer,name);}
+  function cyl(rt,rb,h,seg,color,alpha,x,y,z,layer,name){return add(cylinderGeometry(rt,rb,h,seg),color,alpha,x,y,z,layer,name);}
+  function sph(r,lat,lon,color,alpha,x,y,z,layer,name){return add(sphereGeometry(r,lat,lon),color,alpha,x,y,z,layer,name);}
 
   // Terrain
-  const terrainGeo = new THREE.BoxGeometry(28,0.2,22);
-  const terrain = new THREE.Mesh(terrainGeo, mats.terrain);
-  terrain.position.y=-0.1; terrain.receiveShadow=true;
-  terrain.userData.layer='terrain'; terrain.userData.name='Terrain';
-  building.add(terrain);
+  box(30,.2,24,C.terrain,1,0,-.1,0,'terrain','Terrain');
+  box(14,.04,18,C.dark,1,0,.02,0,'terrain','Dalles ext.');
 
-  // Paving
-  const pavGeo = new THREE.BoxGeometry(12,0.05,16);
-  const pav = new THREE.Mesh(pavGeo, new THREE.MeshLambertMaterial({color:0x20262f}));
-  pav.position.set(0,0,0); pav.receiveShadow=true;
-  building.add(pav);
+  // ── RDC ──
+  box(10,.22,8,C.floor,1,0,.11,0,'structure','Dalle RDC');
+  // walls
+  box(10,3,.2,C.facade,1,0,1.6,4,'facade','Mur arrière');
+  box(.2,3,8,C.facade,1,-5,1.6,0,'facade','Mur gauche');
+  box(.2,3,8,C.facade,1,5,1.6,0,'facade','Mur droit');
+  // front facade: pillars
+  box(1.6,3,.2,C.facade,1,-4,1.6,-4,'facade','Pilier gauche');
+  box(1.6,3,.2,C.facade,1,4,1.6,-4,'facade','Pilier droit');
+  box(10,.38,.2,C.facade,1,0,2.81,-4,'facade','Linteau');
+  box(10,.55,.2,C.facade,1,0,.275,-4,'facade','Appui');
+  // windows RDC
+  box(2.4,2,.05,C.glass,.38,-2.2,1.6,-4,'facade','Vitrage G');
+  box(2.4,2,.05,C.glass,.38,0,1.6,-4,'facade','Vitrage C');
+  box(2.4,2,.05,C.glass,.38,2.2,1.6,-4,'facade','Vitrage D');
+  // side windows
+  box(.05,1.6,2.4,C.glass,.35,-5,1.8,0,'facade','Fenêtre G');
+  box(.05,1.6,2.4,C.glass,.35,5,1.8,0,'facade','Fenêtre D');
+  // interior walls
+  box(.14,2.8,5,C.wall_int,1,0,1.4,.5,'structure','Cloison centrale');
+  box(4.8,.12,7.6,C.dark,1,0,.18,0,'structure','Sol intérieur');
 
-  // ── RDC (ground floor) ──
-  function makeFloor(y,w,d,name){
-    const g=new THREE.BoxGeometry(w,0.25,d);
-    const m=new THREE.Mesh(g,mats.floor);
-    m.position.y=y; m.receiveShadow=true; m.castShadow=true;
-    m.userData.layer='structure'; m.userData.name=name;
-    return m;
-  }
-  function makeWall(x,y,z,w,h,d,mat,layer,name){
-    const g=new THREE.BoxGeometry(w,h,d);
-    const m=new THREE.Mesh(g,mat);
-    m.position.set(x,y,z); m.castShadow=true; m.receiveShadow=true;
-    m.userData.layer=layer||'facade'; m.userData.name=name||'Mur';
-    return m;
-  }
+  // ── R+1 ──
+  box(10,.22,8,C.floor,1,0,3.31,0,'structure','Dalle R+1');
+  box(10,3.3,.2,C.facade,1,0,4.87,4,'facade','Mur arr. R+1');
+  box(.2,3.3,8,C.facade,1,-5,4.87,0,'facade','Mur G R+1');
+  box(.2,3.3,8,C.facade,1,5,4.87,0,'facade','Mur D R+1');
+  box(3.8,3.3,.2,C.facade,1,-3,4.87,-4,'facade','Panneau G R+1');
+  box(3.8,3.3,.2,C.facade,1,3,4.87,-4,'facade','Panneau D R+1');
+  box(1.8,2.5,.05,C.glass,.38,0,5.27,-4,'facade','Vitrage R+1');
+  // accent stripe
+  box(10,.14,.18,C.accent,1,0,3.28,-4.06,'facade','Bandeau');
 
-  // RDC floor slab
-  building.add(makeFloor(0,10,8,'Dalle RDC'));
+  // ── TOITURE ──
+  box(10.4,.34,8.4,C.roof,1,0,6.59,0,'roof','Dalle toiture');
+  box(.2,.8,8.4,C.roof,1,-5.3,7.13,0,'roof','Acrotère G');
+  box(.2,.8,8.4,C.roof,1,5.3,7.13,0,'roof','Acrotère D');
+  box(10.4,.8,.2,C.roof,1,0,7.13,-4.3,'roof','Acrotère avant');
+  box(10.4,.8,.2,C.roof,1,0,7.13,4.3,'roof','Acrotère arrière');
+  // HVAC
+  box(2,.65,1.2,C.concrete,1,3,7.1,1,'roof','Groupe CVC');
+  cyl(.15,.15,.5,6,C.dark,1,2.5,7.5,1,'roof','Extracteur');
 
-  // RDC walls — main box (no front, replaced by facade + windows)
-  building.add(makeWall(0,1.6,4,10,3,0.2,mats.facade,'facade','Mur arrière'));
-  building.add(makeWall(-5,1.6,0,0.2,3,8,mats.facade,'facade','Mur gauche'));
-  building.add(makeWall(5,1.6,0,0.2,3,8,mats.facade,'facade','Mur droit'));
+  // ── BALCON & ESCALIER ──
+  box(4,.1,1.4,C.concrete,1,0,3.26,-4.7,'facade','Balcon');
+  for(let i=-1.8;i<=1.8;i+=.55){box(.05,.9,.05,C.accent,1,i,3.72,-5.3,'facade','Garde-corps');}
+  box(4,.05,.05,C.accent,1,0,4.17,-5.3,'facade','Main courante');
+  box(3.4,.07,1.15,C.accent,.7,0,2.86,-4.62,'facade','Auvent');
+  box(1.2,2.4,.06,C.dark,1,0,1.2,-4.04,'facade','Porte');
+  box(2.2,.09,.3,C.concrete,1,0,.05,-4.7,'facade','Marche 1');
+  box(2,.09,.3,C.concrete,1,0,.14,-5,'facade','Marche 2');
 
-  // Front facade with piliers and large windows
-  building.add(makeWall(-4,1.6,-4,1.8,3,0.2,mats.facade,'facade','Pilier G'));
-  building.add(makeWall(4,1.6,-4,1.8,3,0.2,mats.facade,'facade','Pilier D'));
-  building.add(makeWall(0,2.8,-4,10,0.4,0.2,mats.facade,'facade','Linteau'));
-  building.add(makeWall(0,0.3,-4,10,0.6,0.2,mats.facade,'facade','Appui'));
-
-  // RDC glass windows (front)
-  const g1=new THREE.BoxGeometry(2.5,2,0.05);
-  [-2.2,0,2.2].forEach(x=>{
-    const win=new THREE.Mesh(g1,mats.glass);
-    win.position.set(x,1.6,-4); win.userData.layer='facade'; win.userData.name='Vitrage';
-    building.add(win);
+  // ── TREES ──
+  [[-7,-2],[-7,3],[7,-2],[7,3],[7,0]].forEach(([x,z])=>{
+    cyl(.1,.12,1.2,6,C.brick,1,x,.6,z,'terrain','Tronc');
+    sph(.65,7,7,C.green,1,x,1.8,z,'terrain','Feuillage');
   });
 
-  // Side window RDC
-  const swg=new THREE.BoxGeometry(0.05,1.6,2.5);
-  const sw1=new THREE.Mesh(swg,mats.glass); sw1.position.set(-5,1.8,0); sw1.userData.layer='facade';
-  const sw2=new THREE.Mesh(swg.clone(),mats.glass); sw2.position.set(5,1.8,0); sw2.userData.layer='facade';
-  building.add(sw1,sw2);
-
-  // Interior walls RDC
-  building.add(makeWall(0,1.5,0.5,0.15,2.8,5,mats.wall_int,'structure','Cloison centrale'));
-  building.add(makeWall(-2.5,1.5,1.5,4.8,2.8,0.12,mats.wall_int,'structure','Cloison transversale'));
-
-  // Interior floor details
-  const intFloor=new THREE.Mesh(new THREE.BoxGeometry(9.6,0.05,7.6),new THREE.MeshLambertMaterial({color:0x1d2230}));
-  intFloor.position.set(0,0.15,0); building.add(intFloor);
-
-  // R+1 floor slab
-  building.add(makeFloor(3.2,10,8,'Dalle R+1'));
-
-  // R+1 walls
-  building.add(makeWall(0,4.85,4,10,3.3,0.2,mats.facade,'facade','Mur arr. R+1'));
-  building.add(makeWall(-5,4.85,0,0.2,3.3,8,mats.facade,'facade','Mur G R+1'));
-  building.add(makeWall(5,4.85,0,0.2,3.3,8,mats.facade,'facade','Mur D R+1'));
-
-  // R+1 front panels (more solid)
-  building.add(makeWall(-3,4.85,-4,3.5,3.3,0.2,mats.facade,'facade','Panneau G R+1'));
-  building.add(makeWall(3,4.85,-4,3.5,3.3,0.2,mats.facade,'facade','Panneau D R+1'));
-
-  // R+1 windows (horizontal bands)
-  const band1=new THREE.Mesh(new THREE.BoxGeometry(2.4,1.6,0.05),mats.glass);
-  band1.position.set(0,5.2,-4); band1.userData.layer='facade'; building.add(band1);
-
-  // R+1 accent stripe
-  const stripe=new THREE.Mesh(new THREE.BoxGeometry(10,0.15,0.2),mats.accent);
-  stripe.position.set(0,3.25,-4.05); building.add(stripe);
-
-  // Flat roof
-  const roofGeo=new THREE.BoxGeometry(10.4,0.35,8.4);
-  const roof=new THREE.Mesh(roofGeo,mats.roof);
-  roof.position.set(0,6.55,0); roof.castShadow=true; roof.userData.layer='toiture';
-  building.add(roof);
-
-  // Parapet
-  [-5.3,5.3].forEach(x=>{
-    const p=new THREE.Mesh(new THREE.BoxGeometry(0.2,0.8,8.4),mats.roof);
-    p.position.set(x,7.1,0); building.add(p);
-  });
-  [-4.3,4.3].forEach(z=>{
-    const p=new THREE.Mesh(new THREE.BoxGeometry(10.4,0.8,0.2),mats.roof);
-    p.position.set(0,7.1,z); building.add(p);
-  });
-
-  // Rooftop equipment (HVAC box)
-  const hvac=new THREE.Mesh(new THREE.BoxGeometry(2,0.7,1.2),mats.concrete);
-  hvac.position.set(3,7.22,1); building.add(hvac);
-  const hvac2=new THREE.Mesh(new THREE.BoxGeometry(0.4,0.5,0.4),new THREE.MeshLambertMaterial({color:0x888}));
-  hvac2.position.set(2.5,7.6,1); building.add(hvac2);
-
-  // Balcony R+1
-  const balc=new THREE.Mesh(new THREE.BoxGeometry(4,0.12,1.4),mats.concrete);
-  balc.position.set(0,3.28,-4.7); building.add(balc);
-  // Balcony railing
-  for(let i=-1.8;i<=1.8;i+=0.6){
-    const rail=new THREE.Mesh(new THREE.BoxGeometry(0.05,0.9,0.05),mats.accent);
-    rail.position.set(i,3.75,-5.3); building.add(rail);
-  }
-  const railTop=new THREE.Mesh(new THREE.BoxGeometry(4,0.05,0.05),mats.accent);
-  railTop.position.set(0,4.2,-5.3); building.add(railTop);
-
-  // Entrance canopy
-  const canopy=new THREE.Mesh(new THREE.BoxGeometry(3.5,0.08,1.2),new THREE.MeshLambertMaterial({color:0xf5a623,transparent:true,opacity:0.7}));
-  canopy.position.set(0,2.8,-4.6); building.add(canopy);
-
-  // Entrance door
-  const door=new THREE.Mesh(new THREE.BoxGeometry(1.2,2.4,0.06),new THREE.MeshLambertMaterial({color:0x1a2030}));
-  door.position.set(0,1.2,-4.02); building.add(door);
-
-  // Steps
-  [[0,0.05,-4.7,2.4,0.1,0.3],[0,0.15,-5.0,2.2,0.1,0.3]].forEach(([x,y,z,w,h,d])=>{
-    const s=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mats.concrete);
-    s.position.set(x,y,z); building.add(s);
-  });
-
-  // Trees
-  function makeTree(x,z){
-    const trunk=new THREE.Mesh(new THREE.CylinderGeometry(0.1,0.12,1.2,6),new THREE.MeshLambertMaterial({color:0x3a2a18}));
-    trunk.position.set(x,0.6,z);
-    const foliage=new THREE.Mesh(new THREE.SphereGeometry(0.7,8,6),new THREE.MeshLambertMaterial({color:0x2d4a20}));
-    foliage.position.set(x,1.8,z);
-    building.add(trunk,foliage);
-  }
-  makeTree(-7,-3); makeTree(-7,3); makeTree(7,-3); makeTree(7,3); makeTree(7,0);
-
-  // MEP pipes (hidden by default)
-  const mepGroup=new THREE.Group(); mepGroup.visible=false; mepGroup.userData.layer='mep';
-  const pipeMat=new THREE.MeshLambertMaterial({color:0x4a9eff});
-  for(let i=0;i<4;i++){
-    const pipe=new THREE.Mesh(new THREE.CylinderGeometry(0.06,0.06,5,8),pipeMat);
-    pipe.rotation.z=Math.PI/2; pipe.position.set(-4+i*2,2.2,1.5);
-    mepGroup.add(pipe);
-  }
-  const pipeMat2=new THREE.MeshLambertMaterial({color:0x00d4b4});
+  // ── MEP (hidden) ──
+  for(let i=0;i<4;i++){const m=cyl(.055,.055,5,6,C.pipe_b,1,-3+i*2,2.2,1.5,'mep','Gaine CVC');m.visible=false;}
   for(let i=0;i<3;i++){
-    const pipe=new THREE.Mesh(new THREE.CylinderGeometry(0.05,0.05,8,8),pipeMat2);
-    pipe.rotation.x=Math.PI/2; pipe.position.set(-3+i*3,1.8,-2);
-    mepGroup.add(pipe);
+    const g=cylinderGeometry(.045,.045,8,6);
+    const m=createMesh(gl,g,C.pipe_t,1,'mep','Colonne plomberie');
+    // rotate 90 around X
+    const rm=M.multiply(M.translation(-2+i*3,1.8,-2),M.rotX(Math.PI/2));
+    m.modelMatrix=rm; m.origPos=[-2+i*3,1.8,-2]; m.visible=false;
+    meshes.push(m);
   }
-  building.add(mepGroup);
 
-  // Stars / particles background
-  const starGeo=new THREE.BufferGeometry();
-  const starCount=400;
-  const starPositions=new Float32Array(starCount*3);
-  for(let i=0;i<starCount;i++){
-    starPositions[i*3]=(Math.random()-0.5)*80;
-    starPositions[i*3+1]=Math.random()*30+2;
-    starPositions[i*3+2]=(Math.random()-0.5)*80-30;
+  return meshes;
+}
+
+function buildInterior(gl){
+  const meshes=[];
+  const C={
+    floor:[0.10,0.12,0.15], wall:[0.13,0.16,0.22], ceil:[0.11,0.13,0.18],
+    brick:[0.18,0.12,0.07], glass:[0.5,0.7,1.0], sofa:[0.18,0.2,0.26],
+    wood:[0.24,0.16,0.10], rug:[0.24,0.19,0.16], book1:[0.29,0.34,0.53],
+    book2:[0.5,0.29,0.29], book3:[0.29,0.5,0.32], plant:[0.18,0.36,0.13],
+    pot:[0.42,0.25,0.12], lamp:[0.1,0.1,0.1], white:[0.85,0.88,0.95],
+    accent:[0.96,0.65,0.14]
+  };
+  function add(geo,color,alpha,x,y,z,layer,name){
+    const m=createMesh(gl,geo,color,alpha,layer,name);
+    setMeshPos(m,x,y,z); meshes.push(m); return m;
   }
-  starGeo.setAttribute('position',new THREE.BufferAttribute(starPositions,3));
-  const stars=new THREE.Points(starGeo,new THREE.PointsMaterial({color:0xffffff,size:0.06,transparent:true,opacity:0.5}));
-  scene.add(stars);
+  function box(w,h,d,color,alpha,x,y,z,n){return add(boxGeometry(w,h,d),color,alpha,x,y,z,'room',n);}
 
-  // ── ORBIT CONTROLS ──
-  let isDragging=false, isShift=false;
-  let prevMX=0, prevMY=0;
-  let camTheta=0.7, camPhi=0.5, camRadius=20;
-  const camTarget=new THREE.Vector3(0,2,0);
+  box(8,.08,7,C.floor,1,0,0,0,'Sol');
+  box(8,3.4,.12,C.wall,1,0,1.7,-3.5,'Mur arrière');
+  box(.12,3.4,7,C.brick,1,-4,1.7,0,'Mur gauche');
+  box(.12,3.4,7,C.wall,1,4,1.7,0,'Mur droit');
+  box(8,.1,7,C.ceil,1,0,3.44,0,'Plafond');
+  // window R
+  box(.1,2.2,3,C.glass,.28,4,1.8,0,'Vitrage');
+  // sofa
+  box(3.2,.48,1,C.sofa,1,-.5,.38,-1,'Assise canapé');
+  box(3.2,.8,.2,C.sofa,1,-.5,.88,-1.5,'Dossier canapé');
+  box(.2,.66,1,C.sofa,1,-2,.43,-1,'Accoudoir G');
+  box(.2,.66,1,C.sofa,1,1.2,.43,-1,'Accoudoir D');
+  // table basse
+  box(1.6,.07,.8,C.wood,1,-.5,.6,.5,'Table basse');
+  [[-0.65,.25,.2],[.55,.25,.2],[-.65,.25,.85],[.55,.25,.85]].forEach(([x,y,z])=>box(.06,.5,.06,C.wood,1,x,y,z,'Pied table'));
+  // rug
+  box(3.6,.018,2.3,C.rug,1,-.5,.05,.05,'Tapis');
+  // bookshelf
+  box(.22,2.5,1.2,C.wood,1,-3.8,1.2,-2,'Bibliothèque');
+  [0,.75,1.5].forEach(i=>box(.22,.05,1.2,C.wood,1,-3.8,.5+i,-2,'Étagère'));
+  const bks=[C.book1,C.book2,C.book3,C.accent];
+  for(let i=0;i<8;i++)box(.07,.38+Math.random()*.18,.17,bks[i%4],1,-3.88,.75+Math.floor(i/4)*.8,-2.45+i%4*.15,'Livre');
+  // lamp
+  add(cylinderGeometry(.01,.01,.8,4),C.white,1,0,3.05,0,'room','Fil lampe');
+  add(cylinderGeometry(.28,.2,.24,12),C.lamp,1,0,2.63,0,'room','Abat-jour');
+  // plant
+  add(cylinderGeometry(.18,.14,.35,8),C.pot,1,3,.2,-2,'room','Pot');
+  add(sphereGeometry(.5,7,7),C.plant,1,3,.9,-2,'room','Plante');
+  // painting
+  box(1.5,1,.05,C.ceil,1,2.5,2,-3.45,'Cadre');
+  box(1.3,.85,.03,[.23,.25,.4],1,2.5,2,-3.43,'Toile');
+  return meshes;
+}
 
-  function updateCamera(){
-    camera.position.x = camTarget.x + camRadius*Math.sin(camPhi)*Math.sin(camTheta);
-    camera.position.y = camTarget.y + camRadius*Math.cos(camPhi);
-    camera.position.z = camTarget.z + camRadius*Math.sin(camPhi)*Math.cos(camTheta);
-    camera.lookAt(camTarget);
-  }
-  updateCamera();
+// ══════════════════════════════════════════
+// RENDER SCENE
+// ══════════════════════════════════════════
+function createRenderer(canvas){
+  const gl=initGL(canvas);
+  if(!gl)return null;
+  const prog=createProgram(gl,VS,FS);
+  const progWF=createProgram(gl,VS_WF,FS_WF);
+  gl.enable(gl.DEPTH_TEST);
+  gl.enable(gl.BLEND);
+  gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);
 
-  canvas.addEventListener('mousedown',e=>{ isDragging=true; isShift=e.shiftKey; prevMX=e.clientX; prevMY=e.clientY; });
-  window.addEventListener('mouseup',()=>isDragging=false);
-  window.addEventListener('mousemove',e=>{
-    if(!isDragging)return;
-    const dx=e.clientX-prevMX, dy=e.clientY-prevMY;
-    prevMX=e.clientX; prevMY=e.clientY;
-    if(isShift){
-      camTarget.x-=dx*0.02; camTarget.y+=dy*0.02;
+  function getAttrib(p,name){return gl.getAttribLocation(p,name);}
+  function getUnif(p,name){return gl.getUniformLocation(p,name);}
+
+  const locs={
+    pos:getAttrib(prog,'a_pos'), norm:getAttrib(prog,'a_norm'),
+    mvp:getUnif(prog,'u_mvp'), mv:getUnif(prog,'u_mv'), nm:getUnif(prog,'u_nm'),
+    color:getUnif(prog,'u_color'), alpha:getUnif(prog,'u_alpha'),
+    ld:getUnif(prog,'u_lightDir'), ld2:getUnif(prog,'u_lightDir2'),
+  };
+  const locsWF={
+    pos:getAttrib(progWF,'a_pos'),
+    mvp:getUnif(progWF,'u_mvp'), color:getUnif(progWF,'u_color'),
+  };
+
+  function drawMesh(mesh,proj,view,mode){
+    if(!mesh.visible)return;
+    const mvp=M.multiply(proj,M.multiply(view,mesh.modelMatrix));
+    const mv=M.multiply(view,mesh.modelMatrix);
+    const nm=M.normalMatrix(mv);
+    const isWF=(mode==='wf');
+    const p=isWF?progWF:prog;
+    gl.useProgram(p);
+
+    if(isWF){
+      gl.bindBuffer(gl.ARRAY_BUFFER,mesh.vb);
+      gl.enableVertexAttribArray(locsWF.pos);
+      gl.vertexAttribPointer(locsWF.pos,3,gl.FLOAT,false,0,0);
+      gl.uniformMatrix4fv(locsWF.mvp,false,mvp);
+      const wc=mesh.color;
+      gl.uniform4f(locsWF.color,wc[0]*.5+.2,wc[1]*.5+.2,wc[2]*.5+.3,.7);
     } else {
-      camTheta-=dx*0.008; camPhi=Math.max(0.1,Math.min(Math.PI*0.48,camPhi-dy*0.008));
+      gl.bindBuffer(gl.ARRAY_BUFFER,mesh.vb);
+      gl.enableVertexAttribArray(locs.pos);
+      gl.vertexAttribPointer(locs.pos,3,gl.FLOAT,false,0,0);
+      gl.bindBuffer(gl.ARRAY_BUFFER,mesh.nb);
+      gl.enableVertexAttribArray(locs.norm);
+      gl.vertexAttribPointer(locs.norm,3,gl.FLOAT,false,0,0);
+      gl.uniformMatrix4fv(locs.mvp,false,mvp);
+      gl.uniformMatrix4fv(locs.mv,false,mv);
+      gl.uniformMatrix3fv(locs.nm,false,nm);
+      const c=mesh.color;
+      let alpha=mesh.alpha;
+      if(mode==='int'&&mesh.layer==='facade') alpha=.15;
+      if(mode==='rx'&&mesh.layer!=='terrain'&&mesh.layer!=='mep') alpha=.22;
+      gl.uniform4f(locs.color,c[0],c[1],c[2],1.0);
+      gl.uniform1f(locs.alpha,alpha);
+      gl.uniform3f(locs.ld,.7,.9,.5);
+      gl.uniform3f(locs.ld2,-.5,.3,-.4);
     }
-    updateCamera();
+
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,mesh.ib);
+    gl.drawElements(isWF?gl.LINES:gl.TRIANGLES,mesh.count,gl.UNSIGNED_SHORT,0);
+  }
+
+  function render(meshes,proj,view,mode){
+    const W=canvas.clientWidth, H=canvas.clientHeight;
+    if(canvas.width!==W*devicePixelRatio||canvas.height!==H*devicePixelRatio){
+      canvas.width=W*devicePixelRatio; canvas.height=H*devicePixelRatio;
+      gl.viewport(0,0,canvas.width,canvas.height);
+    }
+    gl.viewport(0,0,canvas.width,canvas.height);
+    gl.clearColor(.04,.05,.07,1);
+    gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
+
+    // Draw opaque first, then transparent
+    const opaque=meshes.filter(m=>m.visible&&(m.alpha>=0.99||mode==='wf'||mode==='rx'));
+    const trans=meshes.filter(m=>m.visible&&m.alpha<0.99&&mode!=='wf'&&mode!=='rx');
+    opaque.forEach(m=>drawMesh(m,proj,view,mode));
+    gl.depthMask(false);
+    trans.forEach(m=>drawMesh(m,proj,view,mode));
+    gl.depthMask(true);
+  }
+  return{render,gl};
+}
+
+// ══════════════════════════════════════════
+// ORBIT CAMERA
+// ══════════════════════════════════════════
+function createOrbitCamera(canvas,initTheta,initPhi,initR,initTarget){
+  let theta=initTheta,phi=initPhi,radius=initR;
+  let target=[...initTarget];
+  let dragging=false,shift=false,pX=0,pY=0;
+  let autoRotate=true;
+
+  canvas.addEventListener('mousedown',e=>{dragging=true;shift=e.shiftKey;pX=e.clientX;pY=e.clientY;autoRotate=false;});
+  window.addEventListener('mouseup',()=>{dragging=false;});
+  window.addEventListener('mousemove',e=>{
+    if(!dragging)return;
+    const dx=e.clientX-pX,dy=e.clientY-pY;pX=e.clientX;pY=e.clientY;
+    if(shift){target[0]-=dx*.025;target[1]+=dy*.025;}
+    else{theta-=dx*.008;phi=Math.max(.06,Math.min(Math.PI*.47,phi+dy*.008));}
   });
-  canvas.addEventListener('wheel',e=>{
-    e.preventDefault(); camRadius=Math.max(4,Math.min(40,camRadius+e.deltaY*0.03));
-    updateCamera();
-  },{passive:false});
+  canvas.addEventListener('wheel',e=>{e.preventDefault();radius=Math.max(4,Math.min(45,radius+e.deltaY*.035));},{passive:false});
 
   // Touch
-  let lastTouchDist=0;
-  canvas.addEventListener('touchstart',e=>{ if(e.touches.length===1){ isDragging=true; prevMX=e.touches[0].clientX; prevMY=e.touches[0].clientY; } if(e.touches.length===2){ lastTouchDist=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY); } },{passive:true});
-  canvas.addEventListener('touchend',()=>isDragging=false,{passive:true});
+  let t0d=0;
+  canvas.addEventListener('touchstart',e=>{if(e.touches.length===1){dragging=true;pX=e.touches[0].clientX;pY=e.touches[0].clientY;autoRotate=false;}if(e.touches.length===2)t0d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);},{passive:true});
+  canvas.addEventListener('touchend',()=>{dragging=false;},{passive:true});
   canvas.addEventListener('touchmove',e=>{
-    if(e.touches.length===1&&isDragging){
-      const dx=e.touches[0].clientX-prevMX, dy=e.touches[0].clientY-prevMY;
-      prevMX=e.touches[0].clientX; prevMY=e.touches[0].clientY;
-      camTheta-=dx*0.012; camPhi=Math.max(0.1,Math.min(Math.PI*0.48,camPhi-dy*0.012));
-      updateCamera();
-    }
-    if(e.touches.length===2){
-      const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
-      camRadius=Math.max(4,Math.min(40,camRadius-(d-lastTouchDist)*0.05));
-      lastTouchDist=d; updateCamera();
-    }
+    if(e.touches.length===1&&dragging){const dx=e.touches[0].clientX-pX,dy=e.touches[0].clientY-pY;pX=e.touches[0].clientX;pY=e.touches[0].clientY;theta-=dx*.012;phi=Math.max(.06,Math.min(Math.PI*.47,phi+dy*.012));}
+    if(e.touches.length===2){const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);radius=Math.max(4,Math.min(45,radius-(d-t0d)*.06));t0d=d;}
   },{passive:true});
 
-  // ── VIEW MODES ──
-  let currentMode='exterior';
-  let explodeActive=false;
+  function getMatrix(){
+    if(autoRotate)theta+=.0008;
+    const eye=[
+      target[0]+radius*Math.sin(phi)*Math.sin(theta),
+      target[1]+radius*Math.cos(phi),
+      target[2]+radius*Math.sin(phi)*Math.cos(theta)
+    ];
+    return M.lookAt(eye,target,[0,1,0]);
+  }
+  function reset(t,ph,r,tgt){theta=t;phi=ph;radius=r;if(tgt)target=[...tgt];autoRotate=true;}
+  return{getMatrix,reset};
+}
+
+// ══════════════════════════════════════════
+// HERO VIEWER
+// ══════════════════════════════════════════
+(function(){
+  const canvas=document.getElementById('cv');
+  if(!canvas)return;
+  const rend=createRenderer(canvas);
+  if(!rend)return;
+  const {render}=rend;
+
+  let W=canvas.clientWidth||600,H=400;
+  canvas.width=W*devicePixelRatio; canvas.height=H*devicePixelRatio;
+  canvas.style.height=H+'px';
+  let proj=M.perspective(55*Math.PI/180,W/H,.2,120);
+
+  const cam=createOrbitCamera(canvas,.7,.48,22,[0,2,0]);
+  const meshes=buildBuilding(rend.gl);
+  const origPos=meshes.map(m=>({...m.origPos}));
+
+  let mode='ext';
   let explodeAmount=0;
-  const origPositions={};
-  building.children.forEach((m,i)=>{ origPositions[i]={x:m.position.x,y:m.position.y,z:m.position.z}; });
+  let sunOn=true;
 
-  const modeLabels={
-    exterior:'Vue extérieure — Glissez pour tourner',
-    interior:'Vue intérieure — Naviguez librement',
-    wireframe:'Mode filaire — Structure BIM',
-    xray:'Mode Rayons X — Réseaux cachés'
+  const modeInfo={
+    ext:{title:'RÉSIDENCE AURA',r1:'RDC + R+1',r2k:'Surface',r2:'285 m²',r3k:'Hauteur',r3:'7.2 m',r4k:'Volume',r4:'1 620 m³',lbl:'Vue extérieure — Glissez pour tourner'},
+    int:{title:'INTÉRIEUR RDC',r1:'6 pièces',r2k:'Surface nette',r2:'220 m²',r3k:'Hauteur',r3:'3.2 m',r4k:'Lumière',r4:'Nord / Sud',lbl:'Vue intérieure — Façade transparente'},
+    wf:{title:'STRUCTURE BIM',r1:'347 éléments',r2k:'Murs',r2:'48',r3k:'Dalles',r3:'6',r4k:'Ouvertures',r4:'24',lbl:'Mode filaire — Structure BIM'},
+    rx:{title:'RÉSEAUX MEP',r1:'12 circuits',r2k:'CVC',r2:'4 gaines',r3k:'Plomberie',r3:'8 colonnes',r4k:'Électricité',r4:'24 circuits',lbl:'Rayons X — Réseaux cachés'},
   };
 
-  const infoData={
-    exterior:{title:'RÉSIDENCE AURA',rows:[['Niveau','RDC + R+1'],['Surface','285 m²'],['Hauteur','7.2 m'],['Volume','1 620 m³']]},
-    interior:{title:'INTÉRIEUR RDC',rows:[['Pièces','6'],['Surface nette','220 m²'],['Hauteur','3.2 m'],['Lumière','Nord/Sud']]},
-    wireframe:{title:'STRUCTURE BIM',rows:[['Éléments','347'],['Murs','48'],['Dalles','6'],['Ouvertures','24']]},
-    xray:{title:'RÉSEAUX MEP',rows:[['Circuits','12'],['CVC','4 gaines'],['Plomberie','8 colonnes'],['Électricité','24 circuits']]}
-  };
-
-  function applyMode(mode){
-    currentMode=mode;
-    document.getElementById('mode-label').textContent=modeLabels[mode]||'';
-    const d=infoData[mode];
-    if(d){
-      document.getElementById('hero-info-title').textContent=d.title;
-      const rows=document.querySelectorAll('#hero-info-panel .oi-row');
-      d.rows.forEach((r,i)=>{ if(rows[i]){ rows[i].children[0].textContent=r[0]; rows[i].querySelector('.oi-val').textContent=r[1]; } });
-    }
-
-    // Reset all
-    building.children.forEach(m=>{
-      if(m.material){
-        m.material.wireframe=false;
-        m.material.transparent=m.material.opacity<1;
-        m.visible=true;
-      }
-    });
-    mepGroup.visible=false;
-    sun.visible=true;
-
-    if(mode==='exterior'){
-      camRadius=20; camPhi=0.5; camTheta=0.7; camTarget.set(0,2,0); updateCamera();
-    } else if(mode==='interior'){
-      camRadius=8; camPhi=1.3; camTheta=Math.PI; camTarget.set(0,1.5,0); updateCamera();
-      // Make facade transparent to see inside
-      building.children.forEach(m=>{
-        if(m.userData.layer==='facade'&&m!==balc){
-          m.material=new THREE.MeshLambertMaterial({color:0x3a4555,transparent:true,opacity:0.18,side:THREE.DoubleSide,depthWrite:false});
-        }
-      });
-    } else if(mode==='wireframe'){
-      camRadius=22; camPhi=0.45; camTheta=0.6; camTarget.set(0,3,0); updateCamera();
-      building.children.forEach(m=>{
-        if(m.material&&m.userData.layer!=='terrain'){
-          m.material=new THREE.MeshLambertMaterial({color:0x4a9eff,wireframe:true,transparent:true,opacity:0.7});
-        }
-      });
-    } else if(mode==='xray'){
-      camRadius=20; camPhi=0.5; camTheta=0.7; camTarget.set(0,2,0); updateCamera();
-      building.children.forEach(m=>{
-        if(m.material&&m.userData.layer!=='terrain'){
-          m.material=new THREE.MeshLambertMaterial({color:m.userData.layer==='facade'?0x4a9eff:0x2d3a4a,transparent:true,opacity:0.25,side:THREE.DoubleSide,depthWrite:false});
-        }
-      });
-      mepGroup.visible=true;
-    }
+  function applyMode(m){
+    mode=m;
+    const d=modeInfo[m];
+    document.getElementById('ov-title').textContent=d.title;
+    document.getElementById('ov-r1v').textContent=d.r1;
+    document.getElementById('ov-r2k').textContent=d.r2k;
+    document.getElementById('ov-r2v').textContent=d.r2;
+    document.getElementById('ov-r3k').textContent=d.r3k;
+    document.getElementById('ov-r3v').textContent=d.r3;
+    document.getElementById('ov-r4k').textContent=d.r4k;
+    document.getElementById('ov-r4v').textContent=d.r4;
+    document.getElementById('ov-mode-lbl').textContent=d.lbl;
+    // MEP
+    meshes.forEach(m2=>{if(m2.layer==='mep')m2.visible=(m==='rx');});
+    if(m==='ext')cam.reset(.7,.48,22,[0,2,0]);
+    else if(m==='int')cam.reset(Math.PI,1.25,9,[0,1.5,0]);
+    else if(m==='wf')cam.reset(.65,.42,24,[0,3,0]);
+    else if(m==='rx')cam.reset(.7,.48,22,[0,2,0]);
   }
 
-  document.querySelectorAll('.viewer-tab').forEach(tab=>{
-    tab.addEventListener('click',()=>{
-      document.querySelectorAll('.viewer-tab').forEach(t=>t.classList.remove('active'));
-      tab.classList.add('active');
-      applyMode(tab.dataset.mode);
+  document.querySelectorAll('.vtab').forEach(t=>{
+    t.addEventListener('click',()=>{
+      document.querySelectorAll('.vtab').forEach(x=>x.classList.remove('on'));
+      t.classList.add('on'); applyMode(t.dataset.m);
     });
   });
 
-  // Reset
-  document.getElementById('btn-reset').addEventListener('click',()=>{
-    camTheta=0.7; camPhi=0.5; camRadius=20; camTarget.set(0,2,0); updateCamera();
+  document.getElementById('breset').addEventListener('click',()=>cam.reset(.7,.48,22,[0,2,0]));
+
+  let explodeOpen=false;
+  document.getElementById('bexpl').addEventListener('click',function(){
+    explodeOpen=!explodeOpen;
+    document.getElementById('expl-panel').style.display=explodeOpen?'block':'none';
+    this.classList.toggle('on',explodeOpen);
+    if(!explodeOpen){document.getElementById('xsl').value=0;explodeAmount=0;applyExplode(0);}
   });
 
-  // Explode toggle
-  document.getElementById('btn-explode-toggle').addEventListener('click',function(){
-    explodeActive=!explodeActive;
-    document.getElementById('explode-bar').style.display=explodeActive?'block':'none';
-    this.style.background=explodeActive?'rgba(245,166,35,0.2)':'';
-    if(!explodeActive){ document.getElementById('explode-slider').value=0; explodeAmount=0; applyExplode(0); }
+  document.getElementById('bsun').addEventListener('click',function(){
+    sunOn=!sunOn; this.classList.toggle('on',sunOn);
   });
 
   function applyExplode(t){
-    // Explode layers vertically + outward
-    const layerOffsets={
-      terrain: {y:-0.3,s:0},
-      structure:{y:-0.6,s:0},
-      facade:  {y:0.2,s:0.8},
-      toiture: {y:2,s:0},
-      mep:     {y:1,s:0},
-    };
-    building.children.forEach((m,i)=>{
-      if(!origPositions[i])return;
-      const o=origPositions[i];
-      const layer=m.userData.layer||'facade';
-      const off=layerOffsets[layer]||{y:0,s:0};
-      m.position.y=o.y+off.y*t;
-      m.position.x=o.x+(o.x>0?1:-1)*off.s*t*(Math.abs(o.x)>0.5?1:0);
+    const layerY={terrain:-.3,structure:-.5,facade:.2,roof:2,mep:1};
+    const layerS={facade:.9};
+    meshes.forEach((m,i)=>{
+      const op=origPos[i]; const ly=m.layer;
+      const dy=(layerY[ly]||0)*t;
+      const ds=(layerS[ly]||0)*t;
+      const nx=op.x+(op.x>0?ds:-ds)*(Math.abs(op.x)>.3?1:0);
+      m.modelMatrix=M.translation(nx,op.y+dy,op.z);
     });
   }
 
-  document.getElementById('explode-slider').addEventListener('input',function(){
+  document.getElementById('xsl').addEventListener('input',function(){
     explodeAmount=this.value/100;
-    document.getElementById('explode-val').textContent=this.value+'%';
+    document.getElementById('xsl-val').textContent=this.value+'%';
     applyExplode(explodeAmount);
   });
 
-  // Sun toggle
-  document.getElementById('btn-sun').addEventListener('click',function(){
-    sun.visible=!sun.visible;
-    this.style.background=sun.visible?'rgba(245,166,35,0.15)':'';
-  });
-
   // Layer chips
-  document.querySelectorAll('.tool-chip').forEach(chip=>{
+  document.querySelectorAll('.chip').forEach(chip=>{
     chip.addEventListener('click',function(){
-      const layer=this.dataset.layer;
-      const active=this.classList.toggle('active');
-      if(layer==='mep'){ mepGroup.visible=active; return; }
-      building.children.forEach(m=>{ if(m.userData.layer===layer) m.visible=active; });
+      const layer=this.dataset.l;
+      const on=this.classList.toggle('on');
+      meshes.forEach(m=>{if(m.layer===layer)m.visible=on;});
     });
   });
-
-  // ── RAYCASTER for object selection ──
-  const raycaster=new THREE.Raycaster();
-  const mouse=new THREE.Vector2();
-  canvas.addEventListener('click',e=>{
-    const rect=canvas.getBoundingClientRect();
-    mouse.x=((e.clientX-rect.left)/rect.width)*2-1;
-    mouse.y=-((e.clientY-rect.top)/rect.height)*2+1;
-    raycaster.setFromCamera(mouse,camera);
-    const hits=raycaster.intersectObjects(building.children,true).filter(h=>h.object.userData.name);
-    if(hits.length){
-      const obj=hits[0].object;
-      document.getElementById('mode-label').textContent='Sélectionné : '+obj.userData.name;
-      // Flash selection
-      const origMat=obj.material;
-      obj.material=new THREE.MeshLambertMaterial({color:0xf5a623,transparent:true,opacity:0.7});
-      setTimeout(()=>{ if(currentMode==='exterior'||!obj.userData.exploded) obj.material=origMat; },800);
-    }
-  });
-
-  // ── ANIMATE ──
-  let t=0;
-  function animate(){
-    requestAnimationFrame(animate);
-    t+=0.005;
-    // Subtle building float
-    if(!isDragging) camTheta+=0.001;
-    updateCamera();
-    // Rim light movement
-    rim.position.x=Math.sin(t*0.4)*10;
-    rim.position.z=Math.cos(t*0.4)*10;
-    renderer.render(scene,camera);
-  }
-  animate();
 
   // Resize
-  window.addEventListener('resize',()=>{
-    const W2=canvas.clientWidth;
-    camera.aspect=W2/H; camera.updateProjectionMatrix();
-    renderer.setSize(W2,H);
-  });
+  function resize(){
+    W=canvas.clientWidth||600;
+    canvas.width=W*devicePixelRatio; canvas.height=H*devicePixelRatio;
+    proj=M.perspective(55*Math.PI/180,W/H,.2,120);
+  }
+  window.addEventListener('resize',resize); resize();
+
+  function loop(){
+    requestAnimationFrame(loop);
+    const view=cam.getMatrix();
+    render(meshes,proj,view,mode);
+  }
+  loop();
 })();
 
-// ════════════════════════════════════════
-//  THREE.JS — SHOWCASE INTERIOR VIEWER
-// ════════════════════════════════════════
-(function initShowcaseViewer(){
-  const canvas=document.getElementById('three-canvas-showcase');
-  if(!canvas||!window.THREE)return;
+// ══════════════════════════════════════════
+// SHOWCASE INTERIOR VIEWER
+// ══════════════════════════════════════════
+(function(){
+  const canvas=document.getElementById('cv2');
+  if(!canvas)return;
 
-  const W=canvas.clientWidth||340, H=canvas.clientHeight||300;
-  canvas.width=W*window.devicePixelRatio; canvas.height=H*window.devicePixelRatio;
-  canvas.style.width='100%'; canvas.style.height='100%';
-
-  const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true});
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
-  renderer.setSize(W,H); renderer.shadowMap.enabled=true;
-  renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=1.2;
-
-  const scene=new THREE.Scene(); scene.background=new THREE.Color(0x08090f);
-  const camera=new THREE.PerspectiveCamera(65,W/H,0.1,100);
-  camera.position.set(0,2.5,6); camera.lookAt(0,1,0);
-
-  // Lights interior
-  scene.add(new THREE.AmbientLight(0x8090b0,0.5));
-  const spot=new THREE.SpotLight(0xfff5e0,2,20,Math.PI/4,0.3);
-  spot.position.set(0,5,2); spot.castShadow=true; scene.add(spot);
-  const w1=new THREE.PointLight(0xc8dcff,0.8,12); w1.position.set(-3,2.8,-2); scene.add(w1);
-  const w2=new THREE.PointLight(0xc8dcff,0.8,12); w2.position.set(3,2.8,-2); scene.add(w2);
-  // Warm ceiling light
-  const ceil=new THREE.PointLight(0xffe8b0,1.2,15); ceil.position.set(0,3,0); scene.add(ceil);
-
-  // Room
-  const roomW=8, roomH=3.5, roomD=7;
-  const floorMat=new THREE.MeshLambertMaterial({color:0x1a1e26});
-  const wallMat=new THREE.MeshLambertMaterial({color:0x202534});
-  const ceilMat=new THREE.MeshLambertMaterial({color:0x191d26});
-  const woodMat=new THREE.MeshLambertMaterial({color:0x3d2a18});
-
-  // Floor
-  const floor=new THREE.Mesh(new THREE.BoxGeometry(roomW,0.1,roomD),floorMat);
-  floor.position.y=0; floor.receiveShadow=true; scene.add(floor);
-
-  // Walls (back, left, right)
-  const bwall=new THREE.Mesh(new THREE.BoxGeometry(roomW,roomH,0.15),wallMat);
-  bwall.position.set(0,roomH/2,-roomD/2); bwall.receiveShadow=true; scene.add(bwall);
-  const lwall=new THREE.Mesh(new THREE.BoxGeometry(0.15,roomH,roomD),wallMat);
-  lwall.position.set(-roomW/2,roomH/2,0); lwall.receiveShadow=true; scene.add(lwall);
-  const rwall=new THREE.Mesh(new THREE.BoxGeometry(0.15,roomH,roomD),wallMat);
-  rwall.position.set(roomW/2,roomH/2,0); rwall.receiveShadow=true; scene.add(rwall);
-
-  // Ceiling
-  const ceil2=new THREE.Mesh(new THREE.BoxGeometry(roomW,0.12,roomD),ceilMat);
-  ceil2.position.y=roomH; scene.add(ceil2);
-
-  // Brick wall left
-  const brickMat=new THREE.MeshLambertMaterial({color:0x2e1e12});
-  const brick=new THREE.Mesh(new THREE.BoxGeometry(0.14,roomH,roomD),brickMat);
-  brick.position.set(-roomW/2+0.01,roomH/2,0); scene.add(brick);
-
-  // Window right wall (light panel)
-  const winFrame=new THREE.Mesh(new THREE.BoxGeometry(0.18,2.4,3),new THREE.MeshLambertMaterial({color:0x1a2030}));
-  winFrame.position.set(roomW/2,2,0); scene.add(winFrame);
-  const winGlass=new THREE.Mesh(new THREE.BoxGeometry(0.05,2.2,2.8),new THREE.MeshLambertMaterial({color:0x8ab4ff,transparent:true,opacity:0.3,emissive:0x3060a0,emissiveIntensity:0.3}));
-  winGlass.position.set(roomW/2,2,0); scene.add(winGlass);
-
-  // Sofa
-  const sofaMat=new THREE.MeshLambertMaterial({color:0x2e3344});
-  const sofa=new THREE.Mesh(new THREE.BoxGeometry(3.2,0.5,1),sofaMat);
-  sofa.position.set(-0.5,0.4,-1); sofa.castShadow=true; scene.add(sofa);
-  const sofaBack=new THREE.Mesh(new THREE.BoxGeometry(3.2,0.8,0.2),sofaMat);
-  sofaBack.position.set(-0.5,0.85,-1.5); sofaBack.castShadow=true; scene.add(sofaBack);
-  const sofaArm1=new THREE.Mesh(new THREE.BoxGeometry(0.2,0.65,1),sofaMat);
-  sofaArm1.position.set(-2,0.45,-1); scene.add(sofaArm1);
-  const sofaArm2=sofaArm1.clone(); sofaArm2.position.set(1.2,0.45,-1); scene.add(sofaArm2);
-
-  // Coffee table
-  const table=new THREE.Mesh(new THREE.BoxGeometry(1.6,0.08,0.8),woodMat);
-  table.position.set(-0.5,0.6,0.5); table.castShadow=true; scene.add(table);
-  [[-0.65,0.25,0.2],[0.55,0.25,0.2],[-0.65,0.25,0.8],[0.55,0.25,0.8]].forEach(([x,y,z])=>{
-    const leg=new THREE.Mesh(new THREE.BoxGeometry(0.06,0.5,0.06),woodMat);
-    leg.position.set(x,y,z); scene.add(leg);
-  });
-
-  // Rug
-  const rug=new THREE.Mesh(new THREE.BoxGeometry(3.5,0.02,2.2),new THREE.MeshLambertMaterial({color:0x3d3028}));
-  rug.position.set(-0.5,0.06,0); scene.add(rug);
-
-  // Bookshelf
-  const shelf=new THREE.Mesh(new THREE.BoxGeometry(0.25,2.5,1.2),woodMat);
-  shelf.position.set(-3.8,1.2,-2); scene.add(shelf);
-  for(let i=0;i<3;i++){
-    const shelfBoard=new THREE.Mesh(new THREE.BoxGeometry(0.25,0.05,1.2),woodMat);
-    shelfBoard.position.set(-3.8,0.5+i*0.8,-2); scene.add(shelfBoard);
+  function sizeCanvas(){
+    const r=canvas.parentElement.getBoundingClientRect();
+    canvas.width=r.width*devicePixelRatio||340; canvas.height=r.height*devicePixelRatio||300;
+    canvas.style.width='100%'; canvas.style.height='100%';
   }
-  // Books
-  const bookColors=[0x4a5580,0x804a4a,0x4a8050,0xf5a623];
-  for(let i=0;i<8;i++){
-    const book=new THREE.Mesh(new THREE.BoxGeometry(0.08,0.4+Math.random()*0.2,0.18),new THREE.MeshLambertMaterial({color:bookColors[i%4]}));
-    book.position.set(-3.88,0.75+Math.floor(i/4)*0.8,-2.4+i%4*0.15); scene.add(book);
-  }
+  sizeCanvas();
 
-  // Pendant light
-  const lampWire=new THREE.Mesh(new THREE.CylinderGeometry(0.01,0.01,0.8,4),new THREE.MeshLambertMaterial({color:0x888}));
-  lampWire.position.set(0,3.1,0); scene.add(lampWire);
-  const lampShade=new THREE.Mesh(new THREE.CylinderGeometry(0.3,0.2,0.25,12),new THREE.MeshLambertMaterial({color:0x1a1a1a,emissive:0x332200,emissiveIntensity:0.3}));
-  lampShade.position.set(0,2.65,0); scene.add(lampShade);
+  const rend=createRenderer(canvas);
+  if(!rend)return;
+  const {render}=rend;
 
-  // Plant
-  const pot=new THREE.Mesh(new THREE.CylinderGeometry(0.2,0.15,0.35,8),new THREE.MeshLambertMaterial({color:0x6a4020}));
-  pot.position.set(3,0.2,-2); scene.add(pot);
-  const plant=new THREE.Mesh(new THREE.SphereGeometry(0.5,8,6),new THREE.MeshLambertMaterial({color:0x2d5c20}));
-  plant.position.set(3,0.9,-2); plant.scale.set(1,1.3,1); scene.add(plant);
+  const meshes=buildInterior(rend.gl);
+  const cam=createOrbitCamera(canvas,0,1.28,6,[0,1.5,0]);
 
-  // Painting on back wall
-  const frame=new THREE.Mesh(new THREE.BoxGeometry(1.5,1,0.06),new THREE.MeshLambertMaterial({color:0x141820}));
-  frame.position.set(2.5,2,-3.4); scene.add(frame);
-  const canvas2d=new THREE.Mesh(new THREE.BoxGeometry(1.3,0.85,0.04),new THREE.MeshLambertMaterial({color:0x3a4065,emissive:0x1a2040,emissiveIntensity:0.5}));
-  canvas2d.position.set(2.5,2,-3.37); scene.add(canvas2d);
+  let proj=M.perspective(65*Math.PI/180,canvas.width/canvas.height,.1,50);
 
-  // Orbit
-  let isDragging=false, prevMX=0, prevMY=0;
-  let camTheta=0, camPhi=1.3, camRadius=6;
-  const target=new THREE.Vector3(0,1.5,0);
-  function updateCamera(){
-    camera.position.x=target.x+camRadius*Math.sin(camPhi)*Math.sin(camTheta);
-    camera.position.y=target.y+camRadius*Math.cos(camPhi);
-    camera.position.z=target.z+camRadius*Math.sin(camPhi)*Math.cos(camTheta);
-    camera.lookAt(target);
-  }
-  updateCamera();
-  canvas.addEventListener('mousedown',e=>{ isDragging=true; prevMX=e.clientX; prevMY=e.clientY; });
-  window.addEventListener('mouseup',()=>isDragging=false);
-  window.addEventListener('mousemove',e=>{
-    if(!isDragging)return;
-    const dx=e.clientX-prevMX, dy=e.clientY-prevMY;
-    prevMX=e.clientX; prevMY=e.clientY;
-    camTheta-=dx*0.01; camPhi=Math.max(0.5,Math.min(Math.PI*0.45,camPhi-dy*0.01));
-    updateCamera();
-  });
-  canvas.addEventListener('wheel',e=>{ e.preventDefault(); camRadius=Math.max(2,Math.min(12,camRadius+e.deltaY*0.02)); updateCamera(); },{passive:false});
-
-  // View tabs
-  const swViews={
-    perspective:{theta:0,phi:1.3,r:6,target:[0,1.5,0]},
-    section:{theta:0.01,phi:0.01,r:7,target:[0,2.5,0]},
-    top:{theta:0.01,phi:0.02,r:8,target:[0,0,0]}
-  };
-  document.querySelectorAll('.sw-view-tab').forEach(tab=>{
-    tab.addEventListener('click',function(){
-      document.querySelectorAll('.sw-view-tab').forEach(t=>t.classList.remove('active'));
-      this.classList.add('active');
-      const v=swViews[this.dataset.sw];
-      if(v){ camTheta=v.theta; camPhi=v.phi; camRadius=v.r; target.set(...v.target); updateCamera(); }
-    });
-  });
-
-  // Tree item click → update props
   const propData={
     walls:{type:'Mur porteur',mat:'Béton armé',thick:'0.20 m',h:'3.20 m',s:'12.4 m²',r:'R=3.5'},
     slabs:{type:'Dalle',mat:'Béton C25',thick:'0.22 m',h:'—',s:'64 m²',r:'R=1.2'},
-    columns:{type:'Poteau',mat:'Béton C30',thick:'0.25×0.25',h:'3.20 m',s:'0.06 m²',r:'—'},
+    cols:{type:'Poteau',mat:'Béton C30',thick:'0.25×0.25',h:'3.20 m',s:'0.06 m²',r:'—'},
     facade:{type:'Façade',mat:'Enduit ciment',thick:'0.15 m',h:'7.20 m',s:'88 m²',r:'R=2.8'},
     roof:{type:'Toiture',mat:'Dalle béton',thick:'0.35 m',h:'—',s:'80 m²',r:'R=5.2'},
-    glazing:{type:'Vitrage',mat:'Double vitrage',thick:'0.04 m',h:'2.20 m',s:'22 m²',r:'R=1.8'},
-    interior:{type:'Cloison',mat:'BA13',thick:'0.10 m',h:'2.80 m',s:'38 m²',r:'R=0.6'},
-    furniture:{type:'Mobilier',mat:'Divers',thick:'—',h:'—',s:'—',r:'—'},
+    glaz:{type:'Vitrage',mat:'Double vitrage',thick:'0.04 m',h:'2.20 m',s:'22 m²',r:'R=1.8'},
+    int:{type:'Cloison',mat:'BA13',thick:'0.10 m',h:'2.80 m',s:'38 m²',r:'R=0.6'},
+    furn:{type:'Mobilier',mat:'Divers',thick:'—',h:'—',s:'—',r:'—'},
     ground:{type:'Terrain',mat:'Argile',thick:'—',h:'—',s:'280 m²',r:'—'},
-    landscaping:{type:'Végétation',mat:'Engazonnement',thick:'—',h:'4.0 m',s:'120 m²',r:'—'},
+    land:{type:'Végétation',mat:'Engazonnement',thick:'—',h:'4.0 m',s:'120 m²',r:'—'},
   };
-  document.querySelectorAll('.sw-tree-item').forEach(item=>{
+
+  document.querySelectorAll('.sw-item').forEach(item=>{
     item.addEventListener('click',function(){
-      const mesh=this.dataset.mesh;
-      this.closest('.sw-sidebar').querySelectorAll('.sw-tree-item').forEach(i=>{});
-      document.querySelectorAll('.sw-tree-item').forEach(i=>{ if(i.dataset.mesh===mesh) i.classList.toggle('active'); });
-      const d=propData[mesh];
+      document.querySelectorAll('.sw-item').forEach(i=>i.classList.remove('on'));
+      this.classList.add('on');
+      const d=propData[this.dataset.p];
       if(d){
-        document.getElementById('sw-prop-type').textContent=d.type;
-        document.getElementById('sw-prop-mat').textContent=d.mat;
-        document.getElementById('sw-prop-thick').textContent=d.thick;
-        document.getElementById('sw-prop-h').textContent=d.h;
-        document.getElementById('sw-prop-s').textContent=d.s;
-        document.getElementById('sw-prop-r').textContent=d.r;
+        document.getElementById('p-type').textContent=d.type;
+        document.getElementById('p-mat').textContent=d.mat;
+        document.getElementById('p-thick').textContent=d.thick;
+        document.getElementById('p-h').textContent=d.h;
+        document.getElementById('p-s').textContent=d.s;
+        document.getElementById('p-r').textContent=d.r;
       }
     });
   });
 
-  let tf=0;
-  function animateShowcase(){
-    requestAnimationFrame(animateShowcase);
-    tf+=0.006;
-    ceil.intensity=1.1+Math.sin(tf*2)*0.1;
-    w1.intensity=0.75+Math.sin(tf)*0.1;
-    w2.intensity=0.75+Math.cos(tf)*0.1;
-    if(!isDragging) camTheta+=0.003;
-    updateCamera();
-    renderer.render(scene,camera);
+  const svViews={p:[0,1.28,6,[0,1.5,0]],s:[.01,.05,7,[0,2.5,0]],t:[.01,.01,8,[0,0,0]]};
+  document.querySelectorAll('.sw-vt').forEach(t=>{
+    t.addEventListener('click',function(){
+      document.querySelectorAll('.sw-vt').forEach(x=>x.classList.remove('on'));
+      this.classList.add('on');
+      const v=svViews[this.dataset.sv];
+      if(v)cam.reset(v[0],v[1],v[2],v[3]);
+    });
+  });
+
+  const ro=new ResizeObserver(()=>{
+    sizeCanvas();
+    proj=M.perspective(65*Math.PI/180,canvas.width/canvas.height,.1,50);
+  });
+  ro.observe(canvas.parentElement);
+
+  function loop(){
+    requestAnimationFrame(loop);
+    const view=cam.getMatrix();
+    render(meshes,proj,view,'ext');
   }
-  animateShowcase();
+  loop();
 })();
 </script>
 </body>
