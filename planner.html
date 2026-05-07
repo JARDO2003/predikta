@@ -565,14 +565,20 @@ document.getElementById('snap').onchange=e=>state.snap=+e.target.value;
 document.getElementById('showDims').onchange=e=>{state.showDims=e.target.checked;draw()};
 
 // =================== SAVE / LOAD ===================
-function savePlan(){
-  const data={walls:state.walls,doors:state.doors,windows:state.windows,furniture:state.furniture,rooms:state.rooms,wallHeight:state.wallHeight};
-  localStorage.setItem(STORAGE_KEY,JSON.stringify(data));
-  toast('✓ Plan sauvegardé localement');
+function savePlan() {
+  const data = { walls, doors, windows, furniture, rooms, wallHeight };
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    toast('✓ Plan sauvegardé localement');
+  } catch (e) {
+    toast('⚠ Stockage local bloqué — exportez en JSON');
+  }
 }
-function loadPlan(){
-  const raw=localStorage.getItem(STORAGE_KEY); if(!raw)return;
-  try{const d=JSON.parse(raw);Object.assign(state,d);renderRooms();updateStats();draw();}catch(e){}
+function loadPlan() {
+  let raw = null;
+  try { raw = localStorage.getItem(STORAGE_KEY); } catch (e) { return; }
+  if (!raw) return;
+  try { const d = JSON.parse(raw); Object.assign(state, d); draw(); } catch(e) {}
 }
 function newPlan(){
   if(!confirm('Effacer le plan actuel ?'))return;
