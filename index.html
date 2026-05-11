@@ -1,321 +1,1336 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8" />
+<meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>ArchiStudio — Concevez. Visitez. Meublez.</title>
-<meta name="description" content="Plateforme professionnelle de conception architecturale 3D : plans 2D, visite immersive intérieure, mobilier, matériaux."/>
+<title>AELLA — Intelligence Artificielle RH & Administration | MarcioAI</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+<script src="https://unpkg.com/docx@8.5.0/build/index.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=IM+Fell+English:ital@0;1&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#0a0e14; --bg2:#11161f; --fg:#e8eef7; --muted:#8892a6;
-  --accent:#ff7a2d; --accent2:#ffb347; --line:#1f2733;
-  --grad: linear-gradient(135deg,#ff7a2d 0%,#ffb347 100%);
+  --bg:#05060f;--bg-2:#0a0d1f;--primary:#00e5ff;--primary-2:#7c4dff;--accent:#ff3df0;
+  --text:#e9ecff;--muted:#8892b8;--card:rgba(255,255,255,0.04);--border:rgba(255,255,255,0.08);
 }
-*{box-sizing:border-box;margin:0;padding:0}
-html,body{background:var(--bg);color:var(--fg);font-family:'Inter',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden}
-a{color:inherit;text-decoration:none}
-.nav{position:fixed;top:0;left:0;right:0;z-index:50;display:flex;justify-content:space-between;align-items:center;padding:18px 40px;background:rgba(10,14,20,.7);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
-.logo{font-weight:800;font-size:20px;letter-spacing:-.5px;display:flex;gap:10px;align-items:center}
-.logo span{display:inline-block;width:22px;height:22px;background:var(--grad);border-radius:6px;transform:rotate(45deg)}
-.nav-links{display:flex;gap:28px;align-items:center}
-.nav-links a{color:var(--muted);font-size:14px;font-weight:500;transition:.2s}
-.nav-links a:hover{color:var(--fg)}
-.btn{padding:11px 22px;border-radius:10px;background:var(--grad);color:#0a0e14;font-weight:700;font-size:14px;border:none;cursor:pointer;transition:transform .2s, box-shadow .2s}
-.btn:hover{transform:translateY(-2px);box-shadow:0 12px 30px -10px rgba(255,122,45,.5)}
-.btn.ghost{background:transparent;color:var(--fg);border:1px solid var(--line)}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;overflow-x:hidden}
+h1,h2,h3,.font-display{font-family:'Space Grotesk',sans-serif;letter-spacing:-0.02em}
 
-.hero{min-height:100vh;display:grid;grid-template-columns:1.1fr 1fr;gap:60px;align-items:center;padding:140px 60px 80px;position:relative;overflow:hidden}
-.hero::before{content:"";position:absolute;top:-200px;right:-200px;width:700px;height:700px;background:radial-gradient(circle,rgba(255,122,45,.18),transparent 60%);pointer-events:none}
-.hero h1{font-size:clamp(44px,6vw,84px);line-height:1.02;letter-spacing:-2.5px;font-weight:800;margin-bottom:24px}
-.hero h1 em{font-style:normal;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
-.hero p{color:var(--muted);font-size:19px;line-height:1.6;max-width:540px;margin-bottom:36px}
-.cta{display:flex;gap:14px;flex-wrap:wrap}
-.cta .btn{padding:15px 28px;font-size:15px}
+.bg-grid{position:fixed;inset:0;z-index:-2;background:radial-gradient(ellipse 80% 60% at 20% 0%,rgba(124,77,255,0.25),transparent 50%),radial-gradient(ellipse 60% 50% at 80% 20%,rgba(0,229,255,0.18),transparent 50%),radial-gradient(ellipse 70% 60% at 50% 100%,rgba(255,61,240,0.15),transparent 60%),var(--bg)}
+.bg-grid::after{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.04) 1px,transparent 1px);background-size:60px 60px;mask-image:radial-gradient(ellipse at center,black 30%,transparent 80%)}
+.orb{position:fixed;border-radius:50%;filter:blur(80px);opacity:0.5;z-index:-1;pointer-events:none;animation:float 18s ease-in-out infinite}
+.orb-1{width:400px;height:400px;background:#7c4dff;top:-100px;left:-100px}
+.orb-2{width:500px;height:500px;background:#00e5ff;bottom:-150px;right:-150px;animation-delay:-6s}
+.orb-3{width:300px;height:300px;background:#ff3df0;top:40%;left:60%;animation-delay:-12s}
+@keyframes float{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(50px,-30px) scale(1.1)}66%{transform:translate(-30px,40px) scale(0.95)}}
 
-.scene{position:relative;height:560px;border-radius:20px;background:linear-gradient(180deg,#1a2030,#0e1320);border:1px solid var(--line);overflow:hidden;box-shadow:0 40px 80px -30px rgba(0,0,0,.6)}
-canvas#orbit{width:100%;height:100%;display:block}
-.scene-tag{position:absolute;top:16px;left:16px;background:rgba(0,0,0,.5);backdrop-filter:blur(8px);padding:8px 14px;border-radius:8px;font-size:12px;color:var(--muted);border:1px solid var(--line)}
-.scene-tag b{color:var(--accent2)}
+.nav{position:sticky;top:0;z-index:50;backdrop-filter:blur(20px);background:rgba(5,6,15,0.6);border-bottom:1px solid var(--border)}
+.logo-mark{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,var(--primary),var(--primary-2));display:grid;place-items:center;font-weight:700;color:#000;box-shadow:0 0 30px rgba(0,229,255,0.5)}
+.btn-primary{background:linear-gradient(135deg,var(--primary),var(--primary-2));color:#fff;font-weight:600;padding:12px 24px;border-radius:12px;border:none;cursor:pointer;box-shadow:0 10px 40px rgba(124,77,255,0.4);transition:all 0.3s}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 15px 50px rgba(124,77,255,0.6)}
+.btn-ghost{background:rgba(255,255,255,0.05);border:1px solid var(--border);color:var(--text);padding:12px 24px;border-radius:12px;cursor:pointer;transition:all 0.3s}
+.btn-ghost:hover{background:rgba(255,255,255,0.1);border-color:var(--primary)}
 
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:30px;padding:60px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:var(--bg2)}
-.stat h3{font-size:42px;font-weight:800;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
-.stat p{color:var(--muted);font-size:13px;margin-top:6px;text-transform:uppercase;letter-spacing:1px}
+.hero{padding:80px 24px 60px;text-align:center;position:relative}
+.hero h1{font-size:clamp(2.5rem,6vw,5rem);font-weight:700;line-height:1.05;margin:0 0 20px}
+.gradient-text{background:linear-gradient(135deg,var(--primary) 0%,var(--primary-2) 50%,var(--accent) 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p{font-size:1.2rem;color:var(--muted);max-width:680px;margin:0 auto 30px}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;padding:8px 16px;border-radius:999px;background:rgba(0,229,255,0.1);border:1px solid rgba(0,229,255,0.3);color:var(--primary);font-size:0.85rem;margin-bottom:24px;animation:pulse 2.5s ease infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(0,229,255,0.4)}50%{box-shadow:0 0 0 12px rgba(0,229,255,0)}}
 
-.section{padding:120px 60px}
-.section h2{font-size:48px;font-weight:800;letter-spacing:-1.5px;max-width:700px;margin-bottom:18px}
-.section .lead{color:var(--muted);font-size:18px;max-width:600px;margin-bottom:60px}
+.robot-stage{margin:50px auto;width:240px;height:240px;position:relative}
+.robot{width:100%;height:100%;position:relative;animation:bob 4s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-15px)}}
+.robot-head{position:absolute;inset:30px;border-radius:30% 30% 25% 25%;background:linear-gradient(160deg,#1a1f3a,#0a0d1f);border:2px solid rgba(0,229,255,0.4);box-shadow:0 0 60px rgba(0,229,255,0.4),inset 0 0 30px rgba(124,77,255,0.3)}
+.robot-eye{position:absolute;top:38%;width:30px;height:30px;border-radius:50%;background:radial-gradient(circle,#fff,var(--primary));box-shadow:0 0 20px var(--primary);animation:blink 4s infinite}
+.robot-eye.left{left:25%}.robot-eye.right{right:25%}
+@keyframes blink{0%,90%,100%{transform:scaleY(1)}95%{transform:scaleY(0.1)}}
+.robot-mouth{position:absolute;bottom:25%;left:50%;transform:translateX(-50%);width:50px;height:6px;border-radius:3px;background:linear-gradient(90deg,var(--primary),var(--accent));box-shadow:0 0 15px var(--accent)}
+.robot-antenna{position:absolute;top:5px;left:50%;transform:translateX(-50%);width:3px;height:30px;background:linear-gradient(to top,transparent,var(--primary))}
+.robot-antenna::after{content:"";position:absolute;top:-8px;left:-5px;width:13px;height:13px;border-radius:50%;background:var(--accent);box-shadow:0 0 20px var(--accent);animation:pulse 1.5s infinite}
+.robot-ring{position:absolute;inset:0;border-radius:50%;border:2px dashed rgba(0,229,255,0.3);animation:spin 12s linear infinite}
+.robot-ring.r2{inset:-20px;border-color:rgba(255,61,240,0.2);animation-duration:18s;animation-direction:reverse}
+@keyframes spin{to{transform:rotate(360deg)}}
+.robot.thinking .robot-eye{animation:think-eye 0.8s infinite}
+@keyframes think-eye{0%,100%{background:radial-gradient(circle,#fff,var(--primary))}50%{background:radial-gradient(circle,#fff,var(--accent));box-shadow:0 0 30px var(--accent)}}
+.robot.thinking{animation:bob 1s ease-in-out infinite}
+.think-ring{position:absolute;inset:0;border:2px solid var(--primary);border-radius:50%;opacity:0;animation:ripple 2s infinite}
+.think-ring:nth-child(2){animation-delay:0.6s;border-color:var(--accent)}
+.think-ring:nth-child(3){animation-delay:1.2s;border-color:var(--primary-2)}
+@keyframes ripple{0%{transform:scale(0.7);opacity:1}100%{transform:scale(1.4);opacity:0}}
 
-.features{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
-.feat{background:var(--bg2);border:1px solid var(--line);border-radius:16px;padding:32px;transition:.3s}
-.feat:hover{border-color:var(--accent);transform:translateY(-4px)}
-.feat .ico{width:48px;height:48px;border-radius:12px;background:var(--grad);display:flex;align-items:center;justify-content:center;color:#0a0e14;font-weight:800;font-size:22px;margin-bottom:18px}
-.feat h3{font-size:20px;margin-bottom:10px;font-weight:700}
-.feat p{color:var(--muted);font-size:14px;line-height:1.6}
+.services-section{padding:80px 24px;max-width:1200px;margin:0 auto}
+.section-title{text-align:center;margin-bottom:60px}
+.section-title h2{font-size:clamp(2rem,4vw,3rem);margin:0 0 12px}
+.section-title p{color:var(--muted);font-size:1.1rem}
+.category{margin-bottom:60px}
+.category-header{display:flex;align-items:center;gap:16px;margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid var(--border)}
+.category-num{width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,var(--primary),var(--primary-2));display:grid;place-items:center;font-weight:700;color:#000;font-size:1.2rem;font-family:'Space Grotesk'}
+.category-title{font-size:1.6rem;margin:0}
+.stars{color:#ffd700;font-size:1rem;margin-left:auto}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:18px}
+.service-card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:24px;cursor:pointer;transition:all 0.4s cubic-bezier(.2,.9,.3,1);position:relative;overflow:hidden}
+.service-card::before{content:"";position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,229,255,0.1),rgba(124,77,255,0.1));opacity:0;transition:opacity 0.4s}
+.service-card:hover{transform:translateY(-6px);border-color:var(--primary);box-shadow:0 20px 60px rgba(0,229,255,0.2)}
+.service-card:hover::before{opacity:1}
+.service-icon{width:48px;height:48px;border-radius:12px;background:rgba(0,229,255,0.1);display:grid;place-items:center;margin-bottom:16px;font-size:1.4rem;position:relative}
+.service-card h3{margin:0 0 8px;font-size:1.1rem;position:relative}
+.service-card p{margin:0;color:var(--muted);font-size:0.9rem;position:relative}
 
-.tools{display:grid;grid-template-columns:1fr 1fr;gap:30px;margin-top:40px}
-.tool{position:relative;border-radius:20px;overflow:hidden;border:1px solid var(--line);background:var(--bg2);min-height:380px;display:flex;flex-direction:column;justify-content:flex-end;padding:36px;cursor:pointer;transition:.3s}
-.tool:hover{border-color:var(--accent)}
-.tool .preview{position:absolute;inset:0;opacity:.65;transition:.4s}
-.tool:hover .preview{opacity:.9;transform:scale(1.03)}
-.tool .preview canvas{width:100%;height:100%;display:block}
-.tool .meta{position:relative;z-index:2}
-.tool h3{font-size:30px;font-weight:800;margin-bottom:8px;letter-spacing:-.5px}
-.tool p{color:#cdd5e3;font-size:15px;margin-bottom:18px;max-width:380px}
-.tool .arrow{display:inline-flex;align-items:center;gap:8px;color:var(--accent2);font-weight:600;font-size:14px}
+.modal-overlay{position:fixed;inset:0;background:rgba(5,6,15,0.85);backdrop-filter:blur(10px);z-index:100;display:none;align-items:center;justify-content:center;padding:20px;animation:fadeIn 0.3s}
+.modal-overlay.active{display:flex}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.modal{background:linear-gradient(160deg,#0e1230,#070918);border:1px solid var(--border);border-radius:24px;width:100%;max-width:980px;max-height:92vh;overflow:hidden;display:flex;flex-direction:column;animation:slideUp 0.4s cubic-bezier(.2,.9,.3,1)}
+@keyframes slideUp{from{transform:translateY(40px);opacity:0}to{transform:translateY(0);opacity:1}}
+.modal-header{padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.modal-header h3{margin:0;font-size:1.3rem}
+.modal-close{background:rgba(255,255,255,0.05);border:1px solid var(--border);color:var(--text);width:36px;height:36px;border-radius:10px;cursor:pointer;font-size:1.2rem}
+.modal-body{padding:24px;overflow-y:auto;flex:1}
+.form-group{margin-bottom:16px}
+.form-group label{display:block;margin-bottom:8px;font-weight:500;font-size:0.9rem;color:var(--text)}
+.form-group input,.form-group textarea,.form-group select{width:100%;padding:12px 14px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:inherit;font-size:0.95rem}
+.form-group input:focus,.form-group textarea:focus,.form-group select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(0,229,255,0.1)}
+.form-group textarea{resize:vertical;min-height:80px}
 
-footer{padding:50px 60px;border-top:1px solid var(--line);display:flex;justify-content:space-between;color:var(--muted);font-size:13px}
+.thinking-overlay{position:fixed;inset:0;background:rgba(5,6,15,0.95);backdrop-filter:blur(20px);z-index:200;display:none;align-items:center;justify-content:center;flex-direction:column}
+.thinking-overlay.active{display:flex}
+.thinking-robot{width:280px;height:280px;position:relative;margin-bottom:30px}
+.thinking-overlay h3{font-size:1.6rem;margin:0 0 8px;background:linear-gradient(135deg,var(--primary),var(--accent));-webkit-background-clip:text;color:transparent}
+.thinking-overlay p{color:var(--muted);margin:0}
+.thinking-dots span{display:inline-block;width:8px;height:8px;background:var(--primary);border-radius:50%;margin:0 3px;animation:bounce 1.4s infinite}
+.thinking-dots span:nth-child(2){animation-delay:0.2s;background:var(--accent)}
+.thinking-dots span:nth-child(3){animation-delay:0.4s;background:var(--primary-2)}
+@keyframes bounce{0%,80%,100%{transform:scale(0.6);opacity:0.5}40%{transform:scale(1.2);opacity:1}}
 
-@media(max-width:900px){
-  .hero{grid-template-columns:1fr;padding:110px 24px 60px}
-  .scene{height:380px}
-  .stats{grid-template-columns:repeat(2,1fr);padding:40px 24px;gap:24px}
-  .section{padding:70px 24px}
-  .features,.tools{grid-template-columns:1fr}
-  .nav{padding:14px 20px}
-  .nav-links a:not(.btn){display:none}
+/* ============================================================
+   DOCUMENT VIEWER — Rendu A4 réel
+   ============================================================ */
+.doc-viewer-wrap{margin-top:24px}
+.doc-toolbar{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-bottom:none;border-radius:12px 12px 0 0;gap:12px;flex-wrap:wrap}
+.doc-toolbar-title{font-size:0.85rem;color:var(--muted);font-weight:500}
+.doc-export-btns{display:flex;gap:8px;flex-wrap:wrap}
+.btn-export{padding:8px 16px;border-radius:8px;border:1px solid var(--border);background:rgba(255,255,255,0.05);color:var(--text);cursor:pointer;font-weight:500;font-size:0.85rem;display:inline-flex;align-items:center;gap:6px;transition:all 0.3s;white-space:nowrap}
+.btn-export:hover{background:rgba(0,229,255,0.1);border-color:var(--primary);color:var(--primary)}
+.btn-export.primary-export{background:linear-gradient(135deg,rgba(0,229,255,0.15),rgba(124,77,255,0.15));border-color:var(--primary);color:var(--primary)}
+.btn-export.primary-export:hover{background:linear-gradient(135deg,rgba(0,229,255,0.3),rgba(124,77,255,0.3))}
+
+/* Cadre A4 viewport */
+.a4-viewport{background:#d0d0d0;border:1px solid var(--border);border-top:none;border-radius:0 0 12px 12px;padding:24px 12px;overflow-x:auto;min-height:200px}
+.a4-page{
+  width:794px; /* 210mm @ 96dpi */
+  min-height:1123px; /* 297mm @ 96dpi */
+  background:#fff;
+  color:#111;
+  margin:0 auto;
+  padding:70px 80px;
+  box-shadow:0 8px 40px rgba(0,0,0,0.4),0 2px 8px rgba(0,0,0,0.3);
+  font-family:'Libre Baskerville',Georgia,serif;
+  font-size:11pt;
+  line-height:1.7;
+  position:relative;
+  page-break-after:always;
 }
+/* Pied de page */
+.a4-page .doc-footer{
+  position:absolute;bottom:30px;left:80px;right:80px;
+  border-top:1px solid #ccc;padding-top:8px;
+  display:flex;justify-content:space-between;align-items:center;
+  font-size:8pt;color:#888;font-family:'Libre Baskerville',Georgia,serif;
+}
+
+/* — Styles typographiques dans le document — */
+.a4-page h1{font-family:'Libre Baskerville',Georgia,serif;font-size:16pt;font-weight:700;text-align:center;margin:0 0 6px;text-transform:uppercase;letter-spacing:0.04em;color:#111}
+.a4-page h2{font-family:'Libre Baskerville',Georgia,serif;font-size:13pt;font-weight:700;margin:22px 0 8px;text-transform:uppercase;letter-spacing:0.03em;border-bottom:2px solid #111;padding-bottom:4px;color:#111}
+.a4-page h3{font-family:'Libre Baskerville',Georgia,serif;font-size:11pt;font-weight:700;margin:16px 0 6px;color:#222}
+.a4-page p{margin:0 0 10px;text-align:justify;color:#222}
+.a4-page .doc-ref{font-size:9pt;color:#555;margin-bottom:20px;text-align:right}
+.a4-page .doc-parties{display:grid;grid-template-columns:1fr 1fr;gap:30px;margin:20px 0;padding:16px;background:#f8f8f8;border:1px solid #ddd;border-radius:4px;font-size:10pt}
+.a4-page .doc-party-block strong{display:block;font-size:9pt;text-transform:uppercase;letter-spacing:0.05em;color:#555;margin-bottom:4px}
+.a4-page .doc-separator{border:none;border-top:1px solid #ddd;margin:20px 0}
+.a4-page .doc-signature-block{display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:50px}
+.a4-page .doc-signature-box{border-top:1px solid #999;padding-top:8px;font-size:9pt;color:#555}
+.a4-page .doc-signature-box strong{display:block;color:#333;font-size:10pt;margin-bottom:2px}
+.a4-page table{width:100%;border-collapse:collapse;margin:16px 0;font-size:10pt}
+.a4-page table th{background:#111;color:#fff;padding:8px 10px;text-align:left;font-weight:600;font-size:9pt;text-transform:uppercase;letter-spacing:0.03em}
+.a4-page table td{padding:7px 10px;border-bottom:1px solid #e0e0e0;vertical-align:top}
+.a4-page table tr:nth-child(even) td{background:#f5f5f5}
+.a4-page table .total-row td{background:#111;color:#fff;font-weight:700}
+.a4-page .doc-stamp{font-size:9pt;color:#666;font-style:italic;text-align:center;margin-top:20px;padding:10px;border:1px dashed #bbb;border-radius:4px}
+.a4-page .doc-article{margin-bottom:14px}
+.a4-page .doc-article-num{font-weight:700;text-decoration:underline;display:block;margin-bottom:4px}
+.a4-page .highlight-box{background:#fffef0;border-left:4px solid #d4a000;padding:12px 16px;margin:16px 0;font-size:10pt}
+.a4-page .letterhead{text-align:center;margin-bottom:30px;padding-bottom:20px;border-bottom:2px solid #111}
+.a4-page .letterhead .company-name{font-size:18pt;font-weight:700;letter-spacing:0.05em;text-transform:uppercase}
+.a4-page .letterhead .company-details{font-size:9pt;color:#555;margin-top:4px}
+
+/* ============================================================
+   RESPONSIVE — Mobile first, breakpoints 480 / 640 / 860
+   ============================================================ */
+
+/* Toast */
+.toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%) translateY(100px);background:linear-gradient(135deg,#0e1230,#070918);border:1px solid var(--primary);padding:12px 18px;border-radius:12px;color:var(--text);box-shadow:0 10px 40px rgba(0,0,0,0.5);z-index:400;transition:transform 0.4s;white-space:nowrap;font-size:0.9rem;max-width:90vw;text-align:center}
+.toast.show{transform:translateX(-50%) translateY(0)}
+
+footer{padding:32px 20px;text-align:center;border-top:1px solid var(--border);color:var(--muted);margin-top:40px;font-size:0.9rem}
+footer .brand{background:linear-gradient(135deg,var(--primary),var(--accent));-webkit-background-clip:text;color:transparent;font-weight:700;font-family:'Space Grotesk'}
+
+/* ---- NAV mobile ---- */
+@media(max-width:480px){
+  .nav .font-display{font-size:1rem}
+  .btn-ghost{padding:8px 14px;font-size:0.85rem}
+}
+
+/* ---- HERO mobile ---- */
+@media(max-width:640px){
+  .hero{padding:48px 16px 36px}
+  .hero p{font-size:1rem;padding:0 4px}
+  .hero-badge{font-size:0.78rem;padding:6px 12px}
+  .robot-stage{width:160px;height:160px;margin:30px auto}
+  .btn-primary{padding:12px 24px;font-size:0.95rem}
+}
+
+/* ---- SERVICES section mobile ---- */
+@media(max-width:640px){
+  .services-section{padding:48px 14px}
+  .section-title{margin-bottom:36px}
+  .section-title p{font-size:0.95rem}
+  .category{margin-bottom:40px}
+  .category-header{gap:10px;flex-wrap:wrap}
+  .category-title{font-size:1.25rem}
+  .category-num{width:38px;height:38px;font-size:1rem;border-radius:10px}
+  .stars{font-size:0.8rem}
+  .grid{grid-template-columns:1fr 1fr;gap:12px}
+  .service-card{padding:16px 14px;border-radius:14px}
+  .service-card h3{font-size:0.92rem}
+  .service-card p{font-size:0.78rem}
+  .service-icon{width:38px;height:38px;font-size:1.1rem;margin-bottom:10px;border-radius:10px}
+}
+@media(max-width:380px){
+  .grid{grid-template-columns:1fr}
+}
+
+/* ---- MODAL principale mobile ---- */
+@media(max-width:640px){
+  .modal-overlay{padding:0;align-items:flex-end}
+  .modal{border-radius:20px 20px 0 0;max-height:95vh;border-bottom:none}
+  .modal-header{padding:16px 18px}
+  .modal-header h3{font-size:1.1rem}
+  .modal-body{padding:16px 18px}
+  .form-group input,.form-group textarea,.form-group select{font-size:0.9rem;padding:10px 12px}
+  /* formulaire colonne unique sur mobile */
+  #modalBody form > div[style*="grid"]{display:block!important}
+}
+
+/* ---- TOOLBAR document mobile ---- */
+@media(max-width:700px){
+  .doc-toolbar{flex-direction:column;align-items:stretch;padding:10px 12px;gap:8px}
+  .doc-toolbar-title{font-size:0.8rem;text-align:center}
+  .doc-export-btns{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+  .btn-export{padding:9px 8px;font-size:0.78rem;justify-content:center}
+}
+@media(max-width:420px){
+  .doc-export-btns{grid-template-columns:1fr}
+}
+
+/* ---- A4 viewport & page mobile ---- */
+@media(max-width:860px){
+  .a4-viewport{padding:16px 6px}
+  .a4-page{
+    width:100%;
+    min-height:auto;
+    padding:28px 18px 60px;
+    font-size:10pt;
+    box-shadow:0 4px 20px rgba(0,0,0,0.3);
+  }
+  .a4-page .doc-footer{
+    left:18px;right:18px;bottom:16px;
+    flex-direction:column;gap:2px;text-align:center;font-size:7pt;
+  }
+  .a4-page .doc-parties{grid-template-columns:1fr;gap:12px;padding:12px}
+  .a4-page .doc-signature-block{grid-template-columns:1fr;gap:24px;margin-top:32px}
+  .a4-page h1{font-size:13pt}
+  .a4-page h2{font-size:11pt}
+  .a4-page table{font-size:8.5pt}
+  .a4-page table th,.a4-page table td{padding:5px 7px}
+  .a4-page .letterhead .company-name{font-size:14pt}
+}
+@media(max-width:480px){
+  .a4-page{padding:20px 14px 56px}
+  .a4-page table{display:block;overflow-x:auto;white-space:nowrap}
+}
+
+/* ---- MODAL EMAIL mobile ---- */
+@media(max-width:640px){
+  .email-modal-overlay{padding:0;align-items:flex-end}
+  .email-modal{
+    border-radius:20px 20px 0 0;
+    max-height:92vh;
+    overflow-y:auto;
+    border-bottom:none;
+  }
+  .email-modal-header{padding:18px 18px 14px}
+  .email-modal-header h4{font-size:1rem}
+  .email-modal-header p{font-size:0.75rem}
+  .email-modal-icon{width:38px;height:38px;font-size:1.1rem;border-radius:10px}
+  .email-modal-body{padding:16px 18px 24px}
+  .email-from-badge{padding:10px 12px;font-size:0.8rem}
+  .email-from-text{font-size:0.78rem;line-height:1.4}
+  .email-doc-preview{padding:10px 12px}
+  .email-input{font-size:0.9rem;padding:10px 12px 10px 36px}
+  .email-textarea{font-size:0.88rem;min-height:72px}
+  .email-send-btn{padding:12px;font-size:0.9rem}
+  .setup-guide{font-size:0.8rem;padding:12px}
+  .setup-guide ol{padding-left:14px}
+}
+@media(max-width:380px){
+  .email-from-text strong{word-break:break-all;font-size:0.72rem}
+}
+
+/* ---- THINKING OVERLAY mobile ---- */
+@media(max-width:480px){
+  .thinking-overlay h3{font-size:1.2rem;text-align:center;padding:0 16px}
+  .thinking-overlay p{font-size:0.85rem;text-align:center;padding:0 20px}
+  .thinking-robot{width:180px;height:180px}
+}
+
+/* Print */
+@media print{
+  body{background:#fff!important}
+  .bg-grid,.orb,.nav,.modal-overlay,.email-modal-overlay,.thinking-overlay,.toast,footer{display:none!important}
+  .a4-page{box-shadow:none!important;padding:20mm 25mm!important;min-height:auto!important;width:210mm!important;font-size:11pt!important}
+}
+
+/* ============================================================
+   MODAL EMAIL
+   ============================================================ */
+.email-modal-overlay{position:fixed;inset:0;background:rgba(5,6,15,0.92);backdrop-filter:blur(16px);z-index:300;display:none;align-items:center;justify-content:center;padding:20px;animation:fadeIn 0.3s}
+.email-modal-overlay.active{display:flex}
+.email-modal{background:linear-gradient(160deg,#0e1230,#070918);border:1px solid rgba(0,229,255,0.25);border-radius:24px;width:100%;max-width:520px;overflow:hidden;animation:slideUp 0.4s cubic-bezier(.2,.9,.3,1);box-shadow:0 30px 80px rgba(0,0,0,0.6),0 0 60px rgba(0,229,255,0.08)}
+.email-modal-header{padding:24px 28px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.email-modal-header-left{display:flex;align-items:center;gap:14px}
+.email-modal-icon{width:46px;height:46px;border-radius:14px;background:linear-gradient(135deg,rgba(0,229,255,0.15),rgba(124,77,255,0.15));border:1px solid rgba(0,229,255,0.3);display:grid;place-items:center;font-size:1.3rem}
+.email-modal-header h4{margin:0;font-size:1.1rem;font-family:'Space Grotesk',sans-serif}
+.email-modal-header p{margin:4px 0 0;font-size:0.8rem;color:var(--muted)}
+.email-modal-close{background:rgba(255,255,255,0.05);border:1px solid var(--border);color:var(--text);width:34px;height:34px;border-radius:9px;cursor:pointer;font-size:1rem;flex-shrink:0}
+.email-modal-body{padding:24px 28px}
+.email-from-badge{display:flex;align-items:center;gap:10px;padding:12px 14px;background:rgba(0,229,255,0.06);border:1px solid rgba(0,229,255,0.15);border-radius:10px;margin-bottom:20px}
+.email-from-dot{width:8px;height:8px;border-radius:50%;background:var(--primary);flex-shrink:0;box-shadow:0 0 8px var(--primary)}
+.email-from-text{font-size:0.85rem;color:var(--muted)}
+.email-from-text strong{color:var(--primary);font-weight:600}
+.email-field{margin-bottom:16px}
+.email-field label{display:block;margin-bottom:7px;font-weight:500;font-size:0.85rem;color:var(--text)}
+.email-field label span{color:var(--accent)}
+.email-input-wrap{position:relative}
+.email-input-wrap svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);opacity:0.4;pointer-events:none}
+.email-input{width:100%;padding:11px 14px 11px 38px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:inherit;font-size:0.95rem;transition:all 0.3s}
+.email-input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(0,229,255,0.1);background:rgba(0,229,255,0.04)}
+.email-input.valid{border-color:#00d084;box-shadow:0 0 0 3px rgba(0,208,132,0.1)}
+.email-input.invalid{border-color:#ff4d6d;box-shadow:0 0 0 3px rgba(255,77,109,0.1)}
+.email-textarea{width:100%;padding:11px 14px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:inherit;font-size:0.9rem;resize:vertical;min-height:90px;transition:all 0.3s}
+.email-textarea:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(0,229,255,0.1)}
+.email-doc-preview{display:flex;align-items:center;gap:12px;padding:12px 14px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px;margin-bottom:20px}
+.email-doc-icon{width:36px;height:36px;border-radius:8px;background:linear-gradient(135deg,#ff4d4d,#c0392b);display:grid;place-items:center;font-size:1rem;flex-shrink:0}
+.email-doc-info{flex:1;min-width:0}
+.email-doc-info strong{display:block;font-size:0.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.email-doc-info span{font-size:0.78rem;color:var(--muted)}
+.email-doc-size{font-size:0.78rem;color:var(--muted);flex-shrink:0}
+.email-send-btn{width:100%;padding:13px;border-radius:12px;border:none;background:linear-gradient(135deg,var(--primary),var(--primary-2));color:#fff;font-weight:700;font-size:0.95rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all 0.3s;font-family:'Space Grotesk',sans-serif;letter-spacing:0.02em}
+.email-send-btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 10px 30px rgba(124,77,255,0.5)}
+.email-send-btn:disabled{opacity:0.6;cursor:not-allowed;transform:none}
+.email-send-btn.sending{background:linear-gradient(135deg,#555,#333)}
+.email-send-btn.success{background:linear-gradient(135deg,#00d084,#00a86b)}
+.email-send-btn.error{background:linear-gradient(135deg,#ff4d6d,#c0392b)}
+.email-status-bar{margin-top:14px;padding:10px 14px;border-radius:9px;font-size:0.85rem;display:none;align-items:center;gap:8px}
+.email-status-bar.show{display:flex}
+.email-status-bar.info{background:rgba(0,229,255,0.08);border:1px solid rgba(0,229,255,0.2);color:var(--primary)}
+.email-status-bar.success{background:rgba(0,208,132,0.08);border:1px solid rgba(0,208,132,0.25);color:#00d084}
+.email-status-bar.error{background:rgba(255,77,109,0.08);border:1px solid rgba(255,77,109,0.25);color:#ff4d6d}
+.email-progress{height:3px;background:rgba(255,255,255,0.05);border-radius:99px;margin-top:16px;overflow:hidden;display:none}
+.email-progress.show{display:block}
+.email-progress-bar{height:100%;width:0%;background:linear-gradient(90deg,var(--primary),var(--accent));border-radius:99px;transition:width 0.4s ease}
+
+/* Print styles — bloc unique déplacé dans le responsive */
 </style>
 </head>
 <body>
 
+<div class="bg-grid"></div>
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
+
 <nav class="nav">
-  <div class="logo"><span></span> ArchiStudio</div>
-  <div class="nav-links">
-    <a href="#features">Fonctionnalités</a>
-    <a href="#tools">Outils</a>
-    <a href="planner.html" class="btn">Lancer le studio</a>
+  <div style="max-width:1280px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between">
+    <div style="display:flex;align-items:center;gap:12px">
+      <div class="logo-mark">A</div>
+      <div>
+        <div class="font-display" style="font-weight:700;font-size:1.1rem;font-family:'Space Grotesk',sans-serif">AELLA</div>
+        <div style="font-size:0.75rem;color:var(--muted)">by MarcioAI</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px">
+      <button class="btn-ghost" onclick="document.getElementById('services').scrollIntoView({behavior:'smooth'})">Services</button>
+    </div>
   </div>
 </nav>
 
 <section class="hero">
-  <div>
-    <h1>Concevez votre maison.<br/><em>Visitez-la.</em> Meublez-la.</h1>
-    <p>ArchiStudio est une plateforme professionnelle d'architecture 3D dans le navigateur. Dessinez votre plan, marchez à l'intérieur en temps réel, posez vos meubles. Aucune installation. Tout en pixels réels.</p>
-    <div class="cta">
-      <a href="planner.html" class="btn">Créer un plan →</a>
-      <a href="visit.html" class="btn ghost">Visite immersive 3D</a>
+  <div class="hero-badge">
+    <span style="width:6px;height:6px;background:var(--primary);border-radius:50%;display:inline-block;animation:pulse 1.5s infinite"></span>
+    Intelligence Artificielle nouvelle génération
+  </div>
+  <h1>Bonjour, je suis <span class="gradient-text">AELLA</span></h1>
+  <p>Votre assistante IA spécialisée en Ressources Humaines, Secrétariat et Administration générale. Je génère vos documents officiels — prêts à imprimer, à signer, à envoyer.</p>
+  <div class="robot-stage">
+    <div class="robot" id="heroRobot">
+      <div class="robot-ring"></div>
+      <div class="robot-ring r2"></div>
+      <div class="robot-antenna"></div>
+      <div class="robot-head">
+        <div class="robot-eye left"></div>
+        <div class="robot-eye right"></div>
+        <div class="robot-mouth"></div>
+      </div>
     </div>
   </div>
-  <div class="scene">
-    <canvas id="orbit"></canvas>
-    <div class="scene-tag">RÉSIDENCE <b>AK 47</b> · prévisualisation temps réel</div>
+  <button class="btn-primary" style="font-size:1rem;padding:14px 32px" onclick="document.getElementById('services').scrollIntoView({behavior:'smooth'})">
+    Découvrir mes services →
+  </button>
+</section>
+
+<section class="services-section" id="services">
+  <div class="section-title">
+    <h2>Choisissez un <span class="gradient-text">service</span></h2>
+    <p>Cliquez sur un service, complétez les informations — le document A4 professionnel s'affiche instantanément.</p>
+  </div>
+  <div class="category">
+    <div class="category-header">
+      <div class="category-num">2</div>
+      <h3 class="category-title">Gestion des Ressources Humaines</h3>
+      <div class="stars">⭐⭐⭐⭐⭐</div>
+    </div>
+    <div class="grid" id="grid-rh"></div>
+  </div>
+  <div class="category">
+    <div class="category-header">
+      <div class="category-num">3</div>
+      <h3 class="category-title">Secrétariat & Administration Générale</h3>
+      <div class="stars">⭐⭐⭐⭐</div>
+    </div>
+    <div class="grid" id="grid-sec"></div>
   </div>
 </section>
 
-<section class="stats">
-  <div class="stat"><h3>2D + 3D</h3><p>Édition simultanée</p></div>
-  <div class="stat"><h3>120+</h3><p>Meubles 3D</p></div>
-  <div class="stat"><h3>WebGL</h3><p>Moteur natif</p></div>
-  <div class="stat"><h3>0 €</h3><p>Aucun téléchargement</p></div>
-</section>
-
-<section class="section" id="features">
-  <h2>Tout ce qu'il faut pour bâtir, vraiment.</h2>
-  <p class="lead">Chaque pixel est rendu en temps réel. Pas de captures d'écran, pas de mockups. Du code, du WebGL, du vrai.</p>
-  <div class="features">
-    <div class="feat"><div class="ico">✎</div><h3>Plan 2D précis</h3><p>Murs, portes, fenêtres, cotation au centimètre, grille magnétique, calques.</p></div>
-    <div class="feat"><div class="ico">⌂</div><h3>Visite intérieure</h3><p>Marchez en première personne avec WASD ou clic. Collisions, gravité, jour/nuit.</p></div>
-    <div class="feat"><div class="ico">▣</div><h3>Mobilier 3D</h3><p>Drag-and-drop de canapés, tables, lits, cuisines. Rotation, redimensionnement.</p></div>
-    <div class="feat"><div class="ico">☼</div><h3>Éclairage dynamique</h3><p>Soleil temps réel, ombres douces, ambiance jour, crépuscule, nuit.</p></div>
-    <div class="feat"><div class="ico">⊞</div><h3>Matériaux PBR</h3><p>Bois chevron, béton ciré, carrelage, marbre. Textures procédurales.</p></div>
-    <div class="feat"><div class="ico">↗</div><h3>Export & partage</h3><p>Sauvegarde locale, export JSON, capture HD du rendu.</p></div>
+<!-- MODAL -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modalTitle">Service</h3>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
   </div>
-</section>
+</div>
 
-<section class="section" id="tools" style="background:var(--bg2);border-top:1px solid var(--line);border-bottom:1px solid var(--line)">
-  <h2>Deux outils. Une vision.</h2>
-  <p class="lead">Passez du plan à la visite en un clic. Vos données suivent.</p>
-  <div class="tools">
-    <a href="planner.html" class="tool">
-      <div class="preview"><canvas id="prev1"></canvas></div>
-      <div class="meta">
-        <h3>Studio Plan 2D</h3>
-        <p>Tracez murs, ouvertures et pièces avec une précision millimétrique.</p>
-        <span class="arrow">Ouvrir le studio →</span>
+<!-- EMAIL MODAL -->
+<div class="email-modal-overlay" id="emailModal">
+  <div class="email-modal">
+    <div class="email-modal-header">
+      <div class="email-modal-header-left">
+        <div class="email-modal-icon">✉️</div>
+        <div>
+          <h4>Envoyer par e-mail</h4>
+          <p>AELLA transmet le document automatiquement</p>
+        </div>
       </div>
-    </a>
-    <a href="visit.html" class="tool">
-      <div class="preview"><canvas id="prev2"></canvas></div>
-      <div class="meta">
-        <h3>Visite 3D Immersive</h3>
-        <p>Marchez à l'intérieur. Ajoutez des meubles. Changez l'heure du jour.</p>
-        <span class="arrow">Entrer dans la maison →</span>
+      <button class="email-modal-close" onclick="closeEmailModal()">✕</button>
+    </div>
+    <div class="email-modal-body">
+
+      <!-- Expéditeur badge -->
+      <div class="email-from-badge">
+        <div class="email-from-dot"></div>
+        <div class="email-from-text">Expéditeur : <strong>zinzindohouemarcio@gmail.com</strong> (AELLA · MarcioAI)</div>
       </div>
-    </a>
+
+      <!-- Document attaché -->
+      <div class="email-doc-preview" id="emailDocPreview">
+        <div class="email-doc-icon">📄</div>
+        <div class="email-doc-info">
+          <strong id="emailDocName">Document.pdf</strong>
+          <span>Pièce jointe · Format PDF</span>
+        </div>
+        <span class="email-doc-size" id="emailDocSize">—</span>
+      </div>
+
+      <!-- Champ destinataire -->
+      <div class="email-field">
+        <label>Adresse e-mail du destinataire <span>*</span></label>
+        <div class="email-input-wrap">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,12 2,6"/></svg>
+          <input type="email" class="email-input" id="emailTo" placeholder="destinataire@exemple.com" oninput="validateEmailInput(this)" autocomplete="email"/>
+        </div>
+      </div>
+
+      <!-- Objet personnalisable -->
+      <div class="email-field">
+        <label>Objet de l'e-mail</label>
+        <div class="email-input-wrap">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="10" x2="20" y2="10"/><line x1="4" y1="14" x2="11" y2="14"/></svg>
+          <input type="text" class="email-input" id="emailSubject" placeholder="Objet automatique..." />
+        </div>
+      </div>
+
+      <!-- Message optionnel -->
+      <div class="email-field">
+        <label>Message d'accompagnement <span style="color:var(--muted);font-weight:400">(optionnel)</span></label>
+        <textarea class="email-textarea" id="emailMessage" placeholder="Bonjour, veuillez trouver ci-joint le document..."></textarea>
+      </div>
+
+      <!-- Config EmailJS si non fait -->
+      <div class="setup-guide" id="emailjsGuide" style="display:none">
+        <strong>⚙️ Configuration requise (une seule fois)</strong>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;padding:7px 10px;background:rgba(0,229,255,0.07);border-radius:7px;font-size:0.8rem">
+          <span style="color:#00e5ff">✓</span>
+          <span>Service ID déjà intégré : <strong style="color:#00e5ff">service_fsgnfrc</strong></span>
+        </div>
+        <ol>
+          <li>Créer un compte gratuit sur <a href="https://www.emailjs.com" target="_blank">emailjs.com</a></li>
+          <li>Ajouter le service Gmail → connecter <strong>zinzindohouemarcio@gmail.com</strong></li>
+          <li>Créer un template email, copier le <strong>Template ID</strong> et la <strong>Public Key</strong></li>
+        </ol>
+        <div style="margin-top:12px;display:grid;gap:8px">
+          <input type="text" class="email-input" id="ejsTemplateId" placeholder="Template ID (ex: template_xxxxxx)" style="padding-left:14px"/>
+          <input type="text" class="email-input" id="ejsPublicKey" placeholder="Public Key  (ex: AbCdEfGhIjKlMn...)" style="padding-left:14px"/>
+          <button class="btn-export" onclick="saveEmailJSConfig()" style="justify-content:center;padding:10px">💾 Enregistrer</button>
+        </div>
+      </div>
+
+      <!-- Bouton envoyer -->
+      <button class="email-send-btn" id="emailSendBtn" onclick="sendEmail()">
+        <span id="emailSendIcon">📤</span>
+        <span id="emailSendLabel">Envoyer le document</span>
+      </button>
+
+      <!-- Barre de progression -->
+      <div class="email-progress" id="emailProgress">
+        <div class="email-progress-bar" id="emailProgressBar"></div>
+      </div>
+
+      <!-- Statut -->
+      <div class="email-status-bar" id="emailStatusBar">
+        <span id="emailStatusIcon">ℹ️</span>
+        <span id="emailStatusText"></span>
+      </div>
+
+    </div>
   </div>
-</section>
+</div>
+
+<!-- THINKING -->
+<div class="thinking-overlay" id="thinkingOverlay">
+  <div class="thinking-robot" style="position:relative">
+    <div class="robot thinking">
+      <div class="robot-ring"></div>
+      <div class="robot-ring r2"></div>
+      <div class="robot-antenna"></div>
+      <div class="robot-head">
+        <div class="robot-eye left"></div>
+        <div class="robot-eye right"></div>
+        <div class="robot-mouth"></div>
+      </div>
+    </div>
+    <div style="position:absolute;inset:-40px">
+      <div class="think-ring"></div>
+      <div class="think-ring"></div>
+      <div class="think-ring"></div>
+    </div>
+  </div>
+  <h3>AELLA rédige votre document...</h3>
+  <p>Mise en forme professionnelle en cours <span class="thinking-dots"><span></span><span></span><span></span></span></p>
+</div>
+
+<div class="toast" id="toast"></div>
 
 <footer>
-  <div>© 2026 ArchiStudio — Conçu pour les architectes du réel.</div>
-  <div>Trois fichiers HTML. Zéro dépendance serveur.</div>
+  <div class="font-display text-2xl mb-2"><span class="brand">AELLA</span></div>
+  <p style="margin:0">Intelligence Artificielle conçue par <span class="brand">MarcioAI dev</span> · © 2026</p>
 </footer>
 
-<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
 <script>
-// ============== HERO 3D PREVIEW ==============
-(function(){
-  const canvas=document.getElementById('orbit');
-  const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true});
-  renderer.setPixelRatio(Math.min(devicePixelRatio,2));
-  renderer.shadowMap.enabled=true;
-  renderer.shadowMap.type=THREE.PCFSoftShadowMap;
-  const scene=new THREE.Scene();
-  scene.fog=new THREE.Fog(0x0e1320,15,45);
-  const cam=new THREE.PerspectiveCamera(45,1,0.1,200);
-  cam.position.set(12,9,14);
-  cam.lookAt(0,1.5,0);
+// ================== CONFIG ==================
+const _KEY  = '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';
+const _MODEL= 'llama-3.3-70b-versatile';
+const _URL  = 'https://api.groq.com/openai/v1/chat/completions';
 
-  // Lights
-  const hemi=new THREE.HemisphereLight(0xffd9b0,0x1a2030,0.55); scene.add(hemi);
-  const sun=new THREE.DirectionalLight(0xffb070,1.4); sun.position.set(8,15,6);
-  sun.castShadow=true; sun.shadow.mapSize.set(1024,1024);
-  sun.shadow.camera.left=-15;sun.shadow.camera.right=15;
-  sun.shadow.camera.top=15;sun.shadow.camera.bottom=-15;
-  scene.add(sun);
-  const point=new THREE.PointLight(0xff7a2d,0.8,20); point.position.set(0,4,2); scene.add(point);
+// ================== SERVICES DATA ==================
+const SERVICES = {
+  rh:[
+    {id:'contrat',icon:'📄',title:'Contrat de travail',desc:"CDI, CDD, Stage — conforme droit du travail",
+     fields:[
+      {name:'employeur',label:"Nom de l'employeur / Raison sociale",type:'text',ph:"Ex: SARL TECH SOLUTIONS"},
+      {name:'siegeSocial',label:"Siège social",type:'text',ph:"Ex: Abidjan, Plateau, Rue des Banques"},
+      {name:'employe',label:"Nom complet du salarié",type:'text',ph:"Ex: KOUADIO Jean Baptiste"},
+      {name:'nationalite',label:"Nationalité du salarié",type:'text',ph:"Ex: Ivoirienne"},
+      {name:'poste',label:"Poste / Fonction",type:'text',ph:"Ex: Responsable Commercial"},
+      {name:'salaire',label:"Salaire mensuel brut (FCFA)",type:'text',ph:"Ex: 350 000"},
+      {name:'type',label:"Type de contrat",type:'select',options:['CDI','CDD','Stage','Intérim']},
+      {name:'duree',label:"Durée (si CDD/Stage)",type:'text',ph:"Ex: 6 mois"},
+      {name:'lieu',label:"Lieu de travail",type:'text',ph:"Ex: Abidjan, Cocody"},
+      {name:'dateDebut',label:"Date de début",type:'date'},
+     ]},
+    {id:'paie',icon:'💰',title:'Bulletin de salaire',desc:'Fiche de paie détaillée avec cotisations',
+     fields:[
+      {name:'entreprise',label:"Nom de l'entreprise",type:'text',ph:"Ex: SARL TECH SOLUTIONS"},
+      {name:'adresseEntreprise',label:"Adresse entreprise",type:'text',ph:"Ex: Abidjan, Plateau"},
+      {name:'employe',label:"Nom du salarié",type:'text',ph:"Ex: KOUADIO Jean Baptiste"},
+      {name:'matricule',label:"Matricule",type:'text',ph:"Ex: EMP-2024-045"},
+      {name:'poste',label:"Poste",type:'text',ph:"Ex: Comptable"},
+      {name:'periode',label:"Période (Mois Année)",type:'text',ph:"Ex: Janvier 2026"},
+      {name:'salaireBrut',label:"Salaire brut de base (FCFA)",type:'text',ph:"Ex: 280 000"},
+      {name:'primes',label:"Primes / Avantages",type:'text',ph:"Ex: Prime de transport 20 000, Prime de rendement 15 000"},
+      {name:'heuresSup',label:"Heures supplémentaires",type:'text',ph:"Ex: 8h à 150% = 12 000 FCFA"},
+     ]},
+    {id:'cnps',icon:'🏛️',title:'Déclaration CNPS',desc:'Déclaration trimestrielle / mensuelle',
+     fields:[
+      {name:'entreprise',label:"Raison sociale",type:'text',ph:"Ex: SARL TECH SOLUTIONS"},
+      {name:'numCnps',label:"Numéro employeur CNPS",type:'text',ph:"Ex: 1234567890"},
+      {name:'adresse',label:"Adresse de l'entreprise",type:'text',ph:"Ex: Abidjan, Plateau"},
+      {name:'periode',label:"Période déclarée",type:'text',ph:"Ex: 1er trimestre 2026"},
+      {name:'effectif',label:"Effectif salarié",type:'text',ph:"Ex: 12"},
+      {name:'masseSalariale',label:"Masse salariale totale brute (FCFA)",type:'text',ph:"Ex: 4 500 000"},
+     ]},
+    {id:'conges',icon:'🌴',title:'Gestion congés / absences',desc:'Demande ou attestation d\'absence',
+     fields:[
+      {name:'entreprise',label:"Nom de l'entreprise",type:'text',ph:"Ex: SARL TECH SOLUTIONS"},
+      {name:'employe',label:"Nom du salarié",type:'text',ph:"Ex: KOUADIO Jean Baptiste"},
+      {name:'poste',label:"Poste",type:'text',ph:"Ex: Développeur Web"},
+      {name:'typeAbsence',label:"Type",type:'select',options:['Congé annuel','Congé maladie','Congé maternité','Absence exceptionnelle','Congé sans solde']},
+      {name:'dateDebut',label:"Date de début",type:'date'},
+      {name:'dateFin',label:"Date de fin",type:'date'},
+      {name:'motif',label:"Motif détaillé",type:'textarea'},
+     ]},
+    {id:'reglement',icon:'📜',title:'Règlement intérieur',desc:'Document officiel complet',
+     fields:[
+      {name:'entreprise',label:"Nom de l'entreprise",type:'text',ph:"Ex: SARL TECH SOLUTIONS"},
+      {name:'secteur',label:"Secteur d'activité",type:'text',ph:"Ex: Technologies de l'information"},
+      {name:'effectif',label:"Effectif",type:'text',ph:"Ex: 25 salariés"},
+      {name:'siege',label:"Siège social",type:'text',ph:"Ex: Abidjan, Plateau"},
+      {name:'specifique',label:"Règles spécifiques à inclure",type:'textarea',ph:"Ex: Politique BYOD, tenue vestimentaire, horaires flexibles..."},
+     ]},
+  ],
+  sec:[
+    {id:'courrier',icon:'✉️',title:'Courrier officiel',desc:'Lettre administrative de qualité',
+     fields:[
+      {name:'expediteur',label:"Expéditeur (nom & fonction)",type:'text',ph:"Ex: M. KONE Mamadou, Directeur Général"},
+      {name:'orgExp',label:"Organisation expéditeur",type:'text',ph:"Ex: SARL TECH SOLUTIONS"},
+      {name:'destinataire',label:"Destinataire",type:'text',ph:"Ex: M. le Directeur Régional du Travail"},
+      {name:'objet',label:"Objet",type:'text',ph:"Ex: Demande d'autorisation de travail de nuit"},
+      {name:'contenu',label:"Contenu / arguments à développer",type:'textarea',ph:"Ex: Contexte, raison, demande précise..."},
+      {name:'ton',label:"Ton",type:'select',options:['Formel','Très formel','Cordial','Réclamation','Remerciement','Relance']},
+      {name:'ville',label:"Ville et date",type:'text',ph:"Ex: Abidjan, le 15 janvier 2026"},
+     ]},
+    {id:'ao',icon:'📋',title:"Appel d'offres",desc:'Dossier complet ou réponse',
+     fields:[
+      {name:'entreprise',label:"Entreprise émettrice",type:'text',ph:"Ex: SOCIETE NATIONALE DE CONSTRUCTION"},
+      {name:'objet',label:"Objet de l'appel d'offres",type:'text',ph:"Ex: Fourniture et installation de matériels informatiques"},
+      {name:'budget',label:"Budget estimatif",type:'text',ph:"Ex: 25 000 000 FCFA"},
+      {name:'delai',label:"Délai d'exécution",type:'text',ph:"Ex: 45 jours ouvrables"},
+      {name:'criteres',label:"Critères de sélection",type:'textarea',ph:"Ex: Expérience min. 5 ans, certifications ISO, garantie 2 ans..."},
+      {name:'depot',label:"Date limite de dépôt",type:'date'},
+     ]},
+    {id:'classement',icon:'🗂️',title:'Plan de classement & archivage',desc:'Organisation documentaire',
+     fields:[
+      {name:'entreprise',label:"Entreprise",type:'text',ph:"Ex: SARL TECH SOLUTIONS"},
+      {name:'service',label:"Service concerné",type:'text',ph:"Ex: Direction des Ressources Humaines"},
+      {name:'volume',label:"Volume documentaire estimé",type:'text',ph:"Ex: 500 dossiers physiques, 2000 fichiers numériques"},
+      {name:'besoins',label:"Besoins et contraintes spécifiques",type:'textarea',ph:"Ex: Accès fréquent aux dossiers actifs, confidentialité RH..."},
+     ]},
+    {id:'agenda',icon:'📅',title:'Agenda dirigeant',desc:'Planning structuré et professionnel',
+     fields:[
+      {name:'dirigeant',label:"Nom du dirigeant",type:'text',ph:"Ex: M. BAMBA Seydou"},
+      {name:'poste',label:"Fonction",type:'text',ph:"Ex: Directeur Général"},
+      {name:'entreprise',label:"Entreprise",type:'text',ph:"Ex: SARL TECH SOLUTIONS"},
+      {name:'periode',label:"Période",type:'text',ph:"Ex: Semaine du 13 au 17 janvier 2026"},
+      {name:'rdv',label:"Rendez-vous, réunions & priorités",type:'textarea',ph:"Ex: Lundi 9h - Réunion CA, Mardi 14h - Entretien DRH..."},
+     ]},
+    {id:'standard',icon:'📞',title:'Procédure accueil & standard',desc:'Protocole téléphonique officiel',
+     fields:[
+      {name:'entreprise',label:"Entreprise",type:'text',ph:"Ex: SARL TECH SOLUTIONS"},
+      {name:'secteur',label:"Secteur",type:'text',ph:"Ex: Cabinet d'expertise comptable"},
+      {name:'horaires',label:"Horaires d'ouverture",type:'text',ph:"Ex: Lundi-Vendredi 8h-18h, Samedi 8h-12h"},
+      {name:'specifique',label:"Consignes spécifiques",type:'textarea',ph:"Ex: Transfert VIP vers DG, gestion des plaintes..."},
+     ]},
+  ]
+};
 
-  // Ground
-  const ground=new THREE.Mesh(new THREE.PlaneGeometry(60,60),new THREE.MeshStandardMaterial({color:0x141a26,roughness:.95}));
-  ground.rotation.x=-Math.PI/2; ground.receiveShadow=true; scene.add(ground);
+// ================== RENDER GRID ==================
+function renderGrid(catId,services){
+  const el=document.getElementById('grid-'+catId);
+  el.innerHTML=services.map(s=>`
+    <div class="service-card" onclick='openService("${catId}","${s.id}")'>
+      <div class="service-icon">${s.icon}</div>
+      <h3>${s.title}</h3>
+      <p>${s.desc}</p>
+    </div>
+  `).join('');
+}
+renderGrid('rh',SERVICES.rh);
+renderGrid('sec',SERVICES.sec);
 
-  // House — modern villa inspired by uploaded image
-  const house=new THREE.Group(); scene.add(house);
+// ================== MODAL ==================
+let currentService=null;
+let lastRawText='';
+let lastRenderedHTML='';
 
-  // Main white block
-  const white=new THREE.MeshStandardMaterial({color:0xeeeae3,roughness:.6});
-  const wood=new THREE.MeshStandardMaterial({color:0x8b4a26,roughness:.55});
-  const glass=new THREE.MeshStandardMaterial({color:0x4a6a7a,metalness:.6,roughness:.15,transparent:true,opacity:.7});
-  const dark=new THREE.MeshStandardMaterial({color:0x2a2f3a,roughness:.7});
+function openService(cat,id){
+  const svc=SERVICES[cat].find(s=>s.id===id);
+  currentService=svc;
+  document.getElementById('modalTitle').textContent=svc.icon+' '+svc.title;
+  const fieldsHtml=svc.fields.map(f=>{
+    if(f.type==='textarea')return `<div class="form-group"><label>${f.label}</label><textarea name="${f.name}" placeholder="${f.ph||''}"></textarea></div>`;
+    if(f.type==='select')return `<div class="form-group"><label>${f.label}</label><select name="${f.name}">${f.options.map(o=>`<option>${o}</option>`).join('')}</select></div>`;
+    return `<div class="form-group"><label>${f.label}</label><input type="${f.type}" name="${f.name}" placeholder="${f.ph||''}" /></div>`;
+  }).join('');
+  document.getElementById('modalBody').innerHTML=`
+    <form id="svcForm">
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:0 20px">
+        ${fieldsHtml}
+      </div>
+      <button type="submit" class="btn-primary" style="width:100%;margin-top:12px;font-size:1rem">✨ Générer le document officiel</button>
+    </form>
+    <div id="resultWrap" style="display:none"></div>
+  `;
+  document.getElementById('svcForm').addEventListener('submit',handleGenerate);
+  document.getElementById('modal').classList.add('active');
+}
 
-  const b1=new THREE.Mesh(new THREE.BoxGeometry(5,4,4),white);
-  b1.position.set(-1.5,2,0); b1.castShadow=true; b1.receiveShadow=true; house.add(b1);
+function closeModal(){document.getElementById('modal').classList.remove('active')}
+document.getElementById('modal').addEventListener('click',e=>{if(e.target.id==='modal')closeModal()});
 
-  // Wood chevron tower
-  const tower=new THREE.Mesh(new THREE.BoxGeometry(2.2,5.5,4.2),wood);
-  tower.position.set(2,2.75,0); tower.castShadow=true; house.add(tower);
+// ================== PROMPT BUILDER ==================
+function buildPrompt(svc,data){
+  const today = new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'});
+  const infoLines=Object.entries(data).map(([k,v])=>`- ${k} : ${v||'(non précisé)'}`).join('\n');
 
-  // Upper block
-  const b2=new THREE.Mesh(new THREE.BoxGeometry(3,2.2,4),white);
-  b2.position.set(3.6,4.1,0); b2.castShadow=true; house.add(b2);
+  const instructions={
+    contrat:`
+Tu dois produire un CONTRAT DE TRAVAIL complet en HTML structuré.
+Structure obligatoire :
+1. En-tête : raison sociale, adresse, logo textuel
+2. Titre centré : "CONTRAT DE TRAVAIL [TYPE]"
+3. Référence du contrat (génère un numéro)
+4. Bloc Parties (grille employeur / salarié)
+5. Articles numérotés : Engagement, Poste & Missions, Durée, Rémunération, Horaires, Congés, Obligations, Clause de confidentialité, Rupture, Juridiction
+6. Bloc signatures (2 colonnes : Pour l'Employeur / Le Salarié)
+7. Mentions légales en pied`,
+    paie:`
+Tu dois produire un BULLETIN DE PAIE complet en HTML structuré.
+Structure obligatoire :
+1. En-tête employeur (nom, adresse, SIRET-like, CNPS)
+2. Bloc salarié (nom, matricule, poste, période, date entrée)
+3. Tableau des éléments de rémunération :
+   - Colonnes : Libellé | Base | Taux | Montant salarié | Montant employeur
+   - Lignes : Salaire de base, Primes diverses, Heures supp, CNPS (part salariale ~6.3%), IS (impôt sur salaire), TRIMF
+   - Ligne total net à payer en gras
+4. Compteur congés (acquis / pris / restants)
+5. Mention "Document confidentiel — à conserver"
+6. Signature DRH`,
+    cnps:`
+Tu dois produire une DÉCLARATION CNPS complète en HTML structuré.
+Structure obligatoire :
+1. En-tête : CNPS Côte d'Ivoire, logo textuel officiel
+2. Titre : "BORDEREAU DE DÉCLARATION DES COTISATIONS"
+3. Informations employeur (raison sociale, n° CNPS, adresse, période)
+4. Tableau des cotisations par branche (AT/MP 2%, PF 5.75%, Vieillesse 7.7% emp + 6.3% sal, puis AT)
+5. Récapitulatif avec total à verser
+6. Cadre réservé à la CNPS
+7. Signature et cachet employeur`,
+    conges:`
+Tu dois produire une DEMANDE DE CONGÉ / ATTESTATION D'ABSENCE en HTML structuré.
+Structure obligatoire :
+1. En-tête entreprise
+2. Titre du document
+3. Informations salarié
+4. Tableau détail (type, du... au..., nombre de jours)
+5. Motif développé
+6. Section approbation hiérarchique (N+1, DRH, DG)
+7. Signature salarié`,
+    reglement:`
+Tu dois produire un RÈGLEMENT INTÉRIEUR complet en HTML avec tous les chapitres obligatoires du droit ivoirien :
+Chapitres : Dispositions générales, Discipline et sanctions, Hygiène et sécurité, Durée du travail, Congés, Droits et devoirs des salariés, Procédures de réclamation, Dispositions finales.`,
+    courrier:`
+Tu dois produire un COURRIER OFFICIEL en HTML structuré.
+Structure : En-tête expéditeur (haut gauche), destinataire (haut droit), lieu et date, objet en gras, corps développé (3+ paragraphes), formule de politesse adaptée au ton, signature.`,
+    ao:`
+Tu dois produire un DOSSIER D'APPEL D'OFFRES complet en HTML.
+Structure : Page de garde, Présentation de l'entreprise commanditaire, Objet et contexte, Spécifications techniques, Conditions de participation, Critères d'évaluation, Documents à fournir, Planning, Contacts.`,
+    classement:`
+Tu dois produire un PLAN DE CLASSEMENT ET D'ARCHIVAGE complet en HTML avec tableaux de classification, codification, procédures de conservation et destruction.`,
+    agenda:`
+Tu dois produire un PLANNING AGENDA DIRIGEANT en HTML avec tableau hebdomadaire formaté par créneaux horaires (8h-18h), codes couleur indiqués dans le tableau, priorités marquées.`,
+    standard:`
+Tu dois produire une PROCÉDURE D'ACCUEIL ET DE STANDARD TÉLÉPHONIQUE complète en HTML avec scripts d'accueil, tableau de transfert d'appels, procédures exceptionnelles, fiches réflexes.`
+  };
 
-  // Windows
-  for(let i=0;i<3;i++){
-    const w=new THREE.Mesh(new THREE.BoxGeometry(0.1,1.1,0.9),glass);
-    w.position.set(-4,2.4,-1.2+i*1.2); house.add(w);
+  return `Tu es AELLA, experte en documents professionnels RH et administratifs pour entreprises africaines francophones. Tu produis du HTML pur représentant un vrai document imprimable format A4.
+
+DOCUMENT : ${svc.title}
+DATE DU JOUR : ${today}
+
+INFORMATIONS :
+${infoLines}
+
+${instructions[svc.id]||'Produis un document professionnel complet.'}
+
+RÈGLES DE FORMATAGE HTML OBLIGATOIRES :
+- Réponds UNIQUEMENT avec le contenu HTML interne du document (pas de <html><head><body>)
+- Utilise ces classes CSS déjà définies : h1, h2, h3, p, table, .doc-ref, .doc-parties, .doc-party-block, .doc-separator, .doc-signature-block, .doc-signature-box, .doc-stamp, .doc-article, .doc-article-num, .highlight-box, .letterhead
+- Les tableaux doivent avoir des <th> et <td> bien structurés
+- Génère un numéro de référence réaliste
+- Toutes les mentions légales, bases légales du droit ivoirien obligatoires
+- Le document doit être COMPLET — pas de "[à compléter]" ni de "..."
+- Français impeccable, style notarial et administratif de haut niveau
+- Si des montants sont calculables, calcule-les précisément`;
+}
+
+// ================== AI CALL ==================
+async function handleGenerate(e){
+  e.preventDefault();
+  const fd=new FormData(e.target);
+  const data={};
+  currentService.fields.forEach(f=>{data[f.label]=fd.get(f.name)||''});
+
+  document.getElementById('thinkingOverlay').classList.add('active');
+  try{
+    const r=await fetch(_URL,{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+_KEY},
+      body:JSON.stringify({
+        model:_MODEL,
+        messages:[{role:'user',content:buildPrompt(currentService,data)}],
+        temperature:0.4,
+        max_tokens:4096,
+      })
+    });
+    const j=await r.json();
+    if(!r.ok)throw new Error(j.error?.message||'Erreur API');
+    let html=j.choices[0].message.content;
+    // Nettoyer les backticks markdown si présents
+    html=html.replace(/^```html\s*/i,'').replace(/^```\s*/,'').replace(/```\s*$/,'').trim();
+    lastRawText=html;
+    renderDocument(html);
+    showToast('✅ Document généré avec succès !');
+  }catch(err){
+    showToast('❌ '+err.message);
+    console.error(err);
+  }finally{
+    document.getElementById('thinkingOverlay').classList.remove('active');
   }
-  const bigW=new THREE.Mesh(new THREE.BoxGeometry(0.1,1.6,2.4),glass);
-  bigW.position.set(-4,3.2,0); house.add(bigW);
+}
 
-  // Roof line / sign block
-  const sign=new THREE.Mesh(new THREE.BoxGeometry(3.2,0.4,0.3),dark);
-  sign.position.set(3.6,5.4,2.1); house.add(sign);
+// ================== DOCUMENT RENDERER ==================
+function renderDocument(html){
+  const today=new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'});
+  const pageNum=`Page 1`;
 
-  // Balcony rail
-  for(let i=0;i<8;i++){
-    const r=new THREE.Mesh(new THREE.BoxGeometry(0.05,0.5,0.05),new THREE.MeshStandardMaterial({color:0xddd8d0}));
-    r.position.set(2.2+i*0.3,3.3,2.1); house.add(r);
-  }
-  const bar=new THREE.Mesh(new THREE.BoxGeometry(2.4,0.05,0.05),new THREE.MeshStandardMaterial({color:0xddd8d0}));
-  bar.position.set(3.4,3.55,2.1); house.add(bar);
+  // Enveloppe le HTML dans une vraie page A4
+  const fullDoc=`
+    <div class="a4-page" id="a4Doc">
+      ${html}
+      <div class="doc-footer">
+        <span>Document généré par AELLA · MarcioAI</span>
+        <span>${today}</span>
+        <span>${pageNum}</span>
+      </div>
+    </div>
+  `;
+  lastRenderedHTML=fullDoc;
 
-  // Trees
-  function tree(x,z,s=1){
-    const g=new THREE.Group();
-    const trunk=new THREE.Mesh(new THREE.CylinderGeometry(0.1,0.15,1.2),new THREE.MeshStandardMaterial({color:0x3a2818}));
-    trunk.position.y=0.6; g.add(trunk);
-    for(let i=0;i<4;i++){
-      const c=new THREE.Mesh(new THREE.ConeGeometry(0.8-i*0.15,1.2,8),new THREE.MeshStandardMaterial({color:0x2a4a2a,roughness:.9}));
-      c.position.y=1.2+i*0.7; c.castShadow=true; g.add(c);
+  const wrap=document.getElementById('resultWrap');
+  wrap.style.display='block';
+  wrap.innerHTML=`
+    <div class="doc-viewer-wrap">
+      <div class="doc-toolbar">
+        <span class="doc-toolbar-title">📄 ${currentService.title} — Aperçu document officiel</span>
+        <div class="doc-export-btns">
+          <button class="btn-export primary-export" onclick="exportPDF()">📕 Exporter PDF</button>
+          <button class="btn-export" onclick="exportWord()">📝 Exporter Word</button>
+          <button class="btn-export" onclick="printDoc()">🖨️ Imprimer</button>
+          <button class="btn-export" onclick="openEmailModal()" style="background:linear-gradient(135deg,rgba(255,61,240,0.15),rgba(124,77,255,0.15));border-color:var(--accent);color:var(--accent)">📧 Envoyer par mail</button>
+          <button class="btn-export" onclick="copyDocText()">📋 Copier texte</button>
+        </div>
+      </div>
+      <div class="a4-viewport">
+        ${fullDoc}
+      </div>
+    </div>
+  `;
+  wrap.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+// ================== PRINT ==================
+function printDoc(){
+  const content=document.getElementById('a4Doc');
+  if(!content){showToast('Aucun document');return}
+  const win=window.open('','_blank');
+  win.document.write(`<!DOCTYPE html><html><head>
+    <meta charset="UTF-8">
+    <title>${currentService.title}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <style>
+      *{box-sizing:border-box;margin:0;padding:0}
+      body{background:#fff;font-family:'Libre Baskerville',Georgia,serif;font-size:11pt;line-height:1.7;color:#111}
+      @page{size:A4;margin:20mm 25mm}
+      h1{font-size:16pt;font-weight:700;text-align:center;text-transform:uppercase;letter-spacing:0.04em;margin:0 0 6px}
+      h2{font-size:13pt;font-weight:700;text-transform:uppercase;letter-spacing:0.03em;border-bottom:2px solid #111;padding-bottom:4px;margin:22px 0 8px}
+      h3{font-size:11pt;font-weight:700;margin:16px 0 6px}
+      p{margin:0 0 10px;text-align:justify}
+      .doc-ref{font-size:9pt;color:#555;margin-bottom:20px;text-align:right}
+      .doc-parties{display:grid;grid-template-columns:1fr 1fr;gap:30px;margin:20px 0;padding:16px;background:#f8f8f8;border:1px solid #ddd;font-size:10pt}
+      .doc-party-block strong{display:block;font-size:9pt;text-transform:uppercase;letter-spacing:0.05em;color:#555;margin-bottom:4px}
+      hr,.doc-separator{border:none;border-top:1px solid #ddd;margin:20px 0}
+      .doc-signature-block{display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:50px}
+      .doc-signature-box{border-top:1px solid #999;padding-top:8px;font-size:9pt;color:#555}
+      .doc-signature-box strong{display:block;color:#333;font-size:10pt;margin-bottom:2px}
+      table{width:100%;border-collapse:collapse;margin:16px 0;font-size:10pt}
+      th{background:#111;color:#fff;padding:8px 10px;text-align:left;font-weight:600;font-size:9pt;text-transform:uppercase}
+      td{padding:7px 10px;border-bottom:1px solid #e0e0e0;vertical-align:top}
+      tr:nth-child(even) td{background:#f5f5f5}
+      .total-row td{background:#111!important;color:#fff;font-weight:700}
+      .doc-stamp{font-size:9pt;color:#666;font-style:italic;text-align:center;margin-top:20px;padding:10px;border:1px dashed #bbb}
+      .doc-article{margin-bottom:14px}
+      .doc-article-num{font-weight:700;text-decoration:underline;display:block;margin-bottom:4px}
+      .highlight-box{background:#fffef0;border-left:4px solid #d4a000;padding:12px 16px;margin:16px 0;font-size:10pt}
+      .letterhead{text-align:center;margin-bottom:30px;padding-bottom:20px;border-bottom:2px solid #111}
+      .letterhead .company-name{font-size:18pt;font-weight:700;letter-spacing:0.05em;text-transform:uppercase}
+      .letterhead .company-details{font-size:9pt;color:#555;margin-top:4px}
+      .doc-footer{border-top:1px solid #ccc;padding-top:8px;margin-top:40px;display:flex;justify-content:space-between;font-size:8pt;color:#888}
+    </style>
+  </head><body>${lastRenderedHTML}</body></html>`);
+  win.document.close();
+  win.onload=()=>{win.print()};
+  showToast('🖨️ Impression lancée');
+}
+
+// ================== PDF (html2canvas + jsPDF) ==================
+async function exportPDF(){
+  const el=document.getElementById('a4Doc');
+  if(!el){showToast('Aucun document');return}
+  showToast('⏳ Génération PDF...');
+  try{
+    const canvas=await html2canvas(el,{
+      scale:2,
+      useCORS:true,
+      backgroundColor:'#ffffff',
+      logging:false,
+      width:794,
+    });
+    const imgData=canvas.toDataURL('image/png');
+    const {jsPDF}=window.jspdf;
+    const pdf=new jsPDF({unit:'mm',format:'a4',orientation:'portrait'});
+    const pdfW=pdf.internal.pageSize.getWidth();
+    const pdfH=pdf.internal.pageSize.getHeight();
+    const ratio=canvas.width/canvas.height;
+    const imgH=pdfW/ratio;
+    let posY=0;
+    // Gestion multi-pages
+    while(posY<imgH){
+      if(posY>0)pdf.addPage();
+      pdf.addImage(imgData,'PNG',0,-posY,pdfW,imgH);
+      posY+=pdfH;
     }
-    g.position.set(x,0,z); g.scale.setScalar(s);
-    scene.add(g);
+    const filename=currentService.title.replace(/[^a-zA-Z0-9]/g,'_')+'.pdf';
+    pdf.save(filename);
+    showToast('📕 PDF exporté avec succès');
+  }catch(err){
+    console.error(err);
+    showToast('❌ Erreur PDF: '+err.message);
   }
-  tree(-7,3,1.2); tree(7,-2,1.4); tree(-6,-5,1); tree(8,4,0.9);
-
-  // Wall enclosure (orange like reference)
-  const wallMat=new THREE.MeshStandardMaterial({color:0xa14a1f,roughness:.85});
-  const w1=new THREE.Mesh(new THREE.BoxGeometry(14,1.2,0.2),wallMat);
-  w1.position.set(0,0.6,-5); w1.castShadow=true; scene.add(w1);
-  const w2=w1.clone(); w2.position.z=5; scene.add(w2);
-
-  // Driveway tiles
-  for(let i=0;i<5;i++)for(let j=0;j<3;j++){
-    const t=new THREE.Mesh(new THREE.BoxGeometry(0.7,0.05,0.7),new THREE.MeshStandardMaterial({color:0xb0a89a}));
-    t.position.set(4+i*0.8,0.03,1.5-j*0.8); t.receiveShadow=true; scene.add(t);
-  }
-
-  function resize(){
-    const w=canvas.clientWidth, h=canvas.clientHeight;
-    renderer.setSize(w,h,false);
-    cam.aspect=w/h; cam.updateProjectionMatrix();
-  }
-  resize(); addEventListener('resize',resize);
-
-  let t=0;
-  function loop(){
-    t+=0.003;
-    cam.position.x=Math.cos(t)*16;
-    cam.position.z=Math.sin(t)*16;
-    cam.position.y=8+Math.sin(t*0.5)*1.5;
-    cam.lookAt(0,2,0);
-    renderer.render(scene,cam);
-    requestAnimationFrame(loop);
-  }
-  loop();
-})();
-
-// ============== PREVIEW CARDS (2D canvas decorations) ==============
-function drawPlan(c){
-  const ctx=c.getContext('2d');
-  function r(){c.width=c.clientWidth*devicePixelRatio;c.height=c.clientHeight*devicePixelRatio;ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);}
-  r(); addEventListener('resize',r);
-  function loop(){
-    const w=c.clientWidth,h=c.clientHeight;
-    ctx.fillStyle='#0e1320'; ctx.fillRect(0,0,w,h);
-    ctx.strokeStyle='#1f2733'; ctx.lineWidth=1;
-    for(let x=0;x<w;x+=24){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,h);ctx.stroke();}
-    for(let y=0;y<h;y+=24){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke();}
-    // walls
-    ctx.strokeStyle='#ff7a2d'; ctx.lineWidth=6; ctx.lineCap='round';
-    const cx=w/2,cy=h/2;
-    ctx.beginPath();
-    ctx.moveTo(cx-160,cy-90); ctx.lineTo(cx+160,cy-90);
-    ctx.lineTo(cx+160,cy+90); ctx.lineTo(cx-40,cy+90);
-    ctx.lineTo(cx-40,cy+30); ctx.lineTo(cx-160,cy+30); ctx.closePath();
-    ctx.stroke();
-    // interior
-    ctx.strokeStyle='#ffb347'; ctx.lineWidth=3;
-    ctx.beginPath(); ctx.moveTo(cx+40,cy-90); ctx.lineTo(cx+40,cy+30); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(cx-40,cy-30); ctx.lineTo(cx+40,cy-30); ctx.stroke();
-    requestAnimationFrame(()=>{});
-  }
-  loop();
 }
-function draw3D(c){
-  const renderer=new THREE.WebGLRenderer({canvas:c,antialias:true,alpha:true});
-  renderer.setPixelRatio(Math.min(devicePixelRatio,2));
-  const scene=new THREE.Scene();
-  const cam=new THREE.PerspectiveCamera(50,1,.1,100); cam.position.set(0,2,6);
-  scene.add(new THREE.HemisphereLight(0xffffff,0x222244,1));
-  const dir=new THREE.DirectionalLight(0xffaa66,1); dir.position.set(3,5,3); scene.add(dir);
-  // room
-  const floor=new THREE.Mesh(new THREE.PlaneGeometry(8,6),new THREE.MeshStandardMaterial({color:0x6b4a2e}));
-  floor.rotation.x=-Math.PI/2; scene.add(floor);
-  const back=new THREE.Mesh(new THREE.PlaneGeometry(8,3),new THREE.MeshStandardMaterial({color:0xeeeae3})); back.position.set(0,1.5,-3); scene.add(back);
-  // sofa
-  const sofa=new THREE.Mesh(new THREE.BoxGeometry(2.2,.6,.9),new THREE.MeshStandardMaterial({color:0xff7a2d}));
-  sofa.position.set(0,.3,-1); scene.add(sofa);
-  const back2=new THREE.Mesh(new THREE.BoxGeometry(2.2,.7,.2),new THREE.MeshStandardMaterial({color:0xff7a2d}));
-  back2.position.set(0,.65,-1.4); scene.add(back2);
-  const table=new THREE.Mesh(new THREE.BoxGeometry(1.3,.1,.7),new THREE.MeshStandardMaterial({color:0x222}));
-  table.position.set(0,.4,.3); scene.add(table);
-  function r(){const w=c.clientWidth,h=c.clientHeight;renderer.setSize(w,h,false);cam.aspect=w/h;cam.updateProjectionMatrix();}
-  r(); addEventListener('resize',r);
-  let t=0;
-  (function loop(){t+=.005;cam.position.x=Math.sin(t)*4;cam.position.z=Math.cos(t)*4+1;cam.lookAt(0,1,-1);renderer.render(scene,cam);requestAnimationFrame(loop);})();
+
+// ================== WORD (docx) ==================
+async function exportWord(){
+  const el=document.getElementById('a4Doc');
+  if(!el){showToast('Aucun document');return}
+  showToast('⏳ Génération Word...');
+  try{
+    const {Document,Packer,Paragraph,TextRun,HeadingLevel,Table,TableRow,TableCell,WidthType,BorderStyle,AlignmentType,ShadingType}=docx;
+
+    // Parser le texte du document
+    function walkNode(node, paragraphs){
+      if(node.nodeType===Node.TEXT_NODE){
+        const txt=node.textContent.replace(/\s+/g,' ').trim();
+        if(txt) paragraphs.push(new Paragraph({children:[new TextRun({text:txt,size:22})]}));
+        return;
+      }
+      const tag=node.tagName?.toLowerCase();
+      if(!tag){node.childNodes.forEach(c=>walkNode(c,paragraphs));return}
+      if(tag==='h1'){
+        paragraphs.push(new Paragraph({heading:HeadingLevel.HEADING_1,alignment:AlignmentType.CENTER,children:[new TextRun({text:node.textContent.trim(),bold:true,size:28,allCaps:true})]}));
+      } else if(tag==='h2'){
+        paragraphs.push(new Paragraph({heading:HeadingLevel.HEADING_2,children:[new TextRun({text:node.textContent.trim(),bold:true,size:24})]}));
+      } else if(tag==='h3'){
+        paragraphs.push(new Paragraph({heading:HeadingLevel.HEADING_3,children:[new TextRun({text:node.textContent.trim(),bold:true,size:22})]}));
+      } else if(tag==='p'){
+        const runs=[];
+        node.childNodes.forEach(c=>{
+          if(c.nodeType===Node.TEXT_NODE){const t=c.textContent;if(t.trim())runs.push(new TextRun({text:t,size:22}))}
+          else if(c.tagName?.toLowerCase()==='strong'||c.tagName?.toLowerCase()==='b')runs.push(new TextRun({text:c.textContent,bold:true,size:22}))
+          else if(c.tagName?.toLowerCase()==='em'||c.tagName?.toLowerCase()==='i')runs.push(new TextRun({text:c.textContent,italics:true,size:22}))
+          else runs.push(new TextRun({text:c.textContent,size:22}))
+        });
+        if(runs.length)paragraphs.push(new Paragraph({children:runs,alignment:AlignmentType.JUSTIFIED}));
+      } else if(tag==='table'){
+        try{
+          const rows=[];
+          node.querySelectorAll('tr').forEach((tr,ri)=>{
+            const cells=[];
+            tr.querySelectorAll('th,td').forEach(cell=>{
+              const isHeader=cell.tagName.toLowerCase()==='th';
+              cells.push(new TableCell({
+                children:[new Paragraph({children:[new TextRun({text:cell.textContent.trim(),bold:isHeader,size:20,color:isHeader?'FFFFFF':'111111'})]})],
+                shading:isHeader?{fill:'111111',type:ShadingType.CLEAR}:undefined,
+              }));
+            });
+            if(cells.length)rows.push(new TableRow({children:cells}));
+          });
+          if(rows.length)paragraphs.push(new Table({rows,width:{size:100,type:WidthType.PERCENTAGE}}));
+          paragraphs.push(new Paragraph({children:[new TextRun({text:'',size:22})]}));
+        }catch(te){console.warn('table skip',te)}
+      } else if(tag==='hr'){
+        paragraphs.push(new Paragraph({children:[new TextRun({text:'─'.repeat(60),size:18,color:'999999'})]}));
+      } else if(['div','section','article','li','ul','ol'].includes(tag)){
+        node.childNodes.forEach(c=>walkNode(c,paragraphs));
+        if(tag==='li')paragraphs.push(new Paragraph({children:[new TextRun({text:'',size:22})]}));
+      } else {
+        node.childNodes.forEach(c=>walkNode(c,paragraphs));
+      }
+    }
+
+    const tmp=document.createElement('div');
+    tmp.innerHTML=el.innerHTML;
+    // Supprimer le footer AELLA du word
+    tmp.querySelectorAll('.doc-footer').forEach(n=>n.remove());
+
+    const paragraphs=[];
+    tmp.childNodes.forEach(c=>walkNode(c,paragraphs));
+
+    const doc=new Document({
+      sections:[{
+        properties:{
+          page:{
+            size:{width:11906,height:16838},
+            margin:{top:1417,right:1417,bottom:1417,left:1417}
+          }
+        },
+        children:paragraphs
+      }]
+    });
+
+    const blob=await Packer.toBlob(doc);
+    const filename=currentService.title.replace(/[^a-zA-Z0-9]/g,'_')+'.docx';
+    saveAs(blob,filename);
+    showToast('📝 Word exporté avec succès');
+  }catch(err){
+    console.error(err);
+    showToast('❌ Erreur Word: '+err.message);
+  }
 }
-drawPlan(document.getElementById('prev1'));
-draw3D(document.getElementById('prev2'));
+
+// ================== COPY TEXT ==================
+function copyDocText(){
+  const el=document.getElementById('a4Doc');
+  if(!el){showToast('Aucun document');return}
+  navigator.clipboard.writeText(el.innerText||el.textContent);
+  showToast('📋 Texte copié');
+}
+
+// ================== TOAST ==================
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3500);
+}
+
+// ================================================================
+//  SYSTÈME D'ENVOI EMAIL — EmailJS
+//  Expéditeur : zinzindohouemarcio@gmail.com (compte EmailJS lié)
+// ================================================================
+
+// ================================================================
+//  CONFIG EMAILJS — Service ID intégré, Template + PublicKey en mémoire
+// ================================================================
+
+// Lecture localStorage sécurisée (bloqué sur file:// ou Edge Tracking Prevention)
+function lsGet(k){try{return localStorage.getItem(k)||''}catch(e){return ''}}
+function lsSet(k,v){try{localStorage.setItem(k,v)}catch(e){/* ignoré si bloqué */}}
+
+const  EJS_SERVICE_ID  = 'service_fsgnfrc'; // Service ID fourni — NE PAS MODIFIER
+let    EJS_TEMPLATE_ID = lsGet('aella_ejs_template');
+let    EJS_PUBLIC_KEY  = lsGet('aella_ejs_pubkey');
+
+function initEmailJS(){
+  if(EJS_PUBLIC_KEY) emailjs.init({publicKey: EJS_PUBLIC_KEY});
+}
+initEmailJS();
+
+function saveEmailJSConfig(){
+  const t=document.getElementById('ejsTemplateId').value.trim();
+  const k=document.getElementById('ejsPublicKey').value.trim();
+  if(!t||!k){showEmailStatus('error','⚠️ Veuillez remplir le Template ID et la Public Key.');return}
+  EJS_TEMPLATE_ID=t; EJS_PUBLIC_KEY=k;
+  lsSet('aella_ejs_template',t);
+  lsSet('aella_ejs_pubkey',k);
+  emailjs.init({publicKey:k});
+  document.getElementById('emailjsGuide').style.display='none';
+  showEmailStatus('success','✅ Configuration enregistrée !');
+}
+
+// Validation email en temps réel
+function validateEmailInput(el){
+  const v=el.value.trim();
+  const ok=/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+  el.classList.toggle('valid',ok && v.length>0);
+  el.classList.toggle('invalid',!ok && v.length>0);
+}
+
+// Ouvrir la modal email
+function openEmailModal(){
+  const el=document.getElementById('a4Doc');
+  if(!el){showToast('❌ Aucun document à envoyer');return}
+
+  // Pré-remplir objet
+  const docTitle=currentService?.title||'Document';
+  const today=new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'});
+  document.getElementById('emailSubject').value=`📄 ${docTitle} — AELLA · MarcioAI · ${today}`;
+  document.getElementById('emailDocName').textContent=docTitle.replace(/\s+/g,'_')+'.pdf';
+
+  // Estimer taille (approximation sur base HTML)
+  const htmlLen=el.innerHTML.length;
+  const estKb=Math.round(htmlLen/400);
+  document.getElementById('emailDocSize').textContent=estKb>1000?`~${(estKb/1000).toFixed(1)} MB`:`~${estKb} KB`;
+
+  // Montrer guide si pas configuré
+  document.getElementById('emailjsGuide').style.display=
+    (!EJS_SERVICE_ID||!EJS_TEMPLATE_ID||!EJS_PUBLIC_KEY)?'block':'none';
+
+  // Reset état
+  resetEmailModal();
+  document.getElementById('emailModal').classList.add('active');
+}
+
+function closeEmailModal(){
+  document.getElementById('emailModal').classList.remove('active');
+}
+document.getElementById('emailModal').addEventListener('click',e=>{
+  if(e.target.id==='emailModal') closeEmailModal();
+});
+
+function resetEmailModal(){
+  document.getElementById('emailTo').value='';
+  document.getElementById('emailTo').className='email-input';
+  document.getElementById('emailMessage').value='';
+  setSendBtn('idle');
+  hideEmailStatus();
+  setProgress(0,false);
+}
+
+// États du bouton
+function setSendBtn(state){
+  const btn=document.getElementById('emailSendBtn');
+  const icon=document.getElementById('emailSendIcon');
+  const label=document.getElementById('emailSendLabel');
+  btn.disabled=state==='sending'||state==='success';
+  btn.className='email-send-btn'+(state!=='idle'?' '+state:'');
+  const states={
+    idle:   {i:'📤', l:'Envoyer le document'},
+    sending:{i:'⏳', l:'Envoi en cours...'},
+    success:{i:'✅', l:'E-mail envoyé avec succès !'},
+    error:  {i:'❌', l:'Réessayer'},
+  };
+  icon.textContent=states[state].i;
+  label.textContent=states[state].l;
+}
+
+function showEmailStatus(type,msg){
+  const bar=document.getElementById('emailStatusBar');
+  const txt=document.getElementById('emailStatusText');
+  bar.className='email-status-bar show '+type;
+  txt.textContent=msg;
+}
+function hideEmailStatus(){
+  document.getElementById('emailStatusBar').className='email-status-bar';
+}
+
+function setProgress(pct,show){
+  const wrap=document.getElementById('emailProgress');
+  const bar=document.getElementById('emailProgressBar');
+  wrap.className='email-progress'+(show?' show':'');
+  bar.style.width=pct+'%';
+}
+
+// Convertir le document en image base64 pour l'email
+async function getDocSnapshot(){
+  const el=document.getElementById('a4Doc');
+  if(!el) return null;
+  try{
+    const canvas=await html2canvas(el,{
+      scale:1.5,useCORS:true,backgroundColor:'#ffffff',logging:false,width:794
+    });
+    return canvas.toDataURL('image/jpeg',0.85); // JPEG compact pour email
+  }catch(e){console.warn('snapshot fail',e);return null;}
+}
+
+// Construire le corps HTML de l'email (document intégré inline)
+function buildEmailBody(recipientMsg){
+  const today=new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'});
+  const docTitle=currentService?.title||'Document';
+  const docHTML=lastRawText||'';
+
+  // Corps de l'email : beau template responsive
+  return `<!DOCTYPE html>
+<html lang="fr"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+  body{margin:0;padding:0;background:#f0f2f5;font-family:Georgia,serif}
+  .wrapper{max-width:680px;margin:30px auto;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.1)}
+  .header{background:linear-gradient(135deg,#111827,#1e2a4a);padding:28px 36px;color:#fff}
+  .header-logo{font-size:22px;font-weight:700;letter-spacing:0.05em;color:#00e5ff;font-family:Arial,sans-serif}
+  .header-sub{font-size:12px;color:rgba(255,255,255,0.5);margin-top:3px;font-family:Arial,sans-serif}
+  .header-title{font-size:17px;margin-top:16px;color:#fff;font-family:Arial,sans-serif}
+  .msg-block{padding:24px 36px;background:#f8faff;border-bottom:1px solid #e8ecf2;font-size:14px;color:#444;line-height:1.7;font-family:Arial,sans-serif}
+  .doc-block{padding:28px 36px}
+  .doc-block h2{font-size:13px;text-transform:uppercase;letter-spacing:0.08em;color:#888;margin:0 0 16px;font-family:Arial,sans-serif}
+  /* Reset styles du doc inline */
+  .doc-inner{border:1px solid #ddd;border-radius:6px;overflow:hidden}
+  .doc-inner-content{padding:30px 36px;font-family:Georgia,serif;font-size:11pt;line-height:1.7;color:#111}
+  .doc-inner-content h1{font-size:16pt;font-weight:700;text-align:center;text-transform:uppercase;letter-spacing:0.04em;margin:0 0 6px;color:#111}
+  .doc-inner-content h2{font-size:13pt;font-weight:700;text-transform:uppercase;border-bottom:2px solid #111;padding-bottom:4px;margin:22px 0 8px;color:#111}
+  .doc-inner-content h3{font-size:11pt;font-weight:700;margin:16px 0 6px;color:#222}
+  .doc-inner-content p{margin:0 0 10px;text-align:justify}
+  .doc-inner-content table{width:100%;border-collapse:collapse;margin:16px 0;font-size:10pt}
+  .doc-inner-content th{background:#111;color:#fff;padding:8px 10px;text-align:left;font-weight:600;font-size:9pt;text-transform:uppercase}
+  .doc-inner-content td{padding:7px 10px;border-bottom:1px solid #e0e0e0}
+  .doc-inner-content tr:nth-child(even) td{background:#f5f5f5}
+  .doc-footer-bar{background:#111827;padding:16px 36px;display:flex;justify-content:space-between;align-items:center}
+  .doc-footer-bar span{color:rgba(255,255,255,0.4);font-size:11px;font-family:Arial,sans-serif}
+  .doc-footer-bar .brand{color:#00e5ff;font-weight:700}
+  .disclaimer{padding:16px 36px;font-size:11px;color:#aaa;line-height:1.6;border-top:1px solid #eee;font-family:Arial,sans-serif}
+</style></head><body>
+<div class="wrapper">
+  <div class="header">
+    <div class="header-logo">AELLA</div>
+    <div class="header-sub">Intelligence Artificielle RH & Administration · MarcioAI</div>
+    <div class="header-title">📄 Transmission de document officiel</div>
+  </div>
+  ${recipientMsg?`<div class="msg-block"><strong>Message :</strong><br>${recipientMsg.replace(/\n/g,'<br>')}</div>`:''}
+  <div class="doc-block">
+    <h2>Document généré</h2>
+    <div class="doc-inner">
+      <div class="doc-inner-content">
+        ${docHTML}
+      </div>
+    </div>
+  </div>
+  <div class="doc-footer-bar">
+    <span>Généré le ${today}</span>
+    <span class="brand">AELLA · MarcioAI</span>
+    <span>zinzindohouemarcio@gmail.com</span>
+  </div>
+  <div class="disclaimer">
+    Ce document a été généré automatiquement par AELLA, assistante IA de MarcioAI.
+    Pour toute question, contactez zinzindohouemarcio@gmail.com.
+  </div>
+</div>
+</body></html>`;
+}
+
+// Envoi principal
+async function sendEmail(){
+  // Vérif config EmailJS
+  if(!EJS_SERVICE_ID||!EJS_TEMPLATE_ID||!EJS_PUBLIC_KEY){
+    document.getElementById('emailjsGuide').style.display='block';
+    showEmailStatus('error','⚠️ Veuillez configurer EmailJS d\'abord (voir guide ci-dessus).');
+    document.getElementById('emailjsGuide').scrollIntoView({behavior:'smooth'});
+    return;
+  }
+
+  const toEmail=document.getElementById('emailTo').value.trim();
+  const subject=document.getElementById('emailSubject').value.trim()||`Document AELLA · ${currentService?.title}`;
+  const message=document.getElementById('emailMessage').value.trim();
+
+  // Validation
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(toEmail)){
+    document.getElementById('emailTo').classList.add('invalid');
+    showEmailStatus('error','⚠️ Veuillez entrer une adresse e-mail valide.');
+    return;
+  }
+  if(!lastRawText){
+    showEmailStatus('error','⚠️ Aucun document généré à envoyer.');
+    return;
+  }
+
+  // UI : état envoi
+  setSendBtn('sending');
+  hideEmailStatus();
+  setProgress(10,true);
+  showEmailStatus('info','📡 Connexion au serveur d\'envoi...');
+
+  try{
+    // Étape 1 : construire le HTML du document pour l'email
+    setProgress(30,true);
+    const htmlBody=buildEmailBody(message);
+
+    // Étape 2 : snapshot image du document (optionnel, pour aperçu rapide)
+    setProgress(50,true);
+    showEmailStatus('info','🖼️ Préparation du document...');
+
+    // Étape 3 : envoi via EmailJS
+    setProgress(70,true);
+    showEmailStatus('info','📤 Envoi en cours...');
+
+    // Paramètres du template EmailJS
+    // Le template doit contenir ces variables :
+    // {{to_email}}, {{subject}}, {{from_name}}, {{message}}, {{doc_title}}, {{html_content}}
+    const templateParams={
+      to_email:   toEmail,
+      subject:    subject,
+      from_name:  'AELLA · MarcioAI',
+      reply_to:   'zinzindohouemarcio@gmail.com',
+      doc_title:  currentService?.title||'Document',
+      message:    message||`Veuillez trouver ci-joint le document "${currentService?.title}" généré par AELLA.`,
+      html_content: htmlBody,
+      date:       new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'}),
+    };
+
+    await emailjs.send(EJS_SERVICE_ID, EJS_TEMPLATE_ID, templateParams);
+
+    // Succès
+    setProgress(100,true);
+    setSendBtn('success');
+    showEmailStatus('success',`✅ E-mail envoyé avec succès à ${toEmail} !`);
+    showToast(`📧 Document envoyé à ${toEmail}`);
+
+    // Fermer automatiquement après 3s
+    setTimeout(()=>{
+      closeEmailModal();
+      resetEmailModal();
+    },3500);
+
+  }catch(err){
+    console.error('EmailJS error:',err);
+    setSendBtn('error');
+    setProgress(0,false);
+    const msg=err?.text||err?.message||JSON.stringify(err);
+    showEmailStatus('error',`❌ Échec d'envoi : ${msg}`);
+    showToast('❌ Erreur envoi email');
+  }
+}
 </script>
 </body>
 </html>
