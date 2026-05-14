@@ -1,0 +1,1306 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VELOX — Espace Fournisseur</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #C9A84C;
+    --gold-light: #E8C97A;
+    --gold-dark: #8A6C2A;
+    --black: #0A0A0A;
+    --dark: #0F0F0F;
+    --dark2: #161616;
+    --dark3: #1E1E1E;
+    --dark4: #252525;
+    --white: #F0EBE0;
+    --gray: #888880;
+    --text: #C8C3B8;
+    --green: #4CAF7A;
+    --red: #E05050;
+    --blue: #5085E0;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--black);
+    color: var(--text);
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 300;
+    display: flex;
+    min-height: 100vh;
+  }
+
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: var(--black); }
+  ::-webkit-scrollbar-thumb { background: var(--gold-dark); border-radius: 2px; }
+
+  /* SIDEBAR */
+  .sidebar {
+    width: 240px; min-height: 100vh;
+    background: var(--dark);
+    border-right: 1px solid rgba(201,168,76,0.12);
+    display: flex; flex-direction: column;
+    position: fixed; top: 0; left: 0; bottom: 0;
+    z-index: 50;
+    transition: transform 0.3s ease;
+  }
+
+  .sidebar-logo {
+    padding: 30px 24px 24px;
+    border-bottom: 1px solid rgba(201,168,76,0.1);
+  }
+  .logo-text {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 26px; font-weight: 300;
+    color: var(--gold); letter-spacing: 6px;
+  }
+  .logo-sub {
+    font-size: 8px; letter-spacing: 3px; color: var(--gray);
+    text-transform: uppercase; margin-top: 2px;
+  }
+
+  .sidebar-nav {
+    flex: 1; padding: 20px 0;
+  }
+  .nav-section-label {
+    font-size: 8px; letter-spacing: 3px; color: var(--gold-dark);
+    text-transform: uppercase; padding: 14px 24px 8px;
+  }
+  .nav-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 24px; cursor: pointer;
+    font-size: 11px; font-weight: 400; letter-spacing: 1px;
+    color: var(--gray); transition: all 0.2s;
+    border-left: 2px solid transparent;
+    text-decoration: none;
+  }
+  .nav-item:hover { color: var(--white); background: rgba(201,168,76,0.04); }
+  .nav-item.active {
+    color: var(--gold); border-left-color: var(--gold);
+    background: rgba(201,168,76,0.06);
+  }
+  .nav-item .badge {
+    margin-left: auto; background: var(--gold);
+    color: var(--black); font-size: 9px; font-weight: 700;
+    padding: 2px 7px; border-radius: 10px;
+  }
+  .nav-icon { font-size: 14px; width: 18px; text-align: center; }
+
+  .sidebar-user {
+    padding: 20px 24px;
+    border-top: 1px solid rgba(201,168,76,0.1);
+    display: flex; align-items: center; gap: 12px;
+  }
+  .user-avatar {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: var(--dark3); border: 1.5px solid var(--gold);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; flex-shrink: 0;
+  }
+  .user-name { font-size: 11px; font-weight: 500; color: var(--white); }
+  .user-role { font-size: 8px; letter-spacing: 2px; color: var(--gold); text-transform: uppercase; }
+  .sidebar-bottom-links {
+    display: flex; gap: 8px; margin-top: 6px;
+  }
+  .sb-link {
+    font-size: 8px; letter-spacing: 1px; color: var(--gray);
+    text-decoration: none; cursor: pointer;
+  }
+  .sb-link:hover { color: var(--gold); }
+
+  /* MAIN */
+  .main {
+    margin-left: 240px;
+    flex: 1; display: flex; flex-direction: column;
+    min-height: 100vh;
+  }
+
+  /* TOPBAR */
+  .topbar {
+    padding: 20px 36px;
+    border-bottom: 1px solid rgba(201,168,76,0.1);
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--dark); position: sticky; top: 0; z-index: 40;
+  }
+  .page-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 28px; font-weight: 300; color: var(--white);
+  }
+  .page-breadcrumb {
+    font-size: 9px; letter-spacing: 2px; color: var(--gray);
+    text-transform: uppercase; margin-top: 2px;
+  }
+
+  .topbar-actions { display: flex; gap: 12px; align-items: center; }
+
+  .notif-btn {
+    position: relative; background: none; border: 1px solid rgba(201,168,76,0.2);
+    color: var(--gray); font-size: 16px; padding: 8px 12px;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .notif-btn:hover { border-color: var(--gold); color: var(--gold); }
+  .notif-count {
+    position: absolute; top: -4px; right: -4px;
+    background: var(--red); color: #fff;
+    font-size: 8px; font-weight: 700; padding: 2px 5px;
+    border-radius: 10px; min-width: 16px; text-align: center;
+  }
+
+  .btn-add {
+    background: var(--gold); border: none; color: var(--black);
+    font-family: 'Montserrat', sans-serif;
+    font-size: 9px; font-weight: 600; letter-spacing: 2px;
+    padding: 12px 22px; cursor: pointer; transition: all 0.3s;
+    text-transform: uppercase;
+  }
+  .btn-add:hover { background: var(--gold-light); }
+
+  .lang-switcher {
+    display: flex; gap: 4px;
+  }
+  .lang-btn {
+    background: none; border: 1px solid rgba(201,168,76,0.2);
+    color: var(--gray); font-family: 'Montserrat', sans-serif;
+    font-size: 9px; font-weight: 500; letter-spacing: 2px;
+    padding: 4px 8px; cursor: pointer; transition: all 0.2s;
+    text-transform: uppercase;
+  }
+  .lang-btn:hover, .lang-btn.active { background: var(--gold); color: var(--black); border-color: var(--gold); }
+
+  /* CONTENT */
+  .content { padding: 36px; flex: 1; }
+
+  /* STATS */
+  .stats-row {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 2px; background: rgba(201,168,76,0.08);
+    margin-bottom: 36px;
+    border: 1px solid rgba(201,168,76,0.1);
+  }
+  .stat-card {
+    background: var(--dark2); padding: 28px 24px;
+    position: relative; overflow: hidden;
+    transition: background 0.2s;
+  }
+  .stat-card:hover { background: var(--dark3); }
+  .stat-card::before {
+    content: ''; position: absolute;
+    bottom: 0; left: 0; right: 0; height: 2px;
+  }
+  .stat-card.gold::before { background: var(--gold); }
+  .stat-card.green::before { background: var(--green); }
+  .stat-card.red::before { background: var(--red); }
+  .stat-card.blue::before { background: var(--blue); }
+  .stat-label {
+    font-size: 8px; letter-spacing: 3px; color: var(--gray);
+    text-transform: uppercase; margin-bottom: 10px;
+  }
+  .stat-value {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 40px; font-weight: 300; color: var(--white);
+    line-height: 1;
+  }
+  .stat-unit { font-size: 12px; color: var(--gray); font-family: 'Montserrat', sans-serif; }
+  .stat-sub { font-size: 10px; color: var(--gray); margin-top: 6px; }
+
+  /* TABS */
+  .tabs {
+    display: flex; gap: 0; margin-bottom: 24px;
+    border-bottom: 1px solid rgba(201,168,76,0.1);
+  }
+  .tab {
+    background: none; border: none;
+    color: var(--gray); font-family: 'Montserrat', sans-serif;
+    font-size: 10px; font-weight: 500; letter-spacing: 2px;
+    padding: 14px 24px; cursor: pointer; transition: all 0.2s;
+    text-transform: uppercase; border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+  }
+  .tab:hover { color: var(--white); }
+  .tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+
+  /* ORDERS */
+  .section-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 26px; font-weight: 300; color: var(--white);
+    margin-bottom: 20px; letter-spacing: -0.5px;
+  }
+
+  .orders-list { display: flex; flex-direction: column; gap: 2px; }
+
+  .order-card {
+    background: var(--dark2);
+    border: 1px solid rgba(201,168,76,0.08);
+    display: grid; grid-template-columns: auto 1fr auto auto;
+    align-items: center; gap: 20px;
+    padding: 20px 24px;
+    transition: all 0.3s;
+    animation: slideIn 0.4s ease both;
+  }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(-12px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+  .order-card:hover { border-color: rgba(201,168,76,0.25); background: var(--dark3); }
+
+  .order-status-dot {
+    width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+  }
+  .status-pending { background: var(--gold); box-shadow: 0 0 8px rgba(201,168,76,0.5); animation: pulse 2s ease infinite; }
+  .status-accepted { background: var(--green); box-shadow: 0 0 8px rgba(76,175,122,0.5); }
+  .status-completed { background: var(--blue); }
+  .status-cancelled { background: var(--red); }
+  @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.3); } }
+
+  .order-info {}
+  .order-route {
+    font-size: 13px; font-weight: 400; color: var(--white);
+    margin-bottom: 4px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .route-arrow { color: var(--gold); font-size: 10px; }
+  .order-meta {
+    font-size: 9px; letter-spacing: 1px; color: var(--gray);
+    display: flex; gap: 16px;
+  }
+  .order-meta span { display: flex; align-items: center; gap: 4px; }
+
+  .order-price {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px; color: var(--gold); white-space: nowrap;
+  }
+  .order-price span { font-size: 11px; color: var(--gray); font-family: 'Montserrat', sans-serif; }
+
+  .order-actions { display: flex; gap: 8px; }
+  .btn-accept {
+    background: var(--green); border: none; color: #fff;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 9px; font-weight: 600; letter-spacing: 2px;
+    padding: 10px 18px; cursor: pointer; transition: all 0.2s;
+    text-transform: uppercase;
+  }
+  .btn-accept:hover { filter: brightness(1.2); }
+  .btn-decline {
+    background: none; border: 1px solid rgba(224,80,80,0.3);
+    color: var(--red); font-family: 'Montserrat', sans-serif;
+    font-size: 9px; font-weight: 500; letter-spacing: 2px;
+    padding: 10px 18px; cursor: pointer; transition: all 0.2s;
+    text-transform: uppercase;
+  }
+  .btn-decline:hover { background: rgba(224,80,80,0.08); border-color: var(--red); }
+  .order-tag {
+    display: inline-block; background: rgba(201,168,76,0.12);
+    border: 1px solid rgba(201,168,76,0.2);
+    color: var(--gold); font-size: 8px; font-weight: 600; letter-spacing: 2px;
+    padding: 3px 10px; text-transform: uppercase;
+  }
+
+  /* VEHICLE GALLERY (provider side) */
+  .vehicles-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 2px;
+  }
+
+  .vehicle-card {
+    background: var(--dark2);
+    border: 1px solid rgba(201,168,76,0.08);
+    overflow: hidden;
+    transition: all 0.3s;
+    position: relative;
+  }
+  .vehicle-card:hover { border-color: rgba(201,168,76,0.3); }
+
+  .vehicle-img-wrap {
+    height: 160px; background: var(--dark3);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 60px; position: relative; overflow: hidden;
+  }
+  .vehicle-img-wrap img { width: 100%; height: 100%; object-fit: cover; }
+
+  .vehicle-pub-toggle {
+    position: absolute; top: 10px; right: 10px;
+    background: rgba(0,0,0,0.7); border: 1px solid rgba(201,168,76,0.3);
+    color: var(--gold); font-family: 'Montserrat', sans-serif;
+    font-size: 8px; letter-spacing: 2px; padding: 4px 10px;
+    cursor: pointer; text-transform: uppercase; transition: all 0.2s;
+  }
+  .vehicle-pub-toggle:hover { background: var(--gold); color: var(--black); }
+
+  .vehicle-card-info { padding: 18px 20px; }
+  .vehicle-card-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 20px; color: var(--white); margin-bottom: 4px;
+  }
+  .vehicle-card-cat {
+    font-size: 8px; letter-spacing: 3px; color: var(--gold);
+    text-transform: uppercase; margin-bottom: 12px;
+  }
+  .vehicle-card-footer {
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .vehicle-pub-status {
+    font-size: 8px; letter-spacing: 2px;
+    text-transform: uppercase; display: flex; align-items: center; gap: 6px;
+  }
+  .status-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+  }
+  .dot-green { background: var(--green); }
+  .dot-gray { background: var(--gray); }
+
+  .btn-sm {
+    background: none; border: 1px solid rgba(201,168,76,0.2);
+    color: var(--gold); font-family: 'Montserrat', sans-serif;
+    font-size: 8px; font-weight: 500; letter-spacing: 2px;
+    padding: 6px 12px; cursor: pointer; transition: all 0.2s;
+    text-transform: uppercase;
+  }
+  .btn-sm:hover { background: var(--gold); color: var(--black); border-color: var(--gold); }
+
+  /* ADD VEHICLE MODAL */
+  .modal-overlay {
+    position: fixed; inset: 0; z-index: 200;
+    background: rgba(0,0,0,0.92); backdrop-filter: blur(8px);
+    display: none; align-items: center; justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--dark2);
+    border: 1px solid rgba(201,168,76,0.2);
+    width: 90%; max-width: 520px;
+    padding: 44px 40px;
+    position: relative;
+    max-height: 90vh; overflow-y: auto;
+    animation: modalIn 0.4s ease both;
+  }
+  @keyframes modalIn {
+    from { opacity: 0; transform: scale(0.95) translateY(20px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+  }
+
+  .modal-close {
+    position: absolute; top: 18px; right: 18px;
+    background: none; border: none; color: var(--gray);
+    font-size: 18px; cursor: pointer; transition: color 0.2s;
+  }
+  .modal-close:hover { color: var(--gold); }
+
+  .modal-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 32px; font-weight: 300; color: var(--white);
+    margin-bottom: 4px;
+  }
+  .modal-line {
+    width: 40px; height: 1px; background: var(--gold); margin-bottom: 28px;
+  }
+
+  .form-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+  }
+  .form-field { margin-bottom: 0; }
+  .form-field.full { grid-column: 1/-1; }
+  .field-label {
+    font-size: 8px; letter-spacing: 3px; color: var(--gold);
+    text-transform: uppercase; margin-bottom: 6px; display: block;
+  }
+  .field-input {
+    width: 100%; background: var(--dark3);
+    border: 1px solid rgba(201,168,76,0.15);
+    color: var(--white); font-family: 'Montserrat', sans-serif;
+    font-size: 12px; padding: 11px 14px; outline: none;
+    transition: border-color 0.3s;
+  }
+  .field-input:focus { border-color: var(--gold); }
+  .field-input option { background: var(--dark3); }
+
+  .photo-upload {
+    width: 100%; background: var(--dark3);
+    border: 1px dashed rgba(201,168,76,0.3);
+    padding: 24px; cursor: pointer; transition: border-color 0.3s;
+    text-align: center; color: var(--gray);
+    font-size: 11px; letter-spacing: 1px;
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+  }
+  .photo-upload:hover { border-color: var(--gold); color: var(--gold); }
+  .photo-upload input { display: none; }
+  .photo-preview {
+    width: 100%; height: 120px; object-fit: cover; margin-top: 10px;
+    display: none; border: 1px solid rgba(201,168,76,0.2);
+  }
+
+  .btn-submit {
+    width: 100%; background: var(--gold); border: none;
+    color: var(--black); font-family: 'Montserrat', sans-serif;
+    font-size: 10px; font-weight: 700; letter-spacing: 4px;
+    padding: 16px; cursor: pointer; transition: all 0.3s;
+    text-transform: uppercase; margin-top: 16px;
+  }
+  .btn-submit:hover { background: var(--gold-light); }
+
+  /* NOTIFICATION */
+  .toast {
+    position: fixed; bottom: 30px; right: 30px;
+    background: var(--dark2);
+    border: 1px solid rgba(201,168,76,0.3);
+    border-left: 3px solid var(--gold);
+    padding: 16px 24px;
+    min-width: 300px;
+    font-size: 12px; color: var(--white);
+    transition: transform 0.4s ease, opacity 0.4s ease;
+    z-index: 300;
+    transform: translateX(120%); opacity: 0;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .toast.show { transform: translateX(0); opacity: 1; }
+  .toast-icon { color: var(--gold); font-size: 18px; }
+
+  /* NOTIFICATION BELL PANEL */
+  .notif-panel {
+    position: fixed; right: 0; top: 0; bottom: 0;
+    width: 340px; background: var(--dark2);
+    border-left: 1px solid rgba(201,168,76,0.15);
+    z-index: 100; transition: transform 0.35s ease;
+    transform: translateX(100%);
+    display: flex; flex-direction: column;
+  }
+  .notif-panel.open { transform: translateX(0); }
+  .notif-panel-header {
+    padding: 24px 24px 20px;
+    border-bottom: 1px solid rgba(201,168,76,0.1);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .notif-panel-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 24px; color: var(--white); font-weight: 300;
+  }
+  .notif-close {
+    background: none; border: none; color: var(--gray);
+    font-size: 16px; cursor: pointer;
+  }
+  .notif-close:hover { color: var(--gold); }
+  .notif-list { padding: 16px; flex: 1; overflow-y: auto; }
+  .notif-item {
+    padding: 16px;
+    border-bottom: 1px solid rgba(201,168,76,0.08);
+    animation: slideIn 0.3s ease both;
+  }
+  .notif-item-title {
+    font-size: 12px; color: var(--white); font-weight: 500; margin-bottom: 4px;
+  }
+  .notif-item-body { font-size: 10px; color: var(--gray); line-height: 1.5; }
+  .notif-item-time { font-size: 8px; color: var(--gold-dark); margin-top: 6px; letter-spacing: 1px; }
+
+  /* MAP FOR ORDERS */
+  .orders-map {
+    height: 220px; background: var(--dark3);
+    border: 1px solid rgba(201,168,76,0.1);
+    position: relative; overflow: hidden; margin-bottom: 24px;
+  }
+  .map-grid-bg {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(201,168,76,0.07) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(201,168,76,0.07) 1px, transparent 1px);
+    background-size: 28px 28px;
+  }
+  .map-label {
+    position: absolute; top: 12px; left: 16px;
+    font-size: 8px; letter-spacing: 3px; color: var(--gold);
+    text-transform: uppercase; z-index: 2;
+  }
+  .map-car-icon {
+    position: absolute; font-size: 20px; z-index: 2;
+    transition: all 0.5s ease;
+    filter: drop-shadow(0 0 6px rgba(201,168,76,0.6));
+  }
+  .car-a { top: 20%; left: 15%; animation: provCar1 7s linear infinite; }
+  .car-b { top: 55%; left: 50%; animation: provCar2 9s linear infinite; }
+  .car-c { top: 35%; left: 70%; animation: provCar3 11s linear infinite; }
+  @keyframes provCar1 {
+    0% { transform: translate(0,0); }
+    25% { transform: translate(50px,20px); }
+    50% { transform: translate(80px,-10px); }
+    75% { transform: translate(40px,40px); }
+    100% { transform: translate(0,0); }
+  }
+  @keyframes provCar2 {
+    0% { transform: translate(0,0); }
+    33% { transform: translate(-30px,30px); }
+    66% { transform: translate(-60px,-20px); }
+    100% { transform: translate(0,0); }
+  }
+  @keyframes provCar3 {
+    0% { transform: translate(0,0); }
+    50% { transform: translate(-40px,50px); }
+    100% { transform: translate(0,0); }
+  }
+
+  /* Empty state */
+  .empty-state {
+    text-align: center; padding: 60px 20px;
+    color: var(--gray);
+  }
+  .empty-icon { font-size: 48px; opacity: 0.3; margin-bottom: 16px; }
+  .empty-text { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .sidebar { transform: translateX(-100%); }
+    .sidebar.open { transform: translateX(0); }
+    .main { margin-left: 0; }
+    .stats-row { grid-template-columns: repeat(2,1fr); }
+    .topbar { padding: 16px 20px; }
+    .content { padding: 20px; }
+    .form-grid { grid-template-columns: 1fr; }
+    .order-card { grid-template-columns: auto 1fr; }
+    .order-actions { grid-column: 1/-1; }
+    .order-price { display: none; }
+    .menu-toggle { display: block !important; }
+  }
+
+  .menu-toggle {
+    display: none; background: none; border: none;
+    color: var(--gold); font-size: 22px; cursor: pointer;
+  }
+
+  /* Active tab panels */
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-text">VELOX</div>
+    <div class="logo-sub">Espace Fournisseur</div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-section-label" id="nav-label-menu">Menu</div>
+    <a class="nav-item active" onclick="showTab('orders',this)">
+      <span class="nav-icon">📋</span>
+      <span id="nav-orders">Commandes</span>
+      <span class="badge" id="order-badge">0</span>
+    </a>
+    <a class="nav-item" onclick="showTab('fleet',this)">
+      <span class="nav-icon">🚗</span>
+      <span id="nav-fleet">Ma Flotte</span>
+    </a>
+    <a class="nav-item" onclick="showTab('stats',this)">
+      <span class="nav-icon">📊</span>
+      <span id="nav-stats">Statistiques</span>
+    </a>
+    <a class="nav-item" onclick="showTab('map',this)">
+      <span class="nav-icon">🗺️</span>
+      <span id="nav-map">Carte</span>
+    </a>
+
+    <div class="nav-section-label" style="margin-top:20px" id="nav-label-account">Compte</div>
+    <a class="nav-item" href="client.html">
+      <span class="nav-icon">👥</span>
+      <span id="nav-client">Page Client</span>
+    </a>
+    <a class="nav-item" onclick="openAddVehicle()">
+      <span class="nav-icon">➕</span>
+      <span id="nav-add">Ajouter Véhicule</span>
+    </a>
+    <a class="nav-item" onclick="logout()">
+      <span class="nav-icon">🚪</span>
+      <span id="nav-logout">Déconnexion</span>
+    </a>
+  </nav>
+
+  <div class="sidebar-user">
+    <div class="user-avatar">👨‍💼</div>
+    <div>
+      <div class="user-name" id="user-name-display">Konan Transport</div>
+      <div class="user-role" id="user-role-display">Fournisseur</div>
+      <div class="sidebar-bottom-links">
+        <span class="sb-link" onclick="setLang('fr',document.querySelectorAll('.lang-btn')[0])">FR</span>
+        <span style="color:var(--gray);font-size:8px">·</span>
+        <span class="sb-link" onclick="setLang('en',document.querySelectorAll('.lang-btn')[1])">EN</span>
+        <span style="color:var(--gray);font-size:8px">·</span>
+        <span class="sb-link" onclick="setLang('zh',document.querySelectorAll('.lang-btn')[2])">中文</span>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div>
+      <button class="menu-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+    </div>
+    <div>
+      <div class="page-title" id="page-title">Tableau de Bord</div>
+      <div class="page-breadcrumb" id="page-breadcrumb">VELOX · Fournisseur</div>
+    </div>
+    <div class="topbar-actions">
+      <div class="lang-switcher">
+        <button class="lang-btn active" onclick="setLang('fr',this)">FR</button>
+        <button class="lang-btn" onclick="setLang('en',this)">EN</button>
+        <button class="lang-btn" onclick="setLang('zh',this)">中文</button>
+      </div>
+      <button class="notif-btn" onclick="toggleNotifPanel()">
+        🔔 <span class="notif-count" id="notif-count">0</span>
+      </button>
+      <button class="btn-add" onclick="openAddVehicle()" id="btn-add">+ Ajouter Véhicule</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- STATS -->
+    <div class="stats-row">
+      <div class="stat-card gold">
+        <div class="stat-label" id="stat-label-orders">Commandes aujourd'hui</div>
+        <div class="stat-value" id="stat-orders-val">0</div>
+        <div class="stat-sub" id="stat-orders-sub">Nouvelles demandes</div>
+      </div>
+      <div class="stat-card green">
+        <div class="stat-label" id="stat-label-vehicles">Véhicules publiés</div>
+        <div class="stat-value" id="stat-vehicles-val">0</div>
+        <div class="stat-sub" id="stat-vehicles-sub">Disponibles en ce moment</div>
+      </div>
+      <div class="stat-card blue">
+        <div class="stat-label" id="stat-label-accepted">Acceptées</div>
+        <div class="stat-value" id="stat-accepted-val">0</div>
+        <div class="stat-sub" id="stat-accepted-sub">Courses acceptées</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label" id="stat-label-revenue">Revenus estimés</div>
+        <div class="stat-value" id="stat-revenue-val">0 <span class="stat-unit">FCFA</span></div>
+        <div class="stat-sub" id="stat-revenue-sub">Ce mois</div>
+      </div>
+    </div>
+
+    <!-- TABS -->
+    <div class="tabs">
+      <button class="tab active" onclick="showTab('orders',this)" id="tab-orders">Commandes</button>
+      <button class="tab" onclick="showTab('fleet',this)" id="tab-fleet">Ma Flotte</button>
+      <button class="tab" onclick="showTab('stats',this)" id="tab-stats">Statistiques</button>
+      <button class="tab" onclick="showTab('map',this)" id="tab-map">Carte en direct</button>
+    </div>
+
+    <!-- ORDERS TAB -->
+    <div class="tab-panel active" id="panel-orders">
+      <div class="section-title" id="st-orders">Commandes en cours</div>
+
+      <div class="orders-list" id="orders-list">
+        <div class="empty-state">
+          <div class="empty-icon">📋</div>
+          <div class="empty-text" id="no-orders-text">Aucune commande en attente</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FLEET TAB -->
+    <div class="tab-panel" id="panel-fleet">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
+        <div class="section-title" id="st-fleet">Mes Véhicules</div>
+        <button class="btn-add" onclick="openAddVehicle()" id="btn-add-fleet">+ Ajouter</button>
+      </div>
+      <div class="vehicles-grid" id="vehicles-grid">
+        <div class="empty-state">
+          <div class="empty-icon">🚗</div>
+          <div class="empty-text" id="no-vehicles-text">Aucun véhicule ajouté</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STATS TAB -->
+    <div class="tab-panel" id="panel-stats">
+      <div class="section-title" id="st-stats">Statistiques</div>
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:2px;background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.1);margin-top:20px">
+        <div style="background:var(--dark2);padding:40px 30px">
+          <div style="font-size:9px;letter-spacing:3px;color:var(--gold);text-transform:uppercase;margin-bottom:16px" id="chart-label-orders">Commandes par catégorie</div>
+          <div id="chart-orders" style="display:flex;gap:8px;align-items:flex-end;height:120px;padding-bottom:10px">
+            <!-- Bars generated by JS -->
+          </div>
+        </div>
+        <div style="background:var(--dark2);padding:40px 30px">
+          <div style="font-size:9px;letter-spacing:3px;color:var(--gold);text-transform:uppercase;margin-bottom:16px" id="chart-label-status">Statut des commandes</div>
+          <div id="chart-status" style="display:flex;flex-direction:column;gap:10px"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAP TAB -->
+    <div class="tab-panel" id="panel-map">
+      <div class="section-title" id="st-map">Positions en direct</div>
+      <div class="orders-map" style="height:420px;margin-top:16px">
+        <div class="map-grid-bg"></div>
+        <div class="map-label">Live Tracking</div>
+        <div class="map-car-icon car-a">🚐</div>
+        <div class="map-car-icon car-b">🚚</div>
+        <div class="map-car-icon car-c">🏎️</div>
+        <!-- pins -->
+        <div style="position:absolute;top:25%;left:18%;font-size:16px;filter:drop-shadow(0 2px 4px rgba(201,168,76,0.6));z-index:3">📍</div>
+        <div style="position:absolute;top:60%;left:55%;font-size:16px;filter:drop-shadow(0 2px 4px rgba(80,133,224,0.6));z-index:3">📍</div>
+        <div style="position:absolute;top:40%;left:75%;font-size:16px;filter:drop-shadow(0 2px 4px rgba(76,175,122,0.6));z-index:3">📍</div>
+        <div style="position:absolute;bottom:16px;left:16px;background:rgba(17,17,17,0.9);border:1px solid rgba(201,168,76,0.2);padding:12px 16px;font-size:10px;color:var(--gray)">
+          <span style="color:var(--gold);font-size:9px;letter-spacing:2px;text-transform:uppercase">Véhicules actifs : </span>
+          <span id="active-count" style="color:var(--white);font-family:'Cormorant Garamond',serif;font-size:18px">3</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<!-- NOTIFICATION PANEL -->
+<div class="notif-panel" id="notif-panel">
+  <div class="notif-panel-header">
+    <div class="notif-panel-title" id="notif-panel-title">Notifications</div>
+    <button class="notif-close" onclick="toggleNotifPanel()">✕</button>
+  </div>
+  <div class="notif-list" id="notif-list">
+    <div class="empty-state" style="padding:40px 20px">
+      <div class="empty-icon">🔔</div>
+      <div class="empty-text" id="no-notif-text">Aucune notification</div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD VEHICLE MODAL -->
+<div class="modal-overlay" id="add-vehicle-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeAddVehicle()">✕</button>
+    <div class="modal-title" id="modal-title-add">Ajouter un véhicule</div>
+    <div class="modal-line"></div>
+    <div class="form-grid">
+      <div class="form-field">
+        <label class="field-label" id="fl-vname">Nom du véhicule</label>
+        <input class="field-input" id="v-name" type="text" placeholder="Mercedes Sprinter...">
+      </div>
+      <div class="form-field">
+        <label class="field-label" id="fl-vcat">Catégorie</label>
+        <select class="field-input" id="v-category">
+          <option value="xl">XL</option>
+          <option value="xxl">XXL</option>
+          <option value="xxxl">XXXL</option>
+          <option value="luxe">Luxe</option>
+          <option value="3roues">3 Roues</option>
+          <option value="demenagement">Déménagement</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label class="field-label" id="fl-vprice">Tarif (FCFA)</label>
+        <input class="field-input" id="v-price" type="number" placeholder="15000">
+      </div>
+      <div class="form-field">
+        <label class="field-label" id="fl-vplate">Immatriculation</label>
+        <input class="field-input" id="v-plate" type="text" placeholder="AB-123-CI">
+      </div>
+      <div class="form-field full">
+        <label class="field-label" id="fl-vdesc">Description</label>
+        <input class="field-input" id="v-desc" type="text" placeholder="Capacité, équipements...">
+      </div>
+      <div class="form-field full">
+        <label class="field-label" id="fl-vphoto">Photo du véhicule (obligatoire)</label>
+        <div class="photo-upload" onclick="document.getElementById('v-photo-input').click()">
+          <span style="font-size:28px">📷</span>
+          <span id="photo-upload-text">Cliquez pour ajouter une photo</span>
+          <input type="file" id="v-photo-input" accept="image/*" onchange="previewPhoto(this)">
+        </div>
+        <img class="photo-preview" id="photo-preview" src="" alt="Aperçu">
+      </div>
+    </div>
+    <button class="btn-submit" id="btn-submit-vehicle" onclick="submitVehicle()">
+      Publier le véhicule →
+    </button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <span class="toast-icon">✓</span>
+  <span id="toast-msg">Opération réussie</span>
+</div>
+
+<!-- FIREBASE -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, collection, onSnapshot, addDoc, updateDoc, doc, query, where, serverTimestamp, getDoc }
+  from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getStorage, ref, uploadBytes, getDownloadURL }
+  from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBsGrY-AqYMoI70kT3WMxLgW0HwYA4KyaQ",
+  authDomain: "livraison-c8498.firebaseapp.com",
+  projectId: "livraison-c8498",
+  storageBucket: "livraison-c8498.firebasestorage.app",
+  messagingSenderId: "403240604780",
+  appId: "1:403240604780:web:77d84ad03d68bdaddfb449"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const storage = getStorage(app);
+
+// DEMO providerId
+const PROVIDER_ID = 'provider_demo_001';
+const PROVIDER_NAME = 'Konan Transport';
+
+// Translations
+const LANGS = {
+  fr: {
+    page_title:"Tableau de Bord", page_bc:"VELOX · Fournisseur",
+    nav_orders:"Commandes",nav_fleet:"Ma Flotte",nav_stats:"Statistiques",nav_map:"Carte",
+    nav_client:"Page Client",nav_add:"Ajouter Véhicule",nav_logout:"Déconnexion",
+    nav_menu:"Menu",nav_account:"Compte",
+    stat_orders:"Commandes aujourd'hui",stat_vehicles:"Véhicules publiés",
+    stat_accepted:"Acceptées",stat_revenue:"Revenus estimés",
+    stat_orders_sub:"Nouvelles demandes",stat_vehicles_sub:"Disponibles en ce moment",
+    stat_accepted_sub:"Courses acceptées",stat_revenue_sub:"Ce mois",
+    tab_orders:"Commandes",tab_fleet:"Ma Flotte",tab_stats:"Statistiques",tab_map:"Carte en direct",
+    st_orders:"Commandes en cours",st_fleet:"Mes Véhicules",st_stats:"Statistiques",st_map:"Positions en direct",
+    no_orders:"Aucune commande en attente",no_vehicles:"Aucun véhicule ajouté",
+    btn_accept:"Accepter",btn_decline:"Décliner",
+    modal_add:"Ajouter un véhicule",
+    fl_vname:"Nom du véhicule",fl_vcat:"Catégorie",fl_vprice:"Tarif (FCFA)",
+    fl_vplate:"Immatriculation",fl_vdesc:"Description",fl_vphoto:"Photo du véhicule (obligatoire)",
+    photo_upload:"Cliquez pour ajouter une photo",
+    btn_submit_vehicle:"Publier le véhicule →",
+    btn_add:"+ Ajouter Véhicule",
+    btn_add_fleet:"+ Ajouter",
+    notif_title:"Notifications",no_notif:"Aucune notification",
+    toast_vehicle_added:"Véhicule publié avec succès !",
+    toast_accepted:"Commande acceptée !",toast_declined:"Commande déclinée.",
+    published:"Publié",unpublished:"Non publié",
+    btn_toggle_pub:"Dépublier",btn_toggle_unpub:"Publier",
+    chart_orders:"Commandes par catégorie",chart_status:"Statut des commandes",
+    user_role:"Fournisseur",
+    no_notif:"Aucune notification",
+  },
+  en: {
+    page_title:"Dashboard", page_bc:"VELOX · Provider",
+    nav_orders:"Orders",nav_fleet:"My Fleet",nav_stats:"Statistics",nav_map:"Map",
+    nav_client:"Client Page",nav_add:"Add Vehicle",nav_logout:"Logout",
+    nav_menu:"Menu",nav_account:"Account",
+    stat_orders:"Today's orders",stat_vehicles:"Published vehicles",
+    stat_accepted:"Accepted",stat_revenue:"Estimated revenue",
+    stat_orders_sub:"New requests",stat_vehicles_sub:"Currently available",
+    stat_accepted_sub:"Accepted rides",stat_revenue_sub:"This month",
+    tab_orders:"Orders",tab_fleet:"My Fleet",tab_stats:"Statistics",tab_map:"Live Map",
+    st_orders:"Pending orders",st_fleet:"My Vehicles",st_stats:"Statistics",st_map:"Live positions",
+    no_orders:"No pending orders",no_vehicles:"No vehicles added",
+    btn_accept:"Accept",btn_decline:"Decline",
+    modal_add:"Add a vehicle",
+    fl_vname:"Vehicle name",fl_vcat:"Category",fl_vprice:"Price (FCFA)",
+    fl_vplate:"License plate",fl_vdesc:"Description",fl_vphoto:"Vehicle photo (required)",
+    photo_upload:"Click to add a photo",
+    btn_submit_vehicle:"Publish vehicle →",
+    btn_add:"+ Add Vehicle",btn_add_fleet:"+ Add",
+    notif_title:"Notifications",no_notif:"No notifications",
+    toast_vehicle_added:"Vehicle published successfully!",
+    toast_accepted:"Order accepted!",toast_declined:"Order declined.",
+    published:"Published",unpublished:"Not published",
+    btn_toggle_pub:"Unpublish",btn_toggle_unpub:"Publish",
+    chart_orders:"Orders by category",chart_status:"Order status",
+    user_role:"Provider",
+    no_notif:"No notifications",
+  },
+  zh: {
+    page_title:"控制面板", page_bc:"VELOX · 供应商",
+    nav_orders:"订单",nav_fleet:"我的车队",nav_stats:"统计",nav_map:"地图",
+    nav_client:"客户页面",nav_add:"添加车辆",nav_logout:"退出",
+    nav_menu:"菜单",nav_account:"账户",
+    stat_orders:"今日订单",stat_vehicles:"已发布车辆",
+    stat_accepted:"已接受",stat_revenue:"预估收入",
+    stat_orders_sub:"新请求",stat_vehicles_sub:"当前可用",
+    stat_accepted_sub:"已接受行程",stat_revenue_sub:"本月",
+    tab_orders:"订单",tab_fleet:"我的车队",tab_stats:"统计",tab_map:"实时地图",
+    st_orders:"待处理订单",st_fleet:"我的车辆",st_stats:"统计",st_map:"实时位置",
+    no_orders:"暂无待处理订单",no_vehicles:"暂无添加车辆",
+    btn_accept:"接受",btn_decline:"拒绝",
+    modal_add:"添加车辆",
+    fl_vname:"车辆名称",fl_vcat:"类别",fl_vprice:"价格（非洲法郎）",
+    fl_vplate:"车牌号",fl_vdesc:"描述",fl_vphoto:"车辆照片（必填）",
+    photo_upload:"点击添加照片",
+    btn_submit_vehicle:"发布车辆 →",
+    btn_add:"+ 添加车辆",btn_add_fleet:"+ 添加",
+    notif_title:"通知",no_notif:"暂无通知",
+    toast_vehicle_added:"车辆发布成功！",
+    toast_accepted:"订单已接受！",toast_declined:"订单已拒绝。",
+    published:"已发布",unpublished:"未发布",
+    btn_toggle_pub:"取消发布",btn_toggle_unpub:"发布",
+    chart_orders:"按类别订单",chart_status:"订单状态",
+    user_role:"供应商",
+    no_notif:"暂无通知",
+  }
+};
+
+let currentLang = 'fr';
+let allOrders = [];
+let myVehicles = [];
+let notifications = [];
+
+window.setLang = function(lang, btn) {
+  currentLang = lang;
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll(`.lang-btn`).forEach(b => {
+    const txt = b.textContent.trim();
+    if ((lang==='fr'&&txt==='FR')||(lang==='en'&&txt==='EN')||(lang==='zh'&&txt==='中文')) {
+      b.classList.add('active');
+    }
+  });
+  applyTranslations();
+};
+
+function applyTranslations() {
+  const t = LANGS[currentLang];
+  document.getElementById('page-title').textContent = t.page_title;
+  document.getElementById('page-breadcrumb').textContent = t.page_bc;
+  document.getElementById('nav-orders').textContent = t.nav_orders;
+  document.getElementById('nav-fleet').textContent = t.nav_fleet;
+  document.getElementById('nav-stats').textContent = t.nav_stats;
+  document.getElementById('nav-map').textContent = t.nav_map;
+  document.getElementById('nav-client').textContent = t.nav_client;
+  document.getElementById('nav-add').textContent = t.nav_add;
+  document.getElementById('nav-logout').textContent = t.nav_logout;
+  document.getElementById('stat-label-orders').textContent = t.stat_orders;
+  document.getElementById('stat-label-vehicles').textContent = t.stat_vehicles;
+  document.getElementById('stat-label-accepted').textContent = t.stat_accepted;
+  document.getElementById('stat-label-revenue').textContent = t.stat_revenue;
+  document.getElementById('stat-orders-sub').textContent = t.stat_orders_sub;
+  document.getElementById('stat-vehicles-sub').textContent = t.stat_vehicles_sub;
+  document.getElementById('stat-accepted-sub').textContent = t.stat_accepted_sub;
+  document.getElementById('stat-revenue-sub').textContent = t.stat_revenue_sub;
+  document.getElementById('tab-orders').textContent = t.tab_orders;
+  document.getElementById('tab-fleet').textContent = t.tab_fleet;
+  document.getElementById('tab-stats').textContent = t.tab_stats;
+  document.getElementById('tab-map').textContent = t.tab_map;
+  document.getElementById('st-orders').textContent = t.st_orders;
+  document.getElementById('st-fleet').textContent = t.st_fleet;
+  document.getElementById('st-stats').textContent = t.st_stats;
+  document.getElementById('st-map').textContent = t.st_map;
+  document.getElementById('no-orders-text').textContent = t.no_orders;
+  document.getElementById('no-vehicles-text').textContent = t.no_vehicles;
+  document.getElementById('modal-title-add').textContent = t.modal_add;
+  document.getElementById('fl-vname').textContent = t.fl_vname;
+  document.getElementById('fl-vcat').textContent = t.fl_vcat;
+  document.getElementById('fl-vprice').textContent = t.fl_vprice;
+  document.getElementById('fl-vplate').textContent = t.fl_vplate;
+  document.getElementById('fl-vdesc').textContent = t.fl_vdesc;
+  document.getElementById('fl-vphoto').textContent = t.fl_vphoto;
+  document.getElementById('photo-upload-text').textContent = t.photo_upload;
+  document.getElementById('btn-submit-vehicle').textContent = t.btn_submit_vehicle;
+  document.getElementById('btn-add').textContent = t.btn_add;
+  document.getElementById('btn-add-fleet').textContent = t.btn_add_fleet;
+  document.getElementById('notif-panel-title').textContent = t.notif_title;
+  document.getElementById('no-notif-text').textContent = t.no_notif;
+  document.getElementById('user-role-display').textContent = t.user_role;
+  document.getElementById('chart-label-orders').textContent = t.chart_orders;
+  document.getElementById('chart-label-status').textContent = t.chart_status;
+  renderOrders();
+  renderFleet();
+  renderCharts();
+}
+
+// ORDERS LISTENER (all pending orders)
+const ordersQuery = query(collection(db, 'orders'), where('status', '==', 'pending'));
+onSnapshot(ordersQuery, (snap) => {
+  allOrders = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  updateStats();
+  renderOrders();
+  // New order notification
+  if (allOrders.length > 0) {
+    const count = allOrders.length;
+    document.getElementById('order-badge').textContent = count;
+    document.getElementById('notif-count').textContent = count;
+    // Add notification
+    if (notifications.length < allOrders.length) {
+      const last = allOrders[allOrders.length - 1];
+      addNotification(`Nouvelle commande`, `${last.vehicleName || 'Véhicule'} — ${last.from} → ${last.to}`);
+    }
+  } else {
+    document.getElementById('order-badge').textContent = '0';
+    document.getElementById('notif-count').textContent = '0';
+  }
+});
+
+// VEHICLES LISTENER
+const vehiclesQuery = query(collection(db, 'vehicles'), where('providerId', '==', PROVIDER_ID));
+onSnapshot(vehiclesQuery, (snap) => {
+  myVehicles = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  updateStats();
+  renderFleet();
+});
+
+function updateStats() {
+  const t = LANGS[currentLang];
+  document.getElementById('stat-orders-val').textContent = allOrders.length;
+  const published = myVehicles.filter(v => v.published).length;
+  document.getElementById('stat-vehicles-val').textContent = published;
+  document.getElementById('active-count').textContent = published;
+}
+
+const catIcons = { xl:'🚐', xxl:'🚌', xxxl:'🚚', luxe:'🏎️', '3roues':'🛺', demenagement:'📦' };
+const catColors = { xl:'#C9A84C', xxl:'#5085E0', xxxl:'#E0A050', luxe:'#C050E0', '3roues':'#50C0E0', demenagement:'#4CAF7A' };
+
+function renderOrders() {
+  const t = LANGS[currentLang];
+  const list = document.getElementById('orders-list');
+  if (allOrders.length === 0) {
+    list.innerHTML = `<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">${t.no_orders}</div></div>`;
+    return;
+  }
+  list.innerHTML = allOrders.map((o, i) => `
+    <div class="order-card" style="animation-delay:${i*0.08}s">
+      <div class="order-status-dot status-pending"></div>
+      <div class="order-info">
+        <div class="order-route">
+          <span>${o.from || '—'}</span>
+          <span class="route-arrow">→</span>
+          <span>${o.to || '—'}</span>
+        </div>
+        <div class="order-meta">
+          <span>🚗 ${o.vehicleName || '—'}</span>
+          <span>${o.createdAt ? new Date(o.createdAt.seconds*1000).toLocaleTimeString() : 'À l\'instant'}</span>
+          <span class="order-tag">${(o.category||'').toUpperCase() || 'STANDARD'}</span>
+        </div>
+      </div>
+      <div class="order-price">${o.price || '—'} <span>FCFA</span></div>
+      <div class="order-actions">
+        <button class="btn-accept" onclick="acceptOrder('${o.id}','${o.vehicleName||''}','${o.price||''}')">${t.btn_accept}</button>
+        <button class="btn-decline" onclick="declineOrder('${o.id}')">${t.btn_decline}</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+window.acceptOrder = async function(orderId, vehicleName, price) {
+  const t = LANGS[currentLang];
+  try {
+    await updateDoc(doc(db, 'orders', orderId), { status: 'accepted', acceptedAt: serverTimestamp() });
+    // Update accepted count
+    const accepted = parseInt(document.getElementById('stat-accepted-val').textContent || '0');
+    document.getElementById('stat-accepted-val').textContent = accepted + 1;
+    const revenue = parseInt(document.getElementById('stat-revenue-val').textContent?.replace(/[^0-9]/g,'') || '0');
+    document.getElementById('stat-revenue-val').innerHTML = `${revenue + parseInt(price||0)} <span class="stat-unit">FCFA</span>`;
+    addNotification(`Commande acceptée`, `${vehicleName} — ${price} FCFA`);
+    showToast(t.toast_accepted);
+  } catch(e) { console.error(e); }
+};
+
+window.declineOrder = async function(orderId) {
+  const t = LANGS[currentLang];
+  try {
+    await updateDoc(doc(db, 'orders', orderId), { status: 'declined' });
+    showToast(t.toast_declined);
+  } catch(e) { console.error(e); }
+};
+
+function renderFleet() {
+  const t = LANGS[currentLang];
+  const grid = document.getElementById('vehicles-grid');
+  if (myVehicles.length === 0) {
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">🚗</div><div class="empty-text">${t.no_vehicles}</div></div>`;
+    return;
+  }
+  grid.innerHTML = myVehicles.map(v => `
+    <div class="vehicle-card">
+      <div class="vehicle-img-wrap">
+        ${v.photoURL ? `<img src="${v.photoURL}" alt="${v.name}">` : `${catIcons[v.category]||'🚗'}`}
+        <button class="vehicle-pub-toggle" onclick="togglePublish('${v.id}',${v.published})">
+          ${v.published ? t.btn_toggle_pub : t.btn_toggle_unpub}
+        </button>
+      </div>
+      <div class="vehicle-card-info">
+        <div class="vehicle-card-name">${v.name||'Véhicule'}</div>
+        <div class="vehicle-card-cat">${(v.category||'').toUpperCase()}</div>
+        <div class="vehicle-card-footer">
+          <div class="vehicle-pub-status">
+            <div class="status-dot ${v.published?'dot-green':'dot-gray'}"></div>
+            ${v.published ? t.published : t.unpublished}
+          </div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--gold)">${v.price||'—'} <span style="font-size:10px;color:var(--gray);font-family:'Montserrat',sans-serif">FCFA</span></div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+window.togglePublish = async function(vehicleId, currentStatus) {
+  try {
+    await updateDoc(doc(db, 'vehicles', vehicleId), { published: !currentStatus });
+  } catch(e) { console.error(e); }
+};
+
+function renderCharts() {
+  const t = LANGS[currentLang];
+  const categories = ['xl','xxl','xxxl','luxe','3roues','demenagement'];
+  const values = [3,5,2,7,4,6]; // demo values
+  const maxV = Math.max(...values);
+
+  const orderChart = document.getElementById('chart-orders');
+  orderChart.innerHTML = categories.map((c, i) => `
+    <div style="display:flex;flex-direction:column;align-items:center;gap:6px;flex:1">
+      <div style="width:100%;background:${catColors[c]};height:${Math.round((values[i]/maxV)*100)}px;opacity:0.8;transition:height 0.5s;min-height:4px"></div>
+      <div style="font-size:8px;color:var(--gray);letter-spacing:1px;text-transform:uppercase">${c}</div>
+    </div>
+  `).join('');
+
+  const statusChart = document.getElementById('chart-status');
+  const statuses = [
+    { label: currentLang==='fr'?'En attente':currentLang==='en'?'Pending':'待处理', pct: 35, color: 'var(--gold)' },
+    { label: currentLang==='fr'?'Acceptées':currentLang==='en'?'Accepted':'已接受', pct: 55, color: 'var(--green)' },
+    { label: currentLang==='fr'?'Déclinées':currentLang==='en'?'Declined':'已拒绝', pct: 10, color: 'var(--red)' },
+  ];
+  statusChart.innerHTML = statuses.map(s => `
+    <div>
+      <div style="display:flex;justify-content:space-between;font-size:10px;margin-bottom:4px">
+        <span style="color:var(--text)">${s.label}</span>
+        <span style="color:${s.color}">${s.pct}%</span>
+      </div>
+      <div style="height:4px;background:var(--dark4);width:100%">
+        <div style="height:4px;background:${s.color};width:${s.pct}%;transition:width 0.8s ease"></div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ADD VEHICLE
+window.openAddVehicle = function() {
+  document.getElementById('add-vehicle-modal').classList.add('open');
+};
+window.closeAddVehicle = function() {
+  document.getElementById('add-vehicle-modal').classList.remove('open');
+};
+
+window.previewPhoto = function(input) {
+  const file = input.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const prev = document.getElementById('photo-preview');
+      prev.src = e.target.result;
+      prev.style.display = 'block';
+    };
+    reader.readAsDataURL(file);
+  }
+};
+
+window.submitVehicle = async function() {
+  const t = LANGS[currentLang];
+  const name = document.getElementById('v-name').value.trim();
+  const category = document.getElementById('v-category').value;
+  const price = document.getElementById('v-price').value;
+  const plate = document.getElementById('v-plate').value;
+  const desc = document.getElementById('v-desc').value;
+  const fileInput = document.getElementById('v-photo-input');
+  const file = fileInput.files[0];
+
+  if (!name || !price) { alert('Veuillez remplir le nom et le tarif.'); return; }
+  if (!file) { alert(currentLang==='fr'?'Veuillez ajouter une photo du véhicule (obligatoire).':
+    currentLang==='en'?'Please add a vehicle photo (required).':'请添加车辆照片（必填）。'); return; }
+
+  const btn = document.getElementById('btn-submit-vehicle');
+  btn.textContent = '⏳ Publication...';
+  btn.disabled = true;
+
+  try {
+    // Upload photo to Firebase Storage
+    const storageRef = ref(storage, `vehicles/${Date.now()}_${file.name}`);
+    const snapshot = await uploadBytes(storageRef, file);
+    const photoURL = await getDownloadURL(snapshot.ref);
+
+    await addDoc(collection(db, 'vehicles'), {
+      name, category, price: parseInt(price),
+      plate, desc, photoURL,
+      providerId: PROVIDER_ID, ownerName: PROVIDER_NAME,
+      published: true,
+      createdAt: serverTimestamp()
+    });
+
+    closeAddVehicle();
+    showToast(t.toast_vehicle_added);
+    // Reset form
+    document.getElementById('v-name').value = '';
+    document.getElementById('v-price').value = '';
+    document.getElementById('v-plate').value = '';
+    document.getElementById('v-desc').value = '';
+    fileInput.value = '';
+    document.getElementById('photo-preview').style.display = 'none';
+  } catch(e) {
+    console.error(e);
+    alert('Erreur lors de la publication. Vérifiez votre connexion.');
+  }
+  btn.textContent = t.btn_submit_vehicle;
+  btn.disabled = false;
+};
+
+// NOTIFICATIONS
+function addNotification(title, body) {
+  const n = { title, body, time: new Date().toLocaleTimeString() };
+  notifications.unshift(n);
+  renderNotifications();
+}
+
+function renderNotifications() {
+  const list = document.getElementById('notif-list');
+  if (notifications.length === 0) {
+    list.innerHTML = `<div class="empty-state" style="padding:40px 20px"><div class="empty-icon">🔔</div><div class="empty-text">${LANGS[currentLang].no_notif}</div></div>`;
+    return;
+  }
+  list.innerHTML = notifications.map(n => `
+    <div class="notif-item">
+      <div class="notif-item-title">${n.title}</div>
+      <div class="notif-item-body">${n.body}</div>
+      <div class="notif-item-time">${n.time}</div>
+    </div>
+  `).join('');
+}
+
+// TABS
+window.showTab = function(tabId, el) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById(`panel-${tabId}`).classList.add('active');
+  if (el) {
+    el.classList.add('active');
+    // sync sidebar
+  }
+  if (tabId === 'stats') renderCharts();
+};
+
+// Notif panel
+window.toggleNotifPanel = function() {
+  document.getElementById('notif-panel').classList.toggle('open');
+};
+
+window.logout = function() {
+  window.location.href = 'client.html';
+};
+
+// TOAST
+window.showToast = function(msg) {
+  const t = document.getElementById('toast');
+  document.getElementById('toast-msg').textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 4000);
+};
+
+// Close modal on overlay click
+document.getElementById('add-vehicle-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeAddVehicle();
+});
+
+// Init
+applyTranslations();
+renderCharts();
+</script>
+</body>
+</html>
