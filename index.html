@@ -1,1046 +1,1310 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>AELLA — Intelligence Artificielle RH & Administration | MarcioAI</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
-<script src="https://unpkg.com/docx@8.5.0/build/index.umd.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=IM+Fell+English:ital@0;1&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VELOX — Location de Véhicules Premium</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-:root{
-  --bg:#05060f;--bg-2:#0a0d1f;--primary:#00e5ff;--primary-2:#7c4dff;--accent:#ff3df0;
-  --text:#e9ecff;--muted:#8892b8;--card:rgba(255,255,255,0.04);--border:rgba(255,255,255,0.08);
-}
-*{box-sizing:border-box}
-html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;overflow-x:hidden}
-h1,h2,h3,.font-display{font-family:'Space Grotesk',sans-serif;letter-spacing:-0.02em}
+  :root {
+    --gold: #C9A84C;
+    --gold-light: #E8C97A;
+    --gold-dark: #8A6C2A;
+    --black: #0A0A0A;
+    --dark: #111111;
+    --dark2: #1A1A1A;
+    --dark3: #242424;
+    --white: #F5F0E8;
+    --gray: #888880;
+    --text: #D4CFC5;
+  }
 
-.bg-grid{position:fixed;inset:0;z-index:-2;background:radial-gradient(ellipse 80% 60% at 20% 0%,rgba(124,77,255,0.25),transparent 50%),radial-gradient(ellipse 60% 50% at 80% 20%,rgba(0,229,255,0.18),transparent 50%),radial-gradient(ellipse 70% 60% at 50% 100%,rgba(255,61,240,0.15),transparent 60%),var(--bg)}
-.bg-grid::after{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.04) 1px,transparent 1px);background-size:60px 60px;mask-image:radial-gradient(ellipse at center,black 30%,transparent 80%)}
-.orb{position:fixed;border-radius:50%;filter:blur(80px);opacity:0.5;z-index:-1;pointer-events:none;animation:float 18s ease-in-out infinite}
-.orb-1{width:400px;height:400px;background:#7c4dff;top:-100px;left:-100px}
-.orb-2{width:500px;height:500px;background:#00e5ff;bottom:-150px;right:-150px;animation-delay:-6s}
-.orb-3{width:300px;height:300px;background:#ff3df0;top:40%;left:60%;animation-delay:-12s}
-@keyframes float{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(50px,-30px) scale(1.1)}66%{transform:translate(-30px,40px) scale(0.95)}}
+  * { margin: 0; padding: 0; box-sizing: border-box; }
 
-.nav{position:sticky;top:0;z-index:50;backdrop-filter:blur(20px);background:rgba(5,6,15,0.6);border-bottom:1px solid var(--border)}
-.logo-mark{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,var(--primary),var(--primary-2));display:grid;place-items:center;font-weight:700;color:#000;box-shadow:0 0 30px rgba(0,229,255,0.5)}
-.btn-primary{background:linear-gradient(135deg,var(--primary),var(--primary-2));color:#fff;font-weight:600;padding:12px 24px;border-radius:12px;border:none;cursor:pointer;box-shadow:0 10px 40px rgba(124,77,255,0.4);transition:all 0.3s}
-.btn-primary:hover{transform:translateY(-2px);box-shadow:0 15px 50px rgba(124,77,255,0.6)}
-.btn-ghost{background:rgba(255,255,255,0.05);border:1px solid var(--border);color:var(--text);padding:12px 24px;border-radius:12px;cursor:pointer;transition:all 0.3s}
-.btn-ghost:hover{background:rgba(255,255,255,0.1);border-color:var(--primary)}
+  body {
+    background: var(--black);
+    color: var(--text);
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 300;
+    overflow-x: hidden;
+    cursor: default;
+  }
 
-.hero{padding:80px 24px 60px;text-align:center;position:relative}
-.hero h1{font-size:clamp(2.5rem,6vw,5rem);font-weight:700;line-height:1.05;margin:0 0 20px}
-.gradient-text{background:linear-gradient(135deg,var(--primary) 0%,var(--primary-2) 50%,var(--accent) 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
-.hero p{font-size:1.2rem;color:var(--muted);max-width:680px;margin:0 auto 30px}
-.hero-badge{display:inline-flex;align-items:center;gap:8px;padding:8px 16px;border-radius:999px;background:rgba(0,229,255,0.1);border:1px solid rgba(0,229,255,0.3);color:var(--primary);font-size:0.85rem;margin-bottom:24px;animation:pulse 2.5s ease infinite}
-@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(0,229,255,0.4)}50%{box-shadow:0 0 0 12px rgba(0,229,255,0)}}
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: var(--black); }
+  ::-webkit-scrollbar-thumb { background: var(--gold-dark); border-radius: 2px; }
 
-.robot-stage{margin:50px auto;width:240px;height:240px;position:relative}
-.robot{width:100%;height:100%;position:relative;animation:bob 4s ease-in-out infinite}
-@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-15px)}}
-.robot-head{position:absolute;inset:30px;border-radius:30% 30% 25% 25%;background:linear-gradient(160deg,#1a1f3a,#0a0d1f);border:2px solid rgba(0,229,255,0.4);box-shadow:0 0 60px rgba(0,229,255,0.4),inset 0 0 30px rgba(124,77,255,0.3)}
-.robot-eye{position:absolute;top:38%;width:30px;height:30px;border-radius:50%;background:radial-gradient(circle,#fff,var(--primary));box-shadow:0 0 20px var(--primary);animation:blink 4s infinite}
-.robot-eye.left{left:25%}.robot-eye.right{right:25%}
-@keyframes blink{0%,90%,100%{transform:scaleY(1)}95%{transform:scaleY(0.1)}}
-.robot-mouth{position:absolute;bottom:25%;left:50%;transform:translateX(-50%);width:50px;height:6px;border-radius:3px;background:linear-gradient(90deg,var(--primary),var(--accent));box-shadow:0 0 15px var(--accent)}
-.robot-antenna{position:absolute;top:5px;left:50%;transform:translateX(-50%);width:3px;height:30px;background:linear-gradient(to top,transparent,var(--primary))}
-.robot-antenna::after{content:"";position:absolute;top:-8px;left:-5px;width:13px;height:13px;border-radius:50%;background:var(--accent);box-shadow:0 0 20px var(--accent);animation:pulse 1.5s infinite}
-.robot-ring{position:absolute;inset:0;border-radius:50%;border:2px dashed rgba(0,229,255,0.3);animation:spin 12s linear infinite}
-.robot-ring.r2{inset:-20px;border-color:rgba(255,61,240,0.2);animation-duration:18s;animation-direction:reverse}
-@keyframes spin{to{transform:rotate(360deg)}}
-.robot.thinking .robot-eye{animation:think-eye 0.8s infinite}
-@keyframes think-eye{0%,100%{background:radial-gradient(circle,#fff,var(--primary))}50%{background:radial-gradient(circle,#fff,var(--accent));box-shadow:0 0 30px var(--accent)}}
-.robot.thinking{animation:bob 1s ease-in-out infinite}
-.think-ring{position:absolute;inset:0;border:2px solid var(--primary);border-radius:50%;opacity:0;animation:ripple 2s infinite}
-.think-ring:nth-child(2){animation-delay:0.6s;border-color:var(--accent)}
-.think-ring:nth-child(3){animation-delay:1.2s;border-color:var(--primary-2)}
-@keyframes ripple{0%{transform:scale(0.7);opacity:1}100%{transform:scale(1.4);opacity:0}}
+  /* TOPBAR */
+  .topbar {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 40px;
+    background: linear-gradient(180deg, rgba(0,0,0,0.95) 0%, transparent 100%);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(201,168,76,0.15);
+  }
 
-.services-section{padding:80px 24px;max-width:1200px;margin:0 auto}
-.section-title{text-align:center;margin-bottom:60px}
-.section-title h2{font-size:clamp(2rem,4vw,3rem);margin:0 0 12px}
-.section-title p{color:var(--muted);font-size:1.1rem}
-.category{margin-bottom:60px}
-.category-header{display:flex;align-items:center;gap:16px;margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid var(--border)}
-.category-num{width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,var(--primary),var(--primary-2));display:grid;place-items:center;font-weight:700;color:#000;font-size:1.2rem;font-family:'Space Grotesk'}
-.category-title{font-size:1.6rem;margin:0}
-.stars{color:#ffd700;font-size:1rem;margin-left:auto}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:18px}
-.service-card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:24px;cursor:pointer;transition:all 0.4s cubic-bezier(.2,.9,.3,1);position:relative;overflow:hidden}
-.service-card::before{content:"";position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,229,255,0.1),rgba(124,77,255,0.1));opacity:0;transition:opacity 0.4s}
-.service-card:hover{transform:translateY(-6px);border-color:var(--primary);box-shadow:0 20px 60px rgba(0,229,255,0.2)}
-.service-card:hover::before{opacity:1}
-.service-icon{width:48px;height:48px;border-radius:12px;background:rgba(0,229,255,0.1);display:grid;place-items:center;margin-bottom:16px;font-size:1.4rem;position:relative}
-.service-card h3{margin:0 0 8px;font-size:1.1rem;position:relative}
-.service-card p{margin:0;color:var(--muted);font-size:0.9rem;position:relative}
+  .logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 28px;
+    font-weight: 300;
+    letter-spacing: 8px;
+    color: var(--gold);
+    text-transform: uppercase;
+  }
+  .logo span { color: var(--white); }
 
-.modal-overlay{position:fixed;inset:0;background:rgba(5,6,15,0.85);backdrop-filter:blur(10px);z-index:100;display:none;align-items:center;justify-content:center;padding:20px;animation:fadeIn 0.3s}
-.modal-overlay.active{display:flex}
-@keyframes fadeIn{from{opacity:0}to{opacity:1}}
-.modal{background:linear-gradient(160deg,#0e1230,#070918);border:1px solid var(--border);border-radius:24px;width:100%;max-width:980px;max-height:92vh;overflow:hidden;display:flex;flex-direction:column;animation:slideUp 0.4s cubic-bezier(.2,.9,.3,1)}
-@keyframes slideUp{from{transform:translateY(40px);opacity:0}to{transform:translateY(0);opacity:1}}
-.modal-header{padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
-.modal-header h3{margin:0;font-size:1.3rem}
-.modal-close{background:rgba(255,255,255,0.05);border:1px solid var(--border);color:var(--text);width:36px;height:36px;border-radius:10px;cursor:pointer;font-size:1.2rem}
-.modal-body{padding:24px;overflow-y:auto;flex:1}
-.form-group{margin-bottom:16px}
-.form-group label{display:block;margin-bottom:8px;font-weight:500;font-size:0.9rem;color:var(--text)}
-.form-group input,.form-group textarea,.form-group select{width:100%;padding:12px 14px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:inherit;font-size:0.95rem}
-.form-group input:focus,.form-group textarea:focus,.form-group select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(0,229,255,0.1)}
-.form-group textarea{resize:vertical;min-height:80px}
+  .lang-switcher {
+    display: flex; gap: 6px;
+  }
+  .lang-btn {
+    background: none; border: 1px solid rgba(201,168,76,0.3);
+    color: var(--gray); font-family: 'Montserrat', sans-serif;
+    font-size: 10px; font-weight: 500; letter-spacing: 2px;
+    padding: 5px 10px; cursor: pointer; transition: all 0.3s;
+    text-transform: uppercase;
+  }
+  .lang-btn:hover, .lang-btn.active {
+    background: var(--gold); color: var(--black);
+    border-color: var(--gold);
+  }
 
-.thinking-overlay{position:fixed;inset:0;background:rgba(5,6,15,0.95);backdrop-filter:blur(20px);z-index:200;display:none;align-items:center;justify-content:center;flex-direction:column}
-.thinking-overlay.active{display:flex}
-.thinking-robot{width:280px;height:280px;position:relative;margin-bottom:30px}
-.thinking-overlay h3{font-size:1.6rem;margin:0 0 8px;background:linear-gradient(135deg,var(--primary),var(--accent));-webkit-background-clip:text;color:transparent}
-.thinking-overlay p{color:var(--muted);margin:0}
-.thinking-dots span{display:inline-block;width:8px;height:8px;background:var(--primary);border-radius:50%;margin:0 3px;animation:bounce 1.4s infinite}
-.thinking-dots span:nth-child(2){animation-delay:0.2s;background:var(--accent)}
-.thinking-dots span:nth-child(3){animation-delay:0.4s;background:var(--primary-2)}
-@keyframes bounce{0%,80%,100%{transform:scale(0.6);opacity:0.5}40%{transform:scale(1.2);opacity:1}}
+  .nav-links {
+    display: flex; gap: 30px; align-items: center;
+  }
+  .nav-link {
+    color: var(--gray); text-decoration: none;
+    font-size: 10px; font-weight: 500; letter-spacing: 3px;
+    text-transform: uppercase; transition: color 0.3s;
+    cursor: pointer;
+  }
+  .nav-link:hover { color: var(--gold); }
 
-.doc-viewer-wrap{margin-top:24px}
-.doc-toolbar{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-bottom:none;border-radius:12px 12px 0 0;gap:12px;flex-wrap:wrap}
-.doc-toolbar-title{font-size:0.85rem;color:var(--muted);font-weight:500}
-.doc-export-btns{display:flex;gap:8px;flex-wrap:wrap}
-.btn-export{padding:8px 16px;border-radius:8px;border:1px solid var(--border);background:rgba(255,255,255,0.05);color:var(--text);cursor:pointer;font-weight:500;font-size:0.85rem;display:inline-flex;align-items:center;gap:6px;transition:all 0.3s;white-space:nowrap}
-.btn-export:hover{background:rgba(0,229,255,0.1);border-color:var(--primary);color:var(--primary)}
-.btn-export.primary-export{background:linear-gradient(135deg,rgba(0,229,255,0.15),rgba(124,77,255,0.15));border-color:var(--primary);color:var(--primary)}
-.btn-export.primary-export:hover{background:linear-gradient(135deg,rgba(0,229,255,0.3),rgba(124,77,255,0.3))}
+  .btn-inscription {
+    background: none; border: 1px solid var(--gold);
+    color: var(--gold); font-family: 'Montserrat', sans-serif;
+    font-size: 10px; font-weight: 500; letter-spacing: 3px;
+    padding: 10px 20px; cursor: pointer; transition: all 0.3s;
+    text-transform: uppercase;
+  }
+  .btn-inscription:hover { background: var(--gold); color: var(--black); }
 
-.a4-viewport{background:#d0d0d0;border:1px solid var(--border);border-top:none;border-radius:0 0 12px 12px;padding:24px 12px;overflow-x:auto;min-height:200px}
-.a4-page{
-  width:794px;min-height:1123px;background:#fff;color:#111;margin:0 auto;padding:70px 80px;
-  box-shadow:0 8px 40px rgba(0,0,0,0.4),0 2px 8px rgba(0,0,0,0.3);
-  font-family:'Libre Baskerville',Georgia,serif;font-size:11pt;line-height:1.7;position:relative;page-break-after:always;
-}
-.a4-page .doc-footer{position:absolute;bottom:30px;left:80px;right:80px;border-top:1px solid #ccc;padding-top:8px;display:flex;justify-content:space-between;align-items:center;font-size:8pt;color:#888;font-family:'Libre Baskerville',Georgia,serif;}
-.a4-page h1{font-family:'Libre Baskerville',Georgia,serif;font-size:16pt;font-weight:700;text-align:center;margin:0 0 6px;text-transform:uppercase;letter-spacing:0.04em;color:#111}
-.a4-page h2{font-family:'Libre Baskerville',Georgia,serif;font-size:13pt;font-weight:700;margin:22px 0 8px;text-transform:uppercase;letter-spacing:0.03em;border-bottom:2px solid #111;padding-bottom:4px;color:#111}
-.a4-page h3{font-family:'Libre Baskerville',Georgia,serif;font-size:11pt;font-weight:700;margin:16px 0 6px;color:#222}
-.a4-page p{margin:0 0 10px;text-align:justify;color:#222}
-.a4-page .doc-ref{font-size:9pt;color:#555;margin-bottom:20px;text-align:right}
-.a4-page .doc-parties{display:grid;grid-template-columns:1fr 1fr;gap:30px;margin:20px 0;padding:16px;background:#f8f8f8;border:1px solid #ddd;border-radius:4px;font-size:10pt}
-.a4-page .doc-party-block strong{display:block;font-size:9pt;text-transform:uppercase;letter-spacing:0.05em;color:#555;margin-bottom:4px}
-.a4-page .doc-separator{border:none;border-top:1px solid #ddd;margin:20px 0}
-.a4-page .doc-signature-block{display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:50px}
-.a4-page .doc-signature-box{border-top:1px solid #999;padding-top:8px;font-size:9pt;color:#555}
-.a4-page .doc-signature-box strong{display:block;color:#333;font-size:10pt;margin-bottom:2px}
-.a4-page table{width:100%;border-collapse:collapse;margin:16px 0;font-size:10pt}
-.a4-page table th{background:#111;color:#fff;padding:8px 10px;text-align:left;font-weight:600;font-size:9pt;text-transform:uppercase;letter-spacing:0.03em}
-.a4-page table td{padding:7px 10px;border-bottom:1px solid #e0e0e0;vertical-align:top}
-.a4-page table tr:nth-child(even) td{background:#f5f5f5}
-.a4-page table .total-row td{background:#111;color:#fff;font-weight:700}
-.a4-page .doc-stamp{font-size:9pt;color:#666;font-style:italic;text-align:center;margin-top:20px;padding:10px;border:1px dashed #bbb;border-radius:4px}
-.a4-page .doc-article{margin-bottom:14px}
-.a4-page .doc-article-num{font-weight:700;text-decoration:underline;display:block;margin-bottom:4px}
-.a4-page .highlight-box{background:#fffef0;border-left:4px solid #d4a000;padding:12px 16px;margin:16px 0;font-size:10pt}
-.a4-page .letterhead{text-align:center;margin-bottom:30px;padding-bottom:20px;border-bottom:2px solid #111}
-.a4-page .letterhead .company-name{font-size:18pt;font-weight:700;letter-spacing:0.05em;text-transform:uppercase}
-.a4-page .letterhead .company-details{font-size:9pt;color:#555;margin-top:4px}
+  /* HERO */
+  .hero {
+    position: relative; height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+  }
 
-.toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%) translateY(100px);background:linear-gradient(135deg,#0e1230,#070918);border:1px solid var(--primary);padding:12px 18px;border-radius:12px;color:var(--text);box-shadow:0 10px 40px rgba(0,0,0,0.5);z-index:400;transition:transform 0.4s;white-space:nowrap;font-size:0.9rem;max-width:90vw;text-align:center}
-.toast.show{transform:translateX(-50%) translateY(0)}
+  .hero-bg {
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 50% 100%, rgba(201,168,76,0.08) 0%, transparent 70%),
+      radial-gradient(ellipse 40% 40% at 20% 20%, rgba(201,168,76,0.04) 0%, transparent 60%),
+      linear-gradient(160deg, #0A0A0A 0%, #111108 50%, #0A0A0A 100%);
+  }
 
-footer{padding:32px 20px;text-align:center;border-top:1px solid var(--border);color:var(--muted);margin-top:40px;font-size:0.9rem}
-footer .brand{background:linear-gradient(135deg,var(--primary),var(--accent));-webkit-background-clip:text;color:transparent;font-weight:700;font-family:'Space Grotesk'}
+  /* Animated grid */
+  .grid-overlay {
+    position: absolute; inset: 0; opacity: 0.06;
+    background-image:
+      linear-gradient(rgba(201,168,76,0.5) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(201,168,76,0.5) 1px, transparent 1px);
+    background-size: 60px 60px;
+    animation: gridMove 20s linear infinite;
+  }
+  @keyframes gridMove {
+    0% { background-position: 0 0; }
+    100% { background-position: 60px 60px; }
+  }
 
-@media(max-width:480px){.nav .font-display{font-size:1rem}.btn-ghost{padding:8px 14px;font-size:0.85rem}}
-@media(max-width:640px){
-  .hero{padding:48px 16px 36px}.hero p{font-size:1rem;padding:0 4px}.hero-badge{font-size:0.78rem;padding:6px 12px}
-  .robot-stage{width:160px;height:160px;margin:30px auto}.btn-primary{padding:12px 24px;font-size:0.95rem}
-  .services-section{padding:48px 14px}.section-title{margin-bottom:36px}.section-title p{font-size:0.95rem}
-  .category{margin-bottom:40px}.category-header{gap:10px;flex-wrap:wrap}.category-title{font-size:1.25rem}
-  .category-num{width:38px;height:38px;font-size:1rem;border-radius:10px}.stars{font-size:0.8rem}
-  .grid{grid-template-columns:1fr 1fr;gap:12px}.service-card{padding:16px 14px;border-radius:14px}
-  .service-card h3{font-size:0.92rem}.service-card p{font-size:0.78rem}
-  .service-icon{width:38px;height:38px;font-size:1.1rem;margin-bottom:10px;border-radius:10px}
-  .modal-overlay{padding:0;align-items:flex-end}.modal{border-radius:20px 20px 0 0;max-height:95vh;border-bottom:none}
-  .modal-header{padding:16px 18px}.modal-header h3{font-size:1.1rem}.modal-body{padding:16px 18px}
-  .form-group input,.form-group textarea,.form-group select{font-size:0.9rem;padding:10px 12px}
-  #modalBody form > div[style*="grid"]{display:block!important}
-}
-@media(max-width:380px){.grid{grid-template-columns:1fr}}
-@media(max-width:700px){
-  .doc-toolbar{flex-direction:column;align-items:stretch;padding:10px 12px;gap:8px}
-  .doc-toolbar-title{font-size:0.8rem;text-align:center}
-  .doc-export-btns{display:grid;grid-template-columns:1fr 1fr;gap:6px}
-  .btn-export{padding:9px 8px;font-size:0.78rem;justify-content:center}
-}
-@media(max-width:420px){.doc-export-btns{grid-template-columns:1fr}}
-@media(max-width:860px){
-  .a4-viewport{padding:16px 6px}
-  .a4-page{width:100%;min-height:auto;padding:28px 18px 60px;font-size:10pt;box-shadow:0 4px 20px rgba(0,0,0,0.3)}
-  .a4-page .doc-footer{left:18px;right:18px;bottom:16px;flex-direction:column;gap:2px;text-align:center;font-size:7pt}
-  .a4-page .doc-parties{grid-template-columns:1fr;gap:12px;padding:12px}
-  .a4-page .doc-signature-block{grid-template-columns:1fr;gap:24px;margin-top:32px}
-  .a4-page h1{font-size:13pt}.a4-page h2{font-size:11pt}.a4-page table{font-size:8.5pt}
-  .a4-page table th,.a4-page table td{padding:5px 7px}.a4-page .letterhead .company-name{font-size:14pt}
-}
-@media(max-width:480px){.a4-page{padding:20px 14px 56px}.a4-page table{display:block;overflow-x:auto;white-space:nowrap}}
-@media(max-width:480px){
-  .thinking-overlay h3{font-size:1.2rem;text-align:center;padding:0 16px}
-  .thinking-overlay p{font-size:0.85rem;text-align:center;padding:0 20px}
-  .thinking-robot{width:180px;height:180px}
-}
-@media print{
-  body{background:#fff!important}
-  .bg-grid,.orb,.nav,.modal-overlay,.email-modal-overlay,.thinking-overlay,.toast,footer{display:none!important}
-  .a4-page{box-shadow:none!important;padding:20mm 25mm!important;min-height:auto!important;width:210mm!important;font-size:11pt!important}
-}
+  .hero-content {
+    text-align: center; position: relative; z-index: 2;
+    animation: fadeUp 1.2s ease both;
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(40px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
 
-/* EMAIL MODAL */
-.email-modal-overlay{position:fixed;inset:0;background:rgba(5,6,15,0.92);backdrop-filter:blur(16px);z-index:300;display:none;align-items:center;justify-content:center;padding:20px;animation:fadeIn 0.3s}
-.email-modal-overlay.active{display:flex}
-.email-modal{background:linear-gradient(160deg,#0e1230,#070918);border:1px solid rgba(0,229,255,0.25);border-radius:24px;width:100%;max-width:520px;overflow:hidden;animation:slideUp 0.4s cubic-bezier(.2,.9,.3,1);box-shadow:0 30px 80px rgba(0,0,0,0.6),0 0 60px rgba(0,229,255,0.08)}
-.email-modal-header{padding:24px 28px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
-.email-modal-header-left{display:flex;align-items:center;gap:14px}
-.email-modal-icon{width:46px;height:46px;border-radius:14px;background:linear-gradient(135deg,rgba(0,229,255,0.15),rgba(124,77,255,0.15));border:1px solid rgba(0,229,255,0.3);display:grid;place-items:center;font-size:1.3rem}
-.email-modal-header h4{margin:0;font-size:1.1rem;font-family:'Space Grotesk',sans-serif}
-.email-modal-header p{margin:4px 0 0;font-size:0.8rem;color:var(--muted)}
-.email-modal-close{background:rgba(255,255,255,0.05);border:1px solid var(--border);color:var(--text);width:34px;height:34px;border-radius:9px;cursor:pointer;font-size:1rem;flex-shrink:0}
-.email-modal-body{padding:24px 28px}
-.email-from-badge{display:flex;align-items:center;gap:10px;padding:12px 14px;background:rgba(0,229,255,0.06);border:1px solid rgba(0,229,255,0.15);border-radius:10px;margin-bottom:20px}
-.email-from-dot{width:8px;height:8px;border-radius:50%;background:var(--primary);flex-shrink:0;box-shadow:0 0 8px var(--primary)}
-.email-from-text{font-size:0.85rem;color:var(--muted)}
-.email-from-text strong{color:var(--primary);font-weight:600}
-.email-field{margin-bottom:16px}
-.email-field label{display:block;margin-bottom:7px;font-weight:500;font-size:0.85rem;color:var(--text)}
-.email-field label span{color:var(--accent)}
-.email-input-wrap{position:relative}
-.email-input-wrap svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);opacity:0.4;pointer-events:none}
-.email-input{width:100%;padding:11px 14px 11px 38px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:inherit;font-size:0.95rem;transition:all 0.3s}
-.email-input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(0,229,255,0.1);background:rgba(0,229,255,0.04)}
-.email-input.valid{border-color:#00d084;box-shadow:0 0 0 3px rgba(0,208,132,0.1)}
-.email-input.invalid{border-color:#ff4d6d;box-shadow:0 0 0 3px rgba(255,77,109,0.1)}
-.email-textarea{width:100%;padding:11px 14px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:inherit;font-size:0.9rem;resize:vertical;min-height:90px;transition:all 0.3s}
-.email-textarea:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(0,229,255,0.1)}
-.email-doc-preview{display:flex;align-items:center;gap:12px;padding:12px 14px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px;margin-bottom:20px}
-.email-doc-icon{width:36px;height:36px;border-radius:8px;background:linear-gradient(135deg,#ff4d4d,#c0392b);display:grid;place-items:center;font-size:1rem;flex-shrink:0}
-.email-doc-info{flex:1;min-width:0}
-.email-doc-info strong{display:block;font-size:0.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.email-doc-info span{font-size:0.78rem;color:var(--muted)}
-.email-doc-size{font-size:0.78rem;color:var(--muted);flex-shrink:0}
-.email-send-btn{width:100%;padding:13px;border-radius:12px;border:none;background:linear-gradient(135deg,var(--primary),var(--primary-2));color:#fff;font-weight:700;font-size:0.95rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all 0.3s;font-family:'Space Grotesk',sans-serif;letter-spacing:0.02em}
-.email-send-btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 10px 30px rgba(124,77,255,0.5)}
-.email-send-btn:disabled{opacity:0.6;cursor:not-allowed;transform:none}
-.email-send-btn.sending{background:linear-gradient(135deg,#555,#333)}
-.email-send-btn.success{background:linear-gradient(135deg,#00d084,#00a86b)}
-.email-send-btn.error{background:linear-gradient(135deg,#ff4d6d,#c0392b)}
-.email-status-bar{margin-top:14px;padding:10px 14px;border-radius:9px;font-size:0.85rem;display:none;align-items:center;gap:8px}
-.email-status-bar.show{display:flex}
-.email-status-bar.info{background:rgba(0,229,255,0.08);border:1px solid rgba(0,229,255,0.2);color:var(--primary)}
-.email-status-bar.success{background:rgba(0,208,132,0.08);border:1px solid rgba(0,208,132,0.25);color:#00d084}
-.email-status-bar.error{background:rgba(255,77,109,0.08);border:1px solid rgba(255,77,109,0.25);color:#ff4d6d}
-.email-progress{height:3px;background:rgba(255,255,255,0.05);border-radius:99px;margin-top:16px;overflow:hidden;display:none}
-.email-progress.show{display:block}
-.email-progress-bar{height:100%;width:0%;background:linear-gradient(90deg,var(--primary),var(--accent));border-radius:99px;transition:width 0.4s ease}
-@media(max-width:640px){
-  .email-modal-overlay{padding:0;align-items:flex-end}
-  .email-modal{border-radius:20px 20px 0 0;max-height:92vh;overflow-y:auto;border-bottom:none}
-  .email-modal-header{padding:18px 18px 14px}.email-modal-header h4{font-size:1rem}.email-modal-header p{font-size:0.75rem}
-  .email-modal-icon{width:38px;height:38px;font-size:1.1rem;border-radius:10px}
-  .email-modal-body{padding:16px 18px 24px}.email-from-badge{padding:10px 12px;font-size:0.8rem}
-  .email-from-text{font-size:0.78rem;line-height:1.4}.email-doc-preview{padding:10px 12px}
-  .email-input{font-size:0.9rem;padding:10px 12px 10px 36px}.email-textarea{font-size:0.88rem;min-height:72px}
-  .email-send-btn{padding:12px;font-size:0.9rem}
-}
-@media(max-width:380px){.email-from-text strong{word-break:break-all;font-size:0.72rem}}
+  .hero-eyebrow {
+    font-size: 10px; font-weight: 500; letter-spacing: 6px;
+    color: var(--gold); text-transform: uppercase; margin-bottom: 24px;
+    display: flex; align-items: center; justify-content: center; gap: 16px;
+  }
+  .hero-eyebrow::before, .hero-eyebrow::after {
+    content: ''; display: block; width: 40px; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold));
+  }
+  .hero-eyebrow::after { transform: scaleX(-1); }
+
+  .hero-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(52px, 8vw, 110px);
+    font-weight: 300; line-height: 0.9;
+    color: var(--white); letter-spacing: -2px;
+    margin-bottom: 10px;
+  }
+  .hero-title em { font-style: italic; color: var(--gold); }
+
+  .hero-subtitle {
+    font-size: 11px; font-weight: 400; letter-spacing: 4px;
+    color: var(--gray); text-transform: uppercase; margin-bottom: 50px;
+    animation: fadeUp 1.2s 0.2s ease both;
+  }
+
+  .hero-actions {
+    display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;
+    animation: fadeUp 1.2s 0.4s ease both;
+  }
+
+  .btn-primary {
+    background: var(--gold);
+    color: var(--black); border: none;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 10px; font-weight: 600; letter-spacing: 3px;
+    padding: 16px 36px; cursor: pointer;
+    text-transform: uppercase; transition: all 0.3s;
+    clip-path: polygon(12px 0%, 100% 0%, calc(100% - 12px) 100%, 0% 100%);
+  }
+  .btn-primary:hover { background: var(--gold-light); transform: translateY(-2px); }
+
+  .btn-secondary {
+    background: none; border: 1px solid rgba(201,168,76,0.4);
+    color: var(--gold); font-family: 'Montserrat', sans-serif;
+    font-size: 10px; font-weight: 500; letter-spacing: 3px;
+    padding: 16px 36px; cursor: pointer;
+    text-transform: uppercase; transition: all 0.3s;
+  }
+  .btn-secondary:hover { border-color: var(--gold); background: rgba(201,168,76,0.05); }
+
+  .scroll-indicator {
+    position: absolute; bottom: 40px; left: 50%;
+    transform: translateX(-50%);
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    color: var(--gray); font-size: 9px; letter-spacing: 3px;
+    text-transform: uppercase; animation: fadeUp 1.2s 0.8s ease both;
+  }
+  .scroll-line {
+    width: 1px; height: 50px;
+    background: linear-gradient(180deg, var(--gold), transparent);
+    animation: scrollPulse 2s ease infinite;
+  }
+  @keyframes scrollPulse {
+    0%, 100% { opacity: 0.3; transform: scaleY(0.8); }
+    50% { opacity: 1; transform: scaleY(1); }
+  }
+
+  /* SEARCH SECTION */
+  .search-section {
+    padding: 80px 40px 60px;
+    background: var(--dark);
+    border-top: 1px solid rgba(201,168,76,0.1);
+    border-bottom: 1px solid rgba(201,168,76,0.1);
+  }
+
+  .section-label {
+    font-size: 9px; letter-spacing: 5px; color: var(--gold);
+    text-transform: uppercase; margin-bottom: 8px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .section-label::before {
+    content: ''; display: block; width: 20px; height: 1px; background: var(--gold);
+  }
+
+  .section-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(30px, 4vw, 48px); font-weight: 300;
+    color: var(--white); margin-bottom: 40px; letter-spacing: -1px;
+  }
+
+  .search-bar {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto auto;
+    gap: 1px;
+    background: rgba(201,168,76,0.15);
+    border: 1px solid rgba(201,168,76,0.2);
+    max-width: 1000px;
+  }
+
+  .search-input-wrap {
+    background: var(--dark2); padding: 20px 24px;
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .search-input-label {
+    font-size: 8px; letter-spacing: 3px; color: var(--gold);
+    text-transform: uppercase;
+  }
+  .search-input {
+    background: none; border: none; outline: none;
+    color: var(--white); font-family: 'Montserrat', sans-serif;
+    font-size: 13px; font-weight: 400;
+    width: 100%;
+  }
+  .search-input::placeholder { color: var(--gray); }
+
+  .category-select {
+    background: var(--dark2); padding: 20px 24px;
+    border: none; outline: none;
+  }
+
+  .vehicle-cats {
+    display: flex; flex-wrap: wrap; gap: 10px; margin-top: 30px;
+  }
+
+  .cat-tag {
+    background: none; border: 1px solid rgba(201,168,76,0.2);
+    color: var(--gray); font-family: 'Montserrat', sans-serif;
+    font-size: 9px; font-weight: 500; letter-spacing: 2px;
+    padding: 8px 18px; cursor: pointer; transition: all 0.3s;
+    text-transform: uppercase;
+  }
+  .cat-tag:hover, .cat-tag.active {
+    border-color: var(--gold); color: var(--gold);
+    background: rgba(201,168,76,0.06);
+  }
+  .cat-tag.active { background: rgba(201,168,76,0.12); }
+
+  .btn-search {
+    background: var(--gold); border: none; color: var(--black);
+    font-family: 'Montserrat', sans-serif;
+    font-size: 9px; font-weight: 600; letter-spacing: 2px;
+    padding: 0 30px; cursor: pointer; transition: all 0.3s;
+    text-transform: uppercase; white-space: nowrap;
+  }
+  .btn-search:hover { background: var(--gold-light); }
+
+  /* MAP + FLEET SECTION */
+  .main-content {
+    display: grid; grid-template-columns: 1fr 420px;
+    min-height: 700px;
+  }
+
+  /* VEHICLE GALLERY */
+  .fleet-section {
+    padding: 60px 40px;
+    background: var(--black);
+  }
+
+  .fleet-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 2px; margin-top: 40px;
+  }
+
+  .vehicle-card {
+    position: relative; overflow: hidden; cursor: pointer;
+    background: var(--dark2);
+    transition: transform 0.4s ease;
+    border: 1px solid rgba(201,168,76,0.08);
+  }
+  .vehicle-card:hover { transform: translateY(-4px); border-color: rgba(201,168,76,0.3); }
+
+  .vehicle-img {
+    width: 100%; height: 200px; object-fit: cover;
+    filter: grayscale(30%) brightness(0.85);
+    transition: all 0.5s ease;
+    background: var(--dark3);
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+  }
+  .vehicle-card:hover .vehicle-img { filter: grayscale(0%) brightness(1); }
+
+  .vehicle-img-placeholder {
+    width: 100%; height: 200px; background: var(--dark3);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 60px; transition: all 0.5s;
+    position: relative;
+  }
+  .vehicle-img-placeholder::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(201,168,76,0.05) 0%, transparent 60%);
+  }
+
+  .vehicle-badge {
+    position: absolute; top: 16px; left: 16px;
+    background: var(--gold); color: var(--black);
+    font-size: 8px; font-weight: 700; letter-spacing: 2px;
+    padding: 4px 10px; text-transform: uppercase;
+  }
+
+  .vehicle-info {
+    padding: 20px 22px;
+    border-top: 1px solid rgba(201,168,76,0.1);
+  }
+  .vehicle-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px; font-weight: 400; color: var(--white);
+    margin-bottom: 4px;
+  }
+  .vehicle-type {
+    font-size: 9px; letter-spacing: 3px; color: var(--gold);
+    text-transform: uppercase; margin-bottom: 14px;
+  }
+  .vehicle-meta {
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .vehicle-price {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 24px; color: var(--gold);
+  }
+  .vehicle-price span { font-size: 12px; color: var(--gray); font-family: 'Montserrat', sans-serif; font-weight: 300; }
+
+  .btn-reserve {
+    background: none; border: 1px solid rgba(201,168,76,0.3);
+    color: var(--gold); font-family: 'Montserrat', sans-serif;
+    font-size: 8px; font-weight: 500; letter-spacing: 2px;
+    padding: 8px 14px; cursor: pointer; transition: all 0.3s;
+    text-transform: uppercase;
+  }
+  .btn-reserve:hover { background: var(--gold); color: var(--black); border-color: var(--gold); }
+
+  .no-vehicle-msg {
+    grid-column: 1/-1;
+    text-align: center; padding: 80px 20px;
+    color: var(--gray);
+  }
+  .no-vehicle-msg .icon { font-size: 48px; margin-bottom: 16px; opacity: 0.3; }
+  .no-vehicle-msg p { font-size: 12px; letter-spacing: 2px; text-transform: uppercase; }
+
+  /* MAP SECTION */
+  .map-section {
+    position: sticky; top: 70px; height: calc(100vh - 70px);
+    background: var(--dark2);
+    border-left: 1px solid rgba(201,168,76,0.1);
+    display: flex; flex-direction: column;
+  }
+
+  .map-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid rgba(201,168,76,0.1);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .map-title {
+    font-size: 9px; letter-spacing: 3px; color: var(--gold);
+    text-transform: uppercase;
+  }
+  .map-live {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 8px; letter-spacing: 2px; color: var(--gray);
+    text-transform: uppercase;
+  }
+  .live-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: #4CAF50;
+    animation: livePulse 1.5s ease infinite;
+  }
+  @keyframes livePulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.8); }
+  }
+
+  #map {
+    flex: 1;
+    background: #111;
+    position: relative; overflow: hidden;
+  }
+
+  .map-placeholder {
+    width: 100%; height: 100%;
+    background: radial-gradient(ellipse at center, #1a1a14 0%, #0a0a0a 100%);
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column; gap: 16px; color: var(--gray);
+    font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
+    position: relative;
+  }
+
+  /* Fake map grid */
+  .map-grid-bg {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(201,168,76,0.08) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(201,168,76,0.08) 1px, transparent 1px);
+    background-size: 30px 30px;
+  }
+
+  /* Animated car dots on map */
+  .map-car {
+    position: absolute;
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--gold);
+    box-shadow: 0 0 12px rgba(201,168,76,0.8);
+  }
+  .map-car::before {
+    content: '🚗';
+    position: absolute; top: -16px; left: -8px;
+    font-size: 20px;
+  }
+  .map-car-1 { top: 30%; left: 40%; animation: carMove1 8s linear infinite; }
+  .map-car-2 { top: 55%; left: 60%; animation: carMove2 11s linear infinite; }
+  .map-car-3 { top: 20%; left: 70%; animation: carMove3 9s linear infinite; }
+
+  @keyframes carMove1 {
+    0% { transform: translate(0,0); }
+    25% { transform: translate(30px,-20px); }
+    50% { transform: translate(60px,10px); }
+    75% { transform: translate(20px,30px); }
+    100% { transform: translate(0,0); }
+  }
+  @keyframes carMove2 {
+    0% { transform: translate(0,0); }
+    33% { transform: translate(-40px,20px); }
+    66% { transform: translate(-20px,-30px); }
+    100% { transform: translate(0,0); }
+  }
+  @keyframes carMove3 {
+    0% { transform: translate(0,0); }
+    50% { transform: translate(-50px,40px); }
+    100% { transform: translate(0,0); }
+  }
+
+  /* Destination pin */
+  .map-pin {
+    position: absolute; top: 45%; left: 35%;
+    color: #FF4444; font-size: 24px;
+    animation: pinBounce 1.5s ease infinite;
+    filter: drop-shadow(0 4px 8px rgba(255,68,68,0.5));
+  }
+  @keyframes pinBounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+  }
+
+  .map-info-overlay {
+    position: absolute; bottom: 20px; left: 16px; right: 16px;
+    background: rgba(17,17,17,0.92); backdrop-filter: blur(10px);
+    border: 1px solid rgba(201,168,76,0.2);
+    padding: 16px 18px;
+  }
+  .map-driver-info {
+    display: flex; gap: 12px; align-items: center;
+  }
+  .driver-avatar {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: var(--dark3); border: 2px solid var(--gold);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; flex-shrink: 0;
+  }
+  .driver-name {
+    font-size: 13px; font-weight: 500; color: var(--white); margin-bottom: 2px;
+  }
+  .driver-eta {
+    font-size: 9px; letter-spacing: 2px; color: var(--gold);
+    text-transform: uppercase;
+  }
+  .driver-rating {
+    margin-left: auto; text-align: right;
+  }
+  .stars { color: var(--gold); font-size: 12px; }
+  .rating-num { font-size: 18px; font-family: 'Cormorant Garamond', serif; color: var(--white); }
+
+  /* HOW IT WORKS */
+  .how-section {
+    padding: 100px 40px;
+    background: var(--dark);
+    border-top: 1px solid rgba(201,168,76,0.1);
+  }
+
+  .steps-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: rgba(201,168,76,0.1);
+    margin-top: 50px;
+  }
+
+  .step {
+    background: var(--dark2); padding: 40px 30px;
+    position: relative;
+    transition: background 0.3s;
+  }
+  .step:hover { background: var(--dark3); }
+
+  .step-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 72px; font-weight: 300; color: rgba(201,168,76,0.15);
+    line-height: 1; margin-bottom: 24px;
+  }
+  .step-icon { font-size: 28px; margin-bottom: 16px; }
+  .step-title {
+    font-size: 11px; font-weight: 600; letter-spacing: 2px;
+    color: var(--white); text-transform: uppercase; margin-bottom: 12px;
+  }
+  .step-text { font-size: 12px; line-height: 1.7; color: var(--gray); }
+
+  /* REGISTRATION MODAL */
+  .modal-overlay {
+    position: fixed; inset: 0; z-index: 200;
+    background: rgba(0,0,0,0.92); backdrop-filter: blur(8px);
+    display: none; align-items: center; justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--dark2);
+    border: 1px solid rgba(201,168,76,0.2);
+    width: 90%; max-width: 500px;
+    padding: 50px 40px;
+    position: relative;
+    animation: modalIn 0.4s ease both;
+  }
+  @keyframes modalIn {
+    from { opacity: 0; transform: scale(0.95) translateY(20px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+  }
+
+  .modal-close {
+    position: absolute; top: 20px; right: 20px;
+    background: none; border: none; color: var(--gray);
+    font-size: 20px; cursor: pointer; transition: color 0.2s;
+  }
+  .modal-close:hover { color: var(--gold); }
+
+  .modal-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 36px; font-weight: 300; color: var(--white);
+    margin-bottom: 6px;
+  }
+  .modal-subtitle {
+    font-size: 9px; letter-spacing: 3px; color: var(--gold);
+    text-transform: uppercase; margin-bottom: 30px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .modal-subtitle::after { content: ''; flex: 1; height: 1px; background: rgba(201,168,76,0.2); }
+
+  .type-switch {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 1px; background: rgba(201,168,76,0.1);
+    margin-bottom: 28px;
+  }
+  .type-btn {
+    background: var(--dark3); border: none;
+    color: var(--gray); font-family: 'Montserrat', sans-serif;
+    font-size: 9px; font-weight: 500; letter-spacing: 2px;
+    padding: 14px; cursor: pointer; transition: all 0.3s;
+    text-transform: uppercase;
+  }
+  .type-btn.active { background: var(--gold); color: var(--black); }
+
+  .form-field {
+    margin-bottom: 16px;
+  }
+  .field-label {
+    font-size: 8px; letter-spacing: 3px; color: var(--gold);
+    text-transform: uppercase; margin-bottom: 6px; display: block;
+  }
+  .field-input {
+    width: 100%; background: var(--dark3);
+    border: 1px solid rgba(201,168,76,0.15);
+    color: var(--white); font-family: 'Montserrat', sans-serif;
+    font-size: 13px; padding: 12px 16px; outline: none;
+    transition: border-color 0.3s;
+  }
+  .field-input:focus { border-color: var(--gold); }
+
+  .btn-submit {
+    width: 100%; background: var(--gold); border: none;
+    color: var(--black); font-family: 'Montserrat', sans-serif;
+    font-size: 10px; font-weight: 700; letter-spacing: 4px;
+    padding: 18px; cursor: pointer; transition: all 0.3s;
+    text-transform: uppercase; margin-top: 10px;
+  }
+  .btn-submit:hover { background: var(--gold-light); }
+
+  /* FOOTER */
+  footer {
+    background: var(--black);
+    border-top: 1px solid rgba(201,168,76,0.1);
+    padding: 50px 40px 30px;
+    display: grid; grid-template-columns: 1fr auto;
+    align-items: end; gap: 40px;
+  }
+  .footer-logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 32px; font-weight: 300;
+    color: var(--gold); letter-spacing: 8px;
+  }
+  .footer-tagline {
+    font-size: 10px; letter-spacing: 3px; color: var(--gray);
+    text-transform: uppercase; margin-top: 4px;
+  }
+  .footer-right {
+    text-align: right; font-size: 10px; letter-spacing: 2px;
+    color: var(--gray); line-height: 2;
+  }
+  .footer-right a { color: var(--gold); text-decoration: none; }
+  .footer-link { color: var(--gold); cursor: pointer; text-decoration: none; }
+  .footer-divider {
+    grid-column: 1/-1; height: 1px;
+    background: rgba(201,168,76,0.1); margin: 20px 0 0;
+  }
+  .footer-copy {
+    grid-column: 1/-1; font-size: 9px; letter-spacing: 2px;
+    color: rgba(136,136,128,0.5); text-transform: uppercase;
+    display: flex; justify-content: space-between;
+  }
+
+  /* ORDER TRACKING PANEL */
+  .tracking-panel {
+    position: fixed; right: -400px; top: 0; bottom: 0;
+    width: 380px; background: var(--dark2);
+    border-left: 1px solid rgba(201,168,76,0.2);
+    z-index: 150; transition: right 0.4s ease;
+    display: flex; flex-direction: column;
+    overflow-y: auto;
+  }
+  .tracking-panel.open { right: 0; }
+
+  .tracking-header {
+    padding: 30px 28px 20px;
+    border-bottom: 1px solid rgba(201,168,76,0.1);
+  }
+  .tracking-close {
+    background: none; border: none; color: var(--gray);
+    cursor: pointer; font-size: 18px; float: right;
+    transition: color 0.2s;
+  }
+  .tracking-close:hover { color: var(--gold); }
+
+  .tracking-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 28px; color: var(--white); font-weight: 300;
+  }
+  .tracking-status {
+    font-size: 9px; letter-spacing: 3px; color: var(--gold);
+    text-transform: uppercase; margin-top: 4px;
+  }
+
+  .tracking-map {
+    height: 220px; background: #111;
+    position: relative; overflow: hidden;
+  }
+  .tracking-map .map-grid-bg { opacity: 1; }
+  .tracking-map .map-car-1 { animation: carMove1 4s linear infinite; }
+  .tracking-car-text {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%,-50%);
+    font-size: 36px; z-index: 2;
+    animation: carMove1 6s linear infinite;
+  }
+  .tracking-dest {
+    position: absolute; bottom: 20%; left: 30%;
+    font-size: 20px;
+    animation: pinBounce 1.5s ease infinite;
+  }
+
+  .tracking-info { padding: 20px 28px; }
+  .tracking-row {
+    display: flex; justify-content: space-between;
+    align-items: center; padding: 14px 0;
+    border-bottom: 1px solid rgba(201,168,76,0.08);
+  }
+  .tracking-key {
+    font-size: 9px; letter-spacing: 2px; color: var(--gray);
+    text-transform: uppercase;
+  }
+  .tracking-val {
+    font-size: 14px; color: var(--white); font-weight: 400;
+  }
+  .tracking-val.gold { color: var(--gold); font-family: 'Cormorant Garamond', serif; font-size: 20px; }
+
+  .cancel-btn {
+    margin: 20px 28px;
+    background: none; border: 1px solid rgba(255,80,80,0.3);
+    color: #FF6666; font-family: 'Montserrat', sans-serif;
+    font-size: 9px; font-weight: 500; letter-spacing: 3px;
+    padding: 14px; cursor: pointer; width: calc(100% - 56px);
+    text-transform: uppercase; transition: all 0.3s;
+  }
+  .cancel-btn:hover { background: rgba(255,80,80,0.08); border-color: #FF6666; }
+
+  /* NOTIFICATION TOAST */
+  .toast {
+    position: fixed; bottom: 30px; left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--dark2);
+    border: 1px solid rgba(201,168,76,0.3);
+    border-left: 3px solid var(--gold);
+    padding: 16px 24px;
+    min-width: 320px;
+    font-size: 12px; color: var(--white);
+    transition: transform 0.4s ease;
+    z-index: 300;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+  .toast-icon { color: var(--gold); font-size: 20px; }
+
+  /* Responsive */
+  @media (max-width: 1100px) {
+    .main-content { grid-template-columns: 1fr; }
+    .map-section { display: none; }
+    .steps-grid { grid-template-columns: repeat(2, 1fr); }
+    .search-bar { grid-template-columns: 1fr 1fr; }
+    .btn-search { grid-column: 1/-1; padding: 16px; }
+  }
+  @media (max-width: 600px) {
+    .topbar { padding: 14px 20px; }
+    .nav-links { display: none; }
+    .fleet-section { padding: 40px 20px; }
+    .steps-grid { grid-template-columns: 1fr; }
+    .search-bar { grid-template-columns: 1fr; }
+    footer { grid-template-columns: 1fr; }
+  }
 </style>
 </head>
 <body>
 
-<div class="bg-grid"></div>
-<div class="orb orb-1"></div>
-<div class="orb orb-2"></div>
-<div class="orb orb-3"></div>
-
-<nav class="nav">
-  <div style="max-width:1280px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between">
-    <div style="display:flex;align-items:center;gap:12px">
-      <div class="logo-mark">A</div>
-      <div>
-        <div class="font-display" style="font-weight:700;font-size:1.1rem;font-family:'Space Grotesk',sans-serif">AELLA</div>
-        <div style="font-size:0.75rem;color:var(--muted)">by MarcioAI</div>
-      </div>
-    </div>
-    <div style="display:flex;align-items:center;gap:12px">
-      <button class="btn-ghost" onclick="document.getElementById('services').scrollIntoView({behavior:'smooth'})">Services</button>
-    </div>
+<!-- TOP BAR -->
+<header class="topbar">
+  <div class="logo">VEL<span>O</span>X</div>
+  <nav class="nav-links">
+    <a class="nav-link" onclick="scrollTo(0,0)">Accueil</a>
+    <a class="nav-link" onclick="document.querySelector('.fleet-section').scrollIntoView({behavior:'smooth'})">Flotte</a>
+    <a class="nav-link" onclick="document.querySelector('.how-section').scrollIntoView({behavior:'smooth'})">Fonctionnement</a>
+    <a class="nav-link" href="provider.html">Fournisseurs</a>
+    <button class="btn-inscription" onclick="openModal()">Inscription</button>
+  </nav>
+  <div class="lang-switcher">
+    <button class="lang-btn active" onclick="setLang('fr',this)">FR</button>
+    <button class="lang-btn" onclick="setLang('en',this)">EN</button>
+    <button class="lang-btn" onclick="setLang('zh',this)">中文</button>
   </div>
-</nav>
+</header>
 
+<!-- HERO -->
 <section class="hero">
-  <div class="hero-badge">
-    <span style="width:6px;height:6px;background:var(--primary);border-radius:50%;display:inline-block;animation:pulse 1.5s infinite"></span>
-    Intelligence Artificielle nouvelle génération
-  </div>
-  <h1>Bonjour, je suis <span class="gradient-text">AELLA</span></h1>
-  <p>Votre assistante IA spécialisée en Ressources Humaines, Secrétariat et Administration générale. Je génère vos documents officiels — prêts à imprimer, à signer, à envoyer.</p>
-  <div class="robot-stage">
-    <div class="robot" id="heroRobot">
-      <div class="robot-ring"></div>
-      <div class="robot-ring r2"></div>
-      <div class="robot-antenna"></div>
-      <div class="robot-head">
-        <div class="robot-eye left"></div>
-        <div class="robot-eye right"></div>
-        <div class="robot-mouth"></div>
-      </div>
+  <div class="hero-bg"></div>
+  <div class="grid-overlay"></div>
+  <div class="hero-content">
+    <div class="hero-eyebrow" id="hero-eyebrow">Location de véhicules premium</div>
+    <h1 class="hero-title" id="hero-title">Le <em>luxe</em><br>en mouvement</h1>
+    <p class="hero-subtitle" id="hero-sub">Déménagement · Luxe · Trois Roues · Cargo</p>
+    <div class="hero-actions">
+      <button class="btn-primary" id="btn-order" onclick="document.querySelector('.search-section').scrollIntoView({behavior:'smooth'})">Commander maintenant</button>
+      <button class="btn-secondary" id="btn-how" onclick="document.querySelector('.how-section').scrollIntoView({behavior:'smooth'})">Comment ça marche</button>
     </div>
   </div>
-  <button class="btn-primary" style="font-size:1rem;padding:14px 32px" onclick="document.getElementById('services').scrollIntoView({behavior:'smooth'})">
-    Découvrir mes services →
-  </button>
-</section>
-
-<section class="services-section" id="services">
-  <div class="section-title">
-    <h2>Choisissez un <span class="gradient-text">service</span></h2>
-    <p>Cliquez sur un service, complétez les informations — le document A4 professionnel s'affiche instantanément.</p>
-  </div>
-  <div class="category">
-    <div class="category-header">
-      <div class="category-num">2</div>
-      <h3 class="category-title">Gestion des Ressources Humaines</h3>
-      <div class="stars">⭐⭐⭐⭐⭐</div>
-    </div>
-    <div class="grid" id="grid-rh"></div>
-  </div>
-  <div class="category">
-    <div class="category-header">
-      <div class="category-num">3</div>
-      <h3 class="category-title">Secrétariat & Administration Générale</h3>
-      <div class="stars">⭐⭐⭐⭐</div>
-    </div>
-    <div class="grid" id="grid-sec"></div>
+  <div class="scroll-indicator">
+    <div class="scroll-line"></div>
+    <span>Défiler</span>
   </div>
 </section>
 
-<!-- MODAL -->
-<div class="modal-overlay" id="modal">
-  <div class="modal">
-    <div class="modal-header">
-      <h3 id="modalTitle">Service</h3>
-      <button class="modal-close" onclick="closeModal()">✕</button>
+<!-- SEARCH -->
+<section class="search-section">
+  <div class="section-label" id="sl-search">Recherche</div>
+  <h2 class="section-title" id="st-search">Trouvez votre véhicule idéal</h2>
+
+  <div class="search-bar">
+    <div class="search-input-wrap">
+      <span class="search-input-label" id="label-from">Départ</span>
+      <input class="search-input" id="input-from" type="text" placeholder="Votre adresse...">
     </div>
-    <div class="modal-body" id="modalBody"></div>
+    <div class="search-input-wrap">
+      <span class="search-input-label" id="label-to">Destination</span>
+      <input class="search-input" id="input-to" type="text" placeholder="Où allez-vous ?">
+    </div>
+    <div class="search-input-wrap category-select">
+      <span class="search-input-label" id="label-type">Type</span>
+      <select class="search-input" id="select-type" style="color:var(--white);background:none;">
+        <option value="">Tous</option>
+        <option value="xl">XL</option>
+        <option value="xxl">XXL</option>
+        <option value="xxxl">XXXL</option>
+        <option value="luxe">Luxe</option>
+        <option value="3roues">3 Roues</option>
+        <option value="demenagement">Déménagement</option>
+      </select>
+    </div>
+    <button class="btn-search" id="btn-search" onclick="searchVehicles()">🔍 Rechercher</button>
   </div>
+
+  <div class="vehicle-cats">
+    <button class="cat-tag active" data-cat="all" onclick="filterCat(this,'all')" id="cat-all">Tous</button>
+    <button class="cat-tag" data-cat="xl" onclick="filterCat(this,'xl')">XL</button>
+    <button class="cat-tag" data-cat="xxl" onclick="filterCat(this,'xxl')">XXL</button>
+    <button class="cat-tag" data-cat="xxxl" onclick="filterCat(this,'xxxl')">XXXL</button>
+    <button class="cat-tag" data-cat="luxe" onclick="filterCat(this,'luxe')" id="cat-luxe">Luxe</button>
+    <button class="cat-tag" data-cat="3roues" onclick="filterCat(this,'3roues')" id="cat-3w">3 Roues</button>
+    <button class="cat-tag" data-cat="demenagement" onclick="filterCat(this,'demenagement')" id="cat-dem">Déménagement</button>
+  </div>
+</section>
+
+<!-- MAIN: FLEET + MAP -->
+<div class="main-content">
+  <section class="fleet-section">
+    <div class="section-label" id="sl-fleet">Notre Flotte</div>
+    <h2 class="section-title" id="st-fleet">Véhicules disponibles</h2>
+    <div class="fleet-grid" id="fleet-grid">
+      <!-- Populated by JS -->
+    </div>
+  </section>
+
+  <!-- MAP -->
+  <aside class="map-section">
+    <div class="map-header">
+      <span class="map-title">Carte en direct</span>
+      <div class="map-live"><div class="live-dot"></div> Live</div>
+    </div>
+    <div id="map">
+      <div class="map-placeholder">
+        <div class="map-grid-bg"></div>
+        <div class="map-car map-car-1"></div>
+        <div class="map-car map-car-2"></div>
+        <div class="map-car map-car-3"></div>
+        <div class="map-pin">📍</div>
+        <div class="map-info-overlay">
+          <div class="map-driver-info">
+            <div class="driver-avatar">👨‍✈️</div>
+            <div>
+              <div class="driver-name">Jean-Paul K.</div>
+              <div class="driver-eta">Arrivée dans 2 min</div>
+            </div>
+            <div class="driver-rating">
+              <div class="stars">★★★★★</div>
+              <div class="rating-num">4.9</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </aside>
 </div>
 
-<!-- EMAIL MODAL -->
-<div class="email-modal-overlay" id="emailModal">
-  <div class="email-modal">
-    <div class="email-modal-header">
-      <div class="email-modal-header-left">
-        <div class="email-modal-icon">✉️</div>
-        <div>
-          <h4>Envoyer par e-mail</h4>
-          <p>AELLA transmet le document automatiquement</p>
-        </div>
-      </div>
-      <button class="email-modal-close" onclick="closeEmailModal()">✕</button>
+<!-- HOW IT WORKS -->
+<section class="how-section">
+  <div class="section-label" id="sl-how">Processus</div>
+  <h2 class="section-title" id="st-how">Comment ça fonctionne</h2>
+  <div class="steps-grid">
+    <div class="step">
+      <div class="step-num">01</div>
+      <div class="step-icon">📍</div>
+      <div class="step-title" id="step1-t">Indiquez votre adresse</div>
+      <p class="step-text" id="step1-p">Entrez votre point de départ et votre destination. Notre système localise les véhicules disponibles autour de vous en temps réel.</p>
     </div>
-    <div class="email-modal-body">
-
-      <div class="email-from-badge">
-        <div class="email-from-dot"></div>
-        <div class="email-from-text">Expéditeur : <strong>zinzindohouemarcio@gmail.com</strong> (AELLA · MarcioAI)</div>
-      </div>
-
-      <div class="email-doc-preview" id="emailDocPreview">
-        <div class="email-doc-icon">📄</div>
-        <div class="email-doc-info">
-          <strong id="emailDocName">Document.pdf</strong>
-          <span>Pièce jointe · Format PDF</span>
-        </div>
-        <span class="email-doc-size" id="emailDocSize">—</span>
-      </div>
-
-      <div class="email-field">
-        <label>Adresse e-mail du destinataire <span>*</span></label>
-        <div class="email-input-wrap">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,12 2,6"/></svg>
-          <input type="email" class="email-input" id="emailTo" placeholder="destinataire@exemple.com" oninput="validateEmailInput(this)" autocomplete="email"/>
-        </div>
-      </div>
-
-      <div class="email-field">
-        <label>Objet de l'e-mail</label>
-        <div class="email-input-wrap">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="10" x2="20" y2="10"/><line x1="4" y1="14" x2="11" y2="14"/></svg>
-          <input type="text" class="email-input" id="emailSubject" placeholder="Objet automatique..." />
-        </div>
-      </div>
-
-      <div class="email-field">
-        <label>Message d'accompagnement <span style="color:var(--muted);font-weight:400">(optionnel)</span></label>
-        <textarea class="email-textarea" id="emailMessage" placeholder="Bonjour, veuillez trouver ci-joint le document..."></textarea>
-      </div>
-
-      <button class="email-send-btn" id="emailSendBtn" onclick="sendEmail()">
-        <span id="emailSendIcon">📤</span>
-        <span id="emailSendLabel">Envoyer le document</span>
-      </button>
-
-      <div class="email-progress" id="emailProgress">
-        <div class="email-progress-bar" id="emailProgressBar"></div>
-      </div>
-
-      <div class="email-status-bar" id="emailStatusBar">
-        <span id="emailStatusIcon">ℹ️</span>
-        <span id="emailStatusText"></span>
-      </div>
-
+    <div class="step">
+      <div class="step-num">02</div>
+      <div class="step-icon">🚗</div>
+      <div class="step-title" id="step2-t">Choisissez votre véhicule</div>
+      <p class="step-text" id="step2-p">Sélectionnez parmi notre flotte XL, XXL, XXXL, luxe ou trois roues selon vos besoins de déménagement ou de transport.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">03</div>
+      <div class="step-icon">⚡</div>
+      <div class="step-title" id="step3-t">Confirmation instantanée</div>
+      <p class="step-text" id="step3-p">Votre commande est envoyée aux fournisseurs disponibles. Le premier à accepter vous est assigné avec notification immédiate.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">04</div>
+      <div class="step-icon">📡</div>
+      <div class="step-title" id="step4-t">Suivi en temps réel</div>
+      <p class="step-text" id="step4-p">Suivez le déplacement de votre chauffeur sur la carte en direct. Arrivée estimée et mises à jour continues jusqu'à destination.</p>
     </div>
   </div>
-</div>
+</section>
 
-<!-- THINKING -->
-<div class="thinking-overlay" id="thinkingOverlay">
-  <div class="thinking-robot" style="position:relative">
-    <div class="robot thinking">
-      <div class="robot-ring"></div>
-      <div class="robot-ring r2"></div>
-      <div class="robot-antenna"></div>
-      <div class="robot-head">
-        <div class="robot-eye left"></div>
-        <div class="robot-eye right"></div>
-        <div class="robot-mouth"></div>
-      </div>
-    </div>
-    <div style="position:absolute;inset:-40px">
-      <div class="think-ring"></div>
-      <div class="think-ring"></div>
-      <div class="think-ring"></div>
-    </div>
-  </div>
-  <h3>AELLA rédige votre document...</h3>
-  <p>Mise en forme professionnelle en cours <span class="thinking-dots"><span></span><span></span><span></span></span></p>
-</div>
-
-<div class="toast" id="toast"></div>
-
+<!-- FOOTER -->
 <footer>
-  <div class="font-display text-2xl mb-2"><span class="brand">AELLA</span></div>
-  <p style="margin:0">Intelligence Artificielle conçue par <span class="brand">MarcioAI dev</span> · © 2026</p>
+  <div>
+    <div class="footer-logo">VELOX</div>
+    <div class="footer-tagline" id="tagline">Transport Premium — Disponible 24h/24</div>
+  </div>
+  <div class="footer-right">
+    <div><a class="footer-link" href="provider.html">Espace Fournisseur →</a></div>
+    <div style="margin-top:8px;font-size:9px;">contact@velox.ci</div>
+    <div style="font-size:9px;">Abidjan, Côte d'Ivoire</div>
+  </div>
+  <div class="footer-divider"></div>
+  <div class="footer-copy">
+    <span>© 2025 VELOX. Tous droits réservés.</span>
+    <span>Abidjan · Côte d'Ivoire</span>
+  </div>
 </footer>
 
-<script>
-// ================== CONFIG ==================
-const _KEY  = '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';
-const _MODEL= 'llama-3.3-70b-versatile';
-const _URL  = 'https://api.groq.com/openai/v1/chat/completions';
+<!-- MODAL INSCRIPTION -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <h2 class="modal-title" id="modal-title">Rejoindre<br>VELOX</h2>
+    <div class="modal-subtitle" id="modal-sub">Créer un compte</div>
+    <div class="type-switch">
+      <button class="type-btn active" id="btn-client" onclick="switchType('client')">🧳 Client</button>
+      <button class="type-btn" id="btn-provider" onclick="switchType('provider')">🚗 Fournisseur</button>
+    </div>
+    <div class="form-field">
+      <label class="field-label" id="fl-name">Nom complet</label>
+      <input class="field-input" type="text" placeholder="Votre nom">
+    </div>
+    <div class="form-field">
+      <label class="field-label" id="fl-phone">Téléphone</label>
+      <input class="field-input" type="tel" placeholder="+225 07 XX XX XX XX">
+    </div>
+    <div class="form-field">
+      <label class="field-label" id="fl-email">Email</label>
+      <input class="field-input" type="email" placeholder="exemple@email.com">
+    </div>
+    <div class="form-field" id="vehicle-photo-field" style="display:none">
+      <label class="field-label" id="fl-photo">Photo du véhicule (obligatoire)</label>
+      <input class="field-input" type="file" accept="image/*" style="padding:10px">
+    </div>
+    <div class="form-field">
+      <label class="field-label" id="fl-pw">Mot de passe</label>
+      <input class="field-input" type="password" placeholder="••••••••">
+    </div>
+    <button class="btn-submit" id="btn-submit" onclick="submitForm()">S'inscrire →</button>
+  </div>
+</div>
 
-// ================================================================
-//  CONFIG EMAILJS — Intégrée en dur, aucune configuration requise
-// ================================================================
-const EJS_SERVICE_ID  = 'service_fsgnfrc';
-const EJS_TEMPLATE_ID = 'template_ck2ux1g';
-const EJS_PUBLIC_KEY  = 'Ke45KTn5KIlrEvDCU';
+<!-- TRACKING PANEL -->
+<div class="tracking-panel" id="tracking-panel">
+  <div class="tracking-header">
+    <button class="tracking-close" onclick="closeTracking()">✕</button>
+    <div class="tracking-title" id="tr-title">En Route</div>
+    <div class="tracking-status" id="tr-status">Chauffeur en approche</div>
+  </div>
+  <div class="tracking-map">
+    <div class="map-grid-bg"></div>
+    <div class="tracking-car-text">🚗</div>
+    <div class="tracking-dest">📍</div>
+    <div class="map-car map-car-2" style="width:14px;height:14px;top:40%;left:55%"></div>
+  </div>
+  <div class="tracking-info">
+    <div class="tracking-row">
+      <span class="tracking-key" id="tk-driver">Chauffeur</span>
+      <span class="tracking-val" id="tr-driver-name">Jean-Paul K.</span>
+    </div>
+    <div class="tracking-row">
+      <span class="tracking-key" id="tk-vehicle">Véhicule</span>
+      <span class="tracking-val" id="tr-vehicle">Mercedes Classe V XL</span>
+    </div>
+    <div class="tracking-row">
+      <span class="tracking-key" id="tk-eta">Arrivée estimée</span>
+      <span class="tracking-val gold" id="tr-eta">4 min</span>
+    </div>
+    <div class="tracking-row">
+      <span class="tracking-key" id="tk-price">Tarif</span>
+      <span class="tracking-val gold" id="tr-price">15 000 FCFA</span>
+    </div>
+  </div>
+  <button class="cancel-btn" id="btn-cancel" onclick="cancelOrder()">Annuler la commande</button>
+</div>
 
-emailjs.init({ publicKey: EJS_PUBLIC_KEY });
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <span class="toast-icon">✓</span>
+  <span id="toast-msg">Commande envoyée avec succès !</span>
+</div>
 
-// ================== SERVICES DATA ==================
-const SERVICES = {
-  rh:[
-    {id:'contrat',icon:'📄',title:'Contrat de travail',desc:"CDI, CDD, Stage — conforme droit du travail",
-     fields:[
-      {name:'employeur',label:"Nom de l'employeur / Raison sociale",type:'text',ph:"Ex: SARL TECH SOLUTIONS"},
-      {name:'siegeSocial',label:"Siège social",type:'text',ph:"Ex: Abidjan, Plateau, Rue des Banques"},
-      {name:'employe',label:"Nom complet du salarié",type:'text',ph:"Ex: KOUADIO Jean Baptiste"},
-      {name:'nationalite',label:"Nationalité du salarié",type:'text',ph:"Ex: Ivoirienne"},
-      {name:'poste',label:"Poste / Fonction",type:'text',ph:"Ex: Responsable Commercial"},
-      {name:'salaire',label:"Salaire mensuel brut (FCFA)",type:'text',ph:"Ex: 350 000"},
-      {name:'type',label:"Type de contrat",type:'select',options:['CDI','CDD','Stage','Intérim']},
-      {name:'duree',label:"Durée (si CDD/Stage)",type:'text',ph:"Ex: 6 mois"},
-      {name:'lieu',label:"Lieu de travail",type:'text',ph:"Ex: Abidjan, Cocody"},
-      {name:'dateDebut',label:"Date de début",type:'date'},
-     ]},
-    {id:'paie',icon:'💰',title:'Bulletin de salaire',desc:'Fiche de paie détaillée avec cotisations',
-     fields:[
-      {name:'entreprise',label:"Nom de l'entreprise",type:'text',ph:"Ex: SARL TECH SOLUTIONS"},
-      {name:'adresseEntreprise',label:"Adresse entreprise",type:'text',ph:"Ex: Abidjan, Plateau"},
-      {name:'employe',label:"Nom du salarié",type:'text',ph:"Ex: KOUADIO Jean Baptiste"},
-      {name:'matricule',label:"Matricule",type:'text',ph:"Ex: EMP-2024-045"},
-      {name:'poste',label:"Poste",type:'text',ph:"Ex: Comptable"},
-      {name:'periode',label:"Période (Mois Année)",type:'text',ph:"Ex: Janvier 2026"},
-      {name:'salaireBrut',label:"Salaire brut de base (FCFA)",type:'text',ph:"Ex: 280 000"},
-      {name:'primes',label:"Primes / Avantages",type:'text',ph:"Ex: Prime de transport 20 000, Prime de rendement 15 000"},
-      {name:'heuresSup',label:"Heures supplémentaires",type:'text',ph:"Ex: 8h à 150% = 12 000 FCFA"},
-     ]},
-    {id:'cnps',icon:'🏛️',title:'Déclaration CNPS',desc:'Déclaration trimestrielle / mensuelle',
-     fields:[
-      {name:'entreprise',label:"Raison sociale",type:'text',ph:"Ex: SARL TECH SOLUTIONS"},
-      {name:'numCnps',label:"Numéro employeur CNPS",type:'text',ph:"Ex: 1234567890"},
-      {name:'adresse',label:"Adresse de l'entreprise",type:'text',ph:"Ex: Abidjan, Plateau"},
-      {name:'periode',label:"Période déclarée",type:'text',ph:"Ex: 1er trimestre 2026"},
-      {name:'effectif',label:"Effectif salarié",type:'text',ph:"Ex: 12"},
-      {name:'masseSalariale',label:"Masse salariale totale brute (FCFA)",type:'text',ph:"Ex: 4 500 000"},
-     ]},
-    {id:'conges',icon:'🌴',title:'Gestion congés / absences',desc:"Demande ou attestation d'absence",
-     fields:[
-      {name:'entreprise',label:"Nom de l'entreprise",type:'text',ph:"Ex: SARL TECH SOLUTIONS"},
-      {name:'employe',label:"Nom du salarié",type:'text',ph:"Ex: KOUADIO Jean Baptiste"},
-      {name:'poste',label:"Poste",type:'text',ph:"Ex: Développeur Web"},
-      {name:'typeAbsence',label:"Type",type:'select',options:['Congé annuel','Congé maladie','Congé maternité','Absence exceptionnelle','Congé sans solde']},
-      {name:'dateDebut',label:"Date de début",type:'date'},
-      {name:'dateFin',label:"Date de fin",type:'date'},
-      {name:'motif',label:"Motif détaillé",type:'textarea'},
-     ]},
-    {id:'reglement',icon:'📜',title:'Règlement intérieur',desc:'Document officiel complet',
-     fields:[
-      {name:'entreprise',label:"Nom de l'entreprise",type:'text',ph:"Ex: SARL TECH SOLUTIONS"},
-      {name:'secteur',label:"Secteur d'activité",type:'text',ph:"Ex: Technologies de l'information"},
-      {name:'effectif',label:"Effectif",type:'text',ph:"Ex: 25 salariés"},
-      {name:'siege',label:"Siège social",type:'text',ph:"Ex: Abidjan, Plateau"},
-      {name:'specifique',label:"Règles spécifiques à inclure",type:'textarea',ph:"Ex: Politique BYOD, tenue vestimentaire, horaires flexibles..."},
-     ]},
-  ],
-  sec:[
-    {id:'courrier',icon:'✉️',title:'Courrier officiel',desc:'Lettre administrative de qualité',
-     fields:[
-      {name:'expediteur',label:"Expéditeur (nom & fonction)",type:'text',ph:"Ex: M. KONE Mamadou, Directeur Général"},
-      {name:'orgExp',label:"Organisation expéditeur",type:'text',ph:"Ex: SARL TECH SOLUTIONS"},
-      {name:'destinataire',label:"Destinataire",type:'text',ph:"Ex: M. le Directeur Régional du Travail"},
-      {name:'objet',label:"Objet",type:'text',ph:"Ex: Demande d'autorisation de travail de nuit"},
-      {name:'contenu',label:"Contenu / arguments à développer",type:'textarea',ph:"Ex: Contexte, raison, demande précise..."},
-      {name:'ton',label:"Ton",type:'select',options:['Formel','Très formel','Cordial','Réclamation','Remerciement','Relance']},
-      {name:'ville',label:"Ville et date",type:'text',ph:"Ex: Abidjan, le 15 janvier 2026"},
-     ]},
-    {id:'ao',icon:'📋',title:"Appel d'offres",desc:'Dossier complet ou réponse',
-     fields:[
-      {name:'entreprise',label:"Entreprise émettrice",type:'text',ph:"Ex: SOCIETE NATIONALE DE CONSTRUCTION"},
-      {name:'objet',label:"Objet de l'appel d'offres",type:'text',ph:"Ex: Fourniture et installation de matériels informatiques"},
-      {name:'budget',label:"Budget estimatif",type:'text',ph:"Ex: 25 000 000 FCFA"},
-      {name:'delai',label:"Délai d'exécution",type:'text',ph:"Ex: 45 jours ouvrables"},
-      {name:'criteres',label:"Critères de sélection",type:'textarea',ph:"Ex: Expérience min. 5 ans, certifications ISO, garantie 2 ans..."},
-      {name:'depot',label:"Date limite de dépôt",type:'date'},
-     ]},
-    {id:'classement',icon:'🗂️',title:'Plan de classement & archivage',desc:'Organisation documentaire',
-     fields:[
-      {name:'entreprise',label:"Entreprise",type:'text',ph:"Ex: SARL TECH SOLUTIONS"},
-      {name:'service',label:"Service concerné",type:'text',ph:"Ex: Direction des Ressources Humaines"},
-      {name:'volume',label:"Volume documentaire estimé",type:'text',ph:"Ex: 500 dossiers physiques, 2000 fichiers numériques"},
-      {name:'besoins',label:"Besoins et contraintes spécifiques",type:'textarea',ph:"Ex: Accès fréquent aux dossiers actifs, confidentialité RH..."},
-     ]},
-    {id:'agenda',icon:'📅',title:'Agenda dirigeant',desc:'Planning structuré et professionnel',
-     fields:[
-      {name:'dirigeant',label:"Nom du dirigeant",type:'text',ph:"Ex: M. BAMBA Seydou"},
-      {name:'poste',label:"Fonction",type:'text',ph:"Ex: Directeur Général"},
-      {name:'entreprise',label:"Entreprise",type:'text',ph:"Ex: SARL TECH SOLUTIONS"},
-      {name:'periode',label:"Période",type:'text',ph:"Ex: Semaine du 13 au 17 janvier 2026"},
-      {name:'rdv',label:"Rendez-vous, réunions & priorités",type:'textarea',ph:"Ex: Lundi 9h - Réunion CA, Mardi 14h - Entretien DRH..."},
-     ]},
-    {id:'standard',icon:'📞',title:'Procédure accueil & standard',desc:'Protocole téléphonique officiel',
-     fields:[
-      {name:'entreprise',label:"Entreprise",type:'text',ph:"Ex: SARL TECH SOLUTIONS"},
-      {name:'secteur',label:"Secteur",type:'text',ph:"Ex: Cabinet d'expertise comptable"},
-      {name:'horaires',label:"Horaires d'ouverture",type:'text',ph:"Ex: Lundi-Vendredi 8h-18h, Samedi 8h-12h"},
-      {name:'specifique',label:"Consignes spécifiques",type:'textarea',ph:"Ex: Transfert VIP vers DG, gestion des plaintes..."},
-     ]},
-  ]
+<!-- FIREBASE + APP SCRIPT -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, collection, onSnapshot, addDoc, serverTimestamp, query, where }
+  from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBsGrY-AqYMoI70kT3WMxLgW0HwYA4KyaQ",
+  authDomain: "livraison-c8498.firebaseapp.com",
+  projectId: "livraison-c8498",
+  storageBucket: "livraison-c8498.firebasestorage.app",
+  messagingSenderId: "403240604780",
+  appId: "1:403240604780:web:77d84ad03d68bdaddfb449"
 };
 
-// ================== RENDER GRID ==================
-function renderGrid(catId,services){
-  const el=document.getElementById('grid-'+catId);
-  el.innerHTML=services.map(s=>`
-    <div class="service-card" onclick='openService("${catId}","${s.id}")'>
-      <div class="service-icon">${s.icon}</div>
-      <h3>${s.title}</h3>
-      <p>${s.desc}</p>
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// Translations
+const LANGS = {
+  fr: {
+    hero_eyebrow: "Location de véhicules premium",
+    hero_title: "Le <em>luxe</em><br>en mouvement",
+    hero_sub: "Déménagement · Luxe · Trois Roues · Cargo",
+    btn_order: "Commander maintenant",
+    btn_how: "Comment ça marche",
+    sl_search: "Recherche",
+    st_search: "Trouvez votre véhicule idéal",
+    label_from: "Départ", label_to: "Destination", label_type: "Type",
+    btn_search: "🔍 Rechercher",
+    sl_fleet: "Notre Flotte", st_fleet: "Véhicules disponibles",
+    sl_how: "Processus", st_how: "Comment ça fonctionne",
+    step1_t:"Indiquez votre adresse",step1_p:"Entrez votre point de départ et votre destination.",
+    step2_t:"Choisissez votre véhicule",step2_p:"Sélectionnez parmi notre flotte selon vos besoins.",
+    step3_t:"Confirmation instantanée",step3_p:"Votre commande est envoyée aux fournisseurs disponibles.",
+    step4_t:"Suivi en temps réel",step4_p:"Suivez le déplacement de votre chauffeur sur la carte en direct.",
+    tagline:"Transport Premium — Disponible 24h/24",
+    modal_title:"Rejoindre<br>VELOX", modal_sub:"Créer un compte",
+    btn_client:"🧳 Client",btn_provider:"🚗 Fournisseur",
+    fl_name:"Nom complet",fl_phone:"Téléphone",fl_email:"Email",fl_photo:"Photo du véhicule (obligatoire)",fl_pw:"Mot de passe",
+    btn_submit:"S'inscrire →",
+    tr_title:"En Route",tr_status:"Chauffeur en approche",
+    tk_driver:"Chauffeur",tk_vehicle:"Véhicule",tk_eta:"Arrivée estimée",tk_price:"Tarif",
+    btn_cancel:"Annuler la commande",
+    toast_ok:"Commande envoyée avec succès !",
+    cat_all:"Tous",cat_luxe:"Luxe",cat_3w:"3 Roues",cat_dem:"Déménagement",
+    no_vehicle:"Aucun véhicule disponible pour le moment",
+    reserve:"Réserver",
+  },
+  en: {
+    hero_eyebrow:"Premium vehicle rental",
+    hero_title:"<em>Luxury</em><br>in motion",
+    hero_sub:"Moving · Luxury · Three-Wheeler · Cargo",
+    btn_order:"Book now",btn_how:"How it works",
+    sl_search:"Search",st_search:"Find your ideal vehicle",
+    label_from:"From",label_to:"Destination",label_type:"Type",
+    btn_search:"🔍 Search",
+    sl_fleet:"Our Fleet",st_fleet:"Available vehicles",
+    sl_how:"Process",st_how:"How it works",
+    step1_t:"Enter your address",step1_p:"Enter your starting point and destination.",
+    step2_t:"Choose your vehicle",step2_p:"Select from our fleet based on your needs.",
+    step3_t:"Instant confirmation",step3_p:"Your order is sent to available providers.",
+    step4_t:"Real-time tracking",step4_p:"Track your driver on the live map.",
+    tagline:"Premium Transport — Available 24/7",
+    modal_title:"Join<br>VELOX",modal_sub:"Create an account",
+    btn_client:"🧳 Client",btn_provider:"🚗 Provider",
+    fl_name:"Full name",fl_phone:"Phone",fl_email:"Email",fl_photo:"Vehicle photo (required)",fl_pw:"Password",
+    btn_submit:"Sign up →",
+    tr_title:"On the Way",tr_status:"Driver approaching",
+    tk_driver:"Driver",tk_vehicle:"Vehicle",tk_eta:"ETA",tk_price:"Price",
+    btn_cancel:"Cancel order",
+    toast_ok:"Order sent successfully!",
+    cat_all:"All",cat_luxe:"Luxury",cat_3w:"3-Wheeler",cat_dem:"Moving",
+    no_vehicle:"No vehicles available at the moment",
+    reserve:"Reserve",
+  },
+  zh: {
+    hero_eyebrow:"高端车辆租赁服务",
+    hero_title:"<em>奢华</em><br>出行体验",
+    hero_sub:"搬家 · 豪华 · 三轮车 · 货运",
+    btn_order:"立即预订",btn_how:"如何使用",
+    sl_search:"搜索",st_search:"找到您理想的车辆",
+    label_from:"出发地",label_to:"目的地",label_type:"类型",
+    btn_search:"🔍 搜索",
+    sl_fleet:"我们的车队",st_fleet:"可用车辆",
+    sl_how:"流程",st_how:"如何使用",
+    step1_t:"输入您的地址",step1_p:"输入您的出发地和目的地。",
+    step2_t:"选择您的车辆",step2_p:"根据您的需求从我们的车队中选择。",
+    step3_t:"即时确认",step3_p:"您的订单将发送给可用的供应商。",
+    step4_t:"实时跟踪",step4_p:"在实时地图上跟踪您的司机。",
+    tagline:"高端运输 — 全天候服务",
+    modal_title:"加入<br>VELOX",modal_sub:"创建账户",
+    btn_client:"🧳 客户",btn_provider:"🚗 供应商",
+    fl_name:"全名",fl_phone:"电话",fl_email:"电子邮件",fl_photo:"车辆照片（必填）",fl_pw:"密码",
+    btn_submit:"注册 →",
+    tr_title:"途中",tr_status:"司机正在赶来",
+    tk_driver:"司机",tk_vehicle:"车辆",tk_eta:"预计到达",tk_price:"价格",
+    btn_cancel:"取消订单",
+    toast_ok:"订单发送成功！",
+    cat_all:"全部",cat_luxe:"豪华",cat_3w:"三轮车",cat_dem:"搬家",
+    no_vehicle:"目前暂无可用车辆",
+    reserve:"预订",
+  }
+};
+
+let currentLang = 'fr';
+let currentFilter = 'all';
+let allVehicles = [];
+
+window.setLang = function(lang, btn) {
+  currentLang = lang;
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  applyTranslations();
+};
+
+function applyTranslations() {
+  const t = LANGS[currentLang];
+  document.getElementById('hero-eyebrow').textContent = t.hero_eyebrow;
+  document.getElementById('hero-title').innerHTML = t.hero_title;
+  document.getElementById('hero-sub').textContent = t.hero_sub;
+  document.getElementById('btn-order').textContent = t.btn_order;
+  document.getElementById('btn-how').textContent = t.btn_how;
+  document.getElementById('sl-search').innerHTML = `<span style="display:flex;align-items:center;gap:12px"><span style="display:block;width:20px;height:1px;background:var(--gold)"></span>${t.sl_search}</span>`;
+  document.getElementById('st-search').textContent = t.st_search;
+  document.getElementById('label-from').textContent = t.label_from;
+  document.getElementById('label-to').textContent = t.label_to;
+  document.getElementById('label-type').textContent = t.label_type;
+  document.getElementById('btn-search').textContent = t.btn_search;
+  document.getElementById('sl-fleet').innerHTML = `<span style="display:flex;align-items:center;gap:12px"><span style="display:block;width:20px;height:1px;background:var(--gold)"></span>${t.sl_fleet}</span>`;
+  document.getElementById('st-fleet').textContent = t.st_fleet;
+  document.getElementById('sl-how').innerHTML = `<span style="display:flex;align-items:center;gap:12px"><span style="display:block;width:20px;height:1px;background:var(--gold)"></span>${t.sl_how}</span>`;
+  document.getElementById('st-how').textContent = t.st_how;
+  document.getElementById('step1-t').textContent = t.step1_t;
+  document.getElementById('step1-p').textContent = t.step1_p;
+  document.getElementById('step2-t').textContent = t.step2_t;
+  document.getElementById('step2-p').textContent = t.step2_p;
+  document.getElementById('step3-t').textContent = t.step3_t;
+  document.getElementById('step3-p').textContent = t.step3_p;
+  document.getElementById('step4-t').textContent = t.step4_t;
+  document.getElementById('step4-p').textContent = t.step4_p;
+  document.getElementById('tagline').textContent = t.tagline;
+  document.getElementById('modal-title').innerHTML = t.modal_title;
+  document.getElementById('modal-sub').textContent = t.modal_sub;
+  document.getElementById('btn-client').textContent = t.btn_client;
+  document.getElementById('btn-provider').textContent = t.btn_provider;
+  document.getElementById('fl-name').textContent = t.fl_name;
+  document.getElementById('fl-phone').textContent = t.fl_phone;
+  document.getElementById('fl-email').textContent = t.fl_email;
+  document.getElementById('fl-photo').textContent = t.fl_photo;
+  document.getElementById('fl-pw').textContent = t.fl_pw;
+  document.getElementById('btn-submit').textContent = t.btn_submit;
+  document.getElementById('tr-title').textContent = t.tr_title;
+  document.getElementById('tr-status').textContent = t.tr_status;
+  document.getElementById('tk-driver').textContent = t.tk_driver;
+  document.getElementById('tk-vehicle').textContent = t.tk_vehicle;
+  document.getElementById('tk-eta').textContent = t.tk_eta;
+  document.getElementById('tk-price').textContent = t.tk_price;
+  document.getElementById('btn-cancel').textContent = t.btn_cancel;
+  document.getElementById('cat-all').textContent = t.cat_all;
+  document.getElementById('cat-luxe').textContent = t.cat_luxe;
+  document.getElementById('cat-3w').textContent = t.cat_3w;
+  document.getElementById('cat-dem').textContent = t.cat_dem;
+  renderVehicles();
+}
+
+// VEHICLE CATEGORIES ICONS
+const catIcons = {
+  xl: '🚐', xxl: '🚌', xxxl: '🚚', luxe: '🏎️', '3roues': '🛺', demenagement: '📦'
+};
+
+function renderVehicles() {
+  const t = LANGS[currentLang];
+  const grid = document.getElementById('fleet-grid');
+  const filtered = currentFilter === 'all'
+    ? allVehicles
+    : allVehicles.filter(v => v.category === currentFilter);
+
+  if (filtered.length === 0) {
+    grid.innerHTML = `
+      <div class="no-vehicle-msg">
+        <div class="icon">🚗</div>
+        <p>${t.no_vehicle}</p>
+      </div>`;
+    return;
+  }
+
+  grid.innerHTML = filtered.map(v => `
+    <div class="vehicle-card">
+      <div class="vehicle-badge">${(v.category||'').toUpperCase()}</div>
+      ${v.photoURL
+        ? `<div class="vehicle-img"><img src="${v.photoURL}" style="width:100%;height:100%;object-fit:cover" alt="${v.name}"></div>`
+        : `<div class="vehicle-img-placeholder">${catIcons[v.category] || '🚗'}</div>`
+      }
+      <div class="vehicle-info">
+        <div class="vehicle-name">${v.name || 'Véhicule'}</div>
+        <div class="vehicle-type">${v.ownerName || ''}</div>
+        <div class="vehicle-meta">
+          <div class="vehicle-price">${v.price || '—'} <span>FCFA</span></div>
+          <button class="btn-reserve" onclick="orderVehicle('${v.id}','${v.name}','${v.ownerName||''}','${v.price||''}')">
+            ${t.reserve}
+          </button>
+        </div>
+      </div>
     </div>
   `).join('');
 }
-renderGrid('rh',SERVICES.rh);
-renderGrid('sec',SERVICES.sec);
 
-// ================== MODAL ==================
-let currentService=null;
-let lastRawText='';
-let lastRenderedHTML='';
+// Listen Firestore vehicles
+const q = query(collection(db, 'vehicles'), where('published', '==', true));
+onSnapshot(q, (snap) => {
+  allVehicles = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  renderVehicles();
+});
 
-function openService(cat,id){
-  const svc=SERVICES[cat].find(s=>s.id===id);
-  currentService=svc;
-  document.getElementById('modalTitle').textContent=svc.icon+' '+svc.title;
-  const fieldsHtml=svc.fields.map(f=>{
-    if(f.type==='textarea')return `<div class="form-group"><label>${f.label}</label><textarea name="${f.name}" placeholder="${f.ph||''}"></textarea></div>`;
-    if(f.type==='select')return `<div class="form-group"><label>${f.label}</label><select name="${f.name}">${f.options.map(o=>`<option>${o}</option>`).join('')}</select></div>`;
-    return `<div class="form-group"><label>${f.label}</label><input type="${f.type}" name="${f.name}" placeholder="${f.ph||''}" /></div>`;
-  }).join('');
-  document.getElementById('modalBody').innerHTML=`
-    <form id="svcForm">
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:0 20px">
-        ${fieldsHtml}
-      </div>
-      <button type="submit" class="btn-primary" style="width:100%;margin-top:12px;font-size:1rem">✨ Générer le document officiel</button>
-    </form>
-    <div id="resultWrap" style="display:none"></div>
-  `;
-  document.getElementById('svcForm').addEventListener('submit',handleGenerate);
-  document.getElementById('modal').classList.add('active');
-}
+window.filterCat = function(btn, cat) {
+  document.querySelectorAll('.cat-tag').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentFilter = cat;
+  renderVehicles();
+};
 
-function closeModal(){document.getElementById('modal').classList.remove('active')}
-document.getElementById('modal').addEventListener('click',e=>{if(e.target.id==='modal')closeModal()});
+window.searchVehicles = function() {
+  const cat = document.getElementById('select-type').value;
+  currentFilter = cat || 'all';
+  document.querySelectorAll('.cat-tag').forEach(b => b.classList.remove('active'));
+  const tag = document.querySelector(`.cat-tag[data-cat="${currentFilter}"]`);
+  if (tag) tag.classList.add('active');
+  renderVehicles();
+  document.querySelector('.fleet-section').scrollIntoView({behavior:'smooth'});
+};
 
-// ================== PROMPT BUILDER ==================
-function buildPrompt(svc,data){
-  const today = new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'});
-  const infoLines=Object.entries(data).map(([k,v])=>`- ${k} : ${v||'(non précisé)'}`).join('\n');
-
-  const instructions={
-    contrat:`
-Tu dois produire un CONTRAT DE TRAVAIL complet en HTML structuré.
-Structure obligatoire :
-1. En-tête : raison sociale, adresse, logo textuel
-2. Titre centré : "CONTRAT DE TRAVAIL [TYPE]"
-3. Référence du contrat (génère un numéro)
-4. Bloc Parties (grille employeur / salarié)
-5. Articles numérotés : Engagement, Poste & Missions, Durée, Rémunération, Horaires, Congés, Obligations, Clause de confidentialité, Rupture, Juridiction
-6. Bloc signatures (2 colonnes : Pour l'Employeur / Le Salarié)
-7. Mentions légales en pied`,
-    paie:`
-Tu dois produire un BULLETIN DE PAIE complet en HTML structuré.
-Structure obligatoire :
-1. En-tête employeur (nom, adresse, SIRET-like, CNPS)
-2. Bloc salarié (nom, matricule, poste, période, date entrée)
-3. Tableau des éléments de rémunération :
-   - Colonnes : Libellé | Base | Taux | Montant salarié | Montant employeur
-   - Lignes : Salaire de base, Primes diverses, Heures supp, CNPS (part salariale ~6.3%), IS (impôt sur salaire), TRIMF
-   - Ligne total net à payer en gras
-4. Compteur congés (acquis / pris / restants)
-5. Mention "Document confidentiel — à conserver"
-6. Signature DRH`,
-    cnps:`
-Tu dois produire une DÉCLARATION CNPS complète en HTML structuré.
-Structure obligatoire :
-1. En-tête : CNPS Côte d'Ivoire, logo textuel officiel
-2. Titre : "BORDEREAU DE DÉCLARATION DES COTISATIONS"
-3. Informations employeur (raison sociale, n° CNPS, adresse, période)
-4. Tableau des cotisations par branche (AT/MP 2%, PF 5.75%, Vieillesse 7.7% emp + 6.3% sal, puis AT)
-5. Récapitulatif avec total à verser
-6. Cadre réservé à la CNPS
-7. Signature et cachet employeur`,
-    conges:`
-Tu dois produire une DEMANDE DE CONGÉ / ATTESTATION D'ABSENCE en HTML structuré.
-Structure obligatoire :
-1. En-tête entreprise
-2. Titre du document
-3. Informations salarié
-4. Tableau détail (type, du... au..., nombre de jours)
-5. Motif développé
-6. Section approbation hiérarchique (N+1, DRH, DG)
-7. Signature salarié`,
-    reglement:`
-Tu dois produire un RÈGLEMENT INTÉRIEUR complet en HTML avec tous les chapitres obligatoires du droit ivoirien :
-Chapitres : Dispositions générales, Discipline et sanctions, Hygiène et sécurité, Durée du travail, Congés, Droits et devoirs des salariés, Procédures de réclamation, Dispositions finales.`,
-    courrier:`
-Tu dois produire un COURRIER OFFICIEL en HTML structuré.
-Structure : En-tête expéditeur (haut gauche), destinataire (haut droit), lieu et date, objet en gras, corps développé (3+ paragraphes), formule de politesse adaptée au ton, signature.`,
-    ao:`
-Tu dois produire un DOSSIER D'APPEL D'OFFRES complet en HTML.
-Structure : Page de garde, Présentation de l'entreprise commanditaire, Objet et contexte, Spécifications techniques, Conditions de participation, Critères d'évaluation, Documents à fournir, Planning, Contacts.`,
-    classement:`
-Tu dois produire un PLAN DE CLASSEMENT ET D'ARCHIVAGE complet en HTML avec tableaux de classification, codification, procédures de conservation et destruction.`,
-    agenda:`
-Tu dois produire un PLANNING AGENDA DIRIGEANT en HTML avec tableau hebdomadaire formaté par créneaux horaires (8h-18h), codes couleur indiqués dans le tableau, priorités marquées.`,
-    standard:`
-Tu dois produire une PROCÉDURE D'ACCUEIL ET DE STANDARD TÉLÉPHONIQUE complète en HTML avec scripts d'accueil, tableau de transfert d'appels, procédures exceptionnelles, fiches réflexes.`
-  };
-
-  return `Tu es AELLA, experte en documents professionnels RH et administratifs pour entreprises africaines francophones. Tu produis du HTML pur représentant un vrai document imprimable format A4.
-
-DOCUMENT : ${svc.title}
-DATE DU JOUR : ${today}
-
-INFORMATIONS :
-${infoLines}
-
-${instructions[svc.id]||'Produis un document professionnel complet.'}
-
-RÈGLES DE FORMATAGE HTML OBLIGATOIRES :
-- Réponds UNIQUEMENT avec le contenu HTML interne du document (pas de <html><head><body>)
-- Utilise ces classes CSS déjà définies : h1, h2, h3, p, table, .doc-ref, .doc-parties, .doc-party-block, .doc-separator, .doc-signature-block, .doc-signature-box, .doc-stamp, .doc-article, .doc-article-num, .highlight-box, .letterhead
-- Les tableaux doivent avoir des <th> et <td> bien structurés
-- Génère un numéro de référence réaliste
-- Toutes les mentions légales, bases légales du droit ivoirien obligatoires
-- Le document doit être COMPLET — pas de "[à compléter]" ni de "..."
-- Français impeccable, style notarial et administratif de haut niveau
-- Si des montants sont calculables, calcule-les précisément`;
-}
-
-// ================== AI CALL ==================
-async function handleGenerate(e){
-  e.preventDefault();
-  const fd=new FormData(e.target);
-  const data={};
-  currentService.fields.forEach(f=>{data[f.label]=fd.get(f.name)||''});
-
-  document.getElementById('thinkingOverlay').classList.add('active');
-  try{
-    const r=await fetch(_URL,{
-      method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':'Bearer '+_KEY},
-      body:JSON.stringify({
-        model:_MODEL,
-        messages:[{role:'user',content:buildPrompt(currentService,data)}],
-        temperature:0.4,
-        max_tokens:4096,
-      })
+window.orderVehicle = async function(vehicleId, vehicleName, ownerName, price) {
+  const from = document.getElementById('input-from').value || 'Adresse non précisée';
+  const to = document.getElementById('input-to').value || 'Destination non précisée';
+  try {
+    await addDoc(collection(db, 'orders'), {
+      vehicleId, vehicleName, ownerName, price,
+      from, to, status: 'pending',
+      createdAt: serverTimestamp()
     });
-    const j=await r.json();
-    if(!r.ok)throw new Error(j.error?.message||'Erreur API');
-    let html=j.choices[0].message.content;
-    html=html.replace(/^```html\s*/i,'').replace(/^```\s*/,'').replace(/```\s*$/,'').trim();
-    lastRawText=html;
-    renderDocument(html);
-    showToast('✅ Document généré avec succès !');
-  }catch(err){
-    showToast('❌ '+err.message);
-    console.error(err);
-  }finally{
-    document.getElementById('thinkingOverlay').classList.remove('active');
+    document.getElementById('tr-vehicle').textContent = vehicleName;
+    document.getElementById('tr-price').textContent = `${price} FCFA`;
+    openTracking();
+    showToast(LANGS[currentLang].toast_ok);
+  } catch(e) {
+    console.error(e);
+    alert('Erreur lors de la commande. Vérifiez votre connexion.');
   }
-}
+};
 
-// ================== DOCUMENT RENDERER ==================
-function renderDocument(html){
-  const today=new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'});
-  const fullDoc=`
-    <div class="a4-page" id="a4Doc">
-      ${html}
-      <div class="doc-footer">
-        <span>Document généré par AELLA · MarcioAI</span>
-        <span>${today}</span>
-        <span>Page 1</span>
-      </div>
-    </div>
-  `;
-  lastRenderedHTML=fullDoc;
+// MODAL
+window.openModal = function() {
+  document.getElementById('modal').classList.add('open');
+};
+window.closeModal = function() {
+  document.getElementById('modal').classList.remove('open');
+};
+window.switchType = function(type) {
+  document.getElementById('btn-client').classList.toggle('active', type==='client');
+  document.getElementById('btn-provider').classList.toggle('active', type==='provider');
+  document.getElementById('vehicle-photo-field').style.display = type==='provider' ? 'block' : 'none';
+};
+window.submitForm = async function() {
+  const isProvider = document.getElementById('btn-provider').classList.contains('active');
+  if (isProvider) {
+    const file = document.querySelector('[type="file"]').files[0];
+    if (!file) { alert('Veuillez ajouter une photo de votre véhicule.'); return; }
+  }
+  closeModal();
+  showToast('Compte créé avec succès ! Bienvenue sur VELOX.');
+};
 
-  const wrap=document.getElementById('resultWrap');
-  wrap.style.display='block';
-  wrap.innerHTML=`
-    <div class="doc-viewer-wrap">
-      <div class="doc-toolbar">
-        <span class="doc-toolbar-title">📄 ${currentService.title} — Aperçu document officiel</span>
-        <div class="doc-export-btns">
-          <button class="btn-export primary-export" onclick="exportPDF()">📕 Exporter PDF</button>
-          <button class="btn-export" onclick="exportWord()">📝 Exporter Word</button>
-          <button class="btn-export" onclick="printDoc()">🖨️ Imprimer</button>
-          <button class="btn-export" onclick="openEmailModal()" style="background:linear-gradient(135deg,rgba(255,61,240,0.15),rgba(124,77,255,0.15));border-color:var(--accent);color:var(--accent)">📧 Envoyer par mail</button>
-          <button class="btn-export" onclick="copyDocText()">📋 Copier texte</button>
-        </div>
-      </div>
-      <div class="a4-viewport">
-        ${fullDoc}
-      </div>
-    </div>
-  `;
-  wrap.scrollIntoView({behavior:'smooth',block:'start'});
-}
-
-// ================== PRINT ==================
-function printDoc(){
-  const content=document.getElementById('a4Doc');
-  if(!content){showToast('Aucun document');return}
-  const win=window.open('','_blank');
-  win.document.write(`<!DOCTYPE html><html><head>
-    <meta charset="UTF-8">
-    <title>${currentService.title}</title>
-    <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
-    <style>
-      *{box-sizing:border-box;margin:0;padding:0}
-      body{background:#fff;font-family:'Libre Baskerville',Georgia,serif;font-size:11pt;line-height:1.7;color:#111}
-      @page{size:A4;margin:20mm 25mm}
-      h1{font-size:16pt;font-weight:700;text-align:center;text-transform:uppercase;letter-spacing:0.04em;margin:0 0 6px}
-      h2{font-size:13pt;font-weight:700;text-transform:uppercase;letter-spacing:0.03em;border-bottom:2px solid #111;padding-bottom:4px;margin:22px 0 8px}
-      h3{font-size:11pt;font-weight:700;margin:16px 0 6px}
-      p{margin:0 0 10px;text-align:justify}
-      .doc-ref{font-size:9pt;color:#555;margin-bottom:20px;text-align:right}
-      .doc-parties{display:grid;grid-template-columns:1fr 1fr;gap:30px;margin:20px 0;padding:16px;background:#f8f8f8;border:1px solid #ddd;font-size:10pt}
-      .doc-party-block strong{display:block;font-size:9pt;text-transform:uppercase;letter-spacing:0.05em;color:#555;margin-bottom:4px}
-      hr,.doc-separator{border:none;border-top:1px solid #ddd;margin:20px 0}
-      .doc-signature-block{display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:50px}
-      .doc-signature-box{border-top:1px solid #999;padding-top:8px;font-size:9pt;color:#555}
-      .doc-signature-box strong{display:block;color:#333;font-size:10pt;margin-bottom:2px}
-      table{width:100%;border-collapse:collapse;margin:16px 0;font-size:10pt}
-      th{background:#111;color:#fff;padding:8px 10px;text-align:left;font-weight:600;font-size:9pt;text-transform:uppercase}
-      td{padding:7px 10px;border-bottom:1px solid #e0e0e0;vertical-align:top}
-      tr:nth-child(even) td{background:#f5f5f5}
-      .total-row td{background:#111!important;color:#fff;font-weight:700}
-      .doc-stamp{font-size:9pt;color:#666;font-style:italic;text-align:center;margin-top:20px;padding:10px;border:1px dashed #bbb}
-      .doc-article{margin-bottom:14px}
-      .doc-article-num{font-weight:700;text-decoration:underline;display:block;margin-bottom:4px}
-      .highlight-box{background:#fffef0;border-left:4px solid #d4a000;padding:12px 16px;margin:16px 0;font-size:10pt}
-      .letterhead{text-align:center;margin-bottom:30px;padding-bottom:20px;border-bottom:2px solid #111}
-      .letterhead .company-name{font-size:18pt;font-weight:700;letter-spacing:0.05em;text-transform:uppercase}
-      .letterhead .company-details{font-size:9pt;color:#555;margin-top:4px}
-      .doc-footer{border-top:1px solid #ccc;padding-top:8px;margin-top:40px;display:flex;justify-content:space-between;font-size:8pt;color:#888}
-    </style>
-  </head><body>${lastRenderedHTML}</body></html>`);
-  win.document.close();
-  win.onload=()=>{win.print()};
-  showToast('🖨️ Impression lancée');
-}
-
-// ================== PDF ==================
-async function exportPDF(){
-  const el=document.getElementById('a4Doc');
-  if(!el){showToast('Aucun document');return}
-  showToast('⏳ Génération PDF...');
-  try{
-    const canvas=await html2canvas(el,{scale:2,useCORS:true,backgroundColor:'#ffffff',logging:false,width:794});
-    const imgData=canvas.toDataURL('image/png');
-    const {jsPDF}=window.jspdf;
-    const pdf=new jsPDF({unit:'mm',format:'a4',orientation:'portrait'});
-    const pdfW=pdf.internal.pageSize.getWidth();
-    const pdfH=pdf.internal.pageSize.getHeight();
-    const ratio=canvas.width/canvas.height;
-    const imgH=pdfW/ratio;
-    let posY=0;
-    while(posY<imgH){
-      if(posY>0)pdf.addPage();
-      pdf.addImage(imgData,'PNG',0,-posY,pdfW,imgH);
-      posY+=pdfH;
+// TRACKING
+window.openTracking = function() {
+  document.getElementById('tracking-panel').classList.add('open');
+  // Countdown
+  let eta = 4;
+  const iv = setInterval(() => {
+    eta--;
+    document.getElementById('tr-eta').textContent = eta + ' min';
+    if (eta <= 0) {
+      clearInterval(iv);
+      document.getElementById('tr-status').textContent = 'Chauffeur arrivé !';
+      document.getElementById('tr-eta').textContent = '0 min';
     }
-    pdf.save(currentService.title.replace(/[^a-zA-Z0-9]/g,'_')+'.pdf');
-    showToast('📕 PDF exporté avec succès');
-  }catch(err){console.error(err);showToast('❌ Erreur PDF: '+err.message)}
-}
+  }, 3000);
+};
+window.closeTracking = function() {
+  document.getElementById('tracking-panel').classList.remove('open');
+};
+window.cancelOrder = function() {
+  closeTracking();
+  showToast('Commande annulée.');
+};
 
-// ================== WORD ==================
-async function exportWord(){
-  const el=document.getElementById('a4Doc');
-  if(!el){showToast('Aucun document');return}
-  showToast('⏳ Génération Word...');
-  try{
-    const {Document,Packer,Paragraph,TextRun,HeadingLevel,Table,TableRow,TableCell,WidthType,AlignmentType,ShadingType}=docx;
-    function walkNode(node,paragraphs){
-      if(node.nodeType===Node.TEXT_NODE){const txt=node.textContent.replace(/\s+/g,' ').trim();if(txt)paragraphs.push(new Paragraph({children:[new TextRun({text:txt,size:22})]}));return}
-      const tag=node.tagName?.toLowerCase();
-      if(!tag){node.childNodes.forEach(c=>walkNode(c,paragraphs));return}
-      if(tag==='h1'){paragraphs.push(new Paragraph({heading:HeadingLevel.HEADING_1,alignment:AlignmentType.CENTER,children:[new TextRun({text:node.textContent.trim(),bold:true,size:28,allCaps:true})]}))}
-      else if(tag==='h2'){paragraphs.push(new Paragraph({heading:HeadingLevel.HEADING_2,children:[new TextRun({text:node.textContent.trim(),bold:true,size:24})]}))}
-      else if(tag==='h3'){paragraphs.push(new Paragraph({heading:HeadingLevel.HEADING_3,children:[new TextRun({text:node.textContent.trim(),bold:true,size:22})]}))}
-      else if(tag==='p'){
-        const runs=[];
-        node.childNodes.forEach(c=>{
-          if(c.nodeType===Node.TEXT_NODE){const t=c.textContent;if(t.trim())runs.push(new TextRun({text:t,size:22}))}
-          else if(c.tagName?.toLowerCase()==='strong'||c.tagName?.toLowerCase()==='b')runs.push(new TextRun({text:c.textContent,bold:true,size:22}))
-          else if(c.tagName?.toLowerCase()==='em'||c.tagName?.toLowerCase()==='i')runs.push(new TextRun({text:c.textContent,italics:true,size:22}))
-          else runs.push(new TextRun({text:c.textContent,size:22}))
-        });
-        if(runs.length)paragraphs.push(new Paragraph({children:runs,alignment:AlignmentType.JUSTIFIED}));
-      } else if(tag==='table'){
-        try{
-          const rows=[];
-          node.querySelectorAll('tr').forEach(tr=>{
-            const cells=[];
-            tr.querySelectorAll('th,td').forEach(cell=>{
-              const isHeader=cell.tagName.toLowerCase()==='th';
-              cells.push(new TableCell({children:[new Paragraph({children:[new TextRun({text:cell.textContent.trim(),bold:isHeader,size:20,color:isHeader?'FFFFFF':'111111'})]})],shading:isHeader?{fill:'111111',type:ShadingType.CLEAR}:undefined}));
-            });
-            if(cells.length)rows.push(new TableRow({children:cells}));
-          });
-          if(rows.length)paragraphs.push(new Table({rows,width:{size:100,type:WidthType.PERCENTAGE}}));
-          paragraphs.push(new Paragraph({children:[new TextRun({text:'',size:22})]}));
-        }catch(te){console.warn('table skip',te)}
-      } else if(tag==='hr'){
-        paragraphs.push(new Paragraph({children:[new TextRun({text:'─'.repeat(60),size:18,color:'999999'})]}));
-      } else if(['div','section','article','li','ul','ol'].includes(tag)){
-        node.childNodes.forEach(c=>walkNode(c,paragraphs));
-        if(tag==='li')paragraphs.push(new Paragraph({children:[new TextRun({text:'',size:22})]}));
-      } else{node.childNodes.forEach(c=>walkNode(c,paragraphs))}
-    }
-    const tmp=document.createElement('div');
-    tmp.innerHTML=el.innerHTML;
-    tmp.querySelectorAll('.doc-footer').forEach(n=>n.remove());
-    const paragraphs=[];
-    tmp.childNodes.forEach(c=>walkNode(c,paragraphs));
-    const doc=new Document({sections:[{properties:{page:{size:{width:11906,height:16838},margin:{top:1417,right:1417,bottom:1417,left:1417}}},children:paragraphs}]});
-    const blob=await Packer.toBlob(doc);
-    saveAs(blob,currentService.title.replace(/[^a-zA-Z0-9]/g,'_')+'.docx');
-    showToast('📝 Word exporté avec succès');
-  }catch(err){console.error(err);showToast('❌ Erreur Word: '+err.message)}
-}
-
-// ================== COPY TEXT ==================
-function copyDocText(){
-  const el=document.getElementById('a4Doc');
-  if(!el){showToast('Aucun document');return}
-  navigator.clipboard.writeText(el.innerText||el.textContent);
-  showToast('📋 Texte copié');
-}
-
-// ================== TOAST ==================
-function showToast(msg){
-  const t=document.getElementById('toast');
-  t.textContent=msg;
+// TOAST
+window.showToast = function(msg) {
+  const t = document.getElementById('toast');
+  document.getElementById('toast-msg').textContent = msg;
   t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),3500);
-}
+  setTimeout(() => t.classList.remove('show'), 4000);
+};
 
-// ================================================================
-//  EMAIL — EmailJS entièrement configuré, aucune saisie requise
-// ================================================================
-
-function validateEmailInput(el){
-  const v=el.value.trim();
-  const ok=/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
-  el.classList.toggle('valid',ok && v.length>0);
-  el.classList.toggle('invalid',!ok && v.length>0);
-}
-
-function openEmailModal(){
-  const el=document.getElementById('a4Doc');
-  if(!el){showToast('❌ Aucun document à envoyer');return}
-  const docTitle=currentService?.title||'Document';
-  const today=new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'});
-  document.getElementById('emailSubject').value=`📄 ${docTitle} — AELLA · MarcioAI · ${today}`;
-  document.getElementById('emailDocName').textContent=docTitle.replace(/\s+/g,'_')+'.pdf';
-  const estKb=Math.round(el.innerHTML.length/400);
-  document.getElementById('emailDocSize').textContent=estKb>1000?`~${(estKb/1000).toFixed(1)} MB`:`~${estKb} KB`;
-  resetEmailModal();
-  document.getElementById('emailModal').classList.add('active');
-}
-
-function closeEmailModal(){document.getElementById('emailModal').classList.remove('active')}
-document.getElementById('emailModal').addEventListener('click',e=>{if(e.target.id==='emailModal')closeEmailModal()});
-
-function resetEmailModal(){
-  document.getElementById('emailTo').value='';
-  document.getElementById('emailTo').className='email-input';
-  document.getElementById('emailMessage').value='';
-  setSendBtn('idle');
-  hideEmailStatus();
-  setProgress(0,false);
-}
-
-function setSendBtn(state){
-  const btn=document.getElementById('emailSendBtn');
-  const icon=document.getElementById('emailSendIcon');
-  const label=document.getElementById('emailSendLabel');
-  btn.disabled=state==='sending'||state==='success';
-  btn.className='email-send-btn'+(state!=='idle'?' '+state:'');
-  const states={idle:{i:'📤',l:'Envoyer le document'},sending:{i:'⏳',l:'Envoi en cours...'},success:{i:'✅',l:'E-mail envoyé avec succès !'},error:{i:'❌',l:'Réessayer'}};
-  icon.textContent=states[state].i;
-  label.textContent=states[state].l;
-}
-
-function showEmailStatus(type,msg){
-  const bar=document.getElementById('emailStatusBar');
-  bar.className='email-status-bar show '+type;
-  document.getElementById('emailStatusText').textContent=msg;
-}
-function hideEmailStatus(){document.getElementById('emailStatusBar').className='email-status-bar'}
-function setProgress(pct,show){
-  document.getElementById('emailProgress').className='email-progress'+(show?' show':'');
-  document.getElementById('emailProgressBar').style.width=pct+'%';
-}
-
-function buildEmailBody(recipientMsg){
-  const today=new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'});
-  return `<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><style>
-  body{margin:0;padding:0;background:#f0f2f5;font-family:Georgia,serif}
-  .wrapper{max-width:680px;margin:30px auto;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.1)}
-  .header{background:linear-gradient(135deg,#111827,#1e2a4a);padding:28px 36px;color:#fff}
-  .header-logo{font-size:22px;font-weight:700;letter-spacing:0.05em;color:#00e5ff;font-family:Arial,sans-serif}
-  .header-sub{font-size:12px;color:rgba(255,255,255,0.5);margin-top:3px;font-family:Arial,sans-serif}
-  .header-title{font-size:17px;margin-top:16px;color:#fff;font-family:Arial,sans-serif}
-  .msg-block{padding:24px 36px;background:#f8faff;border-bottom:1px solid #e8ecf2;font-size:14px;color:#444;line-height:1.7;font-family:Arial,sans-serif}
-  .doc-block{padding:28px 36px}
-  .doc-block h2{font-size:13px;text-transform:uppercase;letter-spacing:0.08em;color:#888;margin:0 0 16px;font-family:Arial,sans-serif}
-  .doc-inner{border:1px solid #ddd;border-radius:6px;overflow:hidden}
-  .doc-inner-content{padding:30px 36px;font-family:Georgia,serif;font-size:11pt;line-height:1.7;color:#111}
-  .doc-inner-content h1{font-size:16pt;font-weight:700;text-align:center;text-transform:uppercase;margin:0 0 6px;color:#111}
-  .doc-inner-content h2{font-size:13pt;font-weight:700;text-transform:uppercase;border-bottom:2px solid #111;padding-bottom:4px;margin:22px 0 8px;color:#111}
-  .doc-inner-content h3{font-size:11pt;font-weight:700;margin:16px 0 6px;color:#222}
-  .doc-inner-content p{margin:0 0 10px;text-align:justify}
-  .doc-inner-content table{width:100%;border-collapse:collapse;margin:16px 0;font-size:10pt}
-  .doc-inner-content th{background:#111;color:#fff;padding:8px 10px;text-align:left;font-weight:600;font-size:9pt;text-transform:uppercase}
-  .doc-inner-content td{padding:7px 10px;border-bottom:1px solid #e0e0e0}
-  .doc-inner-content tr:nth-child(even) td{background:#f5f5f5}
-  .doc-footer-bar{background:#111827;padding:16px 36px;display:flex;justify-content:space-between;align-items:center}
-  .doc-footer-bar span{color:rgba(255,255,255,0.4);font-size:11px;font-family:Arial,sans-serif}
-  .doc-footer-bar .brand{color:#00e5ff;font-weight:700}
-  .disclaimer{padding:16px 36px;font-size:11px;color:#aaa;line-height:1.6;border-top:1px solid #eee;font-family:Arial,sans-serif}
-  </style></head><body>
-  <div class="wrapper">
-    <div class="header">
-      <div class="header-logo">AELLA</div>
-      <div class="header-sub">Intelligence Artificielle RH & Administration · MarcioAI</div>
-      <div class="header-title">📄 Transmission de document officiel</div>
-    </div>
-    ${recipientMsg?`<div class="msg-block"><strong>Message :</strong><br>${recipientMsg.replace(/\n/g,'<br>')}</div>`:''}
-    <div class="doc-block">
-      <h2>Document généré</h2>
-      <div class="doc-inner"><div class="doc-inner-content">${lastRawText}</div></div>
-    </div>
-    <div class="doc-footer-bar">
-      <span>Généré le ${today}</span><span class="brand">AELLA · MarcioAI</span><span>zinzindohouemarcio@gmail.com</span>
-    </div>
-    <div class="disclaimer">Ce document a été généré automatiquement par AELLA, assistante IA de MarcioAI. Pour toute question, contactez zinzindohouemarcio@gmail.com.</div>
-  </div></body></html>`;
-}
-
-async function sendEmail(){
-  const toEmail=document.getElementById('emailTo').value.trim();
-  const subject=document.getElementById('emailSubject').value.trim()||`Document AELLA · ${currentService?.title}`;
-  const message=document.getElementById('emailMessage').value.trim();
-
-  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(toEmail)){
-    document.getElementById('emailTo').classList.add('invalid');
-    showEmailStatus('error','⚠️ Veuillez entrer une adresse e-mail valide.');
-    return;
-  }
-  if(!lastRawText){showEmailStatus('error','⚠️ Aucun document généré à envoyer.');return}
-
-  setSendBtn('sending');
-  hideEmailStatus();
-  setProgress(10,true);
-  showEmailStatus('info','📡 Connexion au serveur d\'envoi...');
-
-  try{
-    setProgress(40,true);
-    showEmailStatus('info','📤 Envoi en cours...');
-
-    const templateParams={
-      to_email:   toEmail,
-      subject:    subject,
-      from_name:  'AELLA · MarcioAI',
-      reply_to:   'zinzindohouemarcio@gmail.com',
-      doc_title:  currentService?.title||'Document',
-      message:    message||`Veuillez trouver ci-joint le document "${currentService?.title}" généré par AELLA.`,
-      html_content: buildEmailBody(message),
-      date:       new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'}),
-    };
-
-    await emailjs.send(EJS_SERVICE_ID, EJS_TEMPLATE_ID, templateParams);
-
-    setProgress(100,true);
-    setSendBtn('success');
-    showEmailStatus('success',`✅ E-mail envoyé avec succès à ${toEmail} !`);
-    showToast(`📧 Document envoyé à ${toEmail}`);
-    setTimeout(()=>{closeEmailModal();resetEmailModal()},3500);
-
-  }catch(err){
-    console.error('EmailJS error:',err);
-    setSendBtn('error');
-    setProgress(0,false);
-    showEmailStatus('error',`❌ Échec d'envoi : ${err?.text||err?.message||JSON.stringify(err)}`);
-    showToast('❌ Erreur envoi email');
-  }
-}
+// Close modal on overlay click
+document.getElementById('modal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
 </script>
 </body>
 </html>
