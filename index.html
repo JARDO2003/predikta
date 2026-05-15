@@ -4,753 +4,787 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>VELOX — Location de Véhicules Premium</title>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
     --gold: #C9A84C;
     --gold-light: #E8C97A;
     --gold-dark: #8A6C2A;
-    --black: #0A0A0A;
-    --dark: #111111;
-    --dark2: #1A1A1A;
-    --dark3: #242424;
-    --white: #F5F0E8;
-    --gray: #888880;
-    --text: #D4CFC5;
+    --black: #080808;
+    --dark: #0E0E0E;
+    --dark2: #161616;
+    --dark3: #1E1E1E;
+    --white: #F7F3EC;
+    --gray: #7A7470;
+    --text: #C8C3B8;
+    --accent: #D4504A;
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
+  html { scroll-behavior: smooth; }
+
   body {
     background: var(--black);
     color: var(--text);
-    font-family: 'Montserrat', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     font-weight: 300;
     overflow-x: hidden;
-    cursor: default;
   }
 
-  /* SCROLLBAR */
-  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar { width: 3px; }
   ::-webkit-scrollbar-track { background: var(--black); }
-  ::-webkit-scrollbar-thumb { background: var(--gold-dark); border-radius: 2px; }
+  ::-webkit-scrollbar-thumb { background: var(--gold-dark); }
 
-  /* TOPBAR */
+  /* ===== TOPBAR ===== */
   .topbar {
     position: fixed; top: 0; left: 0; right: 0; z-index: 100;
     display: flex; align-items: center; justify-content: space-between;
-    padding: 18px 40px;
-    background: linear-gradient(180deg, rgba(0,0,0,0.95) 0%, transparent 100%);
-    backdrop-filter: blur(10px);
-    border-bottom: 1px solid rgba(201,168,76,0.15);
+    padding: 20px 50px;
+    background: rgba(8,8,8,0.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(201,168,76,0.12);
   }
 
   .logo {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 28px;
-    font-weight: 300;
-    letter-spacing: 8px;
-    color: var(--gold);
-    text-transform: uppercase;
+    font-family: 'Playfair Display', serif;
+    font-size: 26px; font-weight: 900;
+    letter-spacing: 10px; color: var(--white);
+    text-transform: uppercase; text-decoration: none;
   }
-  .logo span { color: var(--white); }
-
-  .lang-switcher {
-    display: flex; gap: 6px;
-  }
-  .lang-btn {
-    background: none; border: 1px solid rgba(201,168,76,0.3);
-    color: var(--gray); font-family: 'Montserrat', sans-serif;
-    font-size: 10px; font-weight: 500; letter-spacing: 2px;
-    padding: 5px 10px; cursor: pointer; transition: all 0.3s;
-    text-transform: uppercase;
-  }
-  .lang-btn:hover, .lang-btn.active {
-    background: var(--gold); color: var(--black);
-    border-color: var(--gold);
-  }
+  .logo .dot { color: var(--gold); }
 
   .nav-links {
-    display: flex; gap: 30px; align-items: center;
+    display: flex; gap: 36px; align-items: center;
   }
   .nav-link {
     color: var(--gray); text-decoration: none;
-    font-size: 10px; font-weight: 500; letter-spacing: 3px;
-    text-transform: uppercase; transition: color 0.3s;
-    cursor: pointer;
+    font-size: 11px; font-weight: 500; letter-spacing: 2.5px;
+    text-transform: uppercase; transition: color 0.3s; cursor: pointer;
   }
   .nav-link:hover { color: var(--gold); }
 
-  .btn-inscription {
-    background: none; border: 1px solid var(--gold);
-    color: var(--gold); font-family: 'Montserrat', sans-serif;
-    font-size: 10px; font-weight: 500; letter-spacing: 3px;
-    padding: 10px 20px; cursor: pointer; transition: all 0.3s;
-    text-transform: uppercase;
+  .topbar-right {
+    display: flex; align-items: center; gap: 16px;
   }
-  .btn-inscription:hover { background: var(--gold); color: var(--black); }
 
-  /* HERO */
+  .lang-switcher { display: flex; gap: 4px; }
+  .lang-btn {
+    background: none; border: none;
+    color: var(--gray); font-family: 'DM Sans', sans-serif;
+    font-size: 10px; font-weight: 500; letter-spacing: 2px;
+    padding: 6px 10px; cursor: pointer; transition: all 0.2s;
+    text-transform: uppercase; border-radius: 2px;
+  }
+  .lang-btn:hover, .lang-btn.active { color: var(--gold); }
+
+  /* ===== HERO ===== */
   .hero {
-    position: relative; height: 100vh;
-    display: flex; align-items: center; justify-content: center;
+    position: relative; min-height: 100vh;
+    display: flex; align-items: center;
     overflow: hidden;
+    padding: 0 50px;
   }
 
   .hero-bg {
     position: absolute; inset: 0;
     background:
-      radial-gradient(ellipse 80% 60% at 50% 100%, rgba(201,168,76,0.08) 0%, transparent 70%),
-      radial-gradient(ellipse 40% 40% at 20% 20%, rgba(201,168,76,0.04) 0%, transparent 60%),
-      linear-gradient(160deg, #0A0A0A 0%, #111108 50%, #0A0A0A 100%);
+      radial-gradient(ellipse 70% 80% at 80% 50%, rgba(201,168,76,0.07) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 50% at 10% 80%, rgba(201,168,76,0.04) 0%, transparent 50%),
+      linear-gradient(135deg, #080808 0%, #0d0d09 100%);
   }
 
-  /* Animated grid */
-  .grid-overlay {
-    position: absolute; inset: 0; opacity: 0.06;
-    background-image:
-      linear-gradient(rgba(201,168,76,0.5) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(201,168,76,0.5) 1px, transparent 1px);
-    background-size: 60px 60px;
-    animation: gridMove 20s linear infinite;
+  /* Diagonal lines texture */
+  .hero-texture {
+    position: absolute; inset: 0; opacity: 0.035;
+    background-image: repeating-linear-gradient(
+      -45deg,
+      rgba(201,168,76,1) 0px,
+      rgba(201,168,76,1) 1px,
+      transparent 1px,
+      transparent 12px
+    );
   }
-  @keyframes gridMove {
-    0% { background-position: 0 0; }
-    100% { background-position: 60px 60px; }
+
+  /* Large decorative number */
+  .hero-deco-num {
+    position: absolute; right: -20px; top: 50%;
+    transform: translateY(-50%);
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(300px, 35vw, 500px);
+    font-weight: 900; line-height: 1;
+    color: transparent;
+    -webkit-text-stroke: 1px rgba(201,168,76,0.06);
+    pointer-events: none; user-select: none;
+    letter-spacing: -20px;
   }
 
   .hero-content {
-    text-align: center; position: relative; z-index: 2;
-    animation: fadeUp 1.2s ease both;
+    position: relative; z-index: 2;
+    max-width: 700px;
+    animation: heroIn 1.4s cubic-bezier(0.22,1,0.36,1) both;
   }
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(40px); }
+  @keyframes heroIn {
+    from { opacity: 0; transform: translateY(60px); }
     to { opacity: 1; transform: translateY(0); }
   }
 
-  .hero-eyebrow {
-    font-size: 10px; font-weight: 500; letter-spacing: 6px;
-    color: var(--gold); text-transform: uppercase; margin-bottom: 24px;
-    display: flex; align-items: center; justify-content: center; gap: 16px;
+  .hero-tag {
+    display: inline-flex; align-items: center; gap: 12px;
+    font-size: 10px; font-weight: 600; letter-spacing: 5px;
+    color: var(--gold); text-transform: uppercase;
+    margin-bottom: 28px;
   }
-  .hero-eyebrow::before, .hero-eyebrow::after {
-    content: ''; display: block; width: 40px; height: 1px;
-    background: linear-gradient(90deg, transparent, var(--gold));
+  .hero-tag-line {
+    display: block; width: 36px; height: 1px;
+    background: var(--gold);
   }
-  .hero-eyebrow::after { transform: scaleX(-1); }
 
   .hero-title {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: clamp(52px, 8vw, 110px);
-    font-weight: 300; line-height: 0.9;
-    color: var(--white); letter-spacing: -2px;
-    margin-bottom: 10px;
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(54px, 7.5vw, 120px);
+    font-weight: 900; line-height: 0.88;
+    color: var(--white);
+    letter-spacing: -3px;
+    margin-bottom: 28px;
   }
-  .hero-title em { font-style: italic; color: var(--gold); }
-
-  .hero-subtitle {
-    font-size: 11px; font-weight: 400; letter-spacing: 4px;
-    color: var(--gray); text-transform: uppercase; margin-bottom: 50px;
-    animation: fadeUp 1.2s 0.2s ease both;
-  }
-
-  .hero-actions {
-    display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;
-    animation: fadeUp 1.2s 0.4s ease both;
+  .hero-title .italic { font-style: italic; color: var(--gold); }
+  .hero-title .outline {
+    color: transparent;
+    -webkit-text-stroke: 1.5px rgba(247,243,236,0.35);
   }
 
-  .btn-primary {
-    background: var(--gold);
-    color: var(--black); border: none;
-    font-family: 'Montserrat', sans-serif;
-    font-size: 10px; font-weight: 600; letter-spacing: 3px;
-    padding: 16px 36px; cursor: pointer;
+  .hero-desc {
+    font-size: 15px; line-height: 1.7; color: var(--gray);
+    max-width: 440px; margin-bottom: 50px;
+    font-weight: 400;
+    animation: heroIn 1.4s 0.2s cubic-bezier(0.22,1,0.36,1) both;
+  }
+
+  .hero-cta {
+    display: flex; gap: 14px; flex-wrap: wrap;
+    animation: heroIn 1.4s 0.35s cubic-bezier(0.22,1,0.36,1) both;
+  }
+
+  .btn-gold {
+    background: var(--gold); color: var(--black);
+    border: none; font-family: 'DM Sans', sans-serif;
+    font-size: 11px; font-weight: 600; letter-spacing: 3px;
+    padding: 18px 42px; cursor: pointer;
+    text-transform: uppercase; transition: all 0.35s;
+    position: relative; overflow: hidden;
+  }
+  .btn-gold::before {
+    content: ''; position: absolute; inset: 0;
+    background: var(--white); transform: scaleX(0);
+    transform-origin: right; transition: transform 0.35s ease;
+  }
+  .btn-gold:hover::before { transform: scaleX(1); transform-origin: left; }
+  .btn-gold span { position: relative; z-index: 1; }
+
+  .btn-outline {
+    background: none; border: 1px solid rgba(201,168,76,0.35);
+    color: var(--gold); font-family: 'DM Sans', sans-serif;
+    font-size: 11px; font-weight: 500; letter-spacing: 3px;
+    padding: 18px 42px; cursor: pointer;
     text-transform: uppercase; transition: all 0.3s;
-    clip-path: polygon(12px 0%, 100% 0%, calc(100% - 12px) 100%, 0% 100%);
   }
-  .btn-primary:hover { background: var(--gold-light); transform: translateY(-2px); }
-
-  .btn-secondary {
-    background: none; border: 1px solid rgba(201,168,76,0.4);
-    color: var(--gold); font-family: 'Montserrat', sans-serif;
-    font-size: 10px; font-weight: 500; letter-spacing: 3px;
-    padding: 16px 36px; cursor: pointer;
-    text-transform: uppercase; transition: all 0.3s;
-  }
-  .btn-secondary:hover { border-color: var(--gold); background: rgba(201,168,76,0.05); }
-
-  .scroll-indicator {
-    position: absolute; bottom: 40px; left: 50%;
-    transform: translateX(-50%);
-    display: flex; flex-direction: column; align-items: center; gap: 8px;
-    color: var(--gray); font-size: 9px; letter-spacing: 3px;
-    text-transform: uppercase; animation: fadeUp 1.2s 0.8s ease both;
-  }
-  .scroll-line {
-    width: 1px; height: 50px;
-    background: linear-gradient(180deg, var(--gold), transparent);
-    animation: scrollPulse 2s ease infinite;
-  }
-  @keyframes scrollPulse {
-    0%, 100% { opacity: 0.3; transform: scaleY(0.8); }
-    50% { opacity: 1; transform: scaleY(1); }
+  .btn-outline:hover {
+    border-color: var(--gold);
+    background: rgba(201,168,76,0.06);
   }
 
-  /* SEARCH SECTION */
+  .hero-stats {
+    position: absolute; bottom: 60px; left: 50px; right: 50px;
+    display: flex; gap: 60px;
+    animation: heroIn 1.4s 0.5s cubic-bezier(0.22,1,0.36,1) both;
+  }
+  .stat-item { display: flex; flex-direction: column; gap: 4px; }
+  .stat-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 36px; font-weight: 700; color: var(--white);
+    line-height: 1;
+  }
+  .stat-num em { color: var(--gold); font-style: normal; }
+  .stat-label {
+    font-size: 9px; letter-spacing: 3px; color: var(--gray);
+    text-transform: uppercase; font-weight: 500;
+  }
+  .hero-stats-divider {
+    width: 1px; background: rgba(201,168,76,0.15); align-self: stretch;
+  }
+
+  /* ===== SEARCH SECTION ===== */
   .search-section {
-    padding: 80px 40px 60px;
     background: var(--dark);
     border-top: 1px solid rgba(201,168,76,0.1);
     border-bottom: 1px solid rgba(201,168,76,0.1);
+    padding: 70px 50px 60px;
   }
 
-  .section-label {
-    font-size: 9px; letter-spacing: 5px; color: var(--gold);
-    text-transform: uppercase; margin-bottom: 8px;
-    display: flex; align-items: center; gap: 12px;
+  .section-eyebrow {
+    font-size: 9px; font-weight: 600; letter-spacing: 5px;
+    color: var(--gold); text-transform: uppercase;
+    margin-bottom: 8px;
+    display: flex; align-items: center; gap: 14px;
   }
-  .section-label::before {
-    content: ''; display: block; width: 20px; height: 1px; background: var(--gold);
+  .section-eyebrow::before {
+    content: ''; display: block; width: 24px; height: 1px;
+    background: var(--gold);
   }
 
   .section-title {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: clamp(30px, 4vw, 48px); font-weight: 300;
-    color: var(--white); margin-bottom: 40px; letter-spacing: -1px;
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(28px, 3.5vw, 46px);
+    font-weight: 700; color: var(--white);
+    letter-spacing: -1px; margin-bottom: 40px;
   }
 
   .search-bar {
     display: grid;
     grid-template-columns: 1fr 1fr auto auto;
-    gap: 1px;
-    background: rgba(201,168,76,0.15);
-    border: 1px solid rgba(201,168,76,0.2);
-    max-width: 1000px;
+    border: 1px solid rgba(201,168,76,0.18);
+    max-width: 960px;
+    overflow: hidden;
   }
 
-  .search-input-wrap {
-    background: var(--dark2); padding: 20px 24px;
-    display: flex; flex-direction: column; gap: 4px;
+  .search-field {
+    background: var(--dark2); padding: 22px 26px;
+    border-right: 1px solid rgba(201,168,76,0.1);
+    display: flex; flex-direction: column; gap: 5px;
+    transition: background 0.2s;
   }
-  .search-input-label {
+  .search-field:hover { background: var(--dark3); }
+  .search-field-label {
     font-size: 8px; letter-spacing: 3px; color: var(--gold);
-    text-transform: uppercase;
+    text-transform: uppercase; font-weight: 600;
   }
-  .search-input {
+  .search-field input, .search-field select {
     background: none; border: none; outline: none;
-    color: var(--white); font-family: 'Montserrat', sans-serif;
-    font-size: 13px; font-weight: 400;
-    width: 100%;
+    color: var(--white); font-family: 'DM Sans', sans-serif;
+    font-size: 14px; font-weight: 400; width: 100%;
   }
-  .search-input::placeholder { color: var(--gray); }
+  .search-field input::placeholder { color: var(--gray); }
+  .search-field select option { background: var(--dark2); }
 
-  .category-select {
-    background: var(--dark2); padding: 20px 24px;
-    border: none; outline: none;
+  .search-btn {
+    background: var(--gold); border: none;
+    color: var(--black); font-family: 'DM Sans', sans-serif;
+    font-size: 10px; font-weight: 700; letter-spacing: 2.5px;
+    padding: 0 32px; cursor: pointer;
+    text-transform: uppercase; white-space: nowrap;
+    transition: background 0.3s;
   }
+  .search-btn:hover { background: var(--gold-light); }
 
-  .vehicle-cats {
-    display: flex; flex-wrap: wrap; gap: 10px; margin-top: 30px;
+  .cat-filters {
+    display: flex; flex-wrap: wrap; gap: 8px; margin-top: 28px;
   }
-
-  .cat-tag {
-    background: none; border: 1px solid rgba(201,168,76,0.2);
-    color: var(--gray); font-family: 'Montserrat', sans-serif;
-    font-size: 9px; font-weight: 500; letter-spacing: 2px;
-    padding: 8px 18px; cursor: pointer; transition: all 0.3s;
+  .cat-btn {
+    background: none; border: 1px solid rgba(201,168,76,0.18);
+    color: var(--gray); font-family: 'DM Sans', sans-serif;
+    font-size: 10px; font-weight: 500; letter-spacing: 2px;
+    padding: 9px 20px; cursor: pointer; transition: all 0.25s;
     text-transform: uppercase;
   }
-  .cat-tag:hover, .cat-tag.active {
+  .cat-btn:hover { border-color: var(--gold); color: var(--gold); }
+  .cat-btn.active {
+    background: rgba(201,168,76,0.12);
     border-color: var(--gold); color: var(--gold);
-    background: rgba(201,168,76,0.06);
   }
-  .cat-tag.active { background: rgba(201,168,76,0.12); }
 
-  .btn-search {
-    background: var(--gold); border: none; color: var(--black);
-    font-family: 'Montserrat', sans-serif;
-    font-size: 9px; font-weight: 600; letter-spacing: 2px;
-    padding: 0 30px; cursor: pointer; transition: all 0.3s;
-    text-transform: uppercase; white-space: nowrap;
-  }
-  .btn-search:hover { background: var(--gold-light); }
-
-  /* MAP + FLEET SECTION */
+  /* ===== FLEET + MAP ===== */
   .main-content {
-    display: grid; grid-template-columns: 1fr 420px;
-    min-height: 700px;
+    display: grid; grid-template-columns: 1fr 400px;
+    min-height: 600px;
   }
 
-  /* VEHICLE GALLERY */
-  .fleet-section {
-    padding: 60px 40px;
-    background: var(--black);
-  }
+  .fleet-section { padding: 60px 50px; background: var(--black); }
 
   .fleet-grid {
-    display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 2px; margin-top: 40px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 3px; margin-top: 36px;
   }
 
   .vehicle-card {
-    position: relative; overflow: hidden; cursor: pointer;
     background: var(--dark2);
-    transition: transform 0.4s ease;
-    border: 1px solid rgba(201,168,76,0.08);
-  }
-  .vehicle-card:hover { transform: translateY(-4px); border-color: rgba(201,168,76,0.3); }
-
-  .vehicle-img {
-    width: 100%; height: 200px; object-fit: cover;
-    filter: grayscale(30%) brightness(0.85);
-    transition: all 0.5s ease;
-    background: var(--dark3);
-    display: flex; align-items: center; justify-content: center;
-    overflow: hidden;
-  }
-  .vehicle-card:hover .vehicle-img { filter: grayscale(0%) brightness(1); }
-
-  .vehicle-img-placeholder {
-    width: 100%; height: 200px; background: var(--dark3);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 60px; transition: all 0.5s;
+    border: 1px solid rgba(201,168,76,0.06);
+    overflow: hidden; cursor: pointer;
+    transition: all 0.4s ease;
     position: relative;
   }
-  .vehicle-img-placeholder::after {
-    content: ''; position: absolute; inset: 0;
-    background: linear-gradient(135deg, rgba(201,168,76,0.05) 0%, transparent 60%);
+  .vehicle-card:hover {
+    border-color: rgba(201,168,76,0.28);
+    transform: translateY(-5px);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
   }
+
+  .vehicle-img {
+    width: 100%; height: 190px;
+    object-fit: cover; display: block;
+    filter: brightness(0.82) saturate(0.8);
+    transition: all 0.5s;
+    background: var(--dark3);
+  }
+  .vehicle-card:hover .vehicle-img { filter: brightness(1) saturate(1); }
+
+  .vehicle-img-placeholder {
+    width: 100%; height: 190px;
+    background: linear-gradient(135deg, var(--dark3) 0%, #1a1a14 100%);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 56px;
+    transition: transform 0.5s;
+  }
+  .vehicle-card:hover .vehicle-img-placeholder { transform: scale(1.05); }
 
   .vehicle-badge {
-    position: absolute; top: 16px; left: 16px;
+    position: absolute; top: 14px; left: 14px;
     background: var(--gold); color: var(--black);
     font-size: 8px; font-weight: 700; letter-spacing: 2px;
-    padding: 4px 10px; text-transform: uppercase;
+    padding: 5px 10px; text-transform: uppercase;
   }
 
-  .vehicle-info {
-    padding: 20px 22px;
-    border-top: 1px solid rgba(201,168,76,0.1);
-  }
+  .vehicle-info { padding: 22px 24px; }
   .vehicle-name {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 22px; font-weight: 400; color: var(--white);
-    margin-bottom: 4px;
+    font-family: 'Playfair Display', serif;
+    font-size: 21px; font-weight: 700; color: var(--white);
+    margin-bottom: 3px;
   }
-  .vehicle-type {
-    font-size: 9px; letter-spacing: 3px; color: var(--gold);
-    text-transform: uppercase; margin-bottom: 14px;
+  .vehicle-owner {
+    font-size: 10px; letter-spacing: 2.5px; color: var(--gold);
+    text-transform: uppercase; margin-bottom: 16px;
   }
-  .vehicle-meta {
-    display: flex; justify-content: space-between; align-items: center;
+  .vehicle-footer {
+    display: flex; align-items: center; justify-content: space-between;
   }
   .vehicle-price {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 24px; color: var(--gold);
+    font-family: 'Playfair Display', serif;
+    font-size: 26px; font-weight: 700; color: var(--white);
+    line-height: 1;
   }
-  .vehicle-price span { font-size: 12px; color: var(--gray); font-family: 'Montserrat', sans-serif; font-weight: 300; }
-
+  .vehicle-price small {
+    font-size: 11px; color: var(--gray);
+    font-family: 'DM Sans', sans-serif; font-weight: 400;
+  }
   .btn-reserve {
     background: none; border: 1px solid rgba(201,168,76,0.3);
-    color: var(--gold); font-family: 'Montserrat', sans-serif;
-    font-size: 8px; font-weight: 500; letter-spacing: 2px;
-    padding: 8px 14px; cursor: pointer; transition: all 0.3s;
+    color: var(--gold); font-family: 'DM Sans', sans-serif;
+    font-size: 9px; font-weight: 600; letter-spacing: 2px;
+    padding: 10px 16px; cursor: pointer; transition: all 0.3s;
     text-transform: uppercase;
   }
   .btn-reserve:hover { background: var(--gold); color: var(--black); border-color: var(--gold); }
 
   .no-vehicle-msg {
-    grid-column: 1/-1;
-    text-align: center; padding: 80px 20px;
+    grid-column: 1/-1; text-align: center; padding: 80px 20px;
     color: var(--gray);
   }
-  .no-vehicle-msg .icon { font-size: 48px; margin-bottom: 16px; opacity: 0.3; }
-  .no-vehicle-msg p { font-size: 12px; letter-spacing: 2px; text-transform: uppercase; }
+  .no-vehicle-msg .nv-icon { font-size: 48px; opacity: 0.25; margin-bottom: 14px; }
+  .no-vehicle-msg p { font-size: 11px; letter-spacing: 3px; text-transform: uppercase; }
 
-  /* MAP SECTION */
+  /* MAP */
   .map-section {
     position: sticky; top: 70px; height: calc(100vh - 70px);
     background: var(--dark2);
-    border-left: 1px solid rgba(201,168,76,0.1);
+    border-left: 1px solid rgba(201,168,76,0.08);
     display: flex; flex-direction: column;
   }
-
   .map-header {
-    padding: 20px 24px;
-    border-bottom: 1px solid rgba(201,168,76,0.1);
+    padding: 18px 22px;
+    border-bottom: 1px solid rgba(201,168,76,0.08);
     display: flex; justify-content: space-between; align-items: center;
   }
-  .map-title {
-    font-size: 9px; letter-spacing: 3px; color: var(--gold);
-    text-transform: uppercase;
-  }
-  .map-live {
+  .map-title-text { font-size: 9px; letter-spacing: 3px; color: var(--gold); text-transform: uppercase; font-weight: 600; }
+  .live-badge {
     display: flex; align-items: center; gap: 6px;
-    font-size: 8px; letter-spacing: 2px; color: var(--gray);
-    text-transform: uppercase;
+    font-size: 8px; letter-spacing: 2px; color: var(--gray); text-transform: uppercase;
   }
   .live-dot {
     width: 6px; height: 6px; border-radius: 50%;
-    background: #4CAF50;
-    animation: livePulse 1.5s ease infinite;
+    background: #4ade80; animation: livePulse 1.5s ease infinite;
   }
   @keyframes livePulse {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.4; transform: scale(0.8); }
+    0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(74,222,128,0.4); }
+    50% { opacity: 0.6; box-shadow: 0 0 0 4px rgba(74,222,128,0); }
   }
-
   #map {
-    flex: 1;
-    background: #111;
-    position: relative; overflow: hidden;
+    flex: 1; position: relative; overflow: hidden;
+    background: #0a0a08;
   }
-
-  .map-placeholder {
-    width: 100%; height: 100%;
-    background: radial-gradient(ellipse at center, #1a1a14 0%, #0a0a0a 100%);
-    display: flex; align-items: center; justify-content: center;
-    flex-direction: column; gap: 16px; color: var(--gray);
-    font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
-    position: relative;
-  }
-
-  /* Fake map grid */
-  .map-grid-bg {
-    position: absolute; inset: 0;
+  .map-grid {
+    position: absolute; inset: 0; opacity: 0.06;
     background-image:
-      linear-gradient(rgba(201,168,76,0.08) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(201,168,76,0.08) 1px, transparent 1px);
-    background-size: 30px 30px;
+      linear-gradient(rgba(201,168,76,0.8) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(201,168,76,0.8) 1px, transparent 1px);
+    background-size: 32px 32px;
   }
-
-  /* Animated car dots on map */
   .map-car {
-    position: absolute;
-    width: 10px; height: 10px;
-    border-radius: 50%;
-    background: var(--gold);
-    box-shadow: 0 0 12px rgba(201,168,76,0.8);
+    position: absolute; font-size: 22px;
+    filter: drop-shadow(0 0 8px rgba(201,168,76,0.6));
   }
-  .map-car::before {
-    content: '🚗';
-    position: absolute; top: -16px; left: -8px;
-    font-size: 20px;
+  .map-car-1 { top: 28%; left: 38%; animation: carM1 9s linear infinite; }
+  .map-car-2 { top: 52%; left: 58%; animation: carM2 12s linear infinite; }
+  .map-car-3 { top: 18%; left: 65%; animation: carM3 10s linear infinite; }
+  @keyframes carM1 { 0%{transform:translate(0,0)} 25%{transform:translate(28px,-18px)} 50%{transform:translate(55px,8px)} 75%{transform:translate(18px,28px)} 100%{transform:translate(0,0)} }
+  @keyframes carM2 { 0%{transform:translate(0,0)} 33%{transform:translate(-38px,18px)} 66%{transform:translate(-18px,-28px)} 100%{transform:translate(0,0)} }
+  @keyframes carM3 { 0%{transform:translate(0,0)} 50%{transform:translate(-45px,36px)} 100%{transform:translate(0,0)} }
+  .map-pin { position: absolute; top: 43%; left: 33%; font-size: 26px; animation: pinBounce 1.8s ease infinite; }
+  @keyframes pinBounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+  .map-overlay {
+    position: absolute; bottom: 18px; left: 14px; right: 14px;
+    background: rgba(14,14,14,0.92); backdrop-filter: blur(12px);
+    border: 1px solid rgba(201,168,76,0.18);
+    padding: 14px 16px;
   }
-  .map-car-1 { top: 30%; left: 40%; animation: carMove1 8s linear infinite; }
-  .map-car-2 { top: 55%; left: 60%; animation: carMove2 11s linear infinite; }
-  .map-car-3 { top: 20%; left: 70%; animation: carMove3 9s linear infinite; }
-
-  @keyframes carMove1 {
-    0% { transform: translate(0,0); }
-    25% { transform: translate(30px,-20px); }
-    50% { transform: translate(60px,10px); }
-    75% { transform: translate(20px,30px); }
-    100% { transform: translate(0,0); }
-  }
-  @keyframes carMove2 {
-    0% { transform: translate(0,0); }
-    33% { transform: translate(-40px,20px); }
-    66% { transform: translate(-20px,-30px); }
-    100% { transform: translate(0,0); }
-  }
-  @keyframes carMove3 {
-    0% { transform: translate(0,0); }
-    50% { transform: translate(-50px,40px); }
-    100% { transform: translate(0,0); }
-  }
-
-  /* Destination pin */
-  .map-pin {
-    position: absolute; top: 45%; left: 35%;
-    color: #FF4444; font-size: 24px;
-    animation: pinBounce 1.5s ease infinite;
-    filter: drop-shadow(0 4px 8px rgba(255,68,68,0.5));
-  }
-  @keyframes pinBounce {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-6px); }
-  }
-
-  .map-info-overlay {
-    position: absolute; bottom: 20px; left: 16px; right: 16px;
-    background: rgba(17,17,17,0.92); backdrop-filter: blur(10px);
-    border: 1px solid rgba(201,168,76,0.2);
-    padding: 16px 18px;
-  }
-  .map-driver-info {
-    display: flex; gap: 12px; align-items: center;
-  }
+  .driver-row { display: flex; gap: 10px; align-items: center; }
   .driver-avatar {
-    width: 40px; height: 40px; border-radius: 50%;
+    width: 38px; height: 38px; border-radius: 50%;
     background: var(--dark3); border: 2px solid var(--gold);
     display: flex; align-items: center; justify-content: center;
-    font-size: 18px; flex-shrink: 0;
+    font-size: 16px; flex-shrink: 0;
   }
-  .driver-name {
-    font-size: 13px; font-weight: 500; color: var(--white); margin-bottom: 2px;
-  }
-  .driver-eta {
-    font-size: 9px; letter-spacing: 2px; color: var(--gold);
-    text-transform: uppercase;
-  }
-  .driver-rating {
-    margin-left: auto; text-align: right;
-  }
-  .stars { color: var(--gold); font-size: 12px; }
-  .rating-num { font-size: 18px; font-family: 'Cormorant Garamond', serif; color: var(--white); }
+  .driver-name-text { font-size: 13px; font-weight: 500; color: var(--white); }
+  .driver-eta-text { font-size: 9px; letter-spacing: 2px; color: var(--gold); text-transform: uppercase; }
+  .driver-stars { margin-left: auto; font-size: 11px; color: var(--gold); }
+  .driver-rating-num { font-family: 'Playfair Display', serif; font-size: 18px; color: var(--white); text-align: right; }
 
-  /* HOW IT WORKS */
+  /* ===== HOW IT WORKS ===== */
   .how-section {
-    padding: 100px 40px;
+    padding: 100px 50px;
     background: var(--dark);
     border-top: 1px solid rgba(201,168,76,0.1);
   }
-
   .steps-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1px;
-    background: rgba(201,168,76,0.1);
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 1px; background: rgba(201,168,76,0.08);
     margin-top: 50px;
   }
-
   .step {
-    background: var(--dark2); padding: 40px 30px;
-    position: relative;
-    transition: background 0.3s;
+    background: var(--dark2); padding: 42px 32px;
+    transition: background 0.3s; position: relative; overflow: hidden;
+  }
+  .step::after {
+    content: ''; position: absolute; bottom: 0; left: 0; right: 0;
+    height: 2px; background: var(--gold);
+    transform: scaleX(0); transform-origin: left;
+    transition: transform 0.4s ease;
   }
   .step:hover { background: var(--dark3); }
-
+  .step:hover::after { transform: scaleX(1); }
   .step-num {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 72px; font-weight: 300; color: rgba(201,168,76,0.15);
-    line-height: 1; margin-bottom: 24px;
+    font-family: 'Playfair Display', serif;
+    font-size: 80px; font-weight: 900; color: rgba(201,168,76,0.1);
+    line-height: 1; margin-bottom: 20px;
   }
-  .step-icon { font-size: 28px; margin-bottom: 16px; }
+  .step-icon { font-size: 30px; margin-bottom: 14px; }
   .step-title {
-    font-size: 11px; font-weight: 600; letter-spacing: 2px;
+    font-size: 11px; font-weight: 700; letter-spacing: 2px;
     color: var(--white); text-transform: uppercase; margin-bottom: 12px;
   }
-  .step-text { font-size: 12px; line-height: 1.7; color: var(--gray); }
+  .step-text { font-size: 13px; line-height: 1.75; color: var(--gray); }
 
-  /* REGISTRATION MODAL */
-  .modal-overlay {
-    position: fixed; inset: 0; z-index: 200;
-    background: rgba(0,0,0,0.92); backdrop-filter: blur(8px);
-    display: none; align-items: center; justify-content: center;
-  }
-  .modal-overlay.open { display: flex; }
-
-  .modal {
-    background: var(--dark2);
-    border: 1px solid rgba(201,168,76,0.2);
-    width: 90%; max-width: 500px;
-    padding: 50px 40px;
-    position: relative;
-    animation: modalIn 0.4s ease both;
-  }
-  @keyframes modalIn {
-    from { opacity: 0; transform: scale(0.95) translateY(20px); }
-    to { opacity: 1; transform: scale(1) translateY(0); }
-  }
-
-  .modal-close {
-    position: absolute; top: 20px; right: 20px;
-    background: none; border: none; color: var(--gray);
-    font-size: 20px; cursor: pointer; transition: color 0.2s;
-  }
-  .modal-close:hover { color: var(--gold); }
-
-  .modal-title {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 36px; font-weight: 300; color: var(--white);
-    margin-bottom: 6px;
-  }
-  .modal-subtitle {
-    font-size: 9px; letter-spacing: 3px; color: var(--gold);
-    text-transform: uppercase; margin-bottom: 30px;
-    display: flex; align-items: center; gap: 10px;
-  }
-  .modal-subtitle::after { content: ''; flex: 1; height: 1px; background: rgba(201,168,76,0.2); }
-
-  .type-switch {
-    display: grid; grid-template-columns: 1fr 1fr;
-    gap: 1px; background: rgba(201,168,76,0.1);
-    margin-bottom: 28px;
-  }
-  .type-btn {
-    background: var(--dark3); border: none;
-    color: var(--gray); font-family: 'Montserrat', sans-serif;
-    font-size: 9px; font-weight: 500; letter-spacing: 2px;
-    padding: 14px; cursor: pointer; transition: all 0.3s;
-    text-transform: uppercase;
-  }
-  .type-btn.active { background: var(--gold); color: var(--black); }
-
-  .form-field {
-    margin-bottom: 16px;
-  }
-  .field-label {
-    font-size: 8px; letter-spacing: 3px; color: var(--gold);
-    text-transform: uppercase; margin-bottom: 6px; display: block;
-  }
-  .field-input {
-    width: 100%; background: var(--dark3);
-    border: 1px solid rgba(201,168,76,0.15);
-    color: var(--white); font-family: 'Montserrat', sans-serif;
-    font-size: 13px; padding: 12px 16px; outline: none;
-    transition: border-color 0.3s;
-  }
-  .field-input:focus { border-color: var(--gold); }
-
-  .btn-submit {
-    width: 100%; background: var(--gold); border: none;
-    color: var(--black); font-family: 'Montserrat', sans-serif;
-    font-size: 10px; font-weight: 700; letter-spacing: 4px;
-    padding: 18px; cursor: pointer; transition: all 0.3s;
-    text-transform: uppercase; margin-top: 10px;
-  }
-  .btn-submit:hover { background: var(--gold-light); }
-
-  /* FOOTER */
+  /* ===== FOOTER ===== */
   footer {
     background: var(--black);
     border-top: 1px solid rgba(201,168,76,0.1);
-    padding: 50px 40px 30px;
+    padding: 50px 50px 28px;
+  }
+  .footer-inner {
     display: grid; grid-template-columns: 1fr auto;
-    align-items: end; gap: 40px;
+    align-items: end; gap: 40px; margin-bottom: 28px;
   }
   .footer-logo {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 32px; font-weight: 300;
+    font-family: 'Playfair Display', serif;
+    font-size: 30px; font-weight: 900;
     color: var(--gold); letter-spacing: 8px;
   }
-  .footer-tagline {
-    font-size: 10px; letter-spacing: 3px; color: var(--gray);
-    text-transform: uppercase; margin-top: 4px;
-  }
-  .footer-right {
-    text-align: right; font-size: 10px; letter-spacing: 2px;
-    color: var(--gray); line-height: 2;
-  }
-  .footer-right a { color: var(--gold); text-decoration: none; }
-  .footer-link { color: var(--gold); cursor: pointer; text-decoration: none; }
-  .footer-divider {
-    grid-column: 1/-1; height: 1px;
-    background: rgba(201,168,76,0.1); margin: 20px 0 0;
-  }
-  .footer-copy {
-    grid-column: 1/-1; font-size: 9px; letter-spacing: 2px;
-    color: rgba(136,136,128,0.5); text-transform: uppercase;
+  .footer-tagline { font-size: 10px; letter-spacing: 3px; color: var(--gray); margin-top: 4px; text-transform: uppercase; }
+  .footer-links { text-align: right; font-size: 10px; letter-spacing: 2px; color: var(--gray); line-height: 2.2; }
+  .footer-links a { color: var(--gold); text-decoration: none; }
+  .footer-divider { height: 1px; background: rgba(201,168,76,0.1); margin-bottom: 20px; }
+  .footer-bottom {
     display: flex; justify-content: space-between;
+    font-size: 9px; letter-spacing: 2px;
+    color: rgba(122,116,112,0.5); text-transform: uppercase;
   }
 
-  /* ORDER TRACKING PANEL */
+  /* ===== MODAL OVERLAY ===== */
+  .modal-overlay {
+    position: fixed; inset: 0; z-index: 200;
+    background: rgba(0,0,0,0.96);
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.4s;
+  }
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+
+  .modal-split {
+    display: grid; grid-template-columns: 1fr 1fr;
+    width: 90%; max-width: 860px;
+    max-height: 90vh;
+    overflow: hidden;
+    animation: modalIn 0.5s cubic-bezier(0.22,1,0.36,1) both;
+  }
+  @keyframes modalIn {
+    from { opacity: 0; transform: scale(0.94) translateY(24px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+  }
+
+  /* Left: visual panel */
+  .modal-visual {
+    background:
+      linear-gradient(135deg, rgba(201,168,76,0.12) 0%, transparent 60%),
+      var(--dark3);
+    padding: 52px 44px;
+    display: flex; flex-direction: column; justify-content: center;
+    border: 1px solid rgba(201,168,76,0.15);
+    border-right: none;
+    position: relative; overflow: hidden;
+  }
+  .modal-visual-bg {
+    position: absolute; inset: 0;
+    background: repeating-linear-gradient(
+      -55deg,
+      rgba(201,168,76,0.04) 0px,
+      rgba(201,168,76,0.04) 1px,
+      transparent 1px,
+      transparent 14px
+    );
+  }
+  .modal-visual-logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 48px; font-weight: 900; letter-spacing: 8px;
+    color: var(--white); position: relative; z-index: 1;
+  }
+  .modal-visual-logo em { color: var(--gold); font-style: italic; }
+  .modal-visual-tagline {
+    font-size: 10px; letter-spacing: 4px; color: var(--gray);
+    text-transform: uppercase; margin-top: 10px; position: relative; z-index: 1;
+  }
+  .modal-visual-features {
+    margin-top: 44px; position: relative; z-index: 1;
+    display: flex; flex-direction: column; gap: 20px;
+  }
+  .modal-feature {
+    display: flex; align-items: flex-start; gap: 14px;
+  }
+  .modal-feature-icon {
+    width: 32px; height: 32px; border: 1px solid rgba(201,168,76,0.3);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; flex-shrink: 0;
+  }
+  .modal-feature-title { font-size: 11px; font-weight: 600; color: var(--white); margin-bottom: 2px; }
+  .modal-feature-desc { font-size: 11px; color: var(--gray); line-height: 1.5; }
+
+  /* Right: form */
+  .modal-form-panel {
+    background: var(--dark2);
+    border: 1px solid rgba(201,168,76,0.15);
+    padding: 44px 40px;
+    overflow-y: auto;
+    position: relative;
+  }
+  .modal-close {
+    position: absolute; top: 18px; right: 18px;
+    background: none; border: none; color: var(--gray);
+    font-size: 18px; cursor: pointer; transition: color 0.2s;
+    width: 32px; height: 32px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .modal-close:hover { color: var(--gold); }
+
+  .form-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 30px; font-weight: 700; color: var(--white);
+    margin-bottom: 4px;
+  }
+  .form-subtitle {
+    font-size: 10px; letter-spacing: 3px; color: var(--gold);
+    text-transform: uppercase; margin-bottom: 28px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid rgba(201,168,76,0.12);
+  }
+
+  .type-toggle {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 1px; background: rgba(201,168,76,0.1);
+    margin-bottom: 28px; border: 1px solid rgba(201,168,76,0.1);
+  }
+  .type-btn {
+    background: var(--dark3); border: none;
+    color: var(--gray); font-family: 'DM Sans', sans-serif;
+    font-size: 10px; font-weight: 600; letter-spacing: 2px;
+    padding: 16px 12px; cursor: pointer; transition: all 0.3s;
+    text-transform: uppercase; display: flex; align-items: center;
+    justify-content: center; gap: 8px;
+  }
+  .type-btn.active {
+    background: var(--gold); color: var(--black);
+  }
+
+  .form-group { margin-bottom: 14px; }
+  .form-label {
+    display: block; font-size: 8px; font-weight: 700;
+    letter-spacing: 3px; color: var(--gold);
+    text-transform: uppercase; margin-bottom: 7px;
+  }
+  .form-input {
+    width: 100%; background: var(--dark3);
+    border: 1px solid rgba(201,168,76,0.12);
+    color: var(--white); font-family: 'DM Sans', sans-serif;
+    font-size: 14px; font-weight: 400;
+    padding: 13px 16px; outline: none;
+    transition: border-color 0.3s;
+  }
+  .form-input:focus { border-color: var(--gold); }
+  .form-input::placeholder { color: var(--gray); }
+
+  /* Cloudinary upload area */
+  .upload-area {
+    display: none;
+    border: 1.5px dashed rgba(201,168,76,0.25);
+    padding: 22px; cursor: pointer;
+    text-align: center; transition: all 0.3s;
+    background: var(--dark3);
+    position: relative;
+  }
+  .upload-area:hover { border-color: var(--gold); background: rgba(201,168,76,0.04); }
+  .upload-area.dragging { border-color: var(--gold); background: rgba(201,168,76,0.08); }
+  .upload-icon { font-size: 28px; margin-bottom: 8px; }
+  .upload-text { font-size: 11px; color: var(--gray); line-height: 1.5; }
+  .upload-text strong { color: var(--gold); }
+  .upload-preview {
+    width: 100%; height: 120px; object-fit: cover;
+    display: none; margin-top: 10px; border: 1px solid rgba(201,168,76,0.2);
+  }
+  .upload-progress {
+    display: none; margin-top: 10px;
+    height: 3px; background: rgba(201,168,76,0.1);
+    border-radius: 2px; overflow: hidden;
+  }
+  .upload-progress-bar {
+    height: 100%; background: var(--gold);
+    width: 0%; transition: width 0.3s; border-radius: 2px;
+  }
+  #file-input { display: none; }
+
+  .btn-submit {
+    width: 100%; background: var(--gold); border: none;
+    color: var(--black); font-family: 'DM Sans', sans-serif;
+    font-size: 11px; font-weight: 700; letter-spacing: 3.5px;
+    padding: 18px; cursor: pointer; transition: all 0.3s;
+    text-transform: uppercase; margin-top: 8px;
+    position: relative; overflow: hidden;
+  }
+  .btn-submit:hover { background: var(--gold-light); }
+  .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+
+  .form-notice {
+    font-size: 10px; color: var(--gray); text-align: center;
+    margin-top: 12px; line-height: 1.6;
+  }
+  .form-notice a { color: var(--gold); cursor: pointer; text-decoration: none; }
+
+  /* ===== TRACKING PANEL ===== */
   .tracking-panel {
     position: fixed; right: -400px; top: 0; bottom: 0;
     width: 380px; background: var(--dark2);
-    border-left: 1px solid rgba(201,168,76,0.2);
-    z-index: 150; transition: right 0.4s ease;
-    display: flex; flex-direction: column;
-    overflow-y: auto;
+    border-left: 1px solid rgba(201,168,76,0.18);
+    z-index: 150; transition: right 0.4s cubic-bezier(0.22,1,0.36,1);
+    display: flex; flex-direction: column; overflow-y: auto;
   }
   .tracking-panel.open { right: 0; }
-
   .tracking-header {
-    padding: 30px 28px 20px;
+    padding: 28px 26px 20px;
     border-bottom: 1px solid rgba(201,168,76,0.1);
   }
   .tracking-close {
     background: none; border: none; color: var(--gray);
-    cursor: pointer; font-size: 18px; float: right;
-    transition: color 0.2s;
+    cursor: pointer; font-size: 16px; float: right; transition: color 0.2s;
   }
   .tracking-close:hover { color: var(--gold); }
-
-  .tracking-title {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 28px; color: var(--white); font-weight: 300;
+  .tracking-title-text {
+    font-family: 'Playfair Display', serif;
+    font-size: 26px; color: var(--white); font-weight: 700;
   }
-  .tracking-status {
+  .tracking-status-text {
     font-size: 9px; letter-spacing: 3px; color: var(--gold);
     text-transform: uppercase; margin-top: 4px;
   }
-
-  .tracking-map {
-    height: 220px; background: #111;
-    position: relative; overflow: hidden;
+  .tracking-map-viz {
+    height: 200px; background: #0a0a08; position: relative; overflow: hidden;
   }
-  .tracking-map .map-grid-bg { opacity: 1; }
-  .tracking-map .map-car-1 { animation: carMove1 4s linear infinite; }
-  .tracking-car-text {
+  .tracking-map-viz .map-grid { opacity: 1; }
+  .tracking-car-emoji {
     position: absolute; top: 50%; left: 50%;
     transform: translate(-50%,-50%);
-    font-size: 36px; z-index: 2;
-    animation: carMove1 6s linear infinite;
+    font-size: 32px; z-index: 2;
+    animation: carM1 6s linear infinite;
   }
-  .tracking-dest {
-    position: absolute; bottom: 20%; left: 30%;
-    font-size: 20px;
+  .tracking-dest-emoji {
+    position: absolute; bottom: 22%; left: 32%; font-size: 20px;
     animation: pinBounce 1.5s ease infinite;
   }
-
-  .tracking-info { padding: 20px 28px; }
+  .tracking-info { padding: 18px 26px; }
   .tracking-row {
-    display: flex; justify-content: space-between;
-    align-items: center; padding: 14px 0;
-    border-bottom: 1px solid rgba(201,168,76,0.08);
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 14px 0; border-bottom: 1px solid rgba(201,168,76,0.07);
   }
-  .tracking-key {
-    font-size: 9px; letter-spacing: 2px; color: var(--gray);
-    text-transform: uppercase;
+  .tracking-key { font-size: 9px; letter-spacing: 2px; color: var(--gray); text-transform: uppercase; }
+  .tracking-val { font-size: 14px; color: var(--white); }
+  .tracking-val.gold {
+    color: var(--gold); font-family: 'Playfair Display', serif; font-size: 20px;
   }
-  .tracking-val {
-    font-size: 14px; color: var(--white); font-weight: 400;
-  }
-  .tracking-val.gold { color: var(--gold); font-family: 'Cormorant Garamond', serif; font-size: 20px; }
-
-  .cancel-btn {
-    margin: 20px 28px;
-    background: none; border: 1px solid rgba(255,80,80,0.3);
-    color: #FF6666; font-family: 'Montserrat', sans-serif;
-    font-size: 9px; font-weight: 500; letter-spacing: 3px;
-    padding: 14px; cursor: pointer; width: calc(100% - 56px);
+  .btn-cancel {
+    margin: 18px 26px;
+    background: none; border: 1px solid rgba(212,80,74,0.3);
+    color: var(--accent); font-family: 'DM Sans', sans-serif;
+    font-size: 9px; font-weight: 600; letter-spacing: 3px;
+    padding: 14px; cursor: pointer; width: calc(100% - 52px);
     text-transform: uppercase; transition: all 0.3s;
   }
-  .cancel-btn:hover { background: rgba(255,80,80,0.08); border-color: #FF6666; }
+  .btn-cancel:hover { background: rgba(212,80,74,0.08); border-color: var(--accent); }
 
-  /* NOTIFICATION TOAST */
+  /* ===== TOAST ===== */
   .toast {
-    position: fixed; bottom: 30px; left: 50%;
-    transform: translateX(-50%) translateY(100px);
+    position: fixed; bottom: 28px; left: 50%;
+    transform: translateX(-50%) translateY(120px);
     background: var(--dark2);
-    border: 1px solid rgba(201,168,76,0.3);
+    border: 1px solid rgba(201,168,76,0.25);
     border-left: 3px solid var(--gold);
-    padding: 16px 24px;
-    min-width: 320px;
-    font-size: 12px; color: var(--white);
-    transition: transform 0.4s ease;
-    z-index: 300;
-    display: flex; align-items: center; gap: 12px;
+    padding: 16px 24px; min-width: 300px;
+    font-size: 13px; color: var(--white);
+    transition: transform 0.4s cubic-bezier(0.22,1,0.36,1);
+    z-index: 300; display: flex; align-items: center; gap: 12px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
   }
   .toast.show { transform: translateX(-50%) translateY(0); }
-  .toast-icon { color: var(--gold); font-size: 20px; }
+  .toast-icon { color: var(--gold); font-size: 18px; }
 
-  /* Responsive */
+  /* ===== RESPONSIVE ===== */
   @media (max-width: 1100px) {
     .main-content { grid-template-columns: 1fr; }
     .map-section { display: none; }
     .steps-grid { grid-template-columns: repeat(2, 1fr); }
     .search-bar { grid-template-columns: 1fr 1fr; }
-    .btn-search { grid-column: 1/-1; padding: 16px; }
+    .search-btn { grid-column: 1/-1; padding: 18px; }
+    .modal-split { grid-template-columns: 1fr; max-width: 480px; }
+    .modal-visual { display: none; }
   }
-  @media (max-width: 600px) {
+  @media (max-width: 700px) {
     .topbar { padding: 14px 20px; }
     .nav-links { display: none; }
-    .fleet-section { padding: 40px 20px; }
+    .hero { padding: 0 24px; }
+    .hero-stats { left: 24px; right: 24px; gap: 28px; }
+    .hero-title { letter-spacing: -1px; }
+    .search-section, .fleet-section, .how-section { padding: 50px 24px; }
     .steps-grid { grid-template-columns: 1fr; }
     .search-bar { grid-template-columns: 1fr; }
-    footer { grid-template-columns: 1fr; }
+    footer { padding: 40px 24px 24px; }
+    .footer-inner { grid-template-columns: 1fr; }
+    .modal-form-panel { padding: 32px 24px; }
+    .hero-deco-num { display: none; }
   }
 </style>
 </head>
@@ -758,57 +792,85 @@
 
 <!-- TOP BAR -->
 <header class="topbar">
-  <div class="logo">VEL<span>O</span>X</div>
+  <a class="logo" href="#">VEL<span class="dot">·</span>OX</a>
   <nav class="nav-links">
-    <a class="nav-link" onclick="scrollTo(0,0)">Accueil</a>
+    <a class="nav-link" onclick="scrollTo({top:0,behavior:'smooth'})">Accueil</a>
     <a class="nav-link" onclick="document.querySelector('.fleet-section').scrollIntoView({behavior:'smooth'})">Flotte</a>
     <a class="nav-link" onclick="document.querySelector('.how-section').scrollIntoView({behavior:'smooth'})">Fonctionnement</a>
     <a class="nav-link" href="provider.html">Fournisseurs</a>
-    <button class="btn-inscription" onclick="openModal()">Inscription</button>
   </nav>
-  <div class="lang-switcher">
-    <button class="lang-btn active" onclick="setLang('fr',this)">FR</button>
-    <button class="lang-btn" onclick="setLang('en',this)">EN</button>
-    <button class="lang-btn" onclick="setLang('zh',this)">中文</button>
+  <div class="topbar-right">
+    <div class="lang-switcher">
+      <button class="lang-btn active" onclick="setLang('fr',this)">FR</button>
+      <button class="lang-btn" onclick="setLang('en',this)">EN</button>
+      <button class="lang-btn" onclick="setLang('zh',this)">中文</button>
+    </div>
   </div>
 </header>
 
 <!-- HERO -->
 <section class="hero">
   <div class="hero-bg"></div>
-  <div class="grid-overlay"></div>
+  <div class="hero-texture"></div>
+  <div class="hero-deco-num">V</div>
+
   <div class="hero-content">
-    <div class="hero-eyebrow" id="hero-eyebrow">Location de véhicules premium</div>
-    <h1 class="hero-title" id="hero-title">Le <em>luxe</em><br>en mouvement</h1>
-    <p class="hero-subtitle" id="hero-sub">Déménagement · Luxe · Trois Roues · Cargo</p>
-    <div class="hero-actions">
-      <button class="btn-primary" id="btn-order" onclick="document.querySelector('.search-section').scrollIntoView({behavior:'smooth'})">Commander maintenant</button>
-      <button class="btn-secondary" id="btn-how" onclick="document.querySelector('.how-section').scrollIntoView({behavior:'smooth'})">Comment ça marche</button>
+    <div class="hero-tag">
+      <span class="hero-tag-line"></span>
+      <span id="hero-eyebrow">Location de véhicules premium</span>
+    </div>
+    <h1 class="hero-title" id="hero-title">
+      Le <span class="italic">luxe</span><br>
+      <span class="outline">en</span> mouvement
+    </h1>
+    <p class="hero-desc" id="hero-sub">
+      Déménagement · Luxe · Trois Roues · Cargo. Une flotte d'exception, disponible à la demande, partout à Abidjan.
+    </p>
+    <div class="hero-cta">
+      <button class="btn-gold" id="btn-order" onclick="document.querySelector('.search-section').scrollIntoView({behavior:'smooth'})">
+        <span>Commander maintenant</span>
+      </button>
+      <button class="btn-outline" id="btn-how" onclick="document.querySelector('.how-section').scrollIntoView({behavior:'smooth'})">
+        Comment ça marche
+      </button>
     </div>
   </div>
-  <div class="scroll-indicator">
-    <div class="scroll-line"></div>
-    <span>Défiler</span>
+
+  <div class="hero-stats">
+    <div class="stat-item">
+      <div class="stat-num">240<em>+</em></div>
+      <div class="stat-label">Véhicules actifs</div>
+    </div>
+    <div class="hero-stats-divider"></div>
+    <div class="stat-item">
+      <div class="stat-num">4<em>min</em></div>
+      <div class="stat-label">Temps moyen</div>
+    </div>
+    <div class="hero-stats-divider"></div>
+    <div class="stat-item">
+      <div class="stat-num">24<em>/7</em></div>
+      <div class="stat-label">Disponibilité</div>
+    </div>
   </div>
 </section>
 
 <!-- SEARCH -->
 <section class="search-section">
-  <div class="section-label" id="sl-search">Recherche</div>
+  <div class="section-eyebrow" id="sl-search">Recherche</div>
   <h2 class="section-title" id="st-search">Trouvez votre véhicule idéal</h2>
 
   <div class="search-bar">
-    <div class="search-input-wrap">
-      <span class="search-input-label" id="label-from">Départ</span>
-      <input class="search-input" id="input-from" type="text" placeholder="Votre adresse...">
+    <div class="search-field">
+      <span class="search-field-label" id="label-from">Départ</span>
+      <input id="input-from" type="text" placeholder="Votre adresse...">
     </div>
-    <div class="search-input-wrap">
-      <span class="search-input-label" id="label-to">Destination</span>
-      <input class="search-input" id="input-to" type="text" placeholder="Où allez-vous ?">
+    <div class="search-field">
+      <span class="search-field-label" id="label-to">Destination</span>
+      <input id="input-to" type="text" placeholder="Où allez-vous ?">
     </div>
-    <div class="search-input-wrap category-select">
-      <span class="search-input-label" id="label-type">Type</span>
-      <select class="search-input" id="select-type" style="color:var(--white);background:none;">
+    <div class="search-field">
+      <span class="search-field-label" id="label-type">Type</span>
+      <select id="select-type" style="color:var(--white)">
         <option value="">Tous</option>
         <option value="xl">XL</option>
         <option value="xxl">XXL</option>
@@ -818,54 +880,51 @@
         <option value="demenagement">Déménagement</option>
       </select>
     </div>
-    <button class="btn-search" id="btn-search" onclick="searchVehicles()">🔍 Rechercher</button>
+    <button class="search-btn" id="btn-search" onclick="searchVehicles()">Rechercher</button>
   </div>
 
-  <div class="vehicle-cats">
-    <button class="cat-tag active" data-cat="all" onclick="filterCat(this,'all')" id="cat-all">Tous</button>
-    <button class="cat-tag" data-cat="xl" onclick="filterCat(this,'xl')">XL</button>
-    <button class="cat-tag" data-cat="xxl" onclick="filterCat(this,'xxl')">XXL</button>
-    <button class="cat-tag" data-cat="xxxl" onclick="filterCat(this,'xxxl')">XXXL</button>
-    <button class="cat-tag" data-cat="luxe" onclick="filterCat(this,'luxe')" id="cat-luxe">Luxe</button>
-    <button class="cat-tag" data-cat="3roues" onclick="filterCat(this,'3roues')" id="cat-3w">3 Roues</button>
-    <button class="cat-tag" data-cat="demenagement" onclick="filterCat(this,'demenagement')" id="cat-dem">Déménagement</button>
+  <div class="cat-filters">
+    <button class="cat-btn active" data-cat="all" onclick="filterCat(this,'all')" id="cat-all">Tous</button>
+    <button class="cat-btn" data-cat="xl" onclick="filterCat(this,'xl')">XL</button>
+    <button class="cat-btn" data-cat="xxl" onclick="filterCat(this,'xxl')">XXL</button>
+    <button class="cat-btn" data-cat="xxxl" onclick="filterCat(this,'xxxl')">XXXL</button>
+    <button class="cat-btn" data-cat="luxe" onclick="filterCat(this,'luxe')" id="cat-luxe">Luxe</button>
+    <button class="cat-btn" data-cat="3roues" onclick="filterCat(this,'3roues')" id="cat-3w">3 Roues</button>
+    <button class="cat-btn" data-cat="demenagement" onclick="filterCat(this,'demenagement')" id="cat-dem">Déménagement</button>
   </div>
 </section>
 
-<!-- MAIN: FLEET + MAP -->
+<!-- FLEET + MAP -->
 <div class="main-content">
   <section class="fleet-section">
-    <div class="section-label" id="sl-fleet">Notre Flotte</div>
+    <div class="section-eyebrow" id="sl-fleet">Notre Flotte</div>
     <h2 class="section-title" id="st-fleet">Véhicules disponibles</h2>
     <div class="fleet-grid" id="fleet-grid">
       <!-- Populated by JS -->
     </div>
   </section>
 
-  <!-- MAP -->
   <aside class="map-section">
     <div class="map-header">
-      <span class="map-title">Carte en direct</span>
-      <div class="map-live"><div class="live-dot"></div> Live</div>
+      <span class="map-title-text">Carte en direct</span>
+      <div class="live-badge"><div class="live-dot"></div> Live</div>
     </div>
     <div id="map">
-      <div class="map-placeholder">
-        <div class="map-grid-bg"></div>
-        <div class="map-car map-car-1"></div>
-        <div class="map-car map-car-2"></div>
-        <div class="map-car map-car-3"></div>
-        <div class="map-pin">📍</div>
-        <div class="map-info-overlay">
-          <div class="map-driver-info">
-            <div class="driver-avatar">👨‍✈️</div>
-            <div>
-              <div class="driver-name">Jean-Paul K.</div>
-              <div class="driver-eta">Arrivée dans 2 min</div>
-            </div>
-            <div class="driver-rating">
-              <div class="stars">★★★★★</div>
-              <div class="rating-num">4.9</div>
-            </div>
+      <div class="map-grid"></div>
+      <div class="map-car map-car-1">🚗</div>
+      <div class="map-car map-car-2">🚐</div>
+      <div class="map-car map-car-3">🛺</div>
+      <div class="map-pin">📍</div>
+      <div class="map-overlay">
+        <div class="driver-row">
+          <div class="driver-avatar">👨‍✈️</div>
+          <div>
+            <div class="driver-name-text">Jean-Paul K.</div>
+            <div class="driver-eta-text">Arrivée dans 2 min</div>
+          </div>
+          <div style="margin-left:auto;text-align:right;">
+            <div class="driver-stars">★★★★★</div>
+            <div class="driver-rating-num">4.9</div>
           </div>
         </div>
       </div>
@@ -875,7 +934,7 @@
 
 <!-- HOW IT WORKS -->
 <section class="how-section">
-  <div class="section-label" id="sl-how">Processus</div>
+  <div class="section-eyebrow" id="sl-how">Processus</div>
   <h2 class="section-title" id="st-how">Comment ça fonctionne</h2>
   <div class="steps-grid">
     <div class="step">
@@ -907,53 +966,123 @@
 
 <!-- FOOTER -->
 <footer>
-  <div>
-    <div class="footer-logo">VELOX</div>
-    <div class="footer-tagline" id="tagline">Transport Premium — Disponible 24h/24</div>
-  </div>
-  <div class="footer-right">
-    <div><a class="footer-link" href="provider.html">Espace Fournisseur →</a></div>
-    <div style="margin-top:8px;font-size:9px;">contact@velox.ci</div>
-    <div style="font-size:9px;">Abidjan, Côte d'Ivoire</div>
+  <div class="footer-inner">
+    <div>
+      <div class="footer-logo">VELOX</div>
+      <div class="footer-tagline" id="tagline">Transport Premium — Disponible 24h/24</div>
+    </div>
+    <div class="footer-links">
+      <div><a href="provider.html">Espace Fournisseur →</a></div>
+      <div style="margin-top:6px;font-size:9px;color:var(--gray)">contact@velox.ci</div>
+      <div style="font-size:9px;color:var(--gray)">Abidjan, Côte d'Ivoire</div>
+    </div>
   </div>
   <div class="footer-divider"></div>
-  <div class="footer-copy">
+  <div class="footer-bottom">
     <span>© 2025 VELOX. Tous droits réservés.</span>
     <span>Abidjan · Côte d'Ivoire</span>
   </div>
 </footer>
 
-<!-- MODAL INSCRIPTION -->
+<!-- ===== MODAL INSCRIPTION ===== -->
 <div class="modal-overlay" id="modal">
-  <div class="modal">
-    <button class="modal-close" onclick="closeModal()">✕</button>
-    <h2 class="modal-title" id="modal-title">Rejoindre<br>VELOX</h2>
-    <div class="modal-subtitle" id="modal-sub">Créer un compte</div>
-    <div class="type-switch">
-      <button class="type-btn active" id="btn-client" onclick="switchType('client')">🧳 Client</button>
-      <button class="type-btn" id="btn-provider" onclick="switchType('provider')">🚗 Fournisseur</button>
+  <div class="modal-split">
+
+    <!-- Visual side -->
+    <div class="modal-visual">
+      <div class="modal-visual-bg"></div>
+      <div class="modal-visual-logo">VEL<em>OX</em></div>
+      <div class="modal-visual-tagline">Plateforme de transport premium</div>
+      <div class="modal-visual-features">
+        <div class="modal-feature">
+          <div class="modal-feature-icon">🚗</div>
+          <div>
+            <div class="modal-feature-title">240+ véhicules</div>
+            <div class="modal-feature-desc">Une flotte variée pour tous vos besoins</div>
+          </div>
+        </div>
+        <div class="modal-feature">
+          <div class="modal-feature-icon">⚡</div>
+          <div>
+            <div class="modal-feature-title">Disponible 24h/24</div>
+            <div class="modal-feature-desc">Service continu, 7 jours sur 7</div>
+          </div>
+        </div>
+        <div class="modal-feature">
+          <div class="modal-feature-icon">📍</div>
+          <div>
+            <div class="modal-feature-title">Suivi en temps réel</div>
+            <div class="modal-feature-desc">Suivez votre commande à la minute</div>
+          </div>
+        </div>
+      </div>
     </div>
-    <div class="form-field">
-      <label class="field-label" id="fl-name">Nom complet</label>
-      <input class="field-input" type="text" placeholder="Votre nom">
+
+    <!-- Form side -->
+    <div class="modal-form-panel">
+      <button class="modal-close" id="modal-close-btn" onclick="closeModal()">✕</button>
+
+      <h2 class="form-title" id="modal-title">Rejoindre VELOX</h2>
+      <div class="form-subtitle" id="modal-sub">Créer votre compte gratuit</div>
+
+      <!-- Type toggle -->
+      <div class="type-toggle">
+        <button class="type-btn active" id="btn-client" onclick="switchType('client')">
+          🧳 <span id="lbl-client">Client</span>
+        </button>
+        <button class="type-btn" id="btn-provider" onclick="switchType('provider')">
+          🚗 <span id="lbl-provider">Fournisseur</span>
+        </button>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" id="fl-name">Nom complet</label>
+        <input class="form-input" id="inp-name" type="text" placeholder="Votre nom complet">
+      </div>
+      <div class="form-group">
+        <label class="form-label" id="fl-phone">Téléphone</label>
+        <input class="form-input" id="inp-phone" type="tel" placeholder="+225 07 XX XX XX XX">
+      </div>
+      <div class="form-group">
+        <label class="form-label" id="fl-email">Email</label>
+        <input class="form-input" id="inp-email" type="email" placeholder="exemple@email.com">
+      </div>
+
+      <!-- Vehicle photo — fournisseur only -->
+      <div class="form-group" id="vehicle-photo-field" style="display:none">
+        <label class="form-label" id="fl-photo">Photo du véhicule <span style="color:var(--accent)">*</span></label>
+        <div class="upload-area" id="upload-area" onclick="document.getElementById('file-input').click()"
+          ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
+          <div class="upload-icon">📷</div>
+          <div class="upload-text"><strong>Cliquez</strong> ou glissez votre photo ici<br><span style="font-size:10px">JPG, PNG — max 10 Mo</span></div>
+          <img class="upload-preview" id="upload-preview" alt="Aperçu">
+          <div class="upload-progress" id="upload-progress">
+            <div class="upload-progress-bar" id="upload-progress-bar"></div>
+          </div>
+        </div>
+        <input type="file" id="file-input" accept="image/*" onchange="handleFileSelect(event)">
+        <input type="hidden" id="cloudinary-url" value="">
+      </div>
+
+      <!-- Nom du véhicule — fournisseur only -->
+      <div class="form-group" id="vehicle-name-field" style="display:none">
+        <label class="form-label" id="fl-vname">Nom / Modèle du véhicule</label>
+        <input class="form-input" id="inp-vname" type="text" placeholder="ex: Toyota HiAce XL">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" id="fl-pw">Mot de passe</label>
+        <input class="form-input" id="inp-pw" type="password" placeholder="••••••••">
+      </div>
+
+      <button class="btn-submit" id="btn-submit" onclick="submitForm()">
+        <span id="btn-submit-text">S'inscrire →</span>
+      </button>
+
+      <p class="form-notice" id="form-notice">
+        En vous inscrivant, vous acceptez nos <a>Conditions d'utilisation</a> et notre <a>Politique de confidentialité</a>.
+      </p>
     </div>
-    <div class="form-field">
-      <label class="field-label" id="fl-phone">Téléphone</label>
-      <input class="field-input" type="tel" placeholder="+225 07 XX XX XX XX">
-    </div>
-    <div class="form-field">
-      <label class="field-label" id="fl-email">Email</label>
-      <input class="field-input" type="email" placeholder="exemple@email.com">
-    </div>
-    <div class="form-field" id="vehicle-photo-field" style="display:none">
-      <label class="field-label" id="fl-photo">Photo du véhicule (obligatoire)</label>
-      <input class="field-input" type="file" accept="image/*" style="padding:10px">
-    </div>
-    <div class="form-field">
-      <label class="field-label" id="fl-pw">Mot de passe</label>
-      <input class="field-input" type="password" placeholder="••••••••">
-    </div>
-    <button class="btn-submit" id="btn-submit" onclick="submitForm()">S'inscrire →</button>
   </div>
 </div>
 
@@ -961,14 +1090,13 @@
 <div class="tracking-panel" id="tracking-panel">
   <div class="tracking-header">
     <button class="tracking-close" onclick="closeTracking()">✕</button>
-    <div class="tracking-title" id="tr-title">En Route</div>
-    <div class="tracking-status" id="tr-status">Chauffeur en approche</div>
+    <div class="tracking-title-text" id="tr-title">En Route</div>
+    <div class="tracking-status-text" id="tr-status">Chauffeur en approche</div>
   </div>
-  <div class="tracking-map">
-    <div class="map-grid-bg"></div>
-    <div class="tracking-car-text">🚗</div>
-    <div class="tracking-dest">📍</div>
-    <div class="map-car map-car-2" style="width:14px;height:14px;top:40%;left:55%"></div>
+  <div class="tracking-map-viz">
+    <div class="map-grid"></div>
+    <div class="tracking-car-emoji">🚗</div>
+    <div class="tracking-dest-emoji">📍</div>
   </div>
   <div class="tracking-info">
     <div class="tracking-row">
@@ -977,7 +1105,7 @@
     </div>
     <div class="tracking-row">
       <span class="tracking-key" id="tk-vehicle">Véhicule</span>
-      <span class="tracking-val" id="tr-vehicle">Mercedes Classe V XL</span>
+      <span class="tracking-val" id="tr-vehicle">—</span>
     </div>
     <div class="tracking-row">
       <span class="tracking-key" id="tk-eta">Arrivée estimée</span>
@@ -985,10 +1113,10 @@
     </div>
     <div class="tracking-row">
       <span class="tracking-key" id="tk-price">Tarif</span>
-      <span class="tracking-val gold" id="tr-price">15 000 FCFA</span>
+      <span class="tracking-val gold" id="tr-price">—</span>
     </div>
   </div>
-  <button class="cancel-btn" id="btn-cancel" onclick="cancelOrder()">Annuler la commande</button>
+  <button class="btn-cancel" id="btn-cancel" onclick="cancelOrder()">Annuler la commande</button>
 </div>
 
 <!-- TOAST -->
@@ -1000,8 +1128,9 @@
 <!-- FIREBASE + APP SCRIPT -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, onSnapshot, addDoc, serverTimestamp, query, where }
-  from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import {
+  getFirestore, collection, onSnapshot, addDoc, serverTimestamp, query, where
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBsGrY-AqYMoI70kT3WMxLgW0HwYA4KyaQ",
@@ -1015,88 +1144,111 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// Translations
+// ===== CLOUDINARY CONFIG =====
+const cloudinaryConfig = {
+  cloudName: 'djxcqczh1',
+  uploadPreset: 'database'
+};
+
+// ===== AUTO-OPEN MODAL ON PAGE LOAD =====
+window.addEventListener('load', () => {
+  // Check if user is already registered
+  const userType = localStorage.getItem('velox_user_type');
+  if (!userType) {
+    // New visitor: open modal automatically after 600ms
+    setTimeout(() => openModal(), 600);
+  }
+});
+
+// ===== TRANSLATIONS =====
 const LANGS = {
   fr: {
     hero_eyebrow: "Location de véhicules premium",
-    hero_title: "Le <em>luxe</em><br>en mouvement",
-    hero_sub: "Déménagement · Luxe · Trois Roues · Cargo",
-    btn_order: "Commander maintenant",
-    btn_how: "Comment ça marche",
-    sl_search: "Recherche",
-    st_search: "Trouvez votre véhicule idéal",
+    hero_title: `Le <span class="italic">luxe</span><br><span class="outline">en</span> mouvement`,
+    hero_sub: "Déménagement · Luxe · Trois Roues · Cargo. Une flotte d'exception, disponible à la demande, partout à Abidjan.",
+    btn_order: "Commander maintenant", btn_how: "Comment ça marche",
+    sl_search: "Recherche", st_search: "Trouvez votre véhicule idéal",
     label_from: "Départ", label_to: "Destination", label_type: "Type",
-    btn_search: "🔍 Rechercher",
+    btn_search: "Rechercher",
     sl_fleet: "Notre Flotte", st_fleet: "Véhicules disponibles",
     sl_how: "Processus", st_how: "Comment ça fonctionne",
-    step1_t:"Indiquez votre adresse",step1_p:"Entrez votre point de départ et votre destination.",
-    step2_t:"Choisissez votre véhicule",step2_p:"Sélectionnez parmi notre flotte selon vos besoins.",
-    step3_t:"Confirmation instantanée",step3_p:"Votre commande est envoyée aux fournisseurs disponibles.",
-    step4_t:"Suivi en temps réel",step4_p:"Suivez le déplacement de votre chauffeur sur la carte en direct.",
+    step1_t:"Indiquez votre adresse", step1_p:"Entrez votre point de départ et votre destination. Notre système localise les véhicules disponibles autour de vous en temps réel.",
+    step2_t:"Choisissez votre véhicule", step2_p:"Sélectionnez parmi notre flotte XL, XXL, XXXL, luxe ou trois roues selon vos besoins de déménagement ou de transport.",
+    step3_t:"Confirmation instantanée", step3_p:"Votre commande est envoyée aux fournisseurs disponibles. Le premier à accepter vous est assigné avec notification immédiate.",
+    step4_t:"Suivi en temps réel", step4_p:"Suivez le déplacement de votre chauffeur sur la carte en direct. Arrivée estimée et mises à jour continues jusqu'à destination.",
     tagline:"Transport Premium — Disponible 24h/24",
-    modal_title:"Rejoindre<br>VELOX", modal_sub:"Créer un compte",
-    btn_client:"🧳 Client",btn_provider:"🚗 Fournisseur",
-    fl_name:"Nom complet",fl_phone:"Téléphone",fl_email:"Email",fl_photo:"Photo du véhicule (obligatoire)",fl_pw:"Mot de passe",
+    modal_title:"Rejoindre VELOX", modal_sub:"Créer votre compte gratuit",
+    lbl_client:"Client", lbl_provider:"Fournisseur",
+    fl_name:"Nom complet", fl_phone:"Téléphone", fl_email:"Email",
+    fl_photo:"Photo du véhicule", fl_vname:"Nom / Modèle du véhicule", fl_pw:"Mot de passe",
     btn_submit:"S'inscrire →",
-    tr_title:"En Route",tr_status:"Chauffeur en approche",
-    tk_driver:"Chauffeur",tk_vehicle:"Véhicule",tk_eta:"Arrivée estimée",tk_price:"Tarif",
+    form_notice:`En vous inscrivant, vous acceptez nos <a>Conditions d'utilisation</a> et notre <a>Politique de confidentialité</a>.`,
+    tr_title:"En Route", tr_status:"Chauffeur en approche",
+    tk_driver:"Chauffeur", tk_vehicle:"Véhicule", tk_eta:"Arrivée estimée", tk_price:"Tarif",
     btn_cancel:"Annuler la commande",
     toast_ok:"Commande envoyée avec succès !",
-    cat_all:"Tous",cat_luxe:"Luxe",cat_3w:"3 Roues",cat_dem:"Déménagement",
+    toast_account:"Compte créé ! Bienvenue sur VELOX.",
+    cat_all:"Tous", cat_luxe:"Luxe", cat_3w:"3 Roues", cat_dem:"Déménagement",
     no_vehicle:"Aucun véhicule disponible pour le moment",
     reserve:"Réserver",
   },
   en: {
     hero_eyebrow:"Premium vehicle rental",
-    hero_title:"<em>Luxury</em><br>in motion",
-    hero_sub:"Moving · Luxury · Three-Wheeler · Cargo",
-    btn_order:"Book now",btn_how:"How it works",
-    sl_search:"Search",st_search:"Find your ideal vehicle",
-    label_from:"From",label_to:"Destination",label_type:"Type",
-    btn_search:"🔍 Search",
-    sl_fleet:"Our Fleet",st_fleet:"Available vehicles",
-    sl_how:"Process",st_how:"How it works",
-    step1_t:"Enter your address",step1_p:"Enter your starting point and destination.",
-    step2_t:"Choose your vehicle",step2_p:"Select from our fleet based on your needs.",
-    step3_t:"Instant confirmation",step3_p:"Your order is sent to available providers.",
-    step4_t:"Real-time tracking",step4_p:"Track your driver on the live map.",
+    hero_title:`<span class="italic">Luxury</span><br><span class="outline">in</span> motion`,
+    hero_sub:"Moving · Luxury · Three-Wheeler · Cargo. A premium fleet, on demand, across Abidjan.",
+    btn_order:"Book now", btn_how:"How it works",
+    sl_search:"Search", st_search:"Find your ideal vehicle",
+    label_from:"From", label_to:"Destination", label_type:"Type",
+    btn_search:"Search",
+    sl_fleet:"Our Fleet", st_fleet:"Available vehicles",
+    sl_how:"Process", st_how:"How it works",
+    step1_t:"Enter your address", step1_p:"Enter your starting point and destination.",
+    step2_t:"Choose your vehicle", step2_p:"Select from our fleet based on your needs.",
+    step3_t:"Instant confirmation", step3_p:"Your order is sent to available providers.",
+    step4_t:"Real-time tracking", step4_p:"Track your driver on the live map.",
     tagline:"Premium Transport — Available 24/7",
-    modal_title:"Join<br>VELOX",modal_sub:"Create an account",
-    btn_client:"🧳 Client",btn_provider:"🚗 Provider",
-    fl_name:"Full name",fl_phone:"Phone",fl_email:"Email",fl_photo:"Vehicle photo (required)",fl_pw:"Password",
+    modal_title:"Join VELOX", modal_sub:"Create your free account",
+    lbl_client:"Client", lbl_provider:"Provider",
+    fl_name:"Full name", fl_phone:"Phone", fl_email:"Email",
+    fl_photo:"Vehicle photo", fl_vname:"Vehicle name / model", fl_pw:"Password",
     btn_submit:"Sign up →",
-    tr_title:"On the Way",tr_status:"Driver approaching",
-    tk_driver:"Driver",tk_vehicle:"Vehicle",tk_eta:"ETA",tk_price:"Price",
+    form_notice:`By signing up, you agree to our <a>Terms</a> and <a>Privacy Policy</a>.`,
+    tr_title:"On the Way", tr_status:"Driver approaching",
+    tk_driver:"Driver", tk_vehicle:"Vehicle", tk_eta:"ETA", tk_price:"Price",
     btn_cancel:"Cancel order",
     toast_ok:"Order sent successfully!",
-    cat_all:"All",cat_luxe:"Luxury",cat_3w:"3-Wheeler",cat_dem:"Moving",
+    toast_account:"Account created! Welcome to VELOX.",
+    cat_all:"All", cat_luxe:"Luxury", cat_3w:"3-Wheeler", cat_dem:"Moving",
     no_vehicle:"No vehicles available at the moment",
     reserve:"Reserve",
   },
   zh: {
     hero_eyebrow:"高端车辆租赁服务",
-    hero_title:"<em>奢华</em><br>出行体验",
-    hero_sub:"搬家 · 豪华 · 三轮车 · 货运",
-    btn_order:"立即预订",btn_how:"如何使用",
-    sl_search:"搜索",st_search:"找到您理想的车辆",
-    label_from:"出发地",label_to:"目的地",label_type:"类型",
-    btn_search:"🔍 搜索",
-    sl_fleet:"我们的车队",st_fleet:"可用车辆",
-    sl_how:"流程",st_how:"如何使用",
-    step1_t:"输入您的地址",step1_p:"输入您的出发地和目的地。",
-    step2_t:"选择您的车辆",step2_p:"根据您的需求从我们的车队中选择。",
-    step3_t:"即时确认",step3_p:"您的订单将发送给可用的供应商。",
-    step4_t:"实时跟踪",step4_p:"在实时地图上跟踪您的司机。",
+    hero_title:`<span class="italic">奢华</span><br><span class="outline">出行</span>体验`,
+    hero_sub:"搬家 · 豪华 · 三轮车 · 货运。顶级车队，随叫随到，覆盖阿比让全城。",
+    btn_order:"立即预订", btn_how:"如何使用",
+    sl_search:"搜索", st_search:"找到您理想的车辆",
+    label_from:"出发地", label_to:"目的地", label_type:"类型",
+    btn_search:"搜索",
+    sl_fleet:"我们的车队", st_fleet:"可用车辆",
+    sl_how:"流程", st_how:"如何使用",
+    step1_t:"输入您的地址", step1_p:"输入您的出发地和目的地。",
+    step2_t:"选择您的车辆", step2_p:"根据您的需求从我们的车队中选择。",
+    step3_t:"即时确认", step3_p:"您的订单将发送给可用的供应商。",
+    step4_t:"实时跟踪", step4_p:"在实时地图上跟踪您的司机。",
     tagline:"高端运输 — 全天候服务",
-    modal_title:"加入<br>VELOX",modal_sub:"创建账户",
-    btn_client:"🧳 客户",btn_provider:"🚗 供应商",
-    fl_name:"全名",fl_phone:"电话",fl_email:"电子邮件",fl_photo:"车辆照片（必填）",fl_pw:"密码",
+    modal_title:"加入 VELOX", modal_sub:"创建免费账户",
+    lbl_client:"客户", lbl_provider:"供应商",
+    fl_name:"全名", fl_phone:"电话", fl_email:"电子邮件",
+    fl_photo:"车辆照片", fl_vname:"车辆名称/型号", fl_pw:"密码",
     btn_submit:"注册 →",
-    tr_title:"途中",tr_status:"司机正在赶来",
-    tk_driver:"司机",tk_vehicle:"车辆",tk_eta:"预计到达",tk_price:"价格",
+    form_notice:`注册即表示您同意我们的<a>服务条款</a>和<a>隐私政策</a>。`,
+    tr_title:"途中", tr_status:"司机正在赶来",
+    tk_driver:"司机", tk_vehicle:"车辆", tk_eta:"预计到达", tk_price:"价格",
     btn_cancel:"取消订单",
     toast_ok:"订单发送成功！",
-    cat_all:"全部",cat_luxe:"豪华",cat_3w:"三轮车",cat_dem:"搬家",
+    toast_account:"账户已创建！欢迎来到VELOX。",
+    cat_all:"全部", cat_luxe:"豪华", cat_3w:"三轮车", cat_dem:"搬家",
     no_vehicle:"目前暂无可用车辆",
     reserve:"预订",
   }
@@ -1118,17 +1270,17 @@ function applyTranslations() {
   document.getElementById('hero-eyebrow').textContent = t.hero_eyebrow;
   document.getElementById('hero-title').innerHTML = t.hero_title;
   document.getElementById('hero-sub').textContent = t.hero_sub;
-  document.getElementById('btn-order').textContent = t.btn_order;
+  document.getElementById('btn-order').innerHTML = `<span>${t.btn_order}</span>`;
   document.getElementById('btn-how').textContent = t.btn_how;
-  document.getElementById('sl-search').innerHTML = `<span style="display:flex;align-items:center;gap:12px"><span style="display:block;width:20px;height:1px;background:var(--gold)"></span>${t.sl_search}</span>`;
+  document.getElementById('sl-search').innerHTML = `<span style="display:block;width:24px;height:1px;background:var(--gold)"></span>${t.sl_search}`;
   document.getElementById('st-search').textContent = t.st_search;
   document.getElementById('label-from').textContent = t.label_from;
   document.getElementById('label-to').textContent = t.label_to;
   document.getElementById('label-type').textContent = t.label_type;
   document.getElementById('btn-search').textContent = t.btn_search;
-  document.getElementById('sl-fleet').innerHTML = `<span style="display:flex;align-items:center;gap:12px"><span style="display:block;width:20px;height:1px;background:var(--gold)"></span>${t.sl_fleet}</span>`;
+  document.getElementById('sl-fleet').innerHTML = `<span style="display:block;width:24px;height:1px;background:var(--gold)"></span>${t.sl_fleet}`;
   document.getElementById('st-fleet').textContent = t.st_fleet;
-  document.getElementById('sl-how').innerHTML = `<span style="display:flex;align-items:center;gap:12px"><span style="display:block;width:20px;height:1px;background:var(--gold)"></span>${t.sl_how}</span>`;
+  document.getElementById('sl-how').innerHTML = `<span style="display:block;width:24px;height:1px;background:var(--gold)"></span>${t.sl_how}`;
   document.getElementById('st-how').textContent = t.st_how;
   document.getElementById('step1-t').textContent = t.step1_t;
   document.getElementById('step1-p').textContent = t.step1_p;
@@ -1139,16 +1291,18 @@ function applyTranslations() {
   document.getElementById('step4-t').textContent = t.step4_t;
   document.getElementById('step4-p').textContent = t.step4_p;
   document.getElementById('tagline').textContent = t.tagline;
-  document.getElementById('modal-title').innerHTML = t.modal_title;
+  document.getElementById('modal-title').textContent = t.modal_title;
   document.getElementById('modal-sub').textContent = t.modal_sub;
-  document.getElementById('btn-client').textContent = t.btn_client;
-  document.getElementById('btn-provider').textContent = t.btn_provider;
+  document.getElementById('lbl-client').textContent = t.lbl_client;
+  document.getElementById('lbl-provider').textContent = t.lbl_provider;
   document.getElementById('fl-name').textContent = t.fl_name;
   document.getElementById('fl-phone').textContent = t.fl_phone;
   document.getElementById('fl-email').textContent = t.fl_email;
-  document.getElementById('fl-photo').textContent = t.fl_photo;
+  document.getElementById('fl-photo').innerHTML = `${t.fl_photo} <span style="color:var(--accent)">*</span>`;
+  document.getElementById('fl-vname').textContent = t.fl_vname;
   document.getElementById('fl-pw').textContent = t.fl_pw;
-  document.getElementById('btn-submit').textContent = t.btn_submit;
+  document.getElementById('btn-submit-text').textContent = t.btn_submit;
+  document.getElementById('form-notice').innerHTML = t.form_notice;
   document.getElementById('tr-title').textContent = t.tr_title;
   document.getElementById('tr-status').textContent = t.tr_status;
   document.getElementById('tk-driver').textContent = t.tk_driver;
@@ -1163,9 +1317,9 @@ function applyTranslations() {
   renderVehicles();
 }
 
-// VEHICLE CATEGORIES ICONS
+// ===== VEHICLE ICONS =====
 const catIcons = {
-  xl: '🚐', xxl: '🚌', xxxl: '🚚', luxe: '🏎️', '3roues': '🛺', demenagement: '📦'
+  xl:'🚐', xxl:'🚌', xxxl:'🚚', luxe:'🏎️', '3roues':'🛺', demenagement:'📦'
 };
 
 function renderVehicles() {
@@ -1178,7 +1332,7 @@ function renderVehicles() {
   if (filtered.length === 0) {
     grid.innerHTML = `
       <div class="no-vehicle-msg">
-        <div class="icon">🚗</div>
+        <div class="nv-icon">🚗</div>
         <p>${t.no_vehicle}</p>
       </div>`;
     return;
@@ -1188,15 +1342,15 @@ function renderVehicles() {
     <div class="vehicle-card">
       <div class="vehicle-badge">${(v.category||'').toUpperCase()}</div>
       ${v.photoURL
-        ? `<div class="vehicle-img"><img src="${v.photoURL}" style="width:100%;height:100%;object-fit:cover" alt="${v.name}"></div>`
+        ? `<img class="vehicle-img" src="${v.photoURL}" alt="${v.name || 'Véhicule'}">`
         : `<div class="vehicle-img-placeholder">${catIcons[v.category] || '🚗'}</div>`
       }
       <div class="vehicle-info">
         <div class="vehicle-name">${v.name || 'Véhicule'}</div>
-        <div class="vehicle-type">${v.ownerName || ''}</div>
-        <div class="vehicle-meta">
-          <div class="vehicle-price">${v.price || '—'} <span>FCFA</span></div>
-          <button class="btn-reserve" onclick="orderVehicle('${v.id}','${v.name}','${v.ownerName||''}','${v.price||''}')">
+        <div class="vehicle-owner">${v.ownerName || ''}</div>
+        <div class="vehicle-footer">
+          <div class="vehicle-price">${v.price || '—'} <small>FCFA</small></div>
+          <button class="btn-reserve" onclick="orderVehicle('${v.id}','${(v.name||'').replace(/'/g,"\\'")}','${(v.ownerName||'').replace(/'/g,"\\'")}','${v.price||''}')">
             ${t.reserve}
           </button>
         </div>
@@ -1213,7 +1367,7 @@ onSnapshot(q, (snap) => {
 });
 
 window.filterCat = function(btn, cat) {
-  document.querySelectorAll('.cat-tag').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   currentFilter = cat;
   renderVehicles();
@@ -1222,8 +1376,8 @@ window.filterCat = function(btn, cat) {
 window.searchVehicles = function() {
   const cat = document.getElementById('select-type').value;
   currentFilter = cat || 'all';
-  document.querySelectorAll('.cat-tag').forEach(b => b.classList.remove('active'));
-  const tag = document.querySelector(`.cat-tag[data-cat="${currentFilter}"]`);
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+  const tag = document.querySelector(`.cat-btn[data-cat="${currentFilter}"]`);
   if (tag) tag.classList.add('active');
   renderVehicles();
   document.querySelector('.fleet-section').scrollIntoView({behavior:'smooth'});
@@ -1248,32 +1402,175 @@ window.orderVehicle = async function(vehicleId, vehicleName, ownerName, price) {
   }
 };
 
-// MODAL
+// ===== MODAL =====
 window.openModal = function() {
   document.getElementById('modal').classList.add('open');
-};
-window.closeModal = function() {
-  document.getElementById('modal').classList.remove('open');
-};
-window.switchType = function(type) {
-  document.getElementById('btn-client').classList.toggle('active', type==='client');
-  document.getElementById('btn-provider').classList.toggle('active', type==='provider');
-  document.getElementById('vehicle-photo-field').style.display = type==='provider' ? 'block' : 'none';
-};
-window.submitForm = async function() {
-  const isProvider = document.getElementById('btn-provider').classList.contains('active');
-  if (isProvider) {
-    const file = document.querySelector('[type="file"]').files[0];
-    if (!file) { alert('Veuillez ajouter une photo de votre véhicule.'); return; }
-  }
-  closeModal();
-  showToast('Compte créé avec succès ! Bienvenue sur VELOX.');
+  document.body.style.overflow = 'hidden';
 };
 
-// TRACKING
+window.closeModal = function() {
+  // Only allow closing if user already registered
+  const userType = localStorage.getItem('velox_user_type');
+  if (userType) {
+    document.getElementById('modal').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+  // If not registered, don't allow closing (force registration)
+};
+
+window.switchType = function(type) {
+  document.getElementById('btn-client').classList.toggle('active', type === 'client');
+  document.getElementById('btn-provider').classList.toggle('active', type === 'provider');
+  const isProvider = type === 'provider';
+  document.getElementById('vehicle-photo-field').style.display = isProvider ? 'block' : 'none';
+  document.getElementById('vehicle-name-field').style.display = isProvider ? 'block' : 'none';
+  document.getElementById('upload-area').style.display = isProvider ? 'block' : 'none';
+  // Show/hide close button
+  const userType = localStorage.getItem('velox_user_type');
+  document.getElementById('modal-close-btn').style.display = userType ? 'flex' : 'none';
+};
+
+// ===== CLOUDINARY UPLOAD =====
+let uploadedImageUrl = '';
+
+window.handleDragOver = function(e) {
+  e.preventDefault();
+  document.getElementById('upload-area').classList.add('dragging');
+};
+window.handleDragLeave = function(e) {
+  document.getElementById('upload-area').classList.remove('dragging');
+};
+window.handleDrop = function(e) {
+  e.preventDefault();
+  document.getElementById('upload-area').classList.remove('dragging');
+  const file = e.dataTransfer.files[0];
+  if (file && file.type.startsWith('image/')) {
+    uploadToCloudinary(file);
+  }
+};
+window.handleFileSelect = function(e) {
+  const file = e.target.files[0];
+  if (file) uploadToCloudinary(file);
+};
+
+async function uploadToCloudinary(file) {
+  const progressWrap = document.getElementById('upload-progress');
+  const progressBar = document.getElementById('upload-progress-bar');
+  const preview = document.getElementById('upload-preview');
+
+  // Show preview immediately
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    preview.src = e.target.result;
+    preview.style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+
+  // Show progress
+  progressWrap.style.display = 'block';
+  progressBar.style.width = '10%';
+
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('upload_preset', cloudinaryConfig.uploadPreset);
+
+  try {
+    // Simulate progress
+    let progress = 10;
+    const interval = setInterval(() => {
+      progress += Math.random() * 15;
+      if (progress > 85) { clearInterval(interval); progress = 85; }
+      progressBar.style.width = progress + '%';
+    }, 200);
+
+    const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudinaryConfig.cloudName}/image/upload`, {
+      method: 'POST',
+      body: formData
+    });
+    clearInterval(interval);
+
+    if (!res.ok) throw new Error('Upload failed');
+    const data = await res.json();
+    uploadedImageUrl = data.secure_url;
+    document.getElementById('cloudinary-url').value = uploadedImageUrl;
+    progressBar.style.width = '100%';
+    setTimeout(() => { progressWrap.style.display = 'none'; }, 800);
+    showToast('Photo uploadée avec succès ✓');
+  } catch(err) {
+    console.error('Cloudinary error:', err);
+    progressWrap.style.display = 'none';
+    alert('Erreur lors de l\'upload. Vérifiez votre connexion.');
+  }
+}
+
+// ===== FORM SUBMIT =====
+window.submitForm = async function() {
+  const isProvider = document.getElementById('btn-provider').classList.contains('active');
+  const name = document.getElementById('inp-name').value.trim();
+  const phone = document.getElementById('inp-phone').value.trim();
+  const email = document.getElementById('inp-email').value.trim();
+  const password = document.getElementById('inp-pw').value;
+
+  if (!name || !phone || !email || !password) {
+    showToast('Veuillez remplir tous les champs.');
+    return;
+  }
+
+  if (isProvider && !uploadedImageUrl) {
+    showToast('Veuillez uploader une photo de votre véhicule.');
+    return;
+  }
+
+  const btn = document.getElementById('btn-submit');
+  btn.disabled = true;
+  document.getElementById('btn-submit-text').textContent = 'Création en cours…';
+
+  try {
+    if (isProvider) {
+      const vName = document.getElementById('inp-vname').value.trim();
+      // Save provider to Firestore
+      await addDoc(collection(db, 'providers'), {
+        name, phone, email,
+        vehicleName: vName,
+        vehiclePhotoURL: uploadedImageUrl,
+        createdAt: serverTimestamp(),
+        status: 'pending'
+      });
+      // Store locally
+      localStorage.setItem('velox_user_type', 'provider');
+      localStorage.setItem('velox_user_name', name);
+      showToast(LANGS[currentLang].toast_account);
+      document.getElementById('modal').classList.remove('open');
+      document.body.style.overflow = '';
+      // Redirect to provider page
+      setTimeout(() => { window.location.href = 'provider.html'; }, 1200);
+    } else {
+      // Save client to Firestore
+      await addDoc(collection(db, 'clients'), {
+        name, phone, email,
+        createdAt: serverTimestamp()
+      });
+      // Store locally
+      localStorage.setItem('velox_user_type', 'client');
+      localStorage.setItem('velox_user_name', name);
+      showToast(LANGS[currentLang].toast_account);
+      document.getElementById('modal').classList.remove('open');
+      document.body.style.overflow = '';
+      // Stay on index (client page) — show close button now
+      document.getElementById('modal-close-btn').style.display = 'flex';
+    }
+  } catch(e) {
+    console.error(e);
+    showToast('Erreur réseau. Vérifiez votre connexion.');
+  } finally {
+    btn.disabled = false;
+    document.getElementById('btn-submit-text').textContent = LANGS[currentLang].btn_submit;
+  }
+};
+
+// ===== TRACKING =====
 window.openTracking = function() {
   document.getElementById('tracking-panel').classList.add('open');
-  // Countdown
   let eta = 4;
   const iv = setInterval(() => {
     eta--;
@@ -1293,7 +1590,7 @@ window.cancelOrder = function() {
   showToast('Commande annulée.');
 };
 
-// TOAST
+// ===== TOAST =====
 window.showToast = function(msg) {
   const t = document.getElementById('toast');
   document.getElementById('toast-msg').textContent = msg;
@@ -1301,10 +1598,25 @@ window.showToast = function(msg) {
   setTimeout(() => t.classList.remove('show'), 4000);
 };
 
-// Close modal on overlay click
+// Close modal on overlay click (only if already registered)
 document.getElementById('modal').addEventListener('click', function(e) {
-  if (e.target === this) closeModal();
+  if (e.target === this) {
+    const userType = localStorage.getItem('velox_user_type');
+    if (userType) closeModal();
+  }
 });
+
+// Init: hide close button if not registered
+(function() {
+  const userType = localStorage.getItem('velox_user_type');
+  document.getElementById('modal-close-btn').style.display = userType ? 'flex' : 'none';
+})();
+
+// Init vehicle photo fields (default hidden)
+document.getElementById('vehicle-photo-field').style.display = 'none';
+document.getElementById('vehicle-name-field').style.display = 'none';
+document.getElementById('upload-area').style.display = 'none';
+
 </script>
 </body>
 </html>
