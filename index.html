@@ -3,1620 +3,1056 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>VELOX — Location de Véhicules Premium</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<title>AELLA — Pharmacies de Garde</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&family=Exo+2:ital,wght@0,200;0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --gold: #C9A84C;
-    --gold-light: #E8C97A;
-    --gold-dark: #8A6C2A;
-    --black: #080808;
-    --dark: #0E0E0E;
-    --dark2: #161616;
-    --dark3: #1E1E1E;
-    --white: #F7F3EC;
-    --gray: #7A7470;
-    --text: #C8C3B8;
-    --accent: #D4504A;
-  }
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --white:#ffffff;
+  --ice:#f0f8ff;
+  --pale:#e8f4fd;
+  --blue:#0077cc;
+  --blue2:#00aaff;
+  --blue3:#40c4ff;
+  --teal:#00bcd4;
+  --mint:#e0f7fa;
+  --glass:rgba(255,255,255,0.72);
+  --glass2:rgba(255,255,255,0.45);
+  --border:rgba(0,150,220,0.18);
+  --shadow:rgba(0,120,200,0.12);
+  --text:#0a2540;
+  --text2:#3a6080;
+  --text3:#8ab0cc;
+  --danger:#e53935;
+  --ok:#00b894;
+  --font:'Exo 2',sans-serif;
+  --mono:'Rajdhani',sans-serif;
+}
+html,body{width:100%;height:100%;overflow:hidden;background:#f0f8ff;}
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+/* === CANVAS BG === */
+#bgCanvas{
+  position:fixed;inset:0;z-index:0;
+  background:linear-gradient(135deg,#f0f8ff 0%,#e8f4fd 40%,#dbeeff 70%,#f0faff 100%);
+}
 
-  html { scroll-behavior: smooth; }
+/* === SPLASH === */
+#splash{
+  position:fixed;inset:0;z-index:200;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,#f0f8ff,#dbeeff,#f8fbff);
+  transition:opacity 1.2s ease, visibility 1.2s ease;
+}
+#splash.hide{opacity:0;visibility:hidden;pointer-events:none;}
 
-  body {
-    background: var(--black);
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    font-weight: 300;
-    overflow-x: hidden;
-  }
+.sp-cross{
+  position:relative;width:200px;height:200px;margin-bottom:36px;
+}
+/* Rotating rings */
+.sp-ring{
+  position:absolute;border-radius:50%;border:1.5px solid transparent;
+  background:transparent;
+  animation:spinRing 4s linear infinite;
+}
+.sp-ring1{
+  inset:0;
+  border-top-color:var(--blue2);border-right-color:var(--blue2);
+  filter:drop-shadow(0 0 8px var(--blue2));
+}
+.sp-ring2{
+  inset:14px;
+  border-bottom-color:var(--teal);border-left-color:var(--teal);
+  animation-duration:3s;animation-direction:reverse;
+  filter:drop-shadow(0 0 6px var(--teal));
+}
+.sp-ring3{
+  inset:28px;
+  border-top-color:rgba(0,150,220,0.4);border-right-color:rgba(0,150,220,0.4);
+  animation-duration:6s;
+}
+@keyframes spinRing{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 
-  ::-webkit-scrollbar { width: 3px; }
-  ::-webkit-scrollbar-track { background: var(--black); }
-  ::-webkit-scrollbar-thumb { background: var(--gold-dark); }
+.sp-avatar-wrap{
+  position:absolute;inset:42px;border-radius:50%;overflow:hidden;
+  background:linear-gradient(135deg,#dbeeff,#f0f8ff);
+  box-shadow:0 0 40px rgba(0,170,255,0.25);
+}
+.sp-avatar{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.sp-fallback{
+  width:100%;height:100%;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,#c8e6fa,#e8f4fd);
+  font-family:var(--mono);font-size:36px;font-weight:700;color:var(--blue);
+}
 
-  /* ===== TOPBAR ===== */
-  .topbar {
-    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 20px 50px;
-    background: rgba(8,8,8,0.85);
-    backdrop-filter: blur(20px);
-    border-bottom: 1px solid rgba(201,168,76,0.12);
-  }
+/* Medical cross holo */
+.holo-cross{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:26px;height:26px;opacity:0;
+  animation:holoPulse 3s ease-in-out infinite;
+}
+.holo-cross::before,.holo-cross::after{
+  content:'';position:absolute;background:rgba(0,170,255,0.4);border-radius:2px;
+}
+.holo-cross::before{width:100%;height:35%;top:32.5%;left:0;}
+.holo-cross::after{height:100%;width:35%;left:32.5%;top:0;}
+@keyframes holoPulse{0%,100%{opacity:0.3;transform:translate(-50%,-50%) scale(0.9)}50%{opacity:0.8;transform:translate(-50%,-50%) scale(1.1)}}
 
-  .logo {
-    font-family: 'Playfair Display', serif;
-    font-size: 26px; font-weight: 900;
-    letter-spacing: 10px; color: var(--white);
-    text-transform: uppercase; text-decoration: none;
-  }
-  .logo .dot { color: var(--gold); }
+.sp-name{
+  font-family:var(--mono);font-size:56px;font-weight:700;letter-spacing:14px;
+  color:var(--blue);
+  text-shadow:0 0 30px rgba(0,170,255,0.4),0 2px 0 rgba(255,255,255,0.8);
+  margin-bottom:6px;
+}
+.sp-sub{
+  font-family:var(--font);font-size:11px;font-weight:300;
+  color:var(--text3);letter-spacing:4px;text-transform:uppercase;
+  margin-bottom:44px;
+}
+.sp-btn{
+  padding:16px 56px;border-radius:40px;
+  border:1.5px solid rgba(0,150,220,0.35);
+  background:rgba(255,255,255,0.7);
+  backdrop-filter:blur(20px);
+  color:var(--blue);font-family:var(--mono);
+  font-size:15px;font-weight:600;letter-spacing:3px;
+  cursor:pointer;text-transform:uppercase;
+  transition:all 0.35s ease;
+  box-shadow:0 8px 32px rgba(0,120,200,0.15),inset 0 1px 0 rgba(255,255,255,0.9);
+}
+.sp-btn:hover{
+  background:rgba(0,170,255,0.08);
+  border-color:var(--blue2);
+  box-shadow:0 12px 48px rgba(0,120,200,0.25),0 0 0 3px rgba(0,170,255,0.1);
+  transform:translateY(-2px) scale(1.03);
+}
 
-  .nav-links {
-    display: flex; gap: 36px; align-items: center;
-  }
-  .nav-link {
-    color: var(--gray); text-decoration: none;
-    font-size: 11px; font-weight: 500; letter-spacing: 2.5px;
-    text-transform: uppercase; transition: color 0.3s; cursor: pointer;
-  }
-  .nav-link:hover { color: var(--gold); }
+/* scanning line on splash */
+.sp-scan{
+  position:absolute;inset:42px;border-radius:50%;overflow:hidden;pointer-events:none;
+}
+.sp-scan::after{
+  content:'';position:absolute;left:0;right:0;height:2px;
+  background:linear-gradient(to right,transparent,rgba(0,170,255,0.6),transparent);
+  animation:scanPass 2.5s linear infinite;
+}
+@keyframes scanPass{from{top:0%}to{top:100%}}
 
-  .topbar-right {
-    display: flex; align-items: center; gap: 16px;
-  }
+/* === MAIN APP === */
+#app{
+  position:relative;z-index:1;
+  width:100%;height:100vh;
+  display:none;
+  grid-template-columns:360px 1fr;
+  grid-template-rows:68px 1fr;
+}
 
-  .lang-switcher { display: flex; gap: 4px; }
-  .lang-btn {
-    background: none; border: none;
-    color: var(--gray); font-family: 'DM Sans', sans-serif;
-    font-size: 10px; font-weight: 500; letter-spacing: 2px;
-    padding: 6px 10px; cursor: pointer; transition: all 0.2s;
-    text-transform: uppercase; border-radius: 2px;
-  }
-  .lang-btn:hover, .lang-btn.active { color: var(--gold); }
+/* === TOPBAR === */
+.topbar{
+  grid-column:1/-1;
+  display:flex;align-items:center;padding:0 28px;gap:16px;
+  background:rgba(255,255,255,0.85);
+  backdrop-filter:blur(30px);
+  border-bottom:1px solid var(--border);
+  box-shadow:0 2px 24px var(--shadow);
+  position:relative;z-index:10;
+}
+.tb-cross{
+  width:32px;height:32px;position:relative;flex-shrink:0;
+}
+.tb-cross::before,.tb-cross::after{
+  content:'';position:absolute;background:var(--blue2);border-radius:3px;
+  transition:all 0.3s;
+}
+.tb-cross::before{width:100%;height:40%;top:30%;left:0;}
+.tb-cross::after{height:100%;width:40%;left:30%;top:0;}
+.tb-cross.pulse::before,.tb-cross.pulse::after{
+  background:var(--ok);
+  box-shadow:0 0 12px rgba(0,184,148,0.6);
+}
+.tb-name{
+  font-family:var(--mono);font-size:22px;font-weight:700;
+  letter-spacing:6px;color:var(--blue);
+  text-shadow:0 1px 0 rgba(255,255,255,0.8);
+}
+.tb-divider{width:1px;height:24px;background:var(--border);}
+.tb-sub{font-family:var(--font);font-size:11px;font-weight:300;color:var(--text3);letter-spacing:2px;text-transform:uppercase;}
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:12px;}
+.tb-pill{
+  display:flex;align-items:center;gap:6px;
+  background:rgba(0,184,148,0.08);
+  border:1px solid rgba(0,184,148,0.25);
+  border-radius:20px;padding:5px 14px;
+  font-size:10px;font-family:var(--mono);font-weight:600;
+  color:var(--ok);letter-spacing:2px;
+}
+.pill-dot{
+  width:6px;height:6px;border-radius:50%;
+  background:var(--ok);box-shadow:0 0 8px var(--ok);
+  animation:blink 2s infinite;
+}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+.tb-loc{font-size:11px;color:var(--text3);font-family:var(--font);font-weight:300;}
 
-  /* ===== HERO ===== */
-  .hero {
-    position: relative; min-height: 100vh;
-    display: flex; align-items: center;
-    overflow: hidden;
-    padding: 0 50px;
-  }
+/* === LEFT PANEL === */
+.left{
+  border-right:1px solid var(--border);
+  background:rgba(255,255,255,0.6);
+  backdrop-filter:blur(40px);
+  display:flex;flex-direction:column;overflow:hidden;
+  box-shadow:2px 0 24px rgba(0,100,180,0.06);
+}
 
-  .hero-bg {
-    position: absolute; inset: 0;
-    background:
-      radial-gradient(ellipse 70% 80% at 80% 50%, rgba(201,168,76,0.07) 0%, transparent 60%),
-      radial-gradient(ellipse 50% 50% at 10% 80%, rgba(201,168,76,0.04) 0%, transparent 50%),
-      linear-gradient(135deg, #080808 0%, #0d0d09 100%);
-  }
+/* Avatar section */
+.av-section{
+  padding:28px 24px 22px;
+  display:flex;flex-direction:column;align-items:center;
+  border-bottom:1px solid var(--border);
+  position:relative;overflow:hidden;
+}
+/* bg glow behind avatar */
+.av-section::before{
+  content:'';position:absolute;
+  width:220px;height:220px;border-radius:50%;
+  background:radial-gradient(circle,rgba(0,170,255,0.08) 0%,transparent 70%);
+  top:0;left:50%;transform:translateX(-50%);
+  animation:glowPulse 3s ease-in-out infinite;
+}
+@keyframes glowPulse{0%,100%{transform:translateX(-50%) scale(1);opacity:0.8}50%{transform:translateX(-50%) scale(1.15);opacity:1}}
 
-  /* Diagonal lines texture */
-  .hero-texture {
-    position: absolute; inset: 0; opacity: 0.035;
-    background-image: repeating-linear-gradient(
-      -45deg,
-      rgba(201,168,76,1) 0px,
-      rgba(201,168,76,1) 1px,
-      transparent 1px,
-      transparent 12px
-    );
-  }
+.av-holo{position:relative;width:130px;height:130px;margin-bottom:16px;}
 
-  /* Large decorative number */
-  .hero-deco-num {
-    position: absolute; right: -20px; top: 50%;
-    transform: translateY(-50%);
-    font-family: 'Playfair Display', serif;
-    font-size: clamp(300px, 35vw, 500px);
-    font-weight: 900; line-height: 1;
-    color: transparent;
-    -webkit-text-stroke: 1px rgba(201,168,76,0.06);
-    pointer-events: none; user-select: none;
-    letter-spacing: -20px;
-  }
+/* 3D layered rings */
+.av-ring{
+  position:absolute;border-radius:50%;border:1px solid transparent;
+}
+.av-r1{
+  inset:-16px;
+  border:1px dashed rgba(0,170,255,0.2);
+  animation:spinRing 10s linear infinite;
+}
+.av-r2{
+  inset:-8px;
+  border-top:1.5px solid rgba(0,190,212,0.5);
+  border-right:1.5px solid rgba(0,190,212,0.5);
+  border-bottom:1.5px solid transparent;
+  border-left:1.5px solid transparent;
+  animation:spinRing 5s linear infinite;
+  filter:drop-shadow(0 0 4px rgba(0,190,212,0.6));
+}
+.av-r3{
+  inset:-3px;
+  border-top:2px solid var(--blue2);
+  border-right:2px solid var(--blue2);
+  border-bottom:2px solid transparent;
+  border-left:2px solid transparent;
+  animation:spinRing 3s linear infinite reverse;
+  filter:drop-shadow(0 0 6px rgba(0,170,255,0.5));
+}
+.av-img-wrap{
+  position:absolute;inset:0;border-radius:50%;overflow:hidden;
+  background:linear-gradient(135deg,#dbeeff,#f0f8ff);
+  box-shadow:0 8px 32px rgba(0,120,200,0.2),inset 0 2px 4px rgba(255,255,255,0.9);
+}
+.av-img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.av-fallback{
+  width:100%;height:100%;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);font-size:36px;font-weight:700;color:var(--blue);
+  background:linear-gradient(135deg,#c8e6fa,#e8f4fd);
+}
+/* scan on avatar */
+.av-scan{position:absolute;inset:0;border-radius:50%;overflow:hidden;pointer-events:none;z-index:5;}
+.av-scan::after{
+  content:'';position:absolute;left:0;right:0;height:2px;
+  background:linear-gradient(to right,transparent,rgba(0,170,255,0.5),transparent);
+  animation:scanPass 3s linear infinite;
+}
+/* holo dots orbiting */
+.orbit-dot{
+  position:absolute;width:6px;height:6px;border-radius:50%;
+  background:var(--blue2);box-shadow:0 0 8px var(--blue2);
+  top:50%;left:50%;transform-origin:0 0;
+}
+.od1{animation:orbitAnim 4s linear infinite;}
+.od2{animation:orbitAnim 4s linear infinite;animation-delay:-2s;background:var(--teal);box-shadow:0 0 8px var(--teal);}
+@keyframes orbitAnim{
+  from{transform:rotate(0deg) translateX(72px) rotate(0deg)}
+  to{transform:rotate(360deg) translateX(72px) rotate(-360deg)}
+}
 
-  .hero-content {
-    position: relative; z-index: 2;
-    max-width: 700px;
-    animation: heroIn 1.4s cubic-bezier(0.22,1,0.36,1) both;
-  }
-  @keyframes heroIn {
-    from { opacity: 0; transform: translateY(60px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
+/* Wave bars */
+.wave-bars{
+  display:flex;align-items:center;gap:3px;height:28px;
+  position:absolute;bottom:6px;left:50%;transform:translateX(-50%);
+}
+.wb{width:3px;border-radius:2px;background:var(--blue2);height:4px;transition:height 0.08s;}
 
-  .hero-tag {
-    display: inline-flex; align-items: center; gap: 12px;
-    font-size: 10px; font-weight: 600; letter-spacing: 5px;
-    color: var(--gold); text-transform: uppercase;
-    margin-bottom: 28px;
-  }
-  .hero-tag-line {
-    display: block; width: 36px; height: 1px;
-    background: var(--gold);
-  }
+.av-name{
+  font-family:var(--mono);font-size:22px;font-weight:700;
+  letter-spacing:6px;color:var(--blue);
+  text-shadow:0 1px 0 rgba(255,255,255,0.8);
+  margin-bottom:4px;
+}
+.av-title{font-family:var(--font);font-size:10px;font-weight:300;color:var(--text3);letter-spacing:3px;text-transform:uppercase;}
 
-  .hero-title {
-    font-family: 'Playfair Display', serif;
-    font-size: clamp(54px, 7.5vw, 120px);
-    font-weight: 900; line-height: 0.88;
-    color: var(--white);
-    letter-spacing: -3px;
-    margin-bottom: 28px;
-  }
-  .hero-title .italic { font-style: italic; color: var(--gold); }
-  .hero-title .outline {
-    color: transparent;
-    -webkit-text-stroke: 1.5px rgba(247,243,236,0.35);
-  }
+/* === BIG MIC === */
+.mic-wrap{
+  padding:22px 24px;
+  border-bottom:1px solid var(--border);
+  display:flex;flex-direction:column;align-items:center;gap:12px;
+}
+.big-mic{
+  width:86px;height:86px;border-radius:50%;cursor:pointer;
+  background:linear-gradient(145deg,#ffffff,#dbeeff);
+  border:none;outline:none;
+  box-shadow:
+    0 8px 32px rgba(0,120,200,0.18),
+    0 2px 8px rgba(0,120,200,0.1),
+    inset 0 2px 4px rgba(255,255,255,0.9),
+    inset 0 -2px 4px rgba(0,120,200,0.1);
+  display:flex;align-items:center;justify-content:center;
+  transition:all 0.3s ease;
+  position:relative;overflow:hidden;
+}
+.big-mic::before{
+  content:'';position:absolute;inset:0;border-radius:50%;
+  background:radial-gradient(circle at 35% 35%,rgba(255,255,255,0.9),transparent 60%);
+  pointer-events:none;
+}
+.big-mic:hover{
+  transform:scale(1.06) translateY(-2px);
+  box-shadow:0 14px 48px rgba(0,120,200,0.28),0 4px 12px rgba(0,120,200,0.15),inset 0 2px 4px rgba(255,255,255,0.9);
+}
+.big-mic.listening{
+  background:linear-gradient(145deg,#fff5f5,#ffe8e8);
+  box-shadow:0 0 0 0 rgba(229,57,53,0.4),0 8px 32px rgba(229,57,53,0.25);
+  animation:micPulse 1.1s infinite;
+}
+.big-mic.speaking{
+  background:linear-gradient(145deg,#f0fff8,#d4f7e8);
+  box-shadow:0 8px 40px rgba(0,184,148,0.3),inset 0 2px 4px rgba(255,255,255,0.9);
+}
+@keyframes micPulse{
+  0%{box-shadow:0 0 0 0 rgba(229,57,53,0.5),0 8px 32px rgba(229,57,53,0.25);}
+  70%{box-shadow:0 0 0 20px rgba(229,57,53,0),0 8px 32px rgba(229,57,53,0.25);}
+  100%{box-shadow:0 0 0 0 rgba(229,57,53,0),0 8px 32px rgba(229,57,53,0.25);}
+}
+.mic-svg{width:34px;height:34px;color:var(--blue);transition:color 0.3s;}
+.big-mic.listening .mic-svg{color:var(--danger);}
+.big-mic.speaking .mic-svg{color:var(--ok);}
 
-  .hero-desc {
-    font-size: 15px; line-height: 1.7; color: var(--gray);
-    max-width: 440px; margin-bottom: 50px;
-    font-weight: 400;
-    animation: heroIn 1.4s 0.2s cubic-bezier(0.22,1,0.36,1) both;
-  }
+.mic-lbl{
+  font-family:var(--mono);font-size:10px;font-weight:600;
+  color:var(--text3);letter-spacing:2px;text-transform:uppercase;
+  transition:color 0.3s;
+}
+.mic-lbl.listening{color:var(--danger);}
+.mic-lbl.speaking{color:var(--ok);}
 
-  .hero-cta {
-    display: flex; gap: 14px; flex-wrap: wrap;
-    animation: heroIn 1.4s 0.35s cubic-bezier(0.22,1,0.36,1) both;
-  }
+/* Sound ring animation when speaking */
+.sound-rings{
+  position:absolute;inset:0;border-radius:50%;pointer-events:none;
+}
+.sr{
+  position:absolute;border-radius:50%;
+  border:1px solid rgba(0,150,220,0.3);
+  top:50%;left:50%;transform:translate(-50%,-50%);
+  opacity:0;
+}
+.sr1{width:110%;height:110%;animation:soundRing 1.5s ease-out infinite;}
+.sr2{width:130%;height:130%;animation:soundRing 1.5s ease-out infinite 0.4s;}
+.sr3{width:150%;height:150%;animation:soundRing 1.5s ease-out infinite 0.8s;}
+@keyframes soundRing{0%{opacity:0.6;transform:translate(-50%,-50%) scale(0.8)}100%{opacity:0;transform:translate(-50%,-50%) scale(1)}}
+.big-mic.speaking .sr,.big-mic.listening .sr{display:block;}
+.sr{display:none;}
+.big-mic.listening .sr{border-color:rgba(229,57,53,0.4);}
 
-  .btn-gold {
-    background: var(--gold); color: var(--black);
-    border: none; font-family: 'DM Sans', sans-serif;
-    font-size: 11px; font-weight: 600; letter-spacing: 3px;
-    padding: 18px 42px; cursor: pointer;
-    text-transform: uppercase; transition: all 0.35s;
-    position: relative; overflow: hidden;
-  }
-  .btn-gold::before {
-    content: ''; position: absolute; inset: 0;
-    background: var(--white); transform: scaleX(0);
-    transform-origin: right; transition: transform 0.35s ease;
-  }
-  .btn-gold:hover::before { transform: scaleX(1); transform-origin: left; }
-  .btn-gold span { position: relative; z-index: 1; }
+/* === QUICK ACTIONS === */
+.qa-wrap{padding:16px 20px;border-bottom:1px solid var(--border);}
+.sec-lbl{font-family:var(--mono);font-size:9px;font-weight:600;color:var(--text3);letter-spacing:3px;text-transform:uppercase;margin-bottom:10px;}
+.qa-list{display:flex;flex-direction:column;gap:5px;}
+.qa-btn{
+  padding:9px 14px;border-radius:10px;
+  border:1px solid rgba(0,150,220,0.15);
+  background:rgba(255,255,255,0.6);
+  backdrop-filter:blur(10px);
+  color:var(--text2);font-family:var(--font);font-size:12px;font-weight:400;
+  cursor:pointer;text-align:left;
+  display:flex;align-items:center;gap:9px;
+  transition:all 0.2s ease;
+  box-shadow:0 2px 8px rgba(0,100,180,0.04);
+}
+.qa-btn:hover{
+  border-color:rgba(0,170,255,0.35);
+  background:rgba(255,255,255,0.85);
+  color:var(--blue);
+  transform:translateX(4px);
+  box-shadow:0 4px 16px rgba(0,120,200,0.12);
+}
+.qa-ic{
+  width:26px;height:26px;border-radius:7px;
+  background:linear-gradient(135deg,rgba(0,170,255,0.1),rgba(0,190,212,0.1));
+  border:1px solid rgba(0,170,255,0.15);
+  display:flex;align-items:center;justify-content:center;font-size:12px;
+  flex-shrink:0;
+}
 
-  .btn-outline {
-    background: none; border: 1px solid rgba(201,168,76,0.35);
-    color: var(--gold); font-family: 'DM Sans', sans-serif;
-    font-size: 11px; font-weight: 500; letter-spacing: 3px;
-    padding: 18px 42px; cursor: pointer;
-    text-transform: uppercase; transition: all 0.3s;
-  }
-  .btn-outline:hover {
-    border-color: var(--gold);
-    background: rgba(201,168,76,0.06);
-  }
+/* === LOCATION === */
+.loc-wrap{padding:14px 20px;}
+.loc-card{
+  background:rgba(255,255,255,0.7);
+  border:1px solid var(--border);
+  border-radius:12px;padding:10px 13px;
+  display:flex;align-items:center;gap:10px;
+  box-shadow:0 2px 12px rgba(0,100,180,0.06);
+}
+.loc-ic{font-size:15px;flex-shrink:0;}
+.loc-v{font-family:var(--font);font-size:11px;font-weight:300;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 
-  .hero-stats {
-    position: absolute; bottom: 60px; left: 50px; right: 50px;
-    display: flex; gap: 60px;
-    animation: heroIn 1.4s 0.5s cubic-bezier(0.22,1,0.36,1) both;
-  }
-  .stat-item { display: flex; flex-direction: column; gap: 4px; }
-  .stat-num {
-    font-family: 'Playfair Display', serif;
-    font-size: 36px; font-weight: 700; color: var(--white);
-    line-height: 1;
-  }
-  .stat-num em { color: var(--gold); font-style: normal; }
-  .stat-label {
-    font-size: 9px; letter-spacing: 3px; color: var(--gray);
-    text-transform: uppercase; font-weight: 500;
-  }
-  .hero-stats-divider {
-    width: 1px; background: rgba(201,168,76,0.15); align-self: stretch;
-  }
+/* === RIGHT PANEL === */
+.right{display:grid;grid-template-rows:1fr 290px;overflow:hidden;}
 
-  /* ===== SEARCH SECTION ===== */
-  .search-section {
-    background: var(--dark);
-    border-top: 1px solid rgba(201,168,76,0.1);
-    border-bottom: 1px solid rgba(201,168,76,0.1);
-    padding: 70px 50px 60px;
-  }
+/* Chat */
+.chat{
+  overflow-y:auto;padding:22px 24px;
+  display:flex;flex-direction:column;gap:14px;
+  scroll-behavior:smooth;
+}
+.chat::-webkit-scrollbar{width:4px;}
+.chat::-webkit-scrollbar-thumb{background:rgba(0,150,220,0.2);border-radius:2px;}
 
-  .section-eyebrow {
-    font-size: 9px; font-weight: 600; letter-spacing: 5px;
-    color: var(--gold); text-transform: uppercase;
-    margin-bottom: 8px;
-    display: flex; align-items: center; gap: 14px;
-  }
-  .section-eyebrow::before {
-    content: ''; display: block; width: 24px; height: 1px;
-    background: var(--gold);
-  }
+.msg{display:flex;gap:10px;animation:msgIn 0.4s cubic-bezier(0.34,1.56,0.64,1);}
+.msg.user{flex-direction:row-reverse;align-self:flex-end;max-width:68%;}
+.msg.aella{max-width:88%;}
+@keyframes msgIn{from{opacity:0;transform:translateY(12px) scale(0.96)}to{opacity:1;transform:none}}
 
-  .section-title {
-    font-family: 'Playfair Display', serif;
-    font-size: clamp(28px, 3.5vw, 46px);
-    font-weight: 700; color: var(--white);
-    letter-spacing: -1px; margin-bottom: 40px;
-  }
+.msg-av{
+  width:32px;height:32px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);font-size:11px;font-weight:700;
+}
+.av-a{
+  background:linear-gradient(135deg,rgba(0,170,255,0.12),rgba(0,190,212,0.12));
+  border:1.5px solid rgba(0,170,255,0.25);color:var(--blue);
+}
+.av-u{
+  background:rgba(0,120,180,0.08);
+  border:1.5px solid rgba(0,120,180,0.2);color:var(--blue2);
+}
 
-  .search-bar {
-    display: grid;
-    grid-template-columns: 1fr 1fr auto auto;
-    border: 1px solid rgba(201,168,76,0.18);
-    max-width: 960px;
-    overflow: hidden;
-  }
+.bub{
+  background:rgba(255,255,255,0.82);
+  border:1px solid rgba(0,150,220,0.12);
+  border-radius:16px;padding:11px 15px;
+  font-family:var(--font);font-size:13px;font-weight:300;
+  line-height:1.7;color:var(--text);
+  box-shadow:0 4px 20px rgba(0,100,180,0.08);
+  backdrop-filter:blur(20px);
+}
+.msg.user .bub{
+  background:linear-gradient(135deg,rgba(0,119,204,0.08),rgba(0,188,212,0.06));
+  border-color:rgba(0,170,255,0.2);
+  border-bottom-right-radius:3px;
+}
+.msg.aella .bub{border-bottom-left-radius:3px;}
+.msg-t{font-family:var(--mono);font-size:9px;color:var(--text3);margin-top:3px;}
+.msg.user .msg-t{text-align:right;}
 
-  .search-field {
-    background: var(--dark2); padding: 22px 26px;
-    border-right: 1px solid rgba(201,168,76,0.1);
-    display: flex; flex-direction: column; gap: 5px;
-    transition: background 0.2s;
-  }
-  .search-field:hover { background: var(--dark3); }
-  .search-field-label {
-    font-size: 8px; letter-spacing: 3px; color: var(--gold);
-    text-transform: uppercase; font-weight: 600;
-  }
-  .search-field input, .search-field select {
-    background: none; border: none; outline: none;
-    color: var(--white); font-family: 'DM Sans', sans-serif;
-    font-size: 14px; font-weight: 400; width: 100%;
-  }
-  .search-field input::placeholder { color: var(--gray); }
-  .search-field select option { background: var(--dark2); }
+/* typing */
+.tw{display:none;gap:10px;align-items:flex-start;}
+.tbub{
+  display:none;align-items:center;gap:5px;
+  background:rgba(255,255,255,0.82);border:1px solid rgba(0,150,220,0.12);
+  border-radius:16px;border-bottom-left-radius:3px;
+  padding:12px 15px;
+  box-shadow:0 4px 20px rgba(0,100,180,0.08);
+}
+.tbub.on{display:flex;}
+.td{width:5px;height:5px;border-radius:50%;background:var(--blue2);}
+.td:nth-child(1){animation:tdB 1s 0s infinite;}
+.td:nth-child(2){animation:tdB 1s .2s infinite;}
+.td:nth-child(3){animation:tdB 1s .4s infinite;}
+@keyframes tdB{0%,100%{opacity:0.2;transform:translateY(0)}50%{opacity:1;transform:translateY(-4px)}}
 
-  .search-btn {
-    background: var(--gold); border: none;
-    color: var(--black); font-family: 'DM Sans', sans-serif;
-    font-size: 10px; font-weight: 700; letter-spacing: 2.5px;
-    padding: 0 32px; cursor: pointer;
-    text-transform: uppercase; white-space: nowrap;
-    transition: background 0.3s;
-  }
-  .search-btn:hover { background: var(--gold-light); }
+/* Pharmacy cards */
+.ph-cards{display:flex;flex-direction:column;gap:8px;margin-top:10px;}
+.ph-card{
+  background:linear-gradient(135deg,rgba(240,248,255,0.95),rgba(255,255,255,0.95));
+  border:1px solid rgba(0,170,255,0.18);
+  border-radius:12px;padding:11px 13px;
+  display:flex;align-items:flex-start;gap:10px;
+  cursor:pointer;transition:all 0.25s ease;
+  box-shadow:0 3px 16px rgba(0,100,180,0.08);
+  position:relative;overflow:hidden;
+}
+.ph-card::before{
+  content:'';position:absolute;left:0;top:0;bottom:0;width:3px;
+  background:linear-gradient(to bottom,var(--blue2),var(--teal));
+  border-radius:3px 0 0 3px;
+}
+.ph-card:hover{
+  border-color:rgba(0,170,255,0.4);
+  transform:translateX(4px);
+  box-shadow:0 6px 28px rgba(0,100,180,0.15);
+}
+.ph-ic{
+  width:36px;height:36px;border-radius:9px;flex-shrink:0;
+  background:linear-gradient(135deg,rgba(0,188,212,0.12),rgba(0,170,255,0.08));
+  border:1px solid rgba(0,170,255,0.2);
+  display:flex;align-items:center;justify-content:center;font-size:17px;
+}
+.ph-info{flex:1;min-width:0;}
+.ph-n{font-family:var(--mono);font-weight:600;font-size:13px;color:var(--blue);margin-bottom:2px;}
+.ph-a{font-family:var(--font);font-size:10px;font-weight:300;color:var(--text2);margin-bottom:5px;}
+.ph-tags{display:flex;gap:5px;flex-wrap:wrap;}
+.pt{
+  font-family:var(--mono);font-size:9px;font-weight:600;
+  padding:2px 8px;border-radius:4px;letter-spacing:1px;
+}
+.pt-g{background:rgba(0,184,148,0.1);color:var(--ok);border:1px solid rgba(0,184,148,0.25);}
+.pt-b{background:rgba(0,170,255,0.08);color:var(--blue2);border:1px solid rgba(0,170,255,0.2);}
+.go-btn{
+  flex-shrink:0;align-self:center;
+  padding:6px 12px;border-radius:8px;
+  border:1px solid rgba(0,170,255,0.25);
+  background:linear-gradient(135deg,rgba(0,170,255,0.06),rgba(0,190,212,0.06));
+  color:var(--blue);font-family:var(--mono);font-size:10px;font-weight:600;
+  cursor:pointer;white-space:nowrap;
+  transition:all 0.2s ease;letter-spacing:1px;
+}
+.go-btn:hover{background:rgba(0,170,255,0.14);border-color:var(--blue2);}
 
-  .cat-filters {
-    display: flex; flex-wrap: wrap; gap: 8px; margin-top: 28px;
-  }
-  .cat-btn {
-    background: none; border: 1px solid rgba(201,168,76,0.18);
-    color: var(--gray); font-family: 'DM Sans', sans-serif;
-    font-size: 10px; font-weight: 500; letter-spacing: 2px;
-    padding: 9px 20px; cursor: pointer; transition: all 0.25s;
-    text-transform: uppercase;
-  }
-  .cat-btn:hover { border-color: var(--gold); color: var(--gold); }
-  .cat-btn.active {
-    background: rgba(201,168,76,0.12);
-    border-color: var(--gold); color: var(--gold);
-  }
+/* === MAP === */
+.map-panel{
+  border-top:1px solid var(--border);position:relative;
+  background:rgba(248,252,255,0.9);
+}
+.map-bar{
+  position:absolute;top:0;left:0;right:0;height:34px;
+  background:rgba(255,255,255,0.88);backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;padding:0 16px;gap:8px;z-index:10;
+  box-shadow:0 2px 12px rgba(0,100,180,0.06);
+}
+.map-lbl{font-family:var(--mono);font-size:9px;font-weight:600;color:var(--text3);letter-spacing:2px;text-transform:uppercase;}
+.map-coord{margin-left:auto;font-family:var(--mono);font-size:9px;color:var(--blue);opacity:0.5;}
+#map{position:absolute;inset:34px 0 0 0;}
+.map-ph{
+  position:absolute;inset:34px 0 0 0;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
+}
+.map-ph-ic{font-size:40px;opacity:0.18;}
+.map-ph-t{font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:2px;opacity:0.5;}
 
-  /* ===== FLEET + MAP ===== */
-  .main-content {
-    display: grid; grid-template-columns: 1fr 400px;
-    min-height: 600px;
-  }
+/* === NAV MODAL === */
+.nav-modal{position:fixed;inset:0;background:rgba(240,248,255,0.92);backdrop-filter:blur(20px);z-index:500;display:none;flex-direction:column;}
+.nav-modal.open{display:flex;}
+.nav-hdr{
+  height:56px;background:rgba(255,255,255,0.9);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;padding:0 20px;gap:14px;flex-shrink:0;
+  box-shadow:0 2px 16px rgba(0,100,180,0.08);
+}
+.nav-title{font-family:var(--mono);font-size:14px;font-weight:600;color:var(--blue);flex:1;}
+.nav-close{
+  width:34px;height:34px;border-radius:8px;
+  border:1px solid rgba(0,150,220,0.2);background:transparent;
+  color:var(--text2);cursor:pointer;font-size:15px;
+  display:flex;align-items:center;justify-content:center;transition:all 0.2s;
+}
+.nav-close:hover{border-color:var(--danger);color:var(--danger);background:rgba(229,57,53,0.05);}
+#navFrame{flex:1;border:none;width:100%;}
+.nav-ftr{
+  padding:12px 20px;background:rgba(255,255,255,0.9);
+  border-top:1px solid var(--border);
+  display:flex;align-items:center;gap:12px;
+  box-shadow:0 -2px 16px rgba(0,100,180,0.06);
+}
+.nav-dest{flex:1;font-family:var(--font);font-size:12px;font-weight:300;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.gmaps-btn{
+  padding:10px 24px;border-radius:10px;border:none;
+  background:linear-gradient(135deg,var(--blue),var(--blue2));
+  color:#fff;font-family:var(--mono);font-size:12px;font-weight:600;
+  cursor:pointer;white-space:nowrap;letter-spacing:1px;
+  transition:all 0.2s;
+  box-shadow:0 4px 16px rgba(0,120,200,0.3);
+}
+.gmaps-btn:hover{transform:scale(1.04);box-shadow:0 6px 24px rgba(0,120,200,0.4);}
 
-  .fleet-section { padding: 60px 50px; background: var(--black); }
-
-  .fleet-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 3px; margin-top: 36px;
-  }
-
-  .vehicle-card {
-    background: var(--dark2);
-    border: 1px solid rgba(201,168,76,0.06);
-    overflow: hidden; cursor: pointer;
-    transition: all 0.4s ease;
-    position: relative;
-  }
-  .vehicle-card:hover {
-    border-color: rgba(201,168,76,0.28);
-    transform: translateY(-5px);
-    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-  }
-
-  .vehicle-img {
-    width: 100%; height: 190px;
-    object-fit: cover; display: block;
-    filter: brightness(0.82) saturate(0.8);
-    transition: all 0.5s;
-    background: var(--dark3);
-  }
-  .vehicle-card:hover .vehicle-img { filter: brightness(1) saturate(1); }
-
-  .vehicle-img-placeholder {
-    width: 100%; height: 190px;
-    background: linear-gradient(135deg, var(--dark3) 0%, #1a1a14 100%);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 56px;
-    transition: transform 0.5s;
-  }
-  .vehicle-card:hover .vehicle-img-placeholder { transform: scale(1.05); }
-
-  .vehicle-badge {
-    position: absolute; top: 14px; left: 14px;
-    background: var(--gold); color: var(--black);
-    font-size: 8px; font-weight: 700; letter-spacing: 2px;
-    padding: 5px 10px; text-transform: uppercase;
-  }
-
-  .vehicle-info { padding: 22px 24px; }
-  .vehicle-name {
-    font-family: 'Playfair Display', serif;
-    font-size: 21px; font-weight: 700; color: var(--white);
-    margin-bottom: 3px;
-  }
-  .vehicle-owner {
-    font-size: 10px; letter-spacing: 2.5px; color: var(--gold);
-    text-transform: uppercase; margin-bottom: 16px;
-  }
-  .vehicle-footer {
-    display: flex; align-items: center; justify-content: space-between;
-  }
-  .vehicle-price {
-    font-family: 'Playfair Display', serif;
-    font-size: 26px; font-weight: 700; color: var(--white);
-    line-height: 1;
-  }
-  .vehicle-price small {
-    font-size: 11px; color: var(--gray);
-    font-family: 'DM Sans', sans-serif; font-weight: 400;
-  }
-  .btn-reserve {
-    background: none; border: 1px solid rgba(201,168,76,0.3);
-    color: var(--gold); font-family: 'DM Sans', sans-serif;
-    font-size: 9px; font-weight: 600; letter-spacing: 2px;
-    padding: 10px 16px; cursor: pointer; transition: all 0.3s;
-    text-transform: uppercase;
-  }
-  .btn-reserve:hover { background: var(--gold); color: var(--black); border-color: var(--gold); }
-
-  .no-vehicle-msg {
-    grid-column: 1/-1; text-align: center; padding: 80px 20px;
-    color: var(--gray);
-  }
-  .no-vehicle-msg .nv-icon { font-size: 48px; opacity: 0.25; margin-bottom: 14px; }
-  .no-vehicle-msg p { font-size: 11px; letter-spacing: 3px; text-transform: uppercase; }
-
-  /* MAP */
-  .map-section {
-    position: sticky; top: 70px; height: calc(100vh - 70px);
-    background: var(--dark2);
-    border-left: 1px solid rgba(201,168,76,0.08);
-    display: flex; flex-direction: column;
-  }
-  .map-header {
-    padding: 18px 22px;
-    border-bottom: 1px solid rgba(201,168,76,0.08);
-    display: flex; justify-content: space-between; align-items: center;
-  }
-  .map-title-text { font-size: 9px; letter-spacing: 3px; color: var(--gold); text-transform: uppercase; font-weight: 600; }
-  .live-badge {
-    display: flex; align-items: center; gap: 6px;
-    font-size: 8px; letter-spacing: 2px; color: var(--gray); text-transform: uppercase;
-  }
-  .live-dot {
-    width: 6px; height: 6px; border-radius: 50%;
-    background: #4ade80; animation: livePulse 1.5s ease infinite;
-  }
-  @keyframes livePulse {
-    0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(74,222,128,0.4); }
-    50% { opacity: 0.6; box-shadow: 0 0 0 4px rgba(74,222,128,0); }
-  }
-  #map {
-    flex: 1; position: relative; overflow: hidden;
-    background: #0a0a08;
-  }
-  .map-grid {
-    position: absolute; inset: 0; opacity: 0.06;
-    background-image:
-      linear-gradient(rgba(201,168,76,0.8) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(201,168,76,0.8) 1px, transparent 1px);
-    background-size: 32px 32px;
-  }
-  .map-car {
-    position: absolute; font-size: 22px;
-    filter: drop-shadow(0 0 8px rgba(201,168,76,0.6));
-  }
-  .map-car-1 { top: 28%; left: 38%; animation: carM1 9s linear infinite; }
-  .map-car-2 { top: 52%; left: 58%; animation: carM2 12s linear infinite; }
-  .map-car-3 { top: 18%; left: 65%; animation: carM3 10s linear infinite; }
-  @keyframes carM1 { 0%{transform:translate(0,0)} 25%{transform:translate(28px,-18px)} 50%{transform:translate(55px,8px)} 75%{transform:translate(18px,28px)} 100%{transform:translate(0,0)} }
-  @keyframes carM2 { 0%{transform:translate(0,0)} 33%{transform:translate(-38px,18px)} 66%{transform:translate(-18px,-28px)} 100%{transform:translate(0,0)} }
-  @keyframes carM3 { 0%{transform:translate(0,0)} 50%{transform:translate(-45px,36px)} 100%{transform:translate(0,0)} }
-  .map-pin { position: absolute; top: 43%; left: 33%; font-size: 26px; animation: pinBounce 1.8s ease infinite; }
-  @keyframes pinBounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
-  .map-overlay {
-    position: absolute; bottom: 18px; left: 14px; right: 14px;
-    background: rgba(14,14,14,0.92); backdrop-filter: blur(12px);
-    border: 1px solid rgba(201,168,76,0.18);
-    padding: 14px 16px;
-  }
-  .driver-row { display: flex; gap: 10px; align-items: center; }
-  .driver-avatar {
-    width: 38px; height: 38px; border-radius: 50%;
-    background: var(--dark3); border: 2px solid var(--gold);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 16px; flex-shrink: 0;
-  }
-  .driver-name-text { font-size: 13px; font-weight: 500; color: var(--white); }
-  .driver-eta-text { font-size: 9px; letter-spacing: 2px; color: var(--gold); text-transform: uppercase; }
-  .driver-stars { margin-left: auto; font-size: 11px; color: var(--gold); }
-  .driver-rating-num { font-family: 'Playfair Display', serif; font-size: 18px; color: var(--white); text-align: right; }
-
-  /* ===== HOW IT WORKS ===== */
-  .how-section {
-    padding: 100px 50px;
-    background: var(--dark);
-    border-top: 1px solid rgba(201,168,76,0.1);
-  }
-  .steps-grid {
-    display: grid; grid-template-columns: repeat(4, 1fr);
-    gap: 1px; background: rgba(201,168,76,0.08);
-    margin-top: 50px;
-  }
-  .step {
-    background: var(--dark2); padding: 42px 32px;
-    transition: background 0.3s; position: relative; overflow: hidden;
-  }
-  .step::after {
-    content: ''; position: absolute; bottom: 0; left: 0; right: 0;
-    height: 2px; background: var(--gold);
-    transform: scaleX(0); transform-origin: left;
-    transition: transform 0.4s ease;
-  }
-  .step:hover { background: var(--dark3); }
-  .step:hover::after { transform: scaleX(1); }
-  .step-num {
-    font-family: 'Playfair Display', serif;
-    font-size: 80px; font-weight: 900; color: rgba(201,168,76,0.1);
-    line-height: 1; margin-bottom: 20px;
-  }
-  .step-icon { font-size: 30px; margin-bottom: 14px; }
-  .step-title {
-    font-size: 11px; font-weight: 700; letter-spacing: 2px;
-    color: var(--white); text-transform: uppercase; margin-bottom: 12px;
-  }
-  .step-text { font-size: 13px; line-height: 1.75; color: var(--gray); }
-
-  /* ===== FOOTER ===== */
-  footer {
-    background: var(--black);
-    border-top: 1px solid rgba(201,168,76,0.1);
-    padding: 50px 50px 28px;
-  }
-  .footer-inner {
-    display: grid; grid-template-columns: 1fr auto;
-    align-items: end; gap: 40px; margin-bottom: 28px;
-  }
-  .footer-logo {
-    font-family: 'Playfair Display', serif;
-    font-size: 30px; font-weight: 900;
-    color: var(--gold); letter-spacing: 8px;
-  }
-  .footer-tagline { font-size: 10px; letter-spacing: 3px; color: var(--gray); margin-top: 4px; text-transform: uppercase; }
-  .footer-links { text-align: right; font-size: 10px; letter-spacing: 2px; color: var(--gray); line-height: 2.2; }
-  .footer-links a { color: var(--gold); text-decoration: none; }
-  .footer-divider { height: 1px; background: rgba(201,168,76,0.1); margin-bottom: 20px; }
-  .footer-bottom {
-    display: flex; justify-content: space-between;
-    font-size: 9px; letter-spacing: 2px;
-    color: rgba(122,116,112,0.5); text-transform: uppercase;
-  }
-
-  /* ===== MODAL OVERLAY ===== */
-  .modal-overlay {
-    position: fixed; inset: 0; z-index: 200;
-    background: rgba(0,0,0,0.96);
-    display: flex; align-items: center; justify-content: center;
-    opacity: 0; pointer-events: none;
-    transition: opacity 0.4s;
-  }
-  .modal-overlay.open { opacity: 1; pointer-events: all; }
-
-  .modal-split {
-    display: grid; grid-template-columns: 1fr 1fr;
-    width: 90%; max-width: 860px;
-    max-height: 90vh;
-    overflow: hidden;
-    animation: modalIn 0.5s cubic-bezier(0.22,1,0.36,1) both;
-  }
-  @keyframes modalIn {
-    from { opacity: 0; transform: scale(0.94) translateY(24px); }
-    to { opacity: 1; transform: scale(1) translateY(0); }
-  }
-
-  /* Left: visual panel */
-  .modal-visual {
-    background:
-      linear-gradient(135deg, rgba(201,168,76,0.12) 0%, transparent 60%),
-      var(--dark3);
-    padding: 52px 44px;
-    display: flex; flex-direction: column; justify-content: center;
-    border: 1px solid rgba(201,168,76,0.15);
-    border-right: none;
-    position: relative; overflow: hidden;
-  }
-  .modal-visual-bg {
-    position: absolute; inset: 0;
-    background: repeating-linear-gradient(
-      -55deg,
-      rgba(201,168,76,0.04) 0px,
-      rgba(201,168,76,0.04) 1px,
-      transparent 1px,
-      transparent 14px
-    );
-  }
-  .modal-visual-logo {
-    font-family: 'Playfair Display', serif;
-    font-size: 48px; font-weight: 900; letter-spacing: 8px;
-    color: var(--white); position: relative; z-index: 1;
-  }
-  .modal-visual-logo em { color: var(--gold); font-style: italic; }
-  .modal-visual-tagline {
-    font-size: 10px; letter-spacing: 4px; color: var(--gray);
-    text-transform: uppercase; margin-top: 10px; position: relative; z-index: 1;
-  }
-  .modal-visual-features {
-    margin-top: 44px; position: relative; z-index: 1;
-    display: flex; flex-direction: column; gap: 20px;
-  }
-  .modal-feature {
-    display: flex; align-items: flex-start; gap: 14px;
-  }
-  .modal-feature-icon {
-    width: 32px; height: 32px; border: 1px solid rgba(201,168,76,0.3);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 14px; flex-shrink: 0;
-  }
-  .modal-feature-title { font-size: 11px; font-weight: 600; color: var(--white); margin-bottom: 2px; }
-  .modal-feature-desc { font-size: 11px; color: var(--gray); line-height: 1.5; }
-
-  /* Right: form */
-  .modal-form-panel {
-    background: var(--dark2);
-    border: 1px solid rgba(201,168,76,0.15);
-    padding: 44px 40px;
-    overflow-y: auto;
-    position: relative;
-  }
-  .modal-close {
-    position: absolute; top: 18px; right: 18px;
-    background: none; border: none; color: var(--gray);
-    font-size: 18px; cursor: pointer; transition: color 0.2s;
-    width: 32px; height: 32px;
-    display: flex; align-items: center; justify-content: center;
-  }
-  .modal-close:hover { color: var(--gold); }
-
-  .form-title {
-    font-family: 'Playfair Display', serif;
-    font-size: 30px; font-weight: 700; color: var(--white);
-    margin-bottom: 4px;
-  }
-  .form-subtitle {
-    font-size: 10px; letter-spacing: 3px; color: var(--gold);
-    text-transform: uppercase; margin-bottom: 28px;
-    padding-bottom: 20px;
-    border-bottom: 1px solid rgba(201,168,76,0.12);
-  }
-
-  .type-toggle {
-    display: grid; grid-template-columns: 1fr 1fr;
-    gap: 1px; background: rgba(201,168,76,0.1);
-    margin-bottom: 28px; border: 1px solid rgba(201,168,76,0.1);
-  }
-  .type-btn {
-    background: var(--dark3); border: none;
-    color: var(--gray); font-family: 'DM Sans', sans-serif;
-    font-size: 10px; font-weight: 600; letter-spacing: 2px;
-    padding: 16px 12px; cursor: pointer; transition: all 0.3s;
-    text-transform: uppercase; display: flex; align-items: center;
-    justify-content: center; gap: 8px;
-  }
-  .type-btn.active {
-    background: var(--gold); color: var(--black);
-  }
-
-  .form-group { margin-bottom: 14px; }
-  .form-label {
-    display: block; font-size: 8px; font-weight: 700;
-    letter-spacing: 3px; color: var(--gold);
-    text-transform: uppercase; margin-bottom: 7px;
-  }
-  .form-input {
-    width: 100%; background: var(--dark3);
-    border: 1px solid rgba(201,168,76,0.12);
-    color: var(--white); font-family: 'DM Sans', sans-serif;
-    font-size: 14px; font-weight: 400;
-    padding: 13px 16px; outline: none;
-    transition: border-color 0.3s;
-  }
-  .form-input:focus { border-color: var(--gold); }
-  .form-input::placeholder { color: var(--gray); }
-
-  /* Cloudinary upload area */
-  .upload-area {
-    display: none;
-    border: 1.5px dashed rgba(201,168,76,0.25);
-    padding: 22px; cursor: pointer;
-    text-align: center; transition: all 0.3s;
-    background: var(--dark3);
-    position: relative;
-  }
-  .upload-area:hover { border-color: var(--gold); background: rgba(201,168,76,0.04); }
-  .upload-area.dragging { border-color: var(--gold); background: rgba(201,168,76,0.08); }
-  .upload-icon { font-size: 28px; margin-bottom: 8px; }
-  .upload-text { font-size: 11px; color: var(--gray); line-height: 1.5; }
-  .upload-text strong { color: var(--gold); }
-  .upload-preview {
-    width: 100%; height: 120px; object-fit: cover;
-    display: none; margin-top: 10px; border: 1px solid rgba(201,168,76,0.2);
-  }
-  .upload-progress {
-    display: none; margin-top: 10px;
-    height: 3px; background: rgba(201,168,76,0.1);
-    border-radius: 2px; overflow: hidden;
-  }
-  .upload-progress-bar {
-    height: 100%; background: var(--gold);
-    width: 0%; transition: width 0.3s; border-radius: 2px;
-  }
-  #file-input { display: none; }
-
-  .btn-submit {
-    width: 100%; background: var(--gold); border: none;
-    color: var(--black); font-family: 'DM Sans', sans-serif;
-    font-size: 11px; font-weight: 700; letter-spacing: 3.5px;
-    padding: 18px; cursor: pointer; transition: all 0.3s;
-    text-transform: uppercase; margin-top: 8px;
-    position: relative; overflow: hidden;
-  }
-  .btn-submit:hover { background: var(--gold-light); }
-  .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
-
-  .form-notice {
-    font-size: 10px; color: var(--gray); text-align: center;
-    margin-top: 12px; line-height: 1.6;
-  }
-  .form-notice a { color: var(--gold); cursor: pointer; text-decoration: none; }
-
-  /* ===== TRACKING PANEL ===== */
-  .tracking-panel {
-    position: fixed; right: -400px; top: 0; bottom: 0;
-    width: 380px; background: var(--dark2);
-    border-left: 1px solid rgba(201,168,76,0.18);
-    z-index: 150; transition: right 0.4s cubic-bezier(0.22,1,0.36,1);
-    display: flex; flex-direction: column; overflow-y: auto;
-  }
-  .tracking-panel.open { right: 0; }
-  .tracking-header {
-    padding: 28px 26px 20px;
-    border-bottom: 1px solid rgba(201,168,76,0.1);
-  }
-  .tracking-close {
-    background: none; border: none; color: var(--gray);
-    cursor: pointer; font-size: 16px; float: right; transition: color 0.2s;
-  }
-  .tracking-close:hover { color: var(--gold); }
-  .tracking-title-text {
-    font-family: 'Playfair Display', serif;
-    font-size: 26px; color: var(--white); font-weight: 700;
-  }
-  .tracking-status-text {
-    font-size: 9px; letter-spacing: 3px; color: var(--gold);
-    text-transform: uppercase; margin-top: 4px;
-  }
-  .tracking-map-viz {
-    height: 200px; background: #0a0a08; position: relative; overflow: hidden;
-  }
-  .tracking-map-viz .map-grid { opacity: 1; }
-  .tracking-car-emoji {
-    position: absolute; top: 50%; left: 50%;
-    transform: translate(-50%,-50%);
-    font-size: 32px; z-index: 2;
-    animation: carM1 6s linear infinite;
-  }
-  .tracking-dest-emoji {
-    position: absolute; bottom: 22%; left: 32%; font-size: 20px;
-    animation: pinBounce 1.5s ease infinite;
-  }
-  .tracking-info { padding: 18px 26px; }
-  .tracking-row {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 14px 0; border-bottom: 1px solid rgba(201,168,76,0.07);
-  }
-  .tracking-key { font-size: 9px; letter-spacing: 2px; color: var(--gray); text-transform: uppercase; }
-  .tracking-val { font-size: 14px; color: var(--white); }
-  .tracking-val.gold {
-    color: var(--gold); font-family: 'Playfair Display', serif; font-size: 20px;
-  }
-  .btn-cancel {
-    margin: 18px 26px;
-    background: none; border: 1px solid rgba(212,80,74,0.3);
-    color: var(--accent); font-family: 'DM Sans', sans-serif;
-    font-size: 9px; font-weight: 600; letter-spacing: 3px;
-    padding: 14px; cursor: pointer; width: calc(100% - 52px);
-    text-transform: uppercase; transition: all 0.3s;
-  }
-  .btn-cancel:hover { background: rgba(212,80,74,0.08); border-color: var(--accent); }
-
-  /* ===== TOAST ===== */
-  .toast {
-    position: fixed; bottom: 28px; left: 50%;
-    transform: translateX(-50%) translateY(120px);
-    background: var(--dark2);
-    border: 1px solid rgba(201,168,76,0.25);
-    border-left: 3px solid var(--gold);
-    padding: 16px 24px; min-width: 300px;
-    font-size: 13px; color: var(--white);
-    transition: transform 0.4s cubic-bezier(0.22,1,0.36,1);
-    z-index: 300; display: flex; align-items: center; gap: 12px;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-  }
-  .toast.show { transform: translateX(-50%) translateY(0); }
-  .toast-icon { color: var(--gold); font-size: 18px; }
-
-  /* ===== RESPONSIVE ===== */
-  @media (max-width: 1100px) {
-    .main-content { grid-template-columns: 1fr; }
-    .map-section { display: none; }
-    .steps-grid { grid-template-columns: repeat(2, 1fr); }
-    .search-bar { grid-template-columns: 1fr 1fr; }
-    .search-btn { grid-column: 1/-1; padding: 18px; }
-    .modal-split { grid-template-columns: 1fr; max-width: 480px; }
-    .modal-visual { display: none; }
-  }
-  @media (max-width: 700px) {
-    .topbar { padding: 14px 20px; }
-    .nav-links { display: none; }
-    .hero { padding: 0 24px; }
-    .hero-stats { left: 24px; right: 24px; gap: 28px; }
-    .hero-title { letter-spacing: -1px; }
-    .search-section, .fleet-section, .how-section { padding: 50px 24px; }
-    .steps-grid { grid-template-columns: 1fr; }
-    .search-bar { grid-template-columns: 1fr; }
-    footer { padding: 40px 24px 24px; }
-    .footer-inner { grid-template-columns: 1fr; }
-    .modal-form-panel { padding: 32px 24px; }
-    .hero-deco-num { display: none; }
-  }
+/* holographic overlay on cards */
+@keyframes holoShift{
+  0%{background-position:0% 50%;}
+  50%{background-position:100% 50%;}
+  100%{background-position:0% 50%;}
+}
 </style>
 </head>
 <body>
 
-<!-- TOP BAR -->
-<header class="topbar">
-  <a class="logo" href="#">VEL<span class="dot">·</span>OX</a>
-  <nav class="nav-links">
-    <a class="nav-link" onclick="scrollTo({top:0,behavior:'smooth'})">Accueil</a>
-    <a class="nav-link" onclick="document.querySelector('.fleet-section').scrollIntoView({behavior:'smooth'})">Flotte</a>
-    <a class="nav-link" onclick="document.querySelector('.how-section').scrollIntoView({behavior:'smooth'})">Fonctionnement</a>
-    <a class="nav-link" href="provider.html">Fournisseurs</a>
-  </nav>
-  <div class="topbar-right">
-    <div class="lang-switcher">
-      <button class="lang-btn active" onclick="setLang('fr',this)">FR</button>
-      <button class="lang-btn" onclick="setLang('en',this)">EN</button>
-      <button class="lang-btn" onclick="setLang('zh',this)">中文</button>
+<canvas id="bgCanvas"></canvas>
+
+<!-- SPLASH -->
+<div id="splash">
+  <div class="sp-cross">
+    <div class="sp-ring sp-ring1"></div>
+    <div class="sp-ring sp-ring2"></div>
+    <div class="sp-ring sp-ring3"></div>
+    <div class="sp-avatar-wrap">
+      <img class="sp-avatar" src="aella.jpg" onerror="this.style.display='none';document.getElementById('spf').style.display='flex'">
+      <div class="sp-fallback" id="spf" style="display:none">A</div>
+      <div class="sp-scan"></div>
+    </div>
+    <div class="holo-cross"></div>
+  </div>
+  <div class="sp-name">AELLA</div>
+  <div class="sp-sub">Intelligence Artificielle · Pharmacies de Garde</div>
+  <button class="sp-btn" onclick="boot()">Activer AELLA</button>
+</div>
+
+<!-- NAV MODAL -->
+<div class="nav-modal" id="navModal">
+  <div class="nav-hdr">
+    <div style="width:36px;height:36px;border-radius:9px;background:linear-gradient(135deg,rgba(0,170,255,0.1),rgba(0,190,212,0.1));border:1px solid rgba(0,170,255,0.2);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0">📍</div>
+    <div class="nav-title" id="navTitle">Navigation</div>
+    <button class="nav-close" onclick="closeNav()">✕</button>
+  </div>
+  <iframe id="navFrame" src="about:blank" allowfullscreen></iframe>
+  <div class="nav-ftr">
+    <div class="nav-dest" id="navDest">—</div>
+    <button class="gmaps-btn" onclick="gmaps()">🚗 Google Maps</button>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="tb-cross" id="tbCross"></div>
+    <div class="tb-name">AELLA</div>
+    <div class="tb-divider"></div>
+    <div class="tb-sub">IA Médicale · Pharmacies de Garde</div>
+    <div class="tb-right">
+      <div class="tb-loc" id="tbLoc">📡 Localisation...</div>
+      <div class="tb-pill"><div class="pill-dot"></div><span>SYSTÈME ACTIF</span></div>
     </div>
   </div>
-</header>
 
-<!-- HERO -->
-<section class="hero">
-  <div class="hero-bg"></div>
-  <div class="hero-texture"></div>
-  <div class="hero-deco-num">V</div>
-
-  <div class="hero-content">
-    <div class="hero-tag">
-      <span class="hero-tag-line"></span>
-      <span id="hero-eyebrow">Location de véhicules premium</span>
+  <!-- LEFT -->
+  <div class="left">
+    <div class="av-section">
+      <div class="av-holo">
+        <div class="av-ring av-r1"></div>
+        <div class="av-ring av-r2"></div>
+        <div class="av-ring av-r3"></div>
+        <div class="av-img-wrap">
+          <img class="av-img" src="aella.jpg" onerror="this.style.display='none';document.getElementById('af').style.display='flex'">
+          <div class="av-fallback" id="af" style="display:none">A</div>
+          <div class="av-scan"></div>
+        </div>
+        <div class="orbit-dot od1"></div>
+        <div class="orbit-dot od2"></div>
+      </div>
+      <div class="av-name">AELLA</div>
+      <div class="av-title">Assistante Médicale Vocale</div>
+      <div class="wave-bars" id="waveBars">
+        <div class="wb" id="w1"></div><div class="wb" id="w2"></div>
+        <div class="wb" id="w3"></div><div class="wb" id="w4"></div>
+        <div class="wb" id="w5"></div><div class="wb" id="w6"></div>
+        <div class="wb" id="w7"></div><div class="wb" id="w8"></div>
+      </div>
     </div>
-    <h1 class="hero-title" id="hero-title">
-      Le <span class="italic">luxe</span><br>
-      <span class="outline">en</span> mouvement
-    </h1>
-    <p class="hero-desc" id="hero-sub">
-      Déménagement · Luxe · Trois Roues · Cargo. Une flotte d'exception, disponible à la demande, partout à Abidjan.
-    </p>
-    <div class="hero-cta">
-      <button class="btn-gold" id="btn-order" onclick="document.querySelector('.search-section').scrollIntoView({behavior:'smooth'})">
-        <span>Commander maintenant</span>
+
+    <!-- MIC -->
+    <div class="mic-wrap">
+      <button class="big-mic" id="bigMic" onclick="toggleListen()">
+        <div class="sound-rings">
+          <div class="sr sr1"></div>
+          <div class="sr sr2"></div>
+          <div class="sr sr3"></div>
+        </div>
+        <svg class="mic-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="9" y="2" width="6" height="11" rx="3"/>
+          <path d="M5 10a7 7 0 0 0 14 0"/>
+          <line x1="12" y1="19" x2="12" y2="22"/>
+          <line x1="8" y1="22" x2="16" y2="22"/>
+        </svg>
       </button>
-      <button class="btn-outline" id="btn-how" onclick="document.querySelector('.how-section').scrollIntoView({behavior:'smooth'})">
-        Comment ça marche
-      </button>
+      <div class="mic-lbl" id="micLbl">APPUYEZ POUR PARLER</div>
+    </div>
+
+    <!-- QUICK ACTIONS -->
+    <div class="qa-wrap">
+      <div class="sec-lbl">Commandes rapides</div>
+      <div class="qa-list">
+        <button class="qa-btn" onclick="say('Trouve les pharmacies de garde près de moi')"><div class="qa-ic">🔍</div>Pharmacies près de moi</button>
+        <button class="qa-btn" onclick="say('Quelle pharmacie est ouverte cette nuit ?')"><div class="qa-ic">🌙</div>Ouvertes cette nuit</button>
+        <button class="qa-btn" onclick="say('Conduis-moi à la pharmacie de garde la plus proche')"><div class="qa-ic">🗺️</div>Navigation directe</button>
+        <button class="qa-btn" onclick="say('Pharmacies de garde à Abidjan maintenant')"><div class="qa-ic">📍</div>Abidjan</button>
+        <button class="qa-btn" onclick="say('Urgence médicament pharmacie ouverte maintenant')"><div class="qa-ic">🚨</div>Urgence médicament</button>
+      </div>
+    </div>
+
+    <!-- LOC -->
+    <div class="loc-wrap">
+      <div class="sec-lbl">Ma position</div>
+      <div class="loc-card">
+        <div class="loc-ic">📡</div>
+        <div class="loc-v" id="locVal">Localisation en cours...</div>
+      </div>
     </div>
   </div>
 
-  <div class="hero-stats">
-    <div class="stat-item">
-      <div class="stat-num">240<em>+</em></div>
-      <div class="stat-label">Véhicules actifs</div>
-    </div>
-    <div class="hero-stats-divider"></div>
-    <div class="stat-item">
-      <div class="stat-num">4<em>min</em></div>
-      <div class="stat-label">Temps moyen</div>
-    </div>
-    <div class="hero-stats-divider"></div>
-    <div class="stat-item">
-      <div class="stat-num">24<em>/7</em></div>
-      <div class="stat-label">Disponibilité</div>
-    </div>
-  </div>
-</section>
-
-<!-- SEARCH -->
-<section class="search-section">
-  <div class="section-eyebrow" id="sl-search">Recherche</div>
-  <h2 class="section-title" id="st-search">Trouvez votre véhicule idéal</h2>
-
-  <div class="search-bar">
-    <div class="search-field">
-      <span class="search-field-label" id="label-from">Départ</span>
-      <input id="input-from" type="text" placeholder="Votre adresse...">
-    </div>
-    <div class="search-field">
-      <span class="search-field-label" id="label-to">Destination</span>
-      <input id="input-to" type="text" placeholder="Où allez-vous ?">
-    </div>
-    <div class="search-field">
-      <span class="search-field-label" id="label-type">Type</span>
-      <select id="select-type" style="color:var(--white)">
-        <option value="">Tous</option>
-        <option value="xl">XL</option>
-        <option value="xxl">XXL</option>
-        <option value="xxxl">XXXL</option>
-        <option value="luxe">Luxe</option>
-        <option value="3roues">3 Roues</option>
-        <option value="demenagement">Déménagement</option>
-      </select>
-    </div>
-    <button class="search-btn" id="btn-search" onclick="searchVehicles()">Rechercher</button>
-  </div>
-
-  <div class="cat-filters">
-    <button class="cat-btn active" data-cat="all" onclick="filterCat(this,'all')" id="cat-all">Tous</button>
-    <button class="cat-btn" data-cat="xl" onclick="filterCat(this,'xl')">XL</button>
-    <button class="cat-btn" data-cat="xxl" onclick="filterCat(this,'xxl')">XXL</button>
-    <button class="cat-btn" data-cat="xxxl" onclick="filterCat(this,'xxxl')">XXXL</button>
-    <button class="cat-btn" data-cat="luxe" onclick="filterCat(this,'luxe')" id="cat-luxe">Luxe</button>
-    <button class="cat-btn" data-cat="3roues" onclick="filterCat(this,'3roues')" id="cat-3w">3 Roues</button>
-    <button class="cat-btn" data-cat="demenagement" onclick="filterCat(this,'demenagement')" id="cat-dem">Déménagement</button>
-  </div>
-</section>
-
-<!-- FLEET + MAP -->
-<div class="main-content">
-  <section class="fleet-section">
-    <div class="section-eyebrow" id="sl-fleet">Notre Flotte</div>
-    <h2 class="section-title" id="st-fleet">Véhicules disponibles</h2>
-    <div class="fleet-grid" id="fleet-grid">
-      <!-- Populated by JS -->
-    </div>
-  </section>
-
-  <aside class="map-section">
-    <div class="map-header">
-      <span class="map-title-text">Carte en direct</span>
-      <div class="live-badge"><div class="live-dot"></div> Live</div>
-    </div>
-    <div id="map">
-      <div class="map-grid"></div>
-      <div class="map-car map-car-1">🚗</div>
-      <div class="map-car map-car-2">🚐</div>
-      <div class="map-car map-car-3">🛺</div>
-      <div class="map-pin">📍</div>
-      <div class="map-overlay">
-        <div class="driver-row">
-          <div class="driver-avatar">👨‍✈️</div>
-          <div>
-            <div class="driver-name-text">Jean-Paul K.</div>
-            <div class="driver-eta-text">Arrivée dans 2 min</div>
+  <!-- RIGHT -->
+  <div class="right">
+    <div class="chat" id="chatArea">
+      <div class="msg aella">
+        <div class="msg-av av-a">A</div>
+        <div>
+          <div class="bub">
+            Bonjour, je suis <strong>AELLA</strong> ✚<br>
+            Votre assistante médicale vocale pour les pharmacies de garde.<br><br>
+            <em>Appuyez sur le microphone et parlez.</em> Je localise les pharmacies ouvertes partout dans le monde, vous donne leurs coordonnées et vous y guide.
           </div>
-          <div style="margin-left:auto;text-align:right;">
-            <div class="driver-stars">★★★★★</div>
-            <div class="driver-rating-num">4.9</div>
-          </div>
+          <div class="msg-t" id="t0"></div>
         </div>
       </div>
-    </div>
-  </aside>
-</div>
-
-<!-- HOW IT WORKS -->
-<section class="how-section">
-  <div class="section-eyebrow" id="sl-how">Processus</div>
-  <h2 class="section-title" id="st-how">Comment ça fonctionne</h2>
-  <div class="steps-grid">
-    <div class="step">
-      <div class="step-num">01</div>
-      <div class="step-icon">📍</div>
-      <div class="step-title" id="step1-t">Indiquez votre adresse</div>
-      <p class="step-text" id="step1-p">Entrez votre point de départ et votre destination. Notre système localise les véhicules disponibles autour de vous en temps réel.</p>
-    </div>
-    <div class="step">
-      <div class="step-num">02</div>
-      <div class="step-icon">🚗</div>
-      <div class="step-title" id="step2-t">Choisissez votre véhicule</div>
-      <p class="step-text" id="step2-p">Sélectionnez parmi notre flotte XL, XXL, XXXL, luxe ou trois roues selon vos besoins de déménagement ou de transport.</p>
-    </div>
-    <div class="step">
-      <div class="step-num">03</div>
-      <div class="step-icon">⚡</div>
-      <div class="step-title" id="step3-t">Confirmation instantanée</div>
-      <p class="step-text" id="step3-p">Votre commande est envoyée aux fournisseurs disponibles. Le premier à accepter vous est assigné avec notification immédiate.</p>
-    </div>
-    <div class="step">
-      <div class="step-num">04</div>
-      <div class="step-icon">📡</div>
-      <div class="step-title" id="step4-t">Suivi en temps réel</div>
-      <p class="step-text" id="step4-p">Suivez le déplacement de votre chauffeur sur la carte en direct. Arrivée estimée et mises à jour continues jusqu'à destination.</p>
-    </div>
-  </div>
-</section>
-
-<!-- FOOTER -->
-<footer>
-  <div class="footer-inner">
-    <div>
-      <div class="footer-logo">VELOX</div>
-      <div class="footer-tagline" id="tagline">Transport Premium — Disponible 24h/24</div>
-    </div>
-    <div class="footer-links">
-      <div><a href="provider.html">Espace Fournisseur →</a></div>
-      <div style="margin-top:6px;font-size:9px;color:var(--gray)">contact@velox.ci</div>
-      <div style="font-size:9px;color:var(--gray)">Abidjan, Côte d'Ivoire</div>
-    </div>
-  </div>
-  <div class="footer-divider"></div>
-  <div class="footer-bottom">
-    <span>© 2025 VELOX. Tous droits réservés.</span>
-    <span>Abidjan · Côte d'Ivoire</span>
-  </div>
-</footer>
-
-<!-- ===== MODAL INSCRIPTION ===== -->
-<div class="modal-overlay" id="modal">
-  <div class="modal-split">
-
-    <!-- Visual side -->
-    <div class="modal-visual">
-      <div class="modal-visual-bg"></div>
-      <div class="modal-visual-logo">VEL<em>OX</em></div>
-      <div class="modal-visual-tagline">Plateforme de transport premium</div>
-      <div class="modal-visual-features">
-        <div class="modal-feature">
-          <div class="modal-feature-icon">🚗</div>
-          <div>
-            <div class="modal-feature-title">240+ véhicules</div>
-            <div class="modal-feature-desc">Une flotte variée pour tous vos besoins</div>
-          </div>
-        </div>
-        <div class="modal-feature">
-          <div class="modal-feature-icon">⚡</div>
-          <div>
-            <div class="modal-feature-title">Disponible 24h/24</div>
-            <div class="modal-feature-desc">Service continu, 7 jours sur 7</div>
-          </div>
-        </div>
-        <div class="modal-feature">
-          <div class="modal-feature-icon">📍</div>
-          <div>
-            <div class="modal-feature-title">Suivi en temps réel</div>
-            <div class="modal-feature-desc">Suivez votre commande à la minute</div>
-          </div>
-        </div>
+      <div class="tw" id="tw">
+        <div class="msg-av av-a">A</div>
+        <div class="tbub" id="tb"><div class="td"></div><div class="td"></div><div class="td"></div></div>
       </div>
     </div>
 
-    <!-- Form side -->
-    <div class="modal-form-panel">
-      <button class="modal-close" id="modal-close-btn" onclick="closeModal()">✕</button>
-
-      <h2 class="form-title" id="modal-title">Rejoindre VELOX</h2>
-      <div class="form-subtitle" id="modal-sub">Créer votre compte gratuit</div>
-
-      <!-- Type toggle -->
-      <div class="type-toggle">
-        <button class="type-btn active" id="btn-client" onclick="switchType('client')">
-          🧳 <span id="lbl-client">Client</span>
-        </button>
-        <button class="type-btn" id="btn-provider" onclick="switchType('provider')">
-          🚗 <span id="lbl-provider">Fournisseur</span>
-        </button>
+    <div class="map-panel">
+      <div class="map-bar">
+        <span style="font-size:14px">🏥</span>
+        <span class="map-lbl">Carte des pharmacies</span>
+        <span class="map-coord" id="mapC">— position —</span>
       </div>
-
-      <div class="form-group">
-        <label class="form-label" id="fl-name">Nom complet</label>
-        <input class="form-input" id="inp-name" type="text" placeholder="Votre nom complet">
+      <div id="map" style="display:none"></div>
+      <div class="map-ph" id="mapPh">
+        <div class="map-ph-ic">🗺️</div>
+        <div class="map-ph-t">La carte des pharmacies s'affiche ici</div>
       </div>
-      <div class="form-group">
-        <label class="form-label" id="fl-phone">Téléphone</label>
-        <input class="form-input" id="inp-phone" type="tel" placeholder="+225 07 XX XX XX XX">
-      </div>
-      <div class="form-group">
-        <label class="form-label" id="fl-email">Email</label>
-        <input class="form-input" id="inp-email" type="email" placeholder="exemple@email.com">
-      </div>
-
-      <!-- Vehicle photo — fournisseur only -->
-      <div class="form-group" id="vehicle-photo-field" style="display:none">
-        <label class="form-label" id="fl-photo">Photo du véhicule <span style="color:var(--accent)">*</span></label>
-        <div class="upload-area" id="upload-area" onclick="document.getElementById('file-input').click()"
-          ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
-          <div class="upload-icon">📷</div>
-          <div class="upload-text"><strong>Cliquez</strong> ou glissez votre photo ici<br><span style="font-size:10px">JPG, PNG — max 10 Mo</span></div>
-          <img class="upload-preview" id="upload-preview" alt="Aperçu">
-          <div class="upload-progress" id="upload-progress">
-            <div class="upload-progress-bar" id="upload-progress-bar"></div>
-          </div>
-        </div>
-        <input type="file" id="file-input" accept="image/*" onchange="handleFileSelect(event)">
-        <input type="hidden" id="cloudinary-url" value="">
-      </div>
-
-      <!-- Nom du véhicule — fournisseur only -->
-      <div class="form-group" id="vehicle-name-field" style="display:none">
-        <label class="form-label" id="fl-vname">Nom / Modèle du véhicule</label>
-        <input class="form-input" id="inp-vname" type="text" placeholder="ex: Toyota HiAce XL">
-      </div>
-
-      <div class="form-group">
-        <label class="form-label" id="fl-pw">Mot de passe</label>
-        <input class="form-input" id="inp-pw" type="password" placeholder="••••••••">
-      </div>
-
-      <button class="btn-submit" id="btn-submit" onclick="submitForm()">
-        <span id="btn-submit-text">S'inscrire →</span>
-      </button>
-
-      <p class="form-notice" id="form-notice">
-        En vous inscrivant, vous acceptez nos <a>Conditions d'utilisation</a> et notre <a>Politique de confidentialité</a>.
-      </p>
     </div>
   </div>
 </div>
 
-<!-- TRACKING PANEL -->
-<div class="tracking-panel" id="tracking-panel">
-  <div class="tracking-header">
-    <button class="tracking-close" onclick="closeTracking()">✕</button>
-    <div class="tracking-title-text" id="tr-title">En Route</div>
-    <div class="tracking-status-text" id="tr-status">Chauffeur en approche</div>
-  </div>
-  <div class="tracking-map-viz">
-    <div class="map-grid"></div>
-    <div class="tracking-car-emoji">🚗</div>
-    <div class="tracking-dest-emoji">📍</div>
-  </div>
-  <div class="tracking-info">
-    <div class="tracking-row">
-      <span class="tracking-key" id="tk-driver">Chauffeur</span>
-      <span class="tracking-val" id="tr-driver-name">Jean-Paul K.</span>
-    </div>
-    <div class="tracking-row">
-      <span class="tracking-key" id="tk-vehicle">Véhicule</span>
-      <span class="tracking-val" id="tr-vehicle">—</span>
-    </div>
-    <div class="tracking-row">
-      <span class="tracking-key" id="tk-eta">Arrivée estimée</span>
-      <span class="tracking-val gold" id="tr-eta">4 min</span>
-    </div>
-    <div class="tracking-row">
-      <span class="tracking-key" id="tk-price">Tarif</span>
-      <span class="tracking-val gold" id="tr-price">—</span>
-    </div>
-  </div>
-  <button class="btn-cancel" id="btn-cancel" onclick="cancelOrder()">Annuler la commande</button>
-</div>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+/* ======= ANIMATED BG CANVAS ======= */
+(()=>{
+  const c=document.getElementById('bgCanvas');
+  const ctx=c.getContext('2d');
+  let W,H,pts=[];
+  const resize=()=>{W=c.width=innerWidth;H=c.height=innerHeight;};
+  resize(); window.addEventListener('resize',resize);
 
-<!-- TOAST -->
-<div class="toast" id="toast">
-  <span class="toast-icon">✓</span>
-  <span id="toast-msg">Commande envoyée avec succès !</span>
-</div>
-
-<!-- FIREBASE + APP SCRIPT -->
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import {
-  getFirestore, collection, onSnapshot, addDoc, serverTimestamp, query, where
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyBsGrY-AqYMoI70kT3WMxLgW0HwYA4KyaQ",
-  authDomain: "livraison-c8498.firebaseapp.com",
-  projectId: "livraison-c8498",
-  storageBucket: "livraison-c8498.firebasestorage.app",
-  messagingSenderId: "403240604780",
-  appId: "1:403240604780:web:77d84ad03d68bdaddfb449"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
-// ===== CLOUDINARY CONFIG =====
-const cloudinaryConfig = {
-  cloudName: 'djxcqczh1',
-  uploadPreset: 'database'
-};
-
-// ===== AUTO-OPEN MODAL ON PAGE LOAD =====
-window.addEventListener('load', () => {
-  // Check if user is already registered
-  const userType = localStorage.getItem('velox_user_type');
-  if (!userType) {
-    // New visitor: open modal automatically after 600ms
-    setTimeout(() => openModal(), 600);
-  }
-});
-
-// ===== TRANSLATIONS =====
-const LANGS = {
-  fr: {
-    hero_eyebrow: "Location de véhicules premium",
-    hero_title: `Le <span class="italic">luxe</span><br><span class="outline">en</span> mouvement`,
-    hero_sub: "Déménagement · Luxe · Trois Roues · Cargo. Une flotte d'exception, disponible à la demande, partout à Abidjan.",
-    btn_order: "Commander maintenant", btn_how: "Comment ça marche",
-    sl_search: "Recherche", st_search: "Trouvez votre véhicule idéal",
-    label_from: "Départ", label_to: "Destination", label_type: "Type",
-    btn_search: "Rechercher",
-    sl_fleet: "Notre Flotte", st_fleet: "Véhicules disponibles",
-    sl_how: "Processus", st_how: "Comment ça fonctionne",
-    step1_t:"Indiquez votre adresse", step1_p:"Entrez votre point de départ et votre destination. Notre système localise les véhicules disponibles autour de vous en temps réel.",
-    step2_t:"Choisissez votre véhicule", step2_p:"Sélectionnez parmi notre flotte XL, XXL, XXXL, luxe ou trois roues selon vos besoins de déménagement ou de transport.",
-    step3_t:"Confirmation instantanée", step3_p:"Votre commande est envoyée aux fournisseurs disponibles. Le premier à accepter vous est assigné avec notification immédiate.",
-    step4_t:"Suivi en temps réel", step4_p:"Suivez le déplacement de votre chauffeur sur la carte en direct. Arrivée estimée et mises à jour continues jusqu'à destination.",
-    tagline:"Transport Premium — Disponible 24h/24",
-    modal_title:"Rejoindre VELOX", modal_sub:"Créer votre compte gratuit",
-    lbl_client:"Client", lbl_provider:"Fournisseur",
-    fl_name:"Nom complet", fl_phone:"Téléphone", fl_email:"Email",
-    fl_photo:"Photo du véhicule", fl_vname:"Nom / Modèle du véhicule", fl_pw:"Mot de passe",
-    btn_submit:"S'inscrire →",
-    form_notice:`En vous inscrivant, vous acceptez nos <a>Conditions d'utilisation</a> et notre <a>Politique de confidentialité</a>.`,
-    tr_title:"En Route", tr_status:"Chauffeur en approche",
-    tk_driver:"Chauffeur", tk_vehicle:"Véhicule", tk_eta:"Arrivée estimée", tk_price:"Tarif",
-    btn_cancel:"Annuler la commande",
-    toast_ok:"Commande envoyée avec succès !",
-    toast_account:"Compte créé ! Bienvenue sur VELOX.",
-    cat_all:"Tous", cat_luxe:"Luxe", cat_3w:"3 Roues", cat_dem:"Déménagement",
-    no_vehicle:"Aucun véhicule disponible pour le moment",
-    reserve:"Réserver",
-  },
-  en: {
-    hero_eyebrow:"Premium vehicle rental",
-    hero_title:`<span class="italic">Luxury</span><br><span class="outline">in</span> motion`,
-    hero_sub:"Moving · Luxury · Three-Wheeler · Cargo. A premium fleet, on demand, across Abidjan.",
-    btn_order:"Book now", btn_how:"How it works",
-    sl_search:"Search", st_search:"Find your ideal vehicle",
-    label_from:"From", label_to:"Destination", label_type:"Type",
-    btn_search:"Search",
-    sl_fleet:"Our Fleet", st_fleet:"Available vehicles",
-    sl_how:"Process", st_how:"How it works",
-    step1_t:"Enter your address", step1_p:"Enter your starting point and destination.",
-    step2_t:"Choose your vehicle", step2_p:"Select from our fleet based on your needs.",
-    step3_t:"Instant confirmation", step3_p:"Your order is sent to available providers.",
-    step4_t:"Real-time tracking", step4_p:"Track your driver on the live map.",
-    tagline:"Premium Transport — Available 24/7",
-    modal_title:"Join VELOX", modal_sub:"Create your free account",
-    lbl_client:"Client", lbl_provider:"Provider",
-    fl_name:"Full name", fl_phone:"Phone", fl_email:"Email",
-    fl_photo:"Vehicle photo", fl_vname:"Vehicle name / model", fl_pw:"Password",
-    btn_submit:"Sign up →",
-    form_notice:`By signing up, you agree to our <a>Terms</a> and <a>Privacy Policy</a>.`,
-    tr_title:"On the Way", tr_status:"Driver approaching",
-    tk_driver:"Driver", tk_vehicle:"Vehicle", tk_eta:"ETA", tk_price:"Price",
-    btn_cancel:"Cancel order",
-    toast_ok:"Order sent successfully!",
-    toast_account:"Account created! Welcome to VELOX.",
-    cat_all:"All", cat_luxe:"Luxury", cat_3w:"3-Wheeler", cat_dem:"Moving",
-    no_vehicle:"No vehicles available at the moment",
-    reserve:"Reserve",
-  },
-  zh: {
-    hero_eyebrow:"高端车辆租赁服务",
-    hero_title:`<span class="italic">奢华</span><br><span class="outline">出行</span>体验`,
-    hero_sub:"搬家 · 豪华 · 三轮车 · 货运。顶级车队，随叫随到，覆盖阿比让全城。",
-    btn_order:"立即预订", btn_how:"如何使用",
-    sl_search:"搜索", st_search:"找到您理想的车辆",
-    label_from:"出发地", label_to:"目的地", label_type:"类型",
-    btn_search:"搜索",
-    sl_fleet:"我们的车队", st_fleet:"可用车辆",
-    sl_how:"流程", st_how:"如何使用",
-    step1_t:"输入您的地址", step1_p:"输入您的出发地和目的地。",
-    step2_t:"选择您的车辆", step2_p:"根据您的需求从我们的车队中选择。",
-    step3_t:"即时确认", step3_p:"您的订单将发送给可用的供应商。",
-    step4_t:"实时跟踪", step4_p:"在实时地图上跟踪您的司机。",
-    tagline:"高端运输 — 全天候服务",
-    modal_title:"加入 VELOX", modal_sub:"创建免费账户",
-    lbl_client:"客户", lbl_provider:"供应商",
-    fl_name:"全名", fl_phone:"电话", fl_email:"电子邮件",
-    fl_photo:"车辆照片", fl_vname:"车辆名称/型号", fl_pw:"密码",
-    btn_submit:"注册 →",
-    form_notice:`注册即表示您同意我们的<a>服务条款</a>和<a>隐私政策</a>。`,
-    tr_title:"途中", tr_status:"司机正在赶来",
-    tk_driver:"司机", tk_vehicle:"车辆", tk_eta:"预计到达", tk_price:"价格",
-    btn_cancel:"取消订单",
-    toast_ok:"订单发送成功！",
-    toast_account:"账户已创建！欢迎来到VELOX。",
-    cat_all:"全部", cat_luxe:"豪华", cat_3w:"三轮车", cat_dem:"搬家",
-    no_vehicle:"目前暂无可用车辆",
-    reserve:"预订",
-  }
-};
-
-let currentLang = 'fr';
-let currentFilter = 'all';
-let allVehicles = [];
-
-window.setLang = function(lang, btn) {
-  currentLang = lang;
-  document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  applyTranslations();
-};
-
-function applyTranslations() {
-  const t = LANGS[currentLang];
-  document.getElementById('hero-eyebrow').textContent = t.hero_eyebrow;
-  document.getElementById('hero-title').innerHTML = t.hero_title;
-  document.getElementById('hero-sub').textContent = t.hero_sub;
-  document.getElementById('btn-order').innerHTML = `<span>${t.btn_order}</span>`;
-  document.getElementById('btn-how').textContent = t.btn_how;
-  document.getElementById('sl-search').innerHTML = `<span style="display:block;width:24px;height:1px;background:var(--gold)"></span>${t.sl_search}`;
-  document.getElementById('st-search').textContent = t.st_search;
-  document.getElementById('label-from').textContent = t.label_from;
-  document.getElementById('label-to').textContent = t.label_to;
-  document.getElementById('label-type').textContent = t.label_type;
-  document.getElementById('btn-search').textContent = t.btn_search;
-  document.getElementById('sl-fleet').innerHTML = `<span style="display:block;width:24px;height:1px;background:var(--gold)"></span>${t.sl_fleet}`;
-  document.getElementById('st-fleet').textContent = t.st_fleet;
-  document.getElementById('sl-how').innerHTML = `<span style="display:block;width:24px;height:1px;background:var(--gold)"></span>${t.sl_how}`;
-  document.getElementById('st-how').textContent = t.st_how;
-  document.getElementById('step1-t').textContent = t.step1_t;
-  document.getElementById('step1-p').textContent = t.step1_p;
-  document.getElementById('step2-t').textContent = t.step2_t;
-  document.getElementById('step2-p').textContent = t.step2_p;
-  document.getElementById('step3-t').textContent = t.step3_t;
-  document.getElementById('step3-p').textContent = t.step3_p;
-  document.getElementById('step4-t').textContent = t.step4_t;
-  document.getElementById('step4-p').textContent = t.step4_p;
-  document.getElementById('tagline').textContent = t.tagline;
-  document.getElementById('modal-title').textContent = t.modal_title;
-  document.getElementById('modal-sub').textContent = t.modal_sub;
-  document.getElementById('lbl-client').textContent = t.lbl_client;
-  document.getElementById('lbl-provider').textContent = t.lbl_provider;
-  document.getElementById('fl-name').textContent = t.fl_name;
-  document.getElementById('fl-phone').textContent = t.fl_phone;
-  document.getElementById('fl-email').textContent = t.fl_email;
-  document.getElementById('fl-photo').innerHTML = `${t.fl_photo} <span style="color:var(--accent)">*</span>`;
-  document.getElementById('fl-vname').textContent = t.fl_vname;
-  document.getElementById('fl-pw').textContent = t.fl_pw;
-  document.getElementById('btn-submit-text').textContent = t.btn_submit;
-  document.getElementById('form-notice').innerHTML = t.form_notice;
-  document.getElementById('tr-title').textContent = t.tr_title;
-  document.getElementById('tr-status').textContent = t.tr_status;
-  document.getElementById('tk-driver').textContent = t.tk_driver;
-  document.getElementById('tk-vehicle').textContent = t.tk_vehicle;
-  document.getElementById('tk-eta').textContent = t.tk_eta;
-  document.getElementById('tk-price').textContent = t.tk_price;
-  document.getElementById('btn-cancel').textContent = t.btn_cancel;
-  document.getElementById('cat-all').textContent = t.cat_all;
-  document.getElementById('cat-luxe').textContent = t.cat_luxe;
-  document.getElementById('cat-3w').textContent = t.cat_3w;
-  document.getElementById('cat-dem').textContent = t.cat_dem;
-  renderVehicles();
-}
-
-// ===== VEHICLE ICONS =====
-const catIcons = {
-  xl:'🚐', xxl:'🚌', xxxl:'🚚', luxe:'🏎️', '3roues':'🛺', demenagement:'📦'
-};
-
-function renderVehicles() {
-  const t = LANGS[currentLang];
-  const grid = document.getElementById('fleet-grid');
-  const filtered = currentFilter === 'all'
-    ? allVehicles
-    : allVehicles.filter(v => v.category === currentFilter);
-
-  if (filtered.length === 0) {
-    grid.innerHTML = `
-      <div class="no-vehicle-msg">
-        <div class="nv-icon">🚗</div>
-        <p>${t.no_vehicle}</p>
-      </div>`;
-    return;
-  }
-
-  grid.innerHTML = filtered.map(v => `
-    <div class="vehicle-card">
-      <div class="vehicle-badge">${(v.category||'').toUpperCase()}</div>
-      ${v.photoURL
-        ? `<img class="vehicle-img" src="${v.photoURL}" alt="${v.name || 'Véhicule'}">`
-        : `<div class="vehicle-img-placeholder">${catIcons[v.category] || '🚗'}</div>`
-      }
-      <div class="vehicle-info">
-        <div class="vehicle-name">${v.name || 'Véhicule'}</div>
-        <div class="vehicle-owner">${v.ownerName || ''}</div>
-        <div class="vehicle-footer">
-          <div class="vehicle-price">${v.price || '—'} <small>FCFA</small></div>
-          <button class="btn-reserve" onclick="orderVehicle('${v.id}','${(v.name||'').replace(/'/g,"\\'")}','${(v.ownerName||'').replace(/'/g,"\\'")}','${v.price||''}')">
-            ${t.reserve}
-          </button>
-        </div>
-      </div>
-    </div>
-  `).join('');
-}
-
-// Listen Firestore vehicles
-const q = query(collection(db, 'vehicles'), where('published', '==', true));
-onSnapshot(q, (snap) => {
-  allVehicles = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-  renderVehicles();
-});
-
-window.filterCat = function(btn, cat) {
-  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  currentFilter = cat;
-  renderVehicles();
-};
-
-window.searchVehicles = function() {
-  const cat = document.getElementById('select-type').value;
-  currentFilter = cat || 'all';
-  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
-  const tag = document.querySelector(`.cat-btn[data-cat="${currentFilter}"]`);
-  if (tag) tag.classList.add('active');
-  renderVehicles();
-  document.querySelector('.fleet-section').scrollIntoView({behavior:'smooth'});
-};
-
-window.orderVehicle = async function(vehicleId, vehicleName, ownerName, price) {
-  const from = document.getElementById('input-from').value || 'Adresse non précisée';
-  const to = document.getElementById('input-to').value || 'Destination non précisée';
-  try {
-    await addDoc(collection(db, 'orders'), {
-      vehicleId, vehicleName, ownerName, price,
-      from, to, status: 'pending',
-      createdAt: serverTimestamp()
+  // floating circles (cells/molecules aesthetic)
+  for(let i=0;i<22;i++){
+    pts.push({
+      x:Math.random()*2000,y:Math.random()*1200,
+      vx:(Math.random()-.5)*.18,vy:(Math.random()-.5)*.18,
+      r:Math.random()*60+20,
+      alpha:Math.random()*0.04+0.01,
+      color:Math.random()>.5?'0,170,255':'0,190,212'
     });
-    document.getElementById('tr-vehicle').textContent = vehicleName;
-    document.getElementById('tr-price').textContent = `${price} FCFA`;
-    openTracking();
-    showToast(LANGS[currentLang].toast_ok);
-  } catch(e) {
-    console.error(e);
-    alert('Erreur lors de la commande. Vérifiez votre connexion.');
   }
-};
+  // DNA helix particles
+  let dnaT=0;
+  const draw=()=>{
+    ctx.clearRect(0,0,W,H);
+    // floating orbs
+    pts.forEach(p=>{
+      ctx.beginPath();
+      ctx.arc(p.x%W,p.y%H,p.r,0,Math.PI*2);
+      ctx.fillStyle=`rgba(${p.color},${p.alpha})`;
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(p.x%W,p.y%H,p.r,0,Math.PI*2);
+      ctx.strokeStyle=`rgba(${p.color},${p.alpha*2})`;
+      ctx.lineWidth=0.5;
+      ctx.stroke();
+      p.x+=p.vx; p.y+=p.vy;
+    });
 
-// ===== MODAL =====
-window.openModal = function() {
-  document.getElementById('modal').classList.add('open');
-  document.body.style.overflow = 'hidden';
-};
-
-window.closeModal = function() {
-  // Only allow closing if user already registered
-  const userType = localStorage.getItem('velox_user_type');
-  if (userType) {
-    document.getElementById('modal').classList.remove('open');
-    document.body.style.overflow = '';
-  }
-  // If not registered, don't allow closing (force registration)
-};
-
-window.switchType = function(type) {
-  document.getElementById('btn-client').classList.toggle('active', type === 'client');
-  document.getElementById('btn-provider').classList.toggle('active', type === 'provider');
-  const isProvider = type === 'provider';
-  document.getElementById('vehicle-photo-field').style.display = isProvider ? 'block' : 'none';
-  document.getElementById('vehicle-name-field').style.display = isProvider ? 'block' : 'none';
-  document.getElementById('upload-area').style.display = isProvider ? 'block' : 'none';
-  // Show/hide close button
-  const userType = localStorage.getItem('velox_user_type');
-  document.getElementById('modal-close-btn').style.display = userType ? 'flex' : 'none';
-};
-
-// ===== CLOUDINARY UPLOAD =====
-let uploadedImageUrl = '';
-
-window.handleDragOver = function(e) {
-  e.preventDefault();
-  document.getElementById('upload-area').classList.add('dragging');
-};
-window.handleDragLeave = function(e) {
-  document.getElementById('upload-area').classList.remove('dragging');
-};
-window.handleDrop = function(e) {
-  e.preventDefault();
-  document.getElementById('upload-area').classList.remove('dragging');
-  const file = e.dataTransfer.files[0];
-  if (file && file.type.startsWith('image/')) {
-    uploadToCloudinary(file);
-  }
-};
-window.handleFileSelect = function(e) {
-  const file = e.target.files[0];
-  if (file) uploadToCloudinary(file);
-};
-
-async function uploadToCloudinary(file) {
-  const progressWrap = document.getElementById('upload-progress');
-  const progressBar = document.getElementById('upload-progress-bar');
-  const preview = document.getElementById('upload-preview');
-
-  // Show preview immediately
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    preview.src = e.target.result;
-    preview.style.display = 'block';
+    // ECG line
+    dnaT+=0.5;
+    ctx.beginPath();
+    ctx.strokeStyle='rgba(0,150,220,0.12)';
+    ctx.lineWidth=1.5;
+    let started=false;
+    for(let x=0;x<W;x+=2){
+      const phase=(x/W)*8*Math.PI+dnaT*0.04;
+      let y=H*.75+Math.sin(phase)*8;
+      // ECG spike
+      const mod=((x+Math.floor(dnaT))%(W/3));
+      if(mod<2) y=H*.75-40;
+      else if(mod<6) y=H*.75+20;
+      else if(mod<8) y=H*.75-70;
+      else if(mod<12) y=H*.75+15;
+      else if(mod<14) y=H*.75-10;
+      if(!started){ctx.moveTo(x,y);started=true;}else ctx.lineTo(x,y);
+    }
+    ctx.stroke();
+    requestAnimationFrame(draw);
   };
-  reader.readAsDataURL(file);
-
-  // Show progress
-  progressWrap.style.display = 'block';
-  progressBar.style.width = '10%';
-
-  const formData = new FormData();
-  formData.append('file', file);
-  formData.append('upload_preset', cloudinaryConfig.uploadPreset);
-
-  try {
-    // Simulate progress
-    let progress = 10;
-    const interval = setInterval(() => {
-      progress += Math.random() * 15;
-      if (progress > 85) { clearInterval(interval); progress = 85; }
-      progressBar.style.width = progress + '%';
-    }, 200);
-
-    const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudinaryConfig.cloudName}/image/upload`, {
-      method: 'POST',
-      body: formData
-    });
-    clearInterval(interval);
-
-    if (!res.ok) throw new Error('Upload failed');
-    const data = await res.json();
-    uploadedImageUrl = data.secure_url;
-    document.getElementById('cloudinary-url').value = uploadedImageUrl;
-    progressBar.style.width = '100%';
-    setTimeout(() => { progressWrap.style.display = 'none'; }, 800);
-    showToast('Photo uploadée avec succès ✓');
-  } catch(err) {
-    console.error('Cloudinary error:', err);
-    progressWrap.style.display = 'none';
-    alert('Erreur lors de l\'upload. Vérifiez votre connexion.');
-  }
-}
-
-// ===== FORM SUBMIT =====
-window.submitForm = async function() {
-  const isProvider = document.getElementById('btn-provider').classList.contains('active');
-  const name = document.getElementById('inp-name').value.trim();
-  const phone = document.getElementById('inp-phone').value.trim();
-  const email = document.getElementById('inp-email').value.trim();
-  const password = document.getElementById('inp-pw').value;
-
-  if (!name || !phone || !email || !password) {
-    showToast('Veuillez remplir tous les champs.');
-    return;
-  }
-
-  if (isProvider && !uploadedImageUrl) {
-    showToast('Veuillez uploader une photo de votre véhicule.');
-    return;
-  }
-
-  const btn = document.getElementById('btn-submit');
-  btn.disabled = true;
-  document.getElementById('btn-submit-text').textContent = 'Création en cours…';
-
-  try {
-    if (isProvider) {
-      const vName = document.getElementById('inp-vname').value.trim();
-      // Save provider to Firestore
-      await addDoc(collection(db, 'providers'), {
-        name, phone, email,
-        vehicleName: vName,
-        vehiclePhotoURL: uploadedImageUrl,
-        createdAt: serverTimestamp(),
-        status: 'pending'
-      });
-      // Store locally
-      localStorage.setItem('velox_user_type', 'provider');
-      localStorage.setItem('velox_user_name', name);
-      showToast(LANGS[currentLang].toast_account);
-      document.getElementById('modal').classList.remove('open');
-      document.body.style.overflow = '';
-      // Redirect to provider page
-      setTimeout(() => { window.location.href = 'provider.html'; }, 1200);
-    } else {
-      // Save client to Firestore
-      await addDoc(collection(db, 'clients'), {
-        name, phone, email,
-        createdAt: serverTimestamp()
-      });
-      // Store locally
-      localStorage.setItem('velox_user_type', 'client');
-      localStorage.setItem('velox_user_name', name);
-      showToast(LANGS[currentLang].toast_account);
-      document.getElementById('modal').classList.remove('open');
-      document.body.style.overflow = '';
-      // Stay on index (client page) — show close button now
-      document.getElementById('modal-close-btn').style.display = 'flex';
-    }
-  } catch(e) {
-    console.error(e);
-    showToast('Erreur réseau. Vérifiez votre connexion.');
-  } finally {
-    btn.disabled = false;
-    document.getElementById('btn-submit-text').textContent = LANGS[currentLang].btn_submit;
-  }
-};
-
-// ===== TRACKING =====
-window.openTracking = function() {
-  document.getElementById('tracking-panel').classList.add('open');
-  let eta = 4;
-  const iv = setInterval(() => {
-    eta--;
-    document.getElementById('tr-eta').textContent = eta + ' min';
-    if (eta <= 0) {
-      clearInterval(iv);
-      document.getElementById('tr-status').textContent = 'Chauffeur arrivé !';
-      document.getElementById('tr-eta').textContent = '0 min';
-    }
-  }, 3000);
-};
-window.closeTracking = function() {
-  document.getElementById('tracking-panel').classList.remove('open');
-};
-window.cancelOrder = function() {
-  closeTracking();
-  showToast('Commande annulée.');
-};
-
-// ===== TOAST =====
-window.showToast = function(msg) {
-  const t = document.getElementById('toast');
-  document.getElementById('toast-msg').textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 4000);
-};
-
-// Close modal on overlay click (only if already registered)
-document.getElementById('modal').addEventListener('click', function(e) {
-  if (e.target === this) {
-    const userType = localStorage.getItem('velox_user_type');
-    if (userType) closeModal();
-  }
-});
-
-// Init: hide close button if not registered
-(function() {
-  const userType = localStorage.getItem('velox_user_type');
-  document.getElementById('modal-close-btn').style.display = userType ? 'flex' : 'none';
+  draw();
 })();
 
-// Init vehicle photo fields (default hidden)
-document.getElementById('vehicle-photo-field').style.display = 'none';
-document.getElementById('vehicle-name-field').style.display = 'none';
-document.getElementById('upload-area').style.display = 'none';
+/* ======= CONSTANTS ======= */
+const GROQ='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';
+const GURL='https://api.groq.com/openai/v1/chat/completions';
 
+let loc=null,map=null,mkrs=[],speaking=false,listening=false,recog=null;
+const synth=window.speechSynthesis;
+let voice=null,waveInt=null,navLat=null,navLng=null,navNm='',hist=[];
+
+/* ======= BOOT ======= */
+function boot(){
+  document.getElementById('t0').textContent=ftime();
+  if(navigator.geolocation){
+    navigator.geolocation.getCurrentPosition(
+      p=>{loc={lat:p.coords.latitude,lng:p.coords.longitude};geocode();updCoord();},
+      ()=>{loc={lat:5.36,lng:-4.0083};document.getElementById('locVal').textContent='Abidjan, Côte d\'Ivoire';updCoord();}
+    );
+  }else{loc={lat:5.36,lng:-4.0083};document.getElementById('locVal').textContent='Abidjan, Côte d\'Ivoire';}
+  initR();
+  synth.onvoiceschanged=loadV; setTimeout(loadV,600);
+  setTimeout(()=>{
+    document.getElementById('splash').classList.add('hide');
+    document.getElementById('app').style.display='grid';
+    initMap();
+    setTimeout(()=>speak("Bonjour ! Je suis AELLA, votre assistante médicale. Appuyez sur le microphone et parlez-moi. Je localise les pharmacies de garde près de vous et vous y guide."),900);
+  },1100);
+}
+
+function loadV(){
+  const vs=synth.getVoices();
+  voice=vs.find(v=>v.lang.startsWith('fr')&&/female|femme|amélie|marie|céline|léa|alice|virginie|juliette|pauline/i.test(v.name))
+    ||vs.find(v=>v.lang.startsWith('fr'))||vs.find(v=>/female|woman/i.test(v.name))||vs[0]||null;
+}
+
+function geocode(){
+  fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${loc.lat}&lon=${loc.lng}`)
+    .then(r=>r.json()).then(d=>{
+      const a=d.address;
+      const txt=[a.city||a.town||a.village||a.county||'',a.country||''].filter(Boolean).join(', ');
+      document.getElementById('locVal').textContent=txt||`${loc.lat.toFixed(3)},${loc.lng.toFixed(3)}`;
+      document.getElementById('tbLoc').textContent='📍 '+txt;
+    }).catch(()=>{document.getElementById('locVal').textContent=`${loc.lat.toFixed(3)},${loc.lng.toFixed(3)}`;});
+}
+
+function updCoord(){
+  if(loc) document.getElementById('mapC').textContent=`${loc.lat.toFixed(4)}, ${loc.lng.toFixed(4)}`;
+}
+
+/* ======= MAP ======= */
+function initMap(){
+  document.getElementById('mapPh').style.display='none';
+  document.getElementById('map').style.display='block';
+  const c=loc?[loc.lat,loc.lng]:[5.36,-4.0083];
+  map=L.map('map',{center:c,zoom:13,zoomControl:true,attributionControl:false});
+  // Light medical map tiles
+  L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png',{maxZoom:19}).addTo(map);
+  if(loc){
+    const ico=L.divIcon({html:`<div style="width:14px;height:14px;border-radius:50%;background:#0077cc;border:2.5px solid #fff;box-shadow:0 0 12px rgba(0,120,200,0.6)"></div>`,iconSize:[14,14],iconAnchor:[7,7],className:''});
+    L.marker([loc.lat,loc.lng],{icon:ico}).addTo(map).bindPopup('<b style="color:#0077cc">Votre position</b>');
+  }
+}
+
+function placeMarkers(phs){
+  if(!map)return;
+  mkrs.forEach(m=>map.removeLayer(m));mkrs=[];
+  phs.forEach((ph,i)=>{
+    if(!ph.lat||!ph.lng)return;
+    const ico=L.divIcon({
+      html:`<div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#0077cc,#00aaff);border:2.5px solid #fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;box-shadow:0 4px 16px rgba(0,120,200,0.4)">${i+1}</div>`,
+      iconSize:[32,32],iconAnchor:[16,16],className:''
+    });
+    const m=L.marker([ph.lat,ph.lng],{icon:ico}).addTo(map).bindPopup(
+      `<div style="font-family:Exo 2,sans-serif;min-width:180px;padding:4px">
+        <div style="font-family:Rajdhani,sans-serif;font-weight:700;color:#0077cc;font-size:14px;margin-bottom:4px">✚ ${ph.name}</div>
+        <div style="font-size:11px;color:#3a6080;margin-bottom:6px">${ph.address||''}</div>
+        ${ph.phone?`<div style="font-size:11px;color:#0077cc;margin-bottom:6px">📞 ${ph.phone}</div>`:''}
+        <button onclick="openNav(${ph.lat},${ph.lng},'${ph.name.replace(/'/g,"\\'")}','${(ph.address||'').replace(/'/g,"\\'")}')"
+          style="padding:5px 14px;background:linear-gradient(135deg,#0077cc,#00aaff);border:none;border-radius:7px;cursor:pointer;font-weight:700;font-size:11px;color:#fff;box-shadow:0 2px 8px rgba(0,120,200,0.3)">
+          🚗 M'y conduire
+        </button>
+      </div>`
+    );
+    mkrs.push(m);
+  });
+  if(phs.length>0&&phs[0].lat) map.flyTo([phs[0].lat,phs[0].lng],14,{duration:1.5});
+}
+
+/* ======= NAV ======= */
+function openNav(lat,lng,name,addr){
+  navLat=lat;navLng=lng;navNm=name;
+  document.getElementById('navTitle').textContent=`Navigation → ${name}`;
+  document.getElementById('navDest').textContent=`📍 ${addr||name}`;
+  const src=`https://www.openstreetmap.org/directions?engine=fossgis_osrm_car&route=${loc?loc.lat+','+loc.lng:''};${lat},${lng}#map=15/${lat}/${lng}`;
+  document.getElementById('navFrame').src=src;
+  document.getElementById('navModal').classList.add('open');
+  speak(`Navigation lancée vers ${name}. Suivez l'itinéraire sur la carte.`);
+}
+function closeNav(){document.getElementById('navModal').classList.remove('open');document.getElementById('navFrame').src='about:blank';}
+function gmaps(){
+  if(navLat&&navLng){
+    const o=loc?`${loc.lat},${loc.lng}`:'';
+    window.open(o?`https://www.google.com/maps/dir/${o}/${navLat},${navLng}`:`https://maps.google.com/?q=${navLat},${navLng}`,'_blank');
+    speak(`Ouverture de Google Maps pour vous conduire à ${navNm}.`);
+  }
+}
+
+/* ======= TTS ======= */
+function speak(txt){
+  if(!txt)return;
+  synth.cancel();speaking=true;setMS('speaking');startWave();
+  const u=new SpeechSynthesisUtterance(txt);
+  u.lang='fr-FR';u.rate=0.9;u.pitch=1.1;
+  if(voice)u.voice=voice;
+  u.onend=()=>{speaking=false;setMS('idle');stopWave();};
+  u.onerror=()=>{speaking=false;setMS('idle');stopWave();};
+  synth.speak(u);
+}
+function stopSpeak(){synth.cancel();speaking=false;setMS('idle');stopWave();}
+
+/* ======= STT ======= */
+function initR(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){document.getElementById('micLbl').textContent='MICRO INDISPONIBLE';return;}
+  recog=new SR();recog.lang='fr-FR';recog.continuous=false;recog.interimResults=false;
+  recog.onstart=()=>{listening=true;setMS('listening');};
+  recog.onresult=e=>{const t=e.results[0][0].transcript;listening=false;setMS('idle');processInput(t);};
+  recog.onerror=e=>{listening=false;setMS('idle');if(e.error!=='no-speech')addMsg('aella','Je n\'ai pas bien entendu. Réessayez. 🎙️');};
+  recog.onend=()=>{listening=false;if(!speaking)setMS('idle');};
+}
+
+function toggleListen(){
+  if(speaking){stopSpeak();return;}
+  if(listening){if(recog)recog.stop();return;}
+  if(!recog){addMsg('aella','Veuillez utiliser Chrome pour la reconnaissance vocale. 🎙️');return;}
+  try{recog.start();}catch(e){addMsg('aella','Autorisez l\'accès au microphone. 🎙️');}
+}
+
+function say(txt){stopSpeak();addMsg('user',txt);showT(true);askGroq(txt);}
+
+function setMS(s){
+  const b=document.getElementById('bigMic'),l=document.getElementById('micLbl');
+  b.className='big-mic';l.className='mic-lbl';
+  const cross=document.getElementById('tbCross');
+  if(s==='listening'){b.classList.add('listening');l.textContent='JE VOUS ÉCOUTE...';l.classList.add('listening');cross.classList.add('pulse');}
+  else if(s==='speaking'){b.classList.add('speaking');l.textContent='AELLA PARLE...';l.classList.add('speaking');cross.classList.add('pulse');}
+  else{l.textContent='APPUYEZ POUR PARLER';cross.classList.remove('pulse');}
+}
+
+function startWave(){
+  const ids=['w1','w2','w3','w4','w5','w6','w7','w8'];
+  waveInt=setInterval(()=>ids.forEach(id=>{const e=document.getElementById(id);if(e)e.style.height=(Math.floor(Math.random()*20)+3)+'px';}),90);
+}
+function stopWave(){
+  if(waveInt)clearInterval(waveInt);
+  ['w1','w2','w3','w4','w5','w6','w7','w8'].forEach(id=>{const e=document.getElementById(id);if(e)e.style.height='4px';});
+}
+
+/* ======= CHAT ======= */
+function addMsg(role,content,phs){
+  const area=document.getElementById('chatArea');
+  const d=document.createElement('div');d.className=`msg ${role}`;
+  const av=document.createElement('div');av.className=`msg-av ${role==='aella'?'av-a':'av-u'}`;av.textContent=role==='aella'?'A':'👤';
+  const inner=document.createElement('div');
+  const bub=document.createElement('div');bub.className='bub';
+  bub.innerHTML=content.replace(/\n/g,'<br>');
+  if(phs&&phs.length>0){
+    const cards=document.createElement('div');cards.className='ph-cards';
+    phs.forEach((ph,i)=>{
+      const c=document.createElement('div');c.className='ph-card';
+      c.innerHTML=`<div class="ph-ic">🏥</div>
+        <div class="ph-info">
+          <div class="ph-n">${ph.name}</div>
+          <div class="ph-a">${ph.address||'Adresse à confirmer'}</div>
+          <div class="ph-tags"><span class="pt pt-g">✚ GARDE</span>${ph.phone?`<span class="pt pt-b">📞 ${ph.phone}</span>`:''}${ph.hours?`<span class="pt pt-g">${ph.hours}</span>`:''}</div>
+        </div>
+        ${ph.lat&&ph.lng?`<button class="go-btn" onclick="openNav(${ph.lat},${ph.lng},'${ph.name.replace(/'/g,"\\'")}','${(ph.address||'').replace(/'/g,"\\'")}')" >🗺️ Y aller</button>`:''}`;
+      cards.appendChild(c);
+    });
+    bub.appendChild(cards);
+  }
+  const t=document.createElement('div');t.className='msg-t';t.textContent=ftime();
+  inner.appendChild(bub);inner.appendChild(t);
+  d.appendChild(av);d.appendChild(inner);
+  area.insertBefore(d,document.getElementById('tw'));
+  area.scrollTop=area.scrollHeight;
+}
+
+function showT(v){
+  document.getElementById('tw').style.display=v?'flex':'none';
+  document.getElementById('tb').className='tbub'+(v?' on':'');
+  if(v){const a=document.getElementById('chatArea');a.scrollTop=a.scrollHeight;}
+}
+
+function ftime(){return new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});}
+
+/* ======= GROQ ======= */
+function processInput(txt){
+  if(!txt||!txt.trim())return;
+  stopSpeak();addMsg('user',txt);showT(true);
+  hist.push({role:'user',content:txt});
+  if(hist.length>18)hist=hist.slice(-14);
+  askGroq(txt);
+}
+
+async function askGroq(txt){
+  const lc=loc?`Position GPS: lat=${loc.lat.toFixed(4)}, lng=${loc.lng.toFixed(4)}. Ville: ${document.getElementById('locVal').textContent}.`:'Position indisponible.';
+  const sys=`Tu es AELLA, une IA médicale vocale féminine, professionnelle et bienveillante, spécialisée dans les pharmacies de garde partout dans le monde.
+
+${lc}
+
+RÈGLES:
+- Réponds toujours en français, naturellement, comme à voix haute — concis et utile
+- Fournis nom, adresse, téléphone, horaires des pharmacies
+- Si navigation demandée: confirme et fournis les coordonnées GPS précises
+- Ton médical, rassurant, précis
+
+PHARMACIES: Ajoute ce bloc JSON à la fin:
+[PHARMACIES_JSON]
+[{"name":"Nom","address":"Adresse","phone":"+XX","hours":"24h/24","lat":0.0,"lng":0.0}]
+[/PHARMACIES_JSON]
+
+Coordonnées réelles des villes principales:
+Abidjan(5.3600,-4.0083) Dakar(14.7167,-17.4677) Bamako(12.6392,-8.0029) Paris(48.8566,2.3522) Douala(4.0511,9.7679) Yaoundé(3.8480,11.5021) Conakry(9.5370,-13.6773) Lomé(6.1375,1.2123) Cotonou(6.3654,2.4183) Ouagadougou(12.3714,-1.5197) Niamey(13.5117,2.1251) Abuja(9.0765,7.3986) Accra(5.5600,-0.2057) Casablanca(33.5731,-7.5898) Tunis(36.8065,10.1815)`;
+
+  try{
+    const r=await fetch(GURL,{
+      method:'POST',
+      headers:{'Authorization':`Bearer ${GROQ}`,'Content-Type':'application/json'},
+      body:JSON.stringify({model:'llama-3.3-70b-versatile',messages:[{role:'system',content:sys},...hist],max_tokens:1000,temperature:0.65})
+    });
+    if(!r.ok)throw new Error(r.status);
+    const d=await r.json();
+    let resp=d.choices[0].message.content;
+    hist.push({role:'assistant',content:resp});
+    let phs=[];
+    const m=resp.match(/\[PHARMACIES_JSON\]([\s\S]*?)\[\/PHARMACIES_JSON\]/);
+    if(m){try{phs=JSON.parse(m[1].trim());}catch(e){}resp=resp.replace(/\[PHARMACIES_JSON\][\s\S]*?\[\/PHARMACIES_JSON\]/,'').trim();}
+    showT(false);addMsg('aella',resp,phs);
+    if(phs.length>0)placeMarkers(phs);
+    const nk=['conduis-moi','conduire','navigation','itinéraire','aller à','emmène','m\'y conduire'];
+    if(nk.some(k=>txt.toLowerCase().includes(k))&&phs.length>0&&phs[0].lat&&phs[0].lng)
+      setTimeout(()=>openNav(phs[0].lat,phs[0].lng,phs[0].name,phs[0].address||''),1500);
+    const tts=resp.replace(/<[^>]+>/g,'').replace(/\*+/g,'').replace(/#{1,6}\s/g,'').replace(/\n+/g,'. ').substring(0,280);
+    speak(tts);
+  }catch(err){
+    showT(false);
+    const msg=String(err).includes('429')?'Trop de requêtes. Patientez un instant. 🔧':'Problème de connexion. Réessayez. 🔧';
+    addMsg('aella',msg);speak(msg);
+  }
+}
+
+// Space = mic
+document.addEventListener('keydown',e=>{if(e.code==='Space'&&e.target.tagName!=='INPUT'){e.preventDefault();toggleListen();}});
 </script>
 </body>
 </html>
