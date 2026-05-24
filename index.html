@@ -9,213 +9,189 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 :root{
-  --blue:#0077cc;--blue2:#00aaff;--teal:#00bcd4;
-  --ok:#00b894;--danger:#e53935;--warn:#ff9800;
-  --text:#0a2540;--text2:#3a6080;--text3:#8ab0cc;
-  --border:rgba(0,150,220,0.18);--shadow:rgba(0,120,200,0.12);
-  --font:'Exo 2',sans-serif;--mono:'Rajdhani',sans-serif;
+  --bl:#0077cc;--bl2:#00aaff;--tl:#00bcd4;
+  --ok:#00b894;--err:#e53935;--warn:#ff9800;
+  --tx:#0a2540;--tx2:#3a6080;--tx3:#8ab0cc;
+  --bd:rgba(0,150,220,.18);--sh:rgba(0,120,200,.1);
+  --f:'Exo 2',sans-serif;--m:'Rajdhani',sans-serif;
 }
 html,body{width:100%;height:100%;overflow:hidden;background:#eef6ff;}
-body::before{content:'';position:fixed;inset:0;z-index:0;background:linear-gradient(135deg,#eef6ff,#e0eeff 45%,#d8f0ff);}
-#ecg{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.45;}
+body::before{content:'';position:fixed;inset:0;z-index:0;background:linear-gradient(135deg,#eef6ff,#ddf0ff 50%,#e8f7ff);}
+#cv{position:fixed;inset:0;z-index:0;pointer-events:none;}
 
 /* SPLASH */
-#splash{
-  position:fixed;inset:0;z-index:200;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  background:linear-gradient(135deg,#eef6ff,#dbeeff,#f5faff);
-  transition:opacity 1s ease,visibility 1s ease;
-}
-#splash.hide{opacity:0;visibility:hidden;pointer-events:none;}
-.sp-logo{width:120px;height:120px;position:relative;margin-bottom:28px;}
-.sp-ring{position:absolute;border-radius:50%;border:2px solid transparent;}
-.sp-r1{inset:0;border-top-color:var(--blue2);border-right-color:var(--blue2);animation:spin 3s linear infinite;filter:drop-shadow(0 0 8px var(--blue2));}
-.sp-r2{inset:12px;border-bottom-color:var(--teal);border-left-color:var(--teal);animation:spin 2s linear infinite reverse;filter:drop-shadow(0 0 5px var(--teal));}
-.sp-core{position:absolute;inset:20px;border-radius:50%;background:linear-gradient(135deg,#d0e8fa,#eef6ff);display:flex;align-items:center;justify-content:center;font-size:34px;box-shadow:0 4px 24px rgba(0,150,220,.2);}
-@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
-.sp-title{font-family:var(--mono);font-size:50px;font-weight:700;letter-spacing:14px;color:var(--blue);margin-bottom:6px;text-shadow:0 0 30px rgba(0,150,220,.2);}
-.sp-sub{font-family:var(--font);font-size:10px;font-weight:300;color:var(--text3);letter-spacing:4px;text-transform:uppercase;margin-bottom:40px;}
-.sp-btn{padding:14px 54px;border-radius:32px;border:1.5px solid rgba(0,150,220,.3);background:rgba(255,255,255,.75);backdrop-filter:blur(20px);color:var(--blue);font-family:var(--mono);font-size:14px;font-weight:600;letter-spacing:3px;cursor:pointer;text-transform:uppercase;box-shadow:0 6px 28px rgba(0,120,200,.12),inset 0 1px 0 rgba(255,255,255,.9);transition:all .3s ease;}
-.sp-btn:hover{background:rgba(0,150,220,.07);border-color:var(--blue2);transform:translateY(-2px);box-shadow:0 10px 36px rgba(0,120,200,.22);}
+#sp{position:fixed;inset:0;z-index:300;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(135deg,#eef6ff,#dbeeff,#f5faff);transition:opacity .9s,visibility .9s;}
+#sp.off{opacity:0;visibility:hidden;pointer-events:none;}
+.sp-logo{width:120px;height:120px;position:relative;margin-bottom:26px;}
+.ring{position:absolute;border-radius:50%;border:2px solid transparent;}
+.r1{inset:0;border-top-color:var(--bl2);border-right-color:var(--bl2);animation:rot 3s linear infinite;filter:drop-shadow(0 0 8px var(--bl2));}
+.r2{inset:14px;border-bottom-color:var(--tl);border-left-color:var(--tl);animation:rot 2s linear infinite reverse;filter:drop-shadow(0 0 5px var(--tl));}
+.core{position:absolute;inset:22px;border-radius:50%;background:linear-gradient(135deg,#d0e8fa,#eef6ff);display:flex;align-items:center;justify-content:center;font-size:32px;box-shadow:0 4px 22px rgba(0,150,220,.18);}
+@keyframes rot{to{transform:rotate(360deg)}}
+.sp-title{font-family:var(--m);font-size:50px;font-weight:700;letter-spacing:14px;color:var(--bl);margin-bottom:6px;}
+.sp-sub{font-family:var(--f);font-size:10px;color:var(--tx3);letter-spacing:4px;text-transform:uppercase;margin-bottom:38px;}
+.sp-btn{padding:14px 52px;border-radius:32px;border:1.5px solid rgba(0,150,220,.3);background:rgba(255,255,255,.8);backdrop-filter:blur(18px);color:var(--bl);font-family:var(--m);font-size:14px;font-weight:600;letter-spacing:3px;cursor:pointer;text-transform:uppercase;box-shadow:0 6px 26px rgba(0,120,200,.12);transition:all .3s;}
+.sp-btn:hover{background:rgba(0,150,220,.08);border-color:var(--bl2);transform:translateY(-2px);}
 
-/* APP */
-#app{position:relative;z-index:1;width:100%;height:100vh;display:none;grid-template-columns:310px 1fr;grid-template-rows:58px 1fr;}
+/* APP GRID */
+#app{position:relative;z-index:1;width:100%;height:100vh;display:none;grid-template-columns:300px 1fr;grid-template-rows:56px 1fr;}
 
 /* TOPBAR */
-.topbar{grid-column:1/-1;display:flex;align-items:center;padding:0 20px;gap:13px;background:rgba(255,255,255,.88);backdrop-filter:blur(30px);border-bottom:1px solid var(--border);box-shadow:0 2px 20px var(--shadow);z-index:10;}
-.tb-cross{width:26px;height:26px;position:relative;flex-shrink:0;}
-.tb-cross::before,.tb-cross::after{content:'';position:absolute;background:var(--blue2);border-radius:2px;transition:.3s;}
+.tb{grid-column:1/-1;display:flex;align-items:center;padding:0 18px;gap:12px;background:rgba(255,255,255,.9);backdrop-filter:blur(28px);border-bottom:1px solid var(--bd);box-shadow:0 2px 18px var(--sh);z-index:10;}
+.tb-cross{width:24px;height:24px;position:relative;flex-shrink:0;}
+.tb-cross::before,.tb-cross::after{content:'';position:absolute;background:var(--bl2);border-radius:2px;transition:.3s;}
 .tb-cross::before{width:100%;height:36%;top:32%;left:0;}
 .tb-cross::after{height:100%;width:36%;left:32%;top:0;}
-.tb-cross.pulse::before,.tb-cross.pulse::after{background:var(--ok);box-shadow:0 0 10px rgba(0,184,148,.6);}
-.tb-brand{font-family:var(--mono);font-size:19px;font-weight:700;letter-spacing:5px;color:var(--blue);}
-.tb-sep{width:1px;height:18px;background:var(--border);}
-.tb-desc{font-family:var(--font);font-size:10px;font-weight:300;color:var(--text3);letter-spacing:2px;text-transform:uppercase;}
-.tb-right{margin-left:auto;display:flex;align-items:center;gap:10px;}
-.tb-loc{font-size:10px;color:var(--text3);font-family:var(--font);}
-.status-pill{display:flex;align-items:center;gap:5px;background:rgba(0,184,148,.08);border:1px solid rgba(0,184,148,.25);border-radius:14px;padding:4px 11px;font-size:9px;font-family:var(--mono);font-weight:600;color:var(--ok);letter-spacing:2px;}
-.sdot{width:5px;height:5px;border-radius:50%;background:var(--ok);box-shadow:0 0 6px var(--ok);animation:blink 2s infinite;}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+.tb-cross.on::before,.tb-cross.on::after{background:var(--ok);box-shadow:0 0 9px rgba(0,184,148,.55);}
+.tb-name{font-family:var(--m);font-size:18px;font-weight:700;letter-spacing:5px;color:var(--bl);}
+.tb-sep{width:1px;height:17px;background:var(--bd);}
+.tb-sub{font-family:var(--f);font-size:9.5px;font-weight:300;color:var(--tx3);letter-spacing:2px;text-transform:uppercase;}
+.tb-r{margin-left:auto;display:flex;align-items:center;gap:9px;}
+.tb-loc{font-size:10px;color:var(--tx3);font-family:var(--f);}
+.pill{display:flex;align-items:center;gap:5px;background:rgba(0,184,148,.08);border:1px solid rgba(0,184,148,.25);border-radius:14px;padding:4px 11px;font-size:9px;font-family:var(--m);font-weight:600;color:var(--ok);letter-spacing:2px;}
+.dot{width:5px;height:5px;border-radius:50%;background:var(--ok);box-shadow:0 0 5px var(--ok);animation:bk 2s infinite;}
+@keyframes bk{0%,100%{opacity:1}50%{opacity:.2}}
 
-/* LEFT */
-.left{border-right:1px solid var(--border);background:rgba(255,255,255,.62);backdrop-filter:blur(40px);display:flex;flex-direction:column;overflow:hidden;}
-.av-zone{padding:20px 18px 14px;border-bottom:1px solid var(--border);display:flex;flex-direction:column;align-items:center;position:relative;overflow:hidden;}
-.av-zone::before{content:'';position:absolute;width:180px;height:180px;border-radius:50%;top:-20px;left:50%;transform:translateX(-50%);background:radial-gradient(circle,rgba(0,170,255,.07),transparent 65%);animation:gpulse 3s ease-in-out infinite;}
-@keyframes gpulse{0%,100%{transform:translateX(-50%) scale(1)}50%{transform:translateX(-50%) scale(1.1)}}
-.av-wrap{position:relative;width:90px;height:90px;margin-bottom:11px;}
+/* LEFT PANEL */
+.lp{border-right:1px solid var(--bd);background:rgba(255,255,255,.6);backdrop-filter:blur(36px);display:flex;flex-direction:column;overflow:hidden;}
+
+/* Avatar */
+.av{padding:18px 16px 12px;border-bottom:1px solid var(--bd);display:flex;flex-direction:column;align-items:center;position:relative;}
+.av::before{content:'';position:absolute;width:170px;height:170px;border-radius:50%;top:-20px;left:50%;transform:translateX(-50%);background:radial-gradient(circle,rgba(0,170,255,.06),transparent 65%);animation:gp 3s ease-in-out infinite;}
+@keyframes gp{0%,100%{transform:translateX(-50%) scale(1)}50%{transform:translateX(-50%) scale(1.1)}}
+.av-w{position:relative;width:84px;height:84px;margin-bottom:10px;}
 .av-r{position:absolute;border-radius:50%;border:1.5px solid transparent;}
-.av-r1{inset:-9px;border-top-color:rgba(0,190,212,.35);border-right-color:rgba(0,190,212,.35);animation:spin 7s linear infinite;}
-.av-r2{inset:-3px;border-top-color:var(--blue2);border-right-color:var(--blue2);animation:spin 3s linear infinite reverse;filter:drop-shadow(0 0 4px rgba(0,170,255,.4));}
-.av-face{position:absolute;inset:0;border-radius:50%;background:linear-gradient(135deg,#d0e8fa,#eef6ff);display:flex;align-items:center;justify-content:center;font-size:28px;box-shadow:0 5px 20px rgba(0,120,200,.16),inset 0 2px 4px rgba(255,255,255,.8);overflow:hidden;}
-.av-scan{position:absolute;inset:0;border-radius:50%;overflow:hidden;pointer-events:none;}
-.av-scan::after{content:'';position:absolute;left:0;right:0;height:2px;background:linear-gradient(to right,transparent,rgba(0,170,255,.35),transparent);animation:scanPass 2.5s linear infinite;}
-@keyframes scanPass{from{top:0}to{top:100%}}
-.av-name{font-family:var(--mono);font-size:17px;font-weight:700;letter-spacing:5px;color:var(--blue);margin-bottom:2px;}
-.av-role{font-family:var(--font);font-size:9px;font-weight:300;color:var(--text3);letter-spacing:2px;text-transform:uppercase;}
-.waves{display:flex;align-items:center;gap:2px;height:18px;margin-top:7px;}
-.wb{width:2.5px;border-radius:2px;background:var(--blue2);height:3px;transition:height .07s;}
+.ar1{inset:-8px;border-top-color:rgba(0,190,212,.3);border-right-color:rgba(0,190,212,.3);animation:rot 7s linear infinite;}
+.ar2{inset:-2px;border-top-color:var(--bl2);border-right-color:var(--bl2);animation:rot 3s linear infinite reverse;filter:drop-shadow(0 0 4px rgba(0,170,255,.35));}
+.av-f{position:absolute;inset:0;border-radius:50%;background:linear-gradient(135deg,#d0e8fa,#eef6ff);display:flex;align-items:center;justify-content:center;font-size:26px;box-shadow:0 5px 18px rgba(0,120,200,.15),inset 0 2px 4px rgba(255,255,255,.8);overflow:hidden;}
+.av-sc{position:absolute;inset:0;border-radius:50%;overflow:hidden;pointer-events:none;}
+.av-sc::after{content:'';position:absolute;left:0;right:0;height:2px;background:linear-gradient(to right,transparent,rgba(0,170,255,.3),transparent);animation:sc 2.5s linear infinite;}
+@keyframes sc{from{top:0}to{top:100%}}
+.av-name{font-family:var(--m);font-size:16px;font-weight:700;letter-spacing:5px;color:var(--bl);margin-bottom:2px;}
+.av-role{font-family:var(--f);font-size:8.5px;color:var(--tx3);letter-spacing:2px;text-transform:uppercase;}
+.wv{display:flex;align-items:center;gap:2px;height:16px;margin-top:6px;}
+.wb{width:2px;border-radius:2px;background:var(--bl2);height:3px;transition:height .07s;}
 
 /* MIC */
-.mic-zone{padding:16px 18px;border-bottom:1px solid var(--border);display:flex;flex-direction:column;align-items:center;gap:9px;}
-.mic-btn{width:72px;height:72px;border-radius:50%;cursor:pointer;background:linear-gradient(145deg,#fff,#d8eeff);border:none;outline:none;box-shadow:0 5px 24px rgba(0,120,200,.14),inset 0 2px 4px rgba(255,255,255,.9);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;transition:all .3s ease;}
-.mic-btn::before{content:'';position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle at 35% 35%,rgba(255,255,255,.9),transparent 55%);pointer-events:none;}
-.mic-btn:hover:not(.listening){transform:scale(1.05);box-shadow:0 9px 30px rgba(0,120,200,.2);}
-.mic-btn.listening{background:linear-gradient(145deg,#fff5f5,#ffe0e0);animation:mpulse 1.1s infinite;}
-.mic-btn.speaking{background:linear-gradient(145deg,#f0fff8,#ccf0e4);}
-.mic-btn.confirm{background:linear-gradient(145deg,#fff8e1,#ffecb3);animation:mpulse2 1s infinite;}
-@keyframes mpulse{0%{box-shadow:0 0 0 0 rgba(229,57,53,.5)}70%{box-shadow:0 0 0 16px rgba(229,57,53,0)}100%{box-shadow:0 0 0 0 rgba(229,57,53,0)}}
-@keyframes mpulse2{0%{box-shadow:0 0 0 0 rgba(255,152,0,.5)}70%{box-shadow:0 0 0 16px rgba(255,152,0,0)}100%{box-shadow:0 0 0 0 rgba(255,152,0,0)}}
-.mic-ic{width:26px;height:26px;color:var(--blue);transition:color .3s;}
-.mic-btn.listening .mic-ic{color:var(--danger);}
-.mic-btn.speaking .mic-ic{color:var(--ok);}
-.mic-btn.confirm .mic-ic{color:var(--warn);}
-.mic-rings{position:absolute;inset:0;border-radius:50%;pointer-events:none;}
-.mr{position:absolute;border-radius:50%;border:1px solid rgba(0,150,220,.2);top:50%;left:50%;transform:translate(-50%,-50%);display:none;}
-.mr1{width:120%;height:120%;animation:mring 1.4s ease-out infinite;}
-.mr2{width:145%;height:145%;animation:mring 1.4s ease-out infinite .45s;}
-.mic-btn.listening .mr,.mic-btn.speaking .mr,.mic-btn.confirm .mr{display:block;}
-.mic-btn.listening .mr{border-color:rgba(229,57,53,.3);}
-.mic-btn.confirm .mr{border-color:rgba(255,152,0,.35);}
-@keyframes mring{0%{opacity:.5;transform:translate(-50%,-50%) scale(.8)}100%{opacity:0;transform:translate(-50%,-50%) scale(1)}}
-.mic-lbl{font-family:var(--mono);font-size:9px;font-weight:600;color:var(--text3);letter-spacing:2px;text-transform:uppercase;text-align:center;min-height:12px;}
-.mic-lbl.on{color:var(--danger);}
-.mic-lbl.sp{color:var(--ok);}
-.mic-lbl.cf{color:var(--warn);}
+.mc{padding:14px 16px;border-bottom:1px solid var(--bd);display:flex;flex-direction:column;align-items:center;gap:8px;}
+.mcb{width:68px;height:68px;border-radius:50%;cursor:pointer;background:linear-gradient(145deg,#fff,#d8eeff);border:none;outline:none;box-shadow:0 5px 22px rgba(0,120,200,.13),inset 0 2px 3px rgba(255,255,255,.9);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;transition:all .3s;}
+.mcb::before{content:'';position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle at 34% 34%,rgba(255,255,255,.88),transparent 55%);pointer-events:none;}
+.mcb:hover{transform:scale(1.05);}
+.mcb.L{background:linear-gradient(145deg,#fff5f5,#ffe0e0);animation:mp 1.1s infinite;}
+.mcb.S{background:linear-gradient(145deg,#f0fff8,#cdf5e4);}
+.mcb.W{background:linear-gradient(145deg,#fffde7,#fff3cd);animation:mp2 1s infinite;}
+@keyframes mp{0%{box-shadow:0 0 0 0 rgba(229,57,53,.45)}70%{box-shadow:0 0 0 14px rgba(229,57,53,0)}100%{box-shadow:0 0 0 0 rgba(229,57,53,0)}}
+@keyframes mp2{0%{box-shadow:0 0 0 0 rgba(255,152,0,.45)}70%{box-shadow:0 0 0 14px rgba(255,152,0,0)}100%{box-shadow:0 0 0 0 rgba(255,152,0,0)}}
+.mcic{width:25px;height:25px;color:var(--bl);transition:color .3s;}
+.mcb.L .mcic{color:var(--err);}
+.mcb.S .mcic{color:var(--ok);}
+.mcb.W .mcic{color:var(--warn);}
+.mrings{position:absolute;inset:0;border-radius:50%;pointer-events:none;}
+.mr{position:absolute;border-radius:50%;border:1px solid transparent;top:50%;left:50%;transform:translate(-50%,-50%);display:none;}
+.mr1{width:120%;height:120%;animation:mra 1.4s ease-out infinite;}
+.mr2{width:148%;height:148%;animation:mra 1.4s ease-out infinite .45s;}
+.mcb.L .mr{display:block;border-color:rgba(229,57,53,.25);}
+.mcb.S .mr{display:block;border-color:rgba(0,184,148,.25);}
+.mcb.W .mr{display:block;border-color:rgba(255,152,0,.3);}
+@keyframes mra{0%{opacity:.5;transform:translate(-50%,-50%) scale(.8)}100%{opacity:0;transform:translate(-50%,-50%) scale(1)}}
+.mlbl{font-family:var(--m);font-size:8.5px;font-weight:600;color:var(--tx3);letter-spacing:2px;text-transform:uppercase;}
+.mlbl.L{color:var(--err);}
+.mlbl.S{color:var(--ok);}
+.mlbl.W{color:var(--warn);}
 
 /* Quick actions */
-.qa{padding:11px 15px;border-bottom:1px solid var(--border);}
-.sec-lbl{font-family:var(--mono);font-size:8px;font-weight:600;color:var(--text3);letter-spacing:3px;text-transform:uppercase;margin-bottom:7px;}
-.qa-list{display:flex;flex-direction:column;gap:4px;}
-.qa-btn{padding:7px 11px;border-radius:8px;border:1px solid rgba(0,150,220,.12);background:rgba(255,255,255,.6);color:var(--text2);font-family:var(--font);font-size:11px;cursor:pointer;text-align:left;display:flex;align-items:center;gap:7px;transition:all .2s ease;}
-.qa-btn:hover{border-color:rgba(0,170,255,.28);background:rgba(255,255,255,.9);color:var(--blue);transform:translateX(3px);}
-.qi{width:21px;height:21px;border-radius:6px;background:rgba(0,170,255,.08);border:1px solid rgba(0,170,255,.14);display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0;}
+.qa{padding:10px 14px;border-bottom:1px solid var(--bd);}
+.slbl{font-family:var(--m);font-size:7.5px;font-weight:600;color:var(--tx3);letter-spacing:3px;text-transform:uppercase;margin-bottom:6px;}
+.qal{display:flex;flex-direction:column;gap:3px;}
+.qab{padding:6px 10px;border-radius:7px;border:1px solid rgba(0,150,220,.11);background:rgba(255,255,255,.58);color:var(--tx2);font-family:var(--f);font-size:11px;cursor:pointer;text-align:left;display:flex;align-items:center;gap:7px;transition:all .18s;}
+.qab:hover{border-color:rgba(0,170,255,.28);background:rgba(255,255,255,.9);color:var(--bl);transform:translateX(3px);}
+.qi{width:20px;height:20px;border-radius:5px;background:rgba(0,170,255,.07);border:1px solid rgba(0,170,255,.13);display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0;}
 
-/* Nav status bar */
-#navStatus{
-  padding:8px 15px;border-top:1px solid var(--border);
-  background:rgba(0,119,204,.05);
-  display:none;align-items:center;gap:8px;
-  font-family:var(--font);font-size:10px;color:var(--blue2);
-}
-#navStatus.on{display:flex;}
-.ns-dot{width:6px;height:6px;border-radius:50%;background:var(--blue2);animation:blink 1s infinite;flex-shrink:0;}
-#navStop{
-  margin-left:auto;padding:3px 10px;border-radius:6px;
-  border:1px solid rgba(229,57,53,.3);background:rgba(229,57,53,.06);
-  color:var(--danger);font-family:var(--mono);font-size:9px;font-weight:600;
-  cursor:pointer;letter-spacing:1px;
-}
+/* Nav status */
+#ns{padding:7px 14px;background:rgba(0,119,204,.05);border-top:1px solid var(--bd);display:none;align-items:center;gap:7px;}
+#ns.on{display:flex;}
+.ns-d{width:6px;height:6px;border-radius:50%;background:var(--bl2);animation:bk 1s infinite;flex-shrink:0;}
+#ns-txt{font-family:var(--f);font-size:10px;color:var(--bl2);flex:1;}
+#ns-stop{padding:3px 9px;border-radius:5px;border:1px solid rgba(229,57,53,.25);background:rgba(229,57,53,.06);color:var(--err);font-family:var(--m);font-size:8px;font-weight:600;cursor:pointer;letter-spacing:1px;}
 
 /* Location */
-.loc-zone{padding:10px 15px;}
-.loc-card{background:rgba(255,255,255,.7);border:1px solid var(--border);border-radius:10px;padding:7px 10px;display:flex;align-items:center;gap:7px;}
-.loc-val{font-family:var(--font);font-size:10px;font-weight:300;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.lz{padding:8px 14px;}
+.lc{background:rgba(255,255,255,.7);border:1px solid var(--bd);border-radius:9px;padding:7px 10px;display:flex;align-items:center;gap:7px;}
+.lv{font-family:var(--f);font-size:10px;color:var(--tx2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 
 /* RIGHT */
-.right{display:grid;grid-template-rows:1fr 255px;overflow:hidden;}
+.rp{display:grid;grid-template-rows:1fr 260px;overflow:hidden;}
 
 /* CHAT */
-.chat{overflow-y:auto;padding:16px 18px;display:flex;flex-direction:column;gap:11px;scroll-behavior:smooth;}
+.chat{overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:10px;scroll-behavior:smooth;}
 .chat::-webkit-scrollbar{width:3px;}
-.chat::-webkit-scrollbar-thumb{background:rgba(0,150,220,.18);border-radius:2px;}
-.msg{display:flex;gap:8px;animation:min .32s cubic-bezier(.34,1.56,.64,1);}
-.msg.user{flex-direction:row-reverse;align-self:flex-end;max-width:62%;}
-.msg.aella{max-width:88%;}
-@keyframes min{from{opacity:0;transform:translateY(9px) scale(.96)}to{opacity:1;transform:none}}
-.mav{width:27px;height:27px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:10px;font-weight:700;}
-.mav-a{background:rgba(0,170,255,.1);border:1.5px solid rgba(0,170,255,.25);color:var(--blue);}
-.mav-u{background:rgba(0,120,180,.07);border:1.5px solid rgba(0,120,180,.18);color:var(--blue2);}
-.bub{background:rgba(255,255,255,.84);border:1px solid rgba(0,150,220,.11);border-radius:13px;padding:10px 13px;font-family:var(--font);font-size:12.5px;font-weight:300;line-height:1.65;color:var(--text);box-shadow:0 3px 14px rgba(0,100,180,.07);backdrop-filter:blur(14px);}
-.msg.user .bub{background:linear-gradient(135deg,rgba(0,119,204,.08),rgba(0,188,212,.05));border-color:rgba(0,170,255,.18);border-bottom-right-radius:3px;}
-.msg.aella .bub{border-bottom-left-radius:3px;}
-.mt{font-family:var(--mono);font-size:8px;color:var(--text3);margin-top:3px;}
-.msg.user .mt{text-align:right;}
+.chat::-webkit-scrollbar-thumb{background:rgba(0,150,220,.15);border-radius:2px;}
+.msg{display:flex;gap:7px;animation:mi .3s cubic-bezier(.34,1.56,.64,1);}
+.msg.u{flex-direction:row-reverse;align-self:flex-end;max-width:60%;}
+.msg.a{max-width:88%;}
+@keyframes mi{from{opacity:0;transform:translateY(8px) scale(.96)}to{opacity:1;transform:none}}
+.mav{width:26px;height:26px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-family:var(--m);font-size:9px;font-weight:700;}
+.ma{background:rgba(0,170,255,.1);border:1.5px solid rgba(0,170,255,.22);color:var(--bl);}
+.mu{background:rgba(0,120,180,.07);border:1.5px solid rgba(0,120,180,.17);color:var(--bl2);}
+.bub{background:rgba(255,255,255,.86);border:1px solid rgba(0,150,220,.1);border-radius:12px;padding:9px 12px;font-family:var(--f);font-size:12.5px;font-weight:300;line-height:1.65;color:var(--tx);box-shadow:0 2px 12px rgba(0,100,180,.06);}
+.msg.u .bub{background:linear-gradient(135deg,rgba(0,119,204,.08),rgba(0,188,212,.05));border-color:rgba(0,170,255,.17);border-bottom-right-radius:3px;}
+.msg.a .bub{border-bottom-left-radius:3px;}
+.mt{font-family:var(--m);font-size:7.5px;color:var(--tx3);margin-top:3px;}
+.msg.u .mt{text-align:right;}
 
 /* Typing */
-.tw{display:none;gap:8px;align-items:flex-start;}
-.tbub{display:none;align-items:center;gap:4px;background:rgba(255,255,255,.84);border:1px solid rgba(0,150,220,.11);border-radius:13px;border-bottom-left-radius:3px;padding:11px 13px;box-shadow:0 3px 14px rgba(0,100,180,.07);}
+.tw{display:none;gap:7px;align-items:flex-start;}
+.tbub{display:none;align-items:center;gap:4px;background:rgba(255,255,255,.86);border:1px solid rgba(0,150,220,.1);border-radius:12px;border-bottom-left-radius:3px;padding:11px 12px;box-shadow:0 2px 12px rgba(0,100,180,.06);}
 .tbub.on{display:flex;}
-.td{width:5px;height:5px;border-radius:50%;background:var(--blue2);}
-.td:nth-child(1){animation:tdot 1s 0s infinite;}
-.td:nth-child(2){animation:tdot 1s .2s infinite;}
-.td:nth-child(3){animation:tdot 1s .4s infinite;}
-@keyframes tdot{0%,100%{opacity:.2;transform:translateY(0)}50%{opacity:1;transform:translateY(-4px)}}
+.td{width:5px;height:5px;border-radius:50%;background:var(--bl2);}
+.td:nth-child(1){animation:td 1s 0s infinite;}
+.td:nth-child(2){animation:td 1s .2s infinite;}
+.td:nth-child(3){animation:td 1s .4s infinite;}
+@keyframes td{0%,100%{opacity:.2;transform:translateY(0)}50%{opacity:1;transform:translateY(-4px)}}
 
-/* Confirm bubble */
-.confirm-bub{
-  background:linear-gradient(135deg,rgba(255,248,225,.95),rgba(255,255,255,.95));
-  border:1px solid rgba(255,152,0,.3);
-  border-radius:13px;padding:10px 13px;
-  font-family:var(--font);font-size:12.5px;font-weight:300;line-height:1.65;color:var(--text);
-  box-shadow:0 3px 14px rgba(255,152,0,.1);
-}
-.confirm-btns{display:flex;gap:8px;margin-top:9px;}
-.cbtn{
-  flex:1;padding:8px;border-radius:9px;border:none;cursor:pointer;
-  font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:1px;
-  transition:all .2s ease;
-}
-.cbtn-yes{background:linear-gradient(135deg,#0077cc,#00aaff);color:#fff;box-shadow:0 3px 12px rgba(0,120,200,.25);}
-.cbtn-yes:hover{transform:scale(1.03);box-shadow:0 5px 18px rgba(0,120,200,.35);}
-.cbtn-no{background:rgba(0,0,0,.05);color:var(--text2);border:1px solid rgba(0,0,0,.1);}
-.cbtn-no:hover{background:rgba(229,57,53,.07);border-color:rgba(229,57,53,.2);color:var(--danger);}
+/* Confirm */
+.cf-bub{background:linear-gradient(135deg,rgba(255,248,225,.97),rgba(255,255,255,.97));border:1px solid rgba(255,152,0,.28);border-radius:12px;padding:10px 12px;font-family:var(--f);font-size:12.5px;font-weight:300;line-height:1.65;color:var(--tx);}
+.cf-btns{display:flex;gap:7px;margin-top:8px;}
+.cfb{flex:1;padding:8px;border-radius:8px;border:none;cursor:pointer;font-family:var(--m);font-size:10px;font-weight:600;letter-spacing:1px;transition:all .2s;}
+.cfb-y{background:linear-gradient(135deg,var(--bl),var(--bl2));color:#fff;box-shadow:0 3px 11px rgba(0,120,200,.22);}
+.cfb-y:hover{transform:scale(1.03);}
+.cfb-n{background:rgba(0,0,0,.05);color:var(--tx2);border:1px solid rgba(0,0,0,.09);}
+.cfb-n:hover{background:rgba(229,57,53,.07);border-color:rgba(229,57,53,.2);color:var(--err);}
 
 /* Pharmacy cards */
-.ph-cards{display:flex;flex-direction:column;gap:7px;margin-top:8px;}
-.ph-card{background:linear-gradient(135deg,rgba(240,248,255,.97),rgba(255,255,255,.97));border:1px solid rgba(0,170,255,.17);border-radius:10px;padding:9px 10px;display:flex;align-items:flex-start;gap:7px;cursor:pointer;transition:all .22s ease;box-shadow:0 2px 11px rgba(0,100,180,.07);position:relative;overflow:hidden;}
-.ph-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(to bottom,var(--blue2),var(--teal));}
-.ph-card:hover{border-color:rgba(0,170,255,.36);transform:translateX(3px);}
-.ph-ic{width:30px;height:30px;border-radius:7px;flex-shrink:0;background:rgba(0,188,212,.1);border:1px solid rgba(0,170,255,.17);display:flex;align-items:center;justify-content:center;font-size:14px;}
-.ph-info{flex:1;min-width:0;}
-.ph-n{font-family:var(--mono);font-weight:600;font-size:11.5px;color:var(--blue);margin-bottom:2px;}
-.ph-a{font-family:var(--font);font-size:9px;font-weight:300;color:var(--text2);margin-bottom:4px;}
-.ph-tags{display:flex;gap:4px;flex-wrap:wrap;}
-.pt{font-family:var(--mono);font-size:8px;font-weight:600;padding:2px 6px;border-radius:3px;letter-spacing:1px;}
-.pt-g{background:rgba(0,184,148,.1);color:var(--ok);border:1px solid rgba(0,184,148,.22);}
-.pt-b{background:rgba(0,170,255,.07);color:var(--blue2);border:1px solid rgba(0,170,255,.17);}
-.go-btn{flex-shrink:0;align-self:center;padding:5px 9px;border-radius:6px;border:1px solid rgba(0,170,255,.2);background:rgba(0,170,255,.06);color:var(--blue);font-family:var(--mono);font-size:9px;font-weight:600;cursor:pointer;white-space:nowrap;transition:all .2s;letter-spacing:1px;}
-.go-btn:hover{background:rgba(0,170,255,.13);border-color:var(--blue2);}
+.phc{display:flex;flex-direction:column;gap:6px;margin-top:7px;}
+.phcard{background:linear-gradient(135deg,rgba(240,248,255,.97),rgba(255,255,255,.97));border:1px solid rgba(0,170,255,.15);border-radius:9px;padding:8px 10px;display:flex;align-items:flex-start;gap:7px;transition:all .2s;box-shadow:0 2px 10px rgba(0,100,180,.06);position:relative;overflow:hidden;}
+.phcard::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(to bottom,var(--bl2),var(--tl));}
+.phcard:hover{border-color:rgba(0,170,255,.32);transform:translateX(2px);}
+.phic{width:28px;height:28px;border-radius:7px;flex-shrink:0;background:rgba(0,188,212,.1);border:1px solid rgba(0,170,255,.15);display:flex;align-items:center;justify-content:center;font-size:13px;}
+.phi{flex:1;min-width:0;}
+.phn{font-family:var(--m);font-weight:600;font-size:11px;color:var(--bl);margin-bottom:1px;}
+.pha{font-family:var(--f);font-size:8.5px;color:var(--tx2);margin-bottom:3px;}
+.pht{display:flex;gap:3px;flex-wrap:wrap;}
+.pt{font-family:var(--m);font-size:7.5px;font-weight:600;padding:2px 6px;border-radius:3px;letter-spacing:1px;}
+.ptg{background:rgba(0,184,148,.09);color:var(--ok);border:1px solid rgba(0,184,148,.2);}
+.ptb{background:rgba(0,170,255,.07);color:var(--bl2);border:1px solid rgba(0,170,255,.16);}
+.gobtn{flex-shrink:0;align-self:center;padding:5px 9px;border-radius:6px;border:1px solid rgba(0,170,255,.18);background:rgba(0,170,255,.06);color:var(--bl);font-family:var(--m);font-size:8.5px;font-weight:600;cursor:pointer;white-space:nowrap;transition:all .18s;letter-spacing:1px;}
+.gobtn:hover{background:rgba(0,170,255,.12);border-color:var(--bl2);}
 
 /* MAP */
-.map-panel{border-top:1px solid var(--border);position:relative;background:rgba(248,252,255,.9);}
-.map-bar{position:absolute;top:0;left:0;right:0;height:30px;z-index:10;background:rgba(255,255,255,.9);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 13px;gap:6px;}
-.map-lbl{font-family:var(--mono);font-size:8px;font-weight:600;color:var(--text3);letter-spacing:2px;text-transform:uppercase;}
-.map-coord{margin-left:auto;font-family:var(--mono);font-size:8px;color:var(--blue);opacity:.4;}
-#navInfo{font-family:var(--mono);font-size:9px;color:var(--blue2);opacity:.8;margin-left:8px;}
-#map{position:absolute;inset:30px 0 0 0;}
-.leaflet-popup-content-wrapper{border-radius:11px!important;box-shadow:0 6px 22px rgba(0,100,180,.15)!important;}
-.leaflet-popup-content{font-family:'Exo 2',sans-serif!important;font-size:12px!important;}
+.mp{border-top:1px solid var(--bd);position:relative;}
+.mpbar{position:absolute;top:0;left:0;right:0;height:30px;z-index:500;background:rgba(255,255,255,.92);backdrop-filter:blur(14px);border-bottom:1px solid var(--bd);display:flex;align-items:center;padding:0 12px;gap:6px;}
+.mplbl{font-family:var(--m);font-size:8px;font-weight:600;color:var(--tx3);letter-spacing:2px;text-transform:uppercase;}
+#navInfo{font-family:var(--m);font-size:9px;color:var(--bl2);margin-left:6px;}
+.mpc{margin-left:auto;font-family:var(--m);font-size:7.5px;color:var(--bl);opacity:.35;}
+#map{position:absolute;inset:30px 0 0 0;z-index:1;}
+.leaflet-popup-content-wrapper{border-radius:10px!important;box-shadow:0 5px 18px rgba(0,100,180,.14)!important;}
 </style>
 </head>
 <body>
-<canvas id="ecg"></canvas>
+<canvas id="cv"></canvas>
 
 <!-- SPLASH -->
-<div id="splash">
+<div id="sp">
   <div class="sp-logo">
-    <div class="sp-ring sp-r1"></div>
-    <div class="sp-ring sp-r2"></div>
-    <div class="sp-core">✚</div>
+    <div class="ring r1"></div><div class="ring r2"></div>
+    <div class="core">✚</div>
   </div>
   <div class="sp-title">AELLA</div>
   <div class="sp-sub">Intelligence Artificielle · Pharmacies de Garde</div>
@@ -224,94 +200,95 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background:linear-gradi
 
 <!-- APP -->
 <div id="app">
-  <div class="topbar">
-    <div class="tb-cross" id="tbCross"></div>
-    <div class="tb-brand">AELLA</div>
+  <!-- TOPBAR -->
+  <div class="tb">
+    <div class="tb-cross" id="tbc"></div>
+    <div class="tb-name">AELLA</div>
     <div class="tb-sep"></div>
-    <div class="tb-desc">IA Médicale · Pharmacies de Garde</div>
-    <div class="tb-right">
-      <div class="tb-loc" id="tbLoc">📡 Localisation...</div>
-      <div class="status-pill"><div class="sdot"></div><span>ACTIF</span></div>
+    <div class="tb-sub">IA Médicale · Pharmacies de Garde</div>
+    <div class="tb-r">
+      <div class="tb-loc" id="tbloc">📡 Localisation...</div>
+      <div class="pill"><div class="dot"></div><span>ACTIF</span></div>
     </div>
   </div>
 
-  <div class="left">
-    <div class="av-zone">
-      <div class="av-wrap">
-        <div class="av-r av-r1"></div>
-        <div class="av-r av-r2"></div>
-        <div class="av-face">✚<div class="av-scan"></div></div>
+  <!-- LEFT -->
+  <div class="lp">
+    <div class="av">
+      <div class="av-w">
+        <div class="av-r ar1"></div><div class="av-r ar2"></div>
+        <div class="av-f">✚<div class="av-sc"></div></div>
       </div>
       <div class="av-name">AELLA</div>
       <div class="av-role">Assistante Médicale Vocale</div>
-      <div class="waves">
-        <div class="wb" id="w1"></div><div class="wb" id="w2"></div>
-        <div class="wb" id="w3"></div><div class="wb" id="w4"></div>
-        <div class="wb" id="w5"></div><div class="wb" id="w6"></div>
+      <div class="wv">
+        <div class="wb" id="w1"></div><div class="wb" id="w2"></div><div class="wb" id="w3"></div>
+        <div class="wb" id="w4"></div><div class="wb" id="w5"></div><div class="wb" id="w6"></div>
         <div class="wb" id="w7"></div><div class="wb" id="w8"></div>
       </div>
     </div>
 
-    <div class="mic-zone">
-      <button class="mic-btn" id="micBtn" onclick="toggleListen()">
-        <div class="mic-rings"><div class="mr mr1"></div><div class="mr mr2"></div></div>
-        <svg class="mic-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <div class="mc">
+      <button class="mcb" id="mcb" onclick="toggleMic()">
+        <div class="mrings"><div class="mr mr1"></div><div class="mr mr2"></div></div>
+        <svg class="mcic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
           <rect x="9" y="2" width="6" height="11" rx="3"/>
           <path d="M5 10a7 7 0 0 0 14 0"/>
           <line x1="12" y1="19" x2="12" y2="22"/>
           <line x1="8" y1="22" x2="16" y2="22"/>
         </svg>
       </button>
-      <div class="mic-lbl" id="micLbl">APPUYEZ POUR PARLER</div>
+      <div class="mlbl" id="mlbl">MICRO AUTO</div>
     </div>
 
     <div class="qa">
-      <div class="sec-lbl">Commandes rapides</div>
-      <div class="qa-list">
-        <button class="qa-btn" onclick="say('Pharmacies de garde près de moi maintenant')"><div class="qi">🔍</div>Pharmacies proches</button>
-        <button class="qa-btn" onclick="say('Amène-moi à la pharmacie de garde la plus proche')"><div class="qi">🗺️</div>M'y conduire</button>
-        <button class="qa-btn" onclick="say('J\'ai de la fièvre, quel médicament prendre ?')"><div class="qi">💊</div>Conseil médicament</button>
-        <button class="qa-btn" onclick="say('Pharmacie ouverte cette nuit')"><div class="qi">🌙</div>Ouverte cette nuit</button>
-        <button class="qa-btn" onclick="say('J\'ai mal à la tête que faire ?')"><div class="qi">🤒</div>Urgence symptômes</button>
+      <div class="slbl">Commandes rapides</div>
+      <div class="qal">
+        <button class="qab" onclick="userSay('Pharmacies de garde près de moi')"><div class="qi">🔍</div>Pharmacies proches</button>
+        <button class="qab" onclick="userSay('Amène-moi à la pharmacie de garde la plus proche')"><div class="qi">🗺️</div>M'y conduire</button>
+        <button class="qab" onclick="userSay('J\'ai de la fièvre, quel médicament prendre ?')"><div class="qi">💊</div>Conseil médicament</button>
+        <button class="qab" onclick="userSay('Pharmacie ouverte cette nuit')"><div class="qi">🌙</div>Ouverte cette nuit</button>
+        <button class="qab" onclick="userSay('J\'ai mal à la tête que faire ?')"><div class="qi">🤒</div>Symptômes</button>
       </div>
     </div>
 
-    <div id="navStatus">
-      <div class="ns-dot"></div>
-      <span id="navStatusTxt">Navigation en cours...</span>
-      <button id="navStop" onclick="stopNav()">■ Arrêter</button>
+    <div id="ns">
+      <div class="ns-d"></div>
+      <span id="ns-txt">Navigation...</span>
+      <button id="ns-stop" onclick="stopNav()">■ Stop</button>
     </div>
 
-    <div class="loc-zone">
-      <div class="sec-lbl">Ma position</div>
-      <div class="loc-card">
-        <span style="font-size:13px">📍</span>
-        <div class="loc-val" id="locVal">Localisation en cours...</div>
+    <div class="lz">
+      <div class="slbl">Ma position</div>
+      <div class="lc">
+        <span style="font-size:12px">📍</span>
+        <div class="lv" id="locv">Localisation...</div>
       </div>
     </div>
   </div>
 
-  <div class="right">
-    <div class="chat" id="chatArea">
-      <div class="msg aella">
-        <div class="mav mav-a">A</div>
+  <!-- RIGHT -->
+  <div class="rp">
+    <div class="chat" id="ch">
+      <div class="msg a">
+        <div class="mav ma">A</div>
         <div>
-          <div class="bub">Bonjour, je suis <strong>AELLA</strong> ✚<br>Appuyez sur le micro. Je trouve les pharmacies de garde, je vous y guide, et je peux vous conseiller sur les médicaments.</div>
+          <div class="bub">Bonjour, je suis <strong>AELLA</strong> ✚<br>Je parle, vous répondez. Je trouve les pharmacies, je trace l'itinéraire sur la carte, et je vous conseille sur les médicaments.</div>
           <div class="mt" id="t0"></div>
         </div>
       </div>
       <div class="tw" id="tw">
-        <div class="mav mav-a">A</div>
+        <div class="mav ma">A</div>
         <div class="tbub" id="tb"><div class="td"></div><div class="td"></div><div class="td"></div></div>
       </div>
     </div>
 
-    <div class="map-panel">
-      <div class="map-bar">
-        <span style="font-size:12px">🏥</span>
-        <span class="map-lbl">Carte · Navigation</span>
+    <div class="mp">
+      <div class="mpbar">
+        <span style="font-size:11px">🏥</span>
+        <span class="mplbl">Carte · Itinéraire</span>
         <span id="navInfo"></span>
-        <span class="map-coord" id="mapC">— position —</span>
+        <span class="mpc" id="mpc">—</span>
       </div>
       <div id="map"></div>
     </div>
@@ -320,276 +297,261 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background:linear-gradi
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-/* =========================================================
-   ECG BACKGROUND
-========================================================= */
+/* ───────────── ECG BG ───────────── */
 (()=>{
-  const c=document.getElementById('ecg'),ctx=c.getContext('2d');
+  const c=document.getElementById('cv'),x=c.getContext('2d');
   let W,H,t=0;
-  const resize=()=>{W=c.width=innerWidth;H=c.height=innerHeight;};
-  resize();window.addEventListener('resize',resize);
+  const rsz=()=>{W=c.width=innerWidth;H=c.height=innerHeight;};
+  rsz();window.addEventListener('resize',rsz);
   const draw=()=>{
-    ctx.clearRect(0,0,W,H);t+=0.4;
-    ctx.beginPath();ctx.strokeStyle='rgba(0,140,220,0.14)';ctx.lineWidth=1.5;
+    x.clearRect(0,0,W,H);t+=.4;
+    x.beginPath();x.strokeStyle='rgba(0,140,220,.12)';x.lineWidth=1.5;
     let s=false;
-    for(let x=0;x<W;x+=2){
-      const mod=((x+Math.floor(t))%(W/4));
+    for(let i=0;i<W;i+=2){
+      const m=((i+Math.floor(t))%(W/4));
       let y=H*.82;
-      if(mod<3)y=H*.82-35;else if(mod<7)y=H*.82+16;
-      else if(mod<9)y=H*.82-60;else if(mod<13)y=H*.82+12;
-      else if(mod<15)y=H*.82-7;
-      if(!s){ctx.moveTo(x,y);s=true;}else ctx.lineTo(x,y);
+      if(m<3)y-=32;else if(m<7)y+=14;else if(m<9)y-=55;else if(m<13)y+=11;else if(m<15)y-=6;
+      if(!s){x.moveTo(i,y);s=true;}else x.lineTo(i,y);
     }
-    ctx.stroke();requestAnimationFrame(draw);
+    x.stroke();requestAnimationFrame(draw);
   };draw();
 })();
 
-/* =========================================================
-   CONSTANTS & STATE
-========================================================= */
-const GROQ_KEY='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';
-const GROQ_URL='https://api.groq.com/openai/v1/chat/completions';
+/* ───────────── CONFIG ───────────── */
+const GK='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';
+const GU='https://api.groq.com/openai/v1/chat/completions';
 
-let loc=null, map=null, mkrs=[], routeLayer=null;
-let speaking=false, listening=false, recog=null;
-let voice=null, waveInt=null, hist=[];
-/* Navigation state */
-let navActive=false, navDest=null, navWatchId=null;
-/* Confirm-navigation state */
-let pendingNav=null;   // {lat,lng,name} waiting for yes/no
-let awaitingConfirm=false;
+/* ───────────── STATE ───────────── */
+let loc=null, map=null, phMarkers=[], routeLayer=null, userMark=null;
+let speaking=false, listening=false, recog=null, micEnabled=true;
+let voice=null, wInt=null, hist=[];
+let pendingNav=null;   // {lat,lng,name} awaiting confirm
+let awaitConfirm=false;
+let navWid=null, navActive=false;
+const synth=window.speechSynthesis;
 
-/* =========================================================
-   BOOT
-========================================================= */
+/* ───────────── BOOT ───────────── */
 function boot(){
-  document.getElementById('t0').textContent=ftime();
-  navigator.geolocation
-    ? navigator.geolocation.getCurrentPosition(
-        p=>{loc={lat:p.coords.latitude,lng:p.coords.longitude};geocode();updCoord();},
-        ()=>{loc={lat:5.36,lng:-4.0083};setLocTxt('Abidjan, Côte d\'Ivoire');}
-      )
-    : (loc={lat:5.36,lng:-4.0083},setLocTxt('Abidjan, Côte d\'Ivoire'));
+  document.getElementById('t0').textContent=ft();
+  // Geo
+  if(navigator.geolocation){
+    navigator.geolocation.getCurrentPosition(
+      p=>{loc={lat:p.coords.latitude,lng:p.coords.longitude};geocode();updC();},
+      ()=>{loc={lat:5.3196,lng:-4.0167};setLoc('Abidjan Plateau, Côte d\'Ivoire');}
+    );
+  } else {loc={lat:5.3196,lng:-4.0167};setLoc('Abidjan, Côte d\'Ivoire');}
 
+  synth.onvoiceschanged=loadV;setTimeout(loadV,600);
   initSTT();
-  synth.onvoiceschanged=loadVoice;setTimeout(loadVoice,500);
 
   setTimeout(()=>{
-    document.getElementById('splash').classList.add('hide');
+    document.getElementById('sp').classList.add('off');
     document.getElementById('app').style.display='grid';
-    initMap();
-    setTimeout(()=>speak('Bonjour, je suis AELLA. Dites-moi ce dont vous avez besoin.'),800);
-  },900);
+    // Small delay then init map
+    setTimeout(()=>{
+      initMap();
+      speak('Bonjour, je suis AELLA. Dites-moi ce dont vous avez besoin.',true);
+    },200);
+  },800);
 }
 
-const synth=window.speechSynthesis;
-function setLocTxt(t){
-  document.getElementById('locVal').textContent=t;
-  document.getElementById('tbLoc').textContent='📍 '+t;
-}
-function loadVoice(){
+function setLoc(t){document.getElementById('locv').textContent=t;document.getElementById('tbloc').textContent='📍 '+t;}
+function updC(){if(loc)document.getElementById('mpc').textContent=`${loc.lat.toFixed(4)}, ${loc.lng.toFixed(4)}`;}
+
+function loadV(){
   const vs=synth.getVoices();
   voice=vs.find(v=>v.lang.startsWith('fr')&&/female|femme|amélie|marie|léa|alice|virginie/i.test(v.name))
-    ||vs.find(v=>v.lang.startsWith('fr'))||vs[0]||null;
+      ||vs.find(v=>v.lang.startsWith('fr'))||vs[0]||null;
 }
+
 function geocode(){
   fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${loc.lat}&lon=${loc.lng}`)
     .then(r=>r.json()).then(d=>{
       const a=d.address;
-      setLocTxt([a.city||a.town||a.village||a.county||'',a.country||''].filter(Boolean).join(', ')||`${loc.lat.toFixed(3)}, ${loc.lng.toFixed(3)}`);
-    }).catch(()=>setLocTxt(`${loc.lat.toFixed(3)}, ${loc.lng.toFixed(3)}`));
+      setLoc([a.city||a.town||a.village||a.county||'',a.country||''].filter(Boolean).join(', ')||`${loc.lat.toFixed(3)},${loc.lng.toFixed(3)}`);
+    }).catch(()=>{});
 }
-function updCoord(){if(loc)document.getElementById('mapC').textContent=`${loc.lat.toFixed(4)}, ${loc.lng.toFixed(4)}`;}
 
-/* =========================================================
-   MAP
-========================================================= */
+/* ───────────── MAP INIT ───────────── */
 function initMap(){
-  const c=loc?[loc.lat,loc.lng]:[5.36,-4.0083];
-  map=L.map('map',{center:c,zoom:14,zoomControl:true,attributionControl:false});
-  L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png',{maxZoom:19}).addTo(map);
-  if(loc)addUserMarker(loc.lat,loc.lng);
+  const center=loc?[loc.lat,loc.lng]:[5.3196,-4.0167];
+  map=L.map('map',{center,zoom:14,zoomControl:true,attributionControl:false});
+  L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png',{maxZoom:19,crossOrigin:true}).addTo(map);
+  if(loc)placeUserMark(loc.lat,loc.lng);
 }
 
-let userMarker=null;
-function addUserMarker(lat,lng){
+function placeUserMark(lat,lng){
   const ico=L.divIcon({
-    html:`<div style="width:14px;height:14px;border-radius:50%;background:#0077cc;border:2.5px solid #fff;box-shadow:0 0 10px rgba(0,120,200,.7)"></div>`,
-    iconSize:[14,14],iconAnchor:[7,7],className:''
+    html:'<div style="width:13px;height:13px;border-radius:50%;background:#0077cc;border:2.5px solid #fff;box-shadow:0 0 10px rgba(0,120,200,.7)"></div>',
+    iconSize:[13,13],iconAnchor:[6,6],className:''
   });
-  if(userMarker)map.removeLayer(userMarker);
-  userMarker=L.marker([lat,lng],{icon:ico}).addTo(map).bindPopup('<b style="color:#0077cc;font-family:Rajdhani">Votre position</b>');
+  if(userMark)map.removeLayer(userMark);
+  userMark=L.marker([lat,lng],{icon:ico}).addTo(map).bindPopup('<b style="color:#0077cc;font-family:Rajdhani">Votre position</b>');
 }
 
+/* ───────────── PLACE PHARMACY MARKERS ───────────── */
 function placeMarkers(phs){
   if(!map)return;
-  mkrs.forEach(m=>map.removeLayer(m));mkrs=[];
-  const valid=phs.filter(p=>p.lat&&p.lng&&p.lat!==0);
-  valid.forEach((ph,i)=>{
+  phMarkers.forEach(m=>map.removeLayer(m));phMarkers=[];
+  const ok=phs.filter(p=>p.lat&&p.lng&&Math.abs(p.lat)>0.001);
+  ok.forEach((ph,i)=>{
     const ico=L.divIcon({
-      html:`<div style="width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#0077cc,#00aaff);border:2px solid #fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;font-family:Rajdhani;box-shadow:0 4px 14px rgba(0,120,200,.4)">${i+1}</div>`,
+      html:`<div style="width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#0077cc,#00aaff);border:2.5px solid #fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;font-family:Rajdhani;box-shadow:0 4px 14px rgba(0,120,200,.4)">${i+1}</div>`,
       iconSize:[30,30],iconAnchor:[15,15],className:''
     });
-    const popup=`<div style="font-family:Exo 2,sans-serif;min-width:165px;padding:3px">
+    const popup=`<div style="font-family:'Exo 2',sans-serif;min-width:155px;padding:2px">
       <div style="font-family:Rajdhani,sans-serif;font-weight:700;color:#0077cc;font-size:13px;margin-bottom:3px">✚ ${ph.name}</div>
-      <div style="font-size:10px;color:#3a6080;margin-bottom:5px">${ph.address||''}</div>
-      ${ph.phone?`<div style="font-size:10px;color:#0077cc;margin-bottom:5px">📞 ${ph.phone}</div>`:''}
-      <button onclick="confirmAndNavigate(${ph.lat},${ph.lng},'${esc(ph.name)}')"
-        style="padding:5px 12px;background:linear-gradient(135deg,#0077cc,#00aaff);border:none;border-radius:7px;cursor:pointer;font-weight:700;font-size:10px;color:#fff;box-shadow:0 2px 8px rgba(0,120,200,.3)">
+      <div style="font-size:10px;color:#3a6080;margin-bottom:4px">${ph.address||''}</div>
+      ${ph.phone?`<div style="font-size:10px;color:#0077cc;margin-bottom:4px">📞 ${ph.phone}</div>`:''}
+      <button onclick="startNavTo(${ph.lat},${ph.lng},'${esc(ph.name)}')"
+        style="padding:5px 11px;background:linear-gradient(135deg,#0077cc,#00aaff);border:none;border-radius:7px;cursor:pointer;font-weight:700;font-size:10px;color:#fff;font-family:Rajdhani;box-shadow:0 2px 8px rgba(0,120,200,.3)">
         🗺️ M'y conduire
       </button>
     </div>`;
     const m=L.marker([ph.lat,ph.lng],{icon:ico}).addTo(map).bindPopup(popup);
-    mkrs.push(m);
+    phMarkers.push(m);
   });
-  if(valid.length>0)map.flyTo([valid[0].lat,valid[0].lng],14,{duration:1.2});
-}
-
-/* =========================================================
-   ROUTING — OSRM (open, no key needed)
-========================================================= */
-async function drawRoute(toLat,toLng,name){
-  if(!loc){speak('Je n\'ai pas votre position.');return;}
-  if(routeLayer){map.removeLayer(routeLayer);routeLayer=null;}
-
-  try{
-    const url=`https://router.project-osrm.org/route/v1/driving/${loc.lng},${loc.lat};${toLng},${toLat}?overview=full&geometries=geojson`;
-    const r=await fetch(url);
-    const d=await r.json();
-    if(!d.routes||!d.routes.length)throw new Error('no route');
-
-    const route=d.routes[0];
-    const dist=(route.distance/1000).toFixed(1);
-    const dur=Math.round(route.duration/60);
-
-    // Draw polyline
-    routeLayer=L.geoJSON(route.geometry,{
-      style:{color:'#0077cc',weight:5,opacity:.8,lineJoin:'round'}
-    }).addTo(map);
-    map.fitBounds(routeLayer.getBounds(),{padding:[30,30]});
-
-    // Update map bar
-    document.getElementById('navInfo').textContent=`${dist} km · ${dur} min`;
-
-    // Start nav status
-    startNavStatus(toLat,toLng,name,dist,dur);
-    return {dist,dur};
-  }catch(e){
-    speak('Je ne peux pas tracer l\'itinéraire pour l\'instant. Voici les coordonnées.');
-    return null;
+  if(ok.length){
+    if(ok.length===1)map.flyTo([ok[0].lat,ok[0].lng],15,{duration:1});
+    else{
+      const grp=L.featureGroup(phMarkers);
+      map.fitBounds(grp.getBounds().pad(.3),{duration:1});
+    }
   }
 }
 
-function startNavStatus(lat,lng,name,dist,dur){
-  navActive=true;navDest={lat,lng,name};
-  document.getElementById('navStatus').classList.add('on');
-  document.getElementById('navStatusTxt').textContent=`→ ${name} · ${dist} km · ${dur} min`;
+/* ───────────── DRAW ROUTE (OSRM) ───────────── */
+async function startNavTo(toLat,toLng,name){
+  if(!loc){speak('Position GPS indisponible.',true);return;}
+  if(!map)return;
 
-  // Watch position and update user marker
-  if(navWatchId)navigator.geolocation.clearWatch(navWatchId);
-  if(navigator.geolocation){
-    navWatchId=navigator.geolocation.watchPosition(p=>{
-      loc={lat:p.coords.latitude,lng:p.coords.longitude};
-      addUserMarker(loc.lat,loc.lng);
-      updCoord();
-      // Check arrival (within 80m)
-      const d=haversine(loc.lat,loc.lng,lat,lng);
-      if(d<0.08){
-        speak('Vous êtes arrivé à '+name+'. Bonne santé !');
-        stopNav();
-      }
-    },()=>{},{enableHighAccuracy:true,maximumAge:5000});
+  // Clear existing route
+  if(routeLayer){map.removeLayer(routeLayer);routeLayer=null;}
+  document.getElementById('navInfo').textContent='⏳ Calcul...';
+
+  const url=`https://router.project-osrm.org/route/v1/driving/${loc.lng},${loc.lat};${toLng},${toLat}?overview=full&geometries=geojson`;
+
+  try{
+    const res=await fetch(url,{signal:AbortSignal.timeout(8000)});
+    if(!res.ok)throw new Error('osrm '+res.status);
+    const data=await res.json();
+    if(!data.routes||!data.routes.length)throw new Error('no route');
+
+    const route=data.routes[0];
+    const km=(route.distance/1000).toFixed(1);
+    const min=Math.round(route.duration/60);
+
+    // Draw polyline
+    routeLayer=L.geoJSON(route.geometry,{
+      style:{color:'#0077cc',weight:5,opacity:.85,lineJoin:'round',lineCap:'round'}
+    }).addTo(map);
+
+    // Fit map to route
+    map.fitBounds(routeLayer.getBounds(),{padding:[40,40],animate:true,duration:1});
+
+    // Update bar
+    document.getElementById('navInfo').textContent=`📍 ${name} · ${km} km · ${min} min`;
+
+    // Start status bar
+    document.getElementById('ns').classList.add('on');
+    document.getElementById('ns-txt').textContent=`→ ${name} · ${km} km · ${min} min`;
+
+    speak(`Itinéraire tracé. ${km} kilomètres, environ ${min} minutes vers ${name}.`,true);
+    navActive=true;
+
+    // GPS watch to update user position on map
+    if(navWid)navigator.geolocation.clearWatch(navWid);
+    if(navigator.geolocation){
+      navWid=navigator.geolocation.watchPosition(p=>{
+        loc={lat:p.coords.latitude,lng:p.coords.longitude};
+        placeUserMark(loc.lat,loc.lng);
+        updC();
+        if(haversine(loc.lat,loc.lng,toLat,toLng)<0.1){
+          speak('Vous êtes arrivé à destination. Bonne santé !',true);
+          stopNav();
+        }
+      },()=>{},{enableHighAccuracy:true,maximumAge:4000});
+    }
+
+  }catch(e){
+    document.getElementById('navInfo').textContent='';
+    // Fallback: just fly to destination
+    map.flyTo([toLat,toLng],15,{duration:1.2});
+    speak('Itinéraire non disponible. Voici la pharmacie sur la carte.',true);
   }
 }
 
 function stopNav(){
-  navActive=false;navDest=null;
-  if(navWatchId){navigator.geolocation.clearWatch(navWatchId);navWatchId=null;}
-  document.getElementById('navStatus').classList.remove('on');
+  navActive=false;
+  if(navWid){navigator.geolocation.clearWatch(navWid);navWid=null;}
+  document.getElementById('ns').classList.remove('on');
   document.getElementById('navInfo').textContent='';
   if(routeLayer){map.removeLayer(routeLayer);routeLayer=null;}
 }
 
-function haversine(lat1,lon1,lat2,lon2){
-  const R=6371,dLat=(lat2-lat1)*Math.PI/180,dLon=(lon2-lon1)*Math.PI/180;
-  const a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
+function haversine(la1,lo1,la2,lo2){
+  const R=6371,dLa=(la2-la1)*Math.PI/180,dLo=(lo2-lo1)*Math.PI/180;
+  const a=Math.sin(dLa/2)**2+Math.cos(la1*Math.PI/180)*Math.cos(la2*Math.PI/180)*Math.sin(dLo/2)**2;
   return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
 }
 
-/* =========================================================
-   CONFIRM NAVIGATION — ask vocally, await yes/no
-========================================================= */
-function confirmAndNavigate(lat,lng,name){
-  // Called from map popup or after AI detects navigation intent
-  pendingNav={lat,lng,name};
-  awaitingConfirm=true;
+/* ───────────── CONFIRM NAVIGATION ───────────── */
+function askNav(lat,lng,name){
+  // Show confirm bubble
+  pendingNav={lat,lng,name};awaitConfirm=true;
   const msg=`Voulez-vous que je vous amène à ${name} ?`;
-  addConfirmBubble(msg,lat,lng,name);
-  speak(msg+' Dites oui ou non.');
-  // Auto-listen after speaking finishes
-  const check=setInterval(()=>{
-    if(!speaking){clearInterval(check);setTimeout(()=>{if(awaitingConfirm)toggleListen();},400);}
-  },300);
+  addCfBubble(msg,lat,lng,name);
+  // Speak then auto-listen
+  speak(msg,false); // don't auto-listen after — handled below
+  speakThen(()=>{if(awaitConfirm)startListen();});
 }
 
-function addConfirmBubble(msg,lat,lng,name){
-  const area=document.getElementById('chatArea');
-  const d=document.createElement('div');d.className='msg aella';
-  const av=document.createElement('div');av.className='mav mav-a';av.textContent='A';
-  const inner=document.createElement('div');
-  const bub=document.createElement('div');bub.className='confirm-bub';
-  bub.innerHTML=`<span>🗺️ ${msg}</span>`;
-  const btns=document.createElement('div');btns.className='confirm-btns';
-  btns.innerHTML=`
-    <button class="cbtn cbtn-yes" onclick="userConfirm(true,${lat},${lng},'${esc(name)}')">✓ Oui, m'y amener</button>
-    <button class="cbtn cbtn-no" onclick="userConfirm(false,0,0,'')">✗ Non merci</button>`;
-  const t=document.createElement('div');t.className='mt';t.textContent=ftime();
-  bub.appendChild(btns);inner.appendChild(bub);inner.appendChild(t);
-  d.appendChild(av);d.appendChild(inner);
-  area.insertBefore(d,document.getElementById('tw'));
-  area.scrollTop=area.scrollHeight;
-  setMS('confirm');
+function addCfBubble(msg,lat,lng,name){
+  const ch=document.getElementById('ch');
+  const d=document.createElement('div');d.className='msg a';
+  const av=document.createElement('div');av.className='mav ma';av.textContent='A';
+  const inn=document.createElement('div');
+  const b=document.createElement('div');b.className='cf-bub';
+  b.innerHTML=`<span>🗺️ ${msg}</span>`;
+  const btns=document.createElement('div');btns.className='cf-btns';
+  btns.innerHTML=`<button class="cfb cfb-y" onclick="confirmNav(true,${lat},${lng},'${esc(name)}')">✓ Oui, allons-y</button>
+  <button class="cfb cfb-n" onclick="confirmNav(false,0,0,'')">✗ Non merci</button>`;
+  const t=document.createElement('div');t.className='mt';t.textContent=ft();
+  b.appendChild(btns);inn.appendChild(b);inn.appendChild(t);
+  d.appendChild(av);d.appendChild(inn);
+  ch.insertBefore(d,document.getElementById('tw'));
+  ch.scrollTop=ch.scrollHeight;
+  setMic('W');
 }
 
-function userConfirm(yes,lat,lng,name){
-  awaitingConfirm=false;pendingNav=null;setMS('idle');
-  if(yes){
-    addMsg('user','Oui');
-    speak('Parfait, je trace l\'itinéraire vers '+name+'.');
-    setTimeout(()=>drawRoute(lat,lng,name),800);
-  } else {
-    addMsg('user','Non');
-    speak('D\'accord. Dites-moi si vous avez besoin d\'autre chose.');
-  }
+function confirmNav(yes,lat,lng,name){
+  awaitConfirm=false;pendingNav=null;
+  if(yes){addM('u','Oui');startNavTo(lat,lng,name);}
+  else{addM('u','Non');speak('D\'accord. Besoin d\'autre chose ?',true);}
 }
 
-/* Called by voice yes/no when awaitingConfirm */
 function handleConfirmVoice(txt){
   const t=txt.toLowerCase();
-  const yes=/(oui|yes|vas-y|ok|d'accord|allons|bien sûr|affirmati|go|allez)/.test(t);
-  const no=/(non|no|pas|annule|stop|néga)/.test(t);
-  if(yes&&pendingNav){
-    userConfirm(true,pendingNav.lat,pendingNav.lng,pendingNav.name);
-  } else if(no){
-    userConfirm(false,0,0,'');
+  if(/(oui|yes|vas-y|ok|allez|bien sûr|affirm|go|aller|oué)/.test(t)&&pendingNav){
+    confirmNav(true,pendingNav.lat,pendingNav.lng,pendingNav.name);
+  } else if(/(non|no|pas|annule|stop|néga)/.test(t)){
+    confirmNav(false,0,0,'');
   } else {
-    // Not a clear yes/no — process normally
-    awaitingConfirm=false;pendingNav=null;setMS('idle');
+    // Treat as new query
+    awaitConfirm=false;pendingNav=null;
     processInput(txt);
   }
 }
 
-/* =========================================================
-   TTS
-========================================================= */
-function cleanSpeech(txt){
-  return txt
+/* ───────────── TTS ───────────── */
+function clean(t){
+  return t
     .replace(/<[^>]+>/g,'')
     .replace(/\*+/g,'')
     .replace(/#{1,6}\s/g,'')
     .replace(/[_~`]/g,'')
     .replace(/\[.*?\]\(.*?\)/g,'')
-    .replace(/•|-\s/g,'')
+    .replace(/^[-•]\s/gm,'')
     .replace(/\n{2,}/g,'. ')
     .replace(/\n/g,' ')
     .replace(/:/g,',')
@@ -598,252 +560,235 @@ function cleanSpeech(txt){
     .replace(/,{2,}/g,',')
     .replace(/\s{2,}/g,' ')
     .trim()
-    .substring(0,350);
+    .substring(0,340);
 }
 
-function speak(txt){
+let onSpeakEnd=null;
+function speak(txt,autoListen=true){
   if(!txt)return;
-  synth.cancel();speaking=true;setMS('speaking');startWave();
-  const u=new SpeechSynthesisUtterance(cleanSpeech(txt));
-  u.lang='fr-FR';u.rate=0.92;u.pitch=1.05;
+  synth.cancel();speaking=true;setMic('S');startW();
+  const u=new SpeechSynthesisUtterance(clean(txt));
+  u.lang='fr-FR';u.rate=0.93;u.pitch=1.04;
   if(voice)u.voice=voice;
-  u.onend=()=>{speaking=false;setMS(awaitingConfirm?'confirm':'idle');stopWave();};
-  u.onerror=()=>{speaking=false;setMS('idle');stopWave();};
+  u.onend=()=>{
+    speaking=false;
+    stopW();
+    if(onSpeakEnd){const cb=onSpeakEnd;onSpeakEnd=null;cb();return;}
+    if(autoListen&&micEnabled&&!awaitConfirm)startListen();
+    else if(!awaitConfirm)setMic('I');
+  };
+  u.onerror=()=>{speaking=false;stopW();setMic('I');};
   synth.speak(u);
 }
-function stopSpeak(){synth.cancel();speaking=false;setMS('idle');stopWave();}
 
-/* =========================================================
-   STT — ROBUST
-========================================================= */
+function speakThen(cb){onSpeakEnd=cb;}
+function stopSpeak(){synth.cancel();speaking=false;stopW();setMic('I');onSpeakEnd=null;}
+
+/* ───────────── STT ───────────── */
 function initSTT(){
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-  if(!SR){document.getElementById('micLbl').textContent='MICRO INDISPONIBLE';return;}
+  if(!SR){document.getElementById('mlbl').textContent='MICRO INDISPO';micEnabled=false;return;}
   recog=new SR();
   recog.lang='fr-FR';recog.continuous=false;recog.interimResults=false;recog.maxAlternatives=1;
-
-  recog.onstart=()=>{listening=true;setMS(awaitingConfirm?'confirm':'listening');};
-
+  recog.onstart=()=>{listening=true;setMic('L');};
   recog.onresult=e=>{
-    const transcript=e.results[0][0].transcript.trim();
-    listening=false;setMS('idle');
-    if(!transcript)return;
-    if(awaitingConfirm){
-      handleConfirmVoice(transcript);
-    } else {
-      processInput(transcript);
-    }
+    const tx=e.results[0][0].transcript.trim();
+    listening=false;setMic('I');
+    if(!tx)return;
+    if(awaitConfirm){handleConfirmVoice(tx);}
+    else{processInput(tx);}
   };
-
   recog.onerror=e=>{
-    listening=false;setMS('idle');
-    if(e.error==='not-allowed')addMsg('aella','Autorisez l\'accès au microphone dans votre navigateur.');
-    else if(e.error!=='no-speech')addMsg('aella','Problème micro, réessayez.');
+    listening=false;setMic('I');
+    if(e.error==='not-allowed'){micEnabled=false;addM('a','Autorisez le micro dans votre navigateur.');}
   };
-
-  recog.onend=()=>{listening=false;if(!speaking)setMS(awaitingConfirm?'confirm':'idle');};
+  recog.onend=()=>{listening=false;if(!speaking)setMic(awaitConfirm?'W':'I');};
 }
 
-function toggleListen(){
+function startListen(){
+  if(!recog||speaking||listening)return;
+  try{recog.start();}
+  catch(e){try{recog.stop();}catch(_){}setTimeout(()=>{try{recog.start();}catch(_){}},250);}
+}
+
+function toggleMic(){
   if(speaking){stopSpeak();return;}
   if(listening){if(recog)recog.stop();return;}
-  if(!recog){addMsg('aella','Utilisez Chrome ou Edge pour la reconnaissance vocale.');return;}
-  try{recog.start();}
-  catch(e){try{recog.stop();}catch(e2){}setTimeout(()=>{try{recog.start();}catch(e3){}},300);}
+  startListen();
 }
 
-/* =========================================================
-   QUICK ACTIONS
-========================================================= */
-function say(txt){stopSpeak();addMsg('user',txt);showTyping(true);askGroq(txt,txt);}
-
-/* =========================================================
-   MIC STATE UI
-========================================================= */
-function setMS(s){
-  const b=document.getElementById('micBtn'),l=document.getElementById('micLbl');
-  const cross=document.getElementById('tbCross');
-  b.className='mic-btn';l.className='mic-lbl';
-  if(s==='listening'){b.classList.add('listening');l.textContent='JE VOUS ÉCOUTE...';l.classList.add('on');cross.classList.add('pulse');}
-  else if(s==='speaking'){b.classList.add('speaking');l.textContent='AELLA PARLE...';l.classList.add('sp');cross.classList.add('pulse');}
-  else if(s==='confirm'){b.classList.add('confirm');l.textContent='OUI OU NON ?';l.classList.add('cf');cross.classList.add('pulse');}
-  else{l.textContent='APPUYEZ POUR PARLER';cross.classList.remove('pulse');}
+/* ───────────── MIC STATE UI ───────────── */
+function setMic(s){
+  const b=document.getElementById('mcb'),l=document.getElementById('mlbl'),cx=document.getElementById('tbc');
+  b.className='mcb';l.className='mlbl';
+  if(s==='L'){b.classList.add('L');l.textContent='ÉCOUTE...';l.classList.add('L');cx.classList.add('on');}
+  else if(s==='S'){b.classList.add('S');l.textContent='PARLE...';l.classList.add('S');cx.classList.add('on');}
+  else if(s==='W'){b.classList.add('W');l.textContent='OUI OU NON ?';l.classList.add('W');cx.classList.add('on');}
+  else{l.textContent='MICRO AUTO';cx.classList.remove('on');}
 }
 
-/* =========================================================
-   WAVE
-========================================================= */
-function startWave(){
-  const ids=['w1','w2','w3','w4','w5','w6','w7','w8'];
-  waveInt=setInterval(()=>ids.forEach(id=>{const e=document.getElementById(id);if(e)e.style.height=(Math.floor(Math.random()*18)+3)+'px';}),85);
+/* ───────────── WAVE ───────────── */
+function startW(){
+  wInt=setInterval(()=>['w1','w2','w3','w4','w5','w6','w7','w8'].forEach(id=>{const e=document.getElementById(id);if(e)e.style.height=(Math.floor(Math.random()*17)+3)+'px';}),80);
 }
-function stopWave(){
-  if(waveInt)clearInterval(waveInt);
+function stopW(){
+  if(wInt)clearInterval(wInt);
   ['w1','w2','w3','w4','w5','w6','w7','w8'].forEach(id=>{const e=document.getElementById(id);if(e)e.style.height='3px';});
 }
 
-/* =========================================================
-   CHAT UI
-========================================================= */
-function addMsg(role,content,phs){
-  const area=document.getElementById('chatArea');
+/* ───────────── CHAT UI ───────────── */
+function addM(role,content,phs){
+  const ch=document.getElementById('ch');
   const d=document.createElement('div');d.className=`msg ${role}`;
-  const av=document.createElement('div');av.className=`mav ${role==='aella'?'mav-a':'mav-u'}`;av.textContent=role==='aella'?'A':'👤';
-  const inner=document.createElement('div');
-  const bub=document.createElement('div');bub.className='bub';
-  bub.innerHTML=content.replace(/\n/g,'<br>');
-  if(phs&&phs.length>0){
-    const cards=document.createElement('div');cards.className='ph-cards';
-    phs.forEach((ph)=>{
-      const c=document.createElement('div');c.className='ph-card';
-      const hasNav=ph.lat&&ph.lng&&ph.lat!==0;
-      c.innerHTML=`<div class="ph-ic">🏥</div>
-        <div class="ph-info">
-          <div class="ph-n">${ph.name}</div>
-          <div class="ph-a">${ph.address||''}</div>
-          <div class="ph-tags">
-            <span class="pt pt-g">✚ GARDE</span>
-            ${ph.phone?`<span class="pt pt-b">📞 ${ph.phone}</span>`:''}
-            ${ph.hours?`<span class="pt pt-g">${ph.hours}</span>`:''}
+  const av=document.createElement('div');av.className=`mav ${role==='a'?'ma':'mu'}`;av.textContent=role==='a'?'A':'👤';
+  const inn=document.createElement('div');
+  const b=document.createElement('div');b.className='bub';
+  b.innerHTML=content.replace(/\n/g,'<br>');
+  if(phs&&phs.length){
+    const pc=document.createElement('div');pc.className='phc';
+    phs.forEach(ph=>{
+      const card=document.createElement('div');card.className='phcard';
+      const hn=ph.lat&&ph.lng&&Math.abs(ph.lat)>.001;
+      card.innerHTML=`<div class="phic">🏥</div>
+        <div class="phi">
+          <div class="phn">${ph.name}</div>
+          <div class="pha">${ph.address||''}</div>
+          <div class="pht">
+            <span class="pt ptg">✚ GARDE</span>
+            ${ph.phone?`<span class="pt ptb">📞 ${ph.phone}</span>`:''}
+            ${ph.hours?`<span class="pt ptg">${ph.hours}</span>`:''}
           </div>
         </div>
-        ${hasNav?`<button class="go-btn" onclick="confirmAndNavigate(${ph.lat},${ph.lng},'${esc(ph.name)}')">🗺️ M'y amener</button>`:''}`;
-      cards.appendChild(c);
+        ${hn?`<button class="gobtn" onclick="askNav(${ph.lat},${ph.lng},'${esc(ph.name)}')">🗺️ Y aller</button>`:''}`;
+      pc.appendChild(card);
     });
-    bub.appendChild(cards);
+    b.appendChild(pc);
   }
-  const t=document.createElement('div');t.className='mt';t.textContent=ftime();
-  inner.appendChild(bub);inner.appendChild(t);
-  d.appendChild(av);d.appendChild(inner);
-  area.insertBefore(d,document.getElementById('tw'));
-  area.scrollTop=area.scrollHeight;
+  const t=document.createElement('div');t.className='mt';t.textContent=ft();
+  inn.appendChild(b);inn.appendChild(t);
+  d.appendChild(av);d.appendChild(inn);
+  ch.insertBefore(d,document.getElementById('tw'));
+  ch.scrollTop=ch.scrollHeight;
 }
 
-function showTyping(v){
+function showT(v){
   document.getElementById('tw').style.display=v?'flex':'none';
   document.getElementById('tb').className='tbub'+(v?' on':'');
-  if(v)document.getElementById('chatArea').scrollTop=99999;
+  if(v)document.getElementById('ch').scrollTop=99999;
 }
-function ftime(){return new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});}
+
+function ft(){return new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});}
 function esc(s){return(s||'').replace(/'/g,"\\'");}
 
-/* =========================================================
-   GROQ AI
-========================================================= */
+/* ───────────── QUICK ACTION ───────────── */
+function userSay(txt){stopSpeak();addM('u',txt);showT(true);askGroq(txt);}
+
+/* ───────────── PROCESS INPUT ───────────── */
 function processInput(txt){
   if(!txt||!txt.trim())return;
   stopSpeak();
-  addMsg('user',txt);showTyping(true);
+  addM('u',txt);showT(true);
   hist.push({role:'user',content:txt});
-  if(hist.length>18)hist=hist.slice(-14);
-  askGroq(txt,txt);
+  if(hist.length>20)hist=hist.slice(-16);
+  askGroq(txt);
 }
 
-async function askGroq(txt,rawTxt){
-  const locTxt=loc
-    ?`GPS: lat=${loc.lat.toFixed(4)}, lng=${loc.lng.toFixed(4)}. Lieu: ${document.getElementById('locVal').textContent}.`
-    :'Position inconnue.';
+/* ───────────── GROQ AI ───────────── */
+async function askGroq(txt){
+  const loctxt=loc?`GPS: lat=${loc.lat.toFixed(4)}, lng=${loc.lng.toFixed(4)}. Lieu: ${document.getElementById('locv').textContent}.`:'Position inconnue.';
 
-  const sys=`Tu es AELLA, assistante médicale IA vocale. Tu parles français, tu es concise et directe.
+  const sys=`Tu es AELLA, assistante médicale IA vocale. Française, concise, bienveillante.
+${loctxt}
 
-${locTxt}
+RÈGLES STRICTES:
+- 2 phrases maximum, directes et utiles
+- Jamais de liste à puces dans le texte parlé
+- Donne nom + adresse + téléphone pour chaque pharmacie
+- Pour navigation: réponse courte, le tracé se fait automatiquement
+- Pour médicaments: conseil rapide, rappel de consulter si grave
 
-CAPACITÉS:
-1. PHARMACIES DE GARDE: Tu localises les pharmacies ouvertes, fournis nom, adresse, téléphone.
-2. NAVIGATION: Quand l'utilisateur dit "amène-moi", "conduis-moi", "emmène-moi", "itinéraire", tu dois indiquer que tu vas tracer la route. Dans ce cas, ajoute le bloc [NAVIGATE] à la fin.
-3. CONSEILS MÉDICAMENTS: Tu peux conseiller des médicaments courants disponibles sans ordonnance selon les symptômes. Toujours préciser de consulter un médecin pour les cas graves.
+MÉDICAMENTS (sans ordonnance):
+Fièvre/douleur → Paracétamol (Doliprane), Ibuprofène (Advil)
+Maux de tête → Paracétamol, Aspirine
+Rhume → Actifed, Vitamine C
+Toux → Drill, Pholcodine
+Mal de gorge → Strepsils, Bétadine
+Diarrhée → Imodium, Smecta
+Nausées → Motilium
+Allergie → Zyrtec, Clarityne
+Brûlures estomac → Gaviscon, Maalox
+Blessure → Bétadine, eau oxygénée
 
-RÈGLES:
-- Maximum 2-3 phrases, direct et utile
-- Ne lis jamais la ponctuation
-- Ton rassurant et professionnel
+BLOCS À AJOUTER (JAMAIS dans le texte):
+- Si pharmacies: [PH_JSON][{"name":"...","address":"...","phone":"...","hours":"...","lat":0.0,"lng":0.0}][/PH_JSON]
+- Si navigation demandée: [NAV] à la fin
 
-MÉDICAMENTS COURANTS (sans ordonnance):
-- Fièvre/douleur: Paracétamol (Doliprane, Efferalgan), Ibuprofène (Advil, Nurofen)
-- Maux de tête: Paracétamol, Aspirine
-- Rhume: Pseudoéphédrine (Actifed), Vitamine C
-- Toux: Dextrométhorphane (Drill), Pholcodine, Eucalyptus
-- Mal de gorge: Pastilles Strepsils, Bétadine gargarisme  
-- Diarrhée: Lopéramide (Imodium), Smecta, Sels de réhydratation
-- Nausées: Dompéridone (Motilium), Métoclopramide
-- Constipation: Duphalac, Microlax
-- Allergie: Cétirizine (Zyrtec), Loratadine (Clarityne)
-- Brûlures d'estomac: Oméprazole, Gaviscon, Maalox
-- Blessures: Bétadine, Eau oxygénée, Pansements
-
-Si navigation demandée: ajoute [NAVIGATE] à la fin de ta réponse.
-Si pharmacies demandées: ajoute le bloc JSON ci-dessous.
-
-[PHARMACIES_JSON]
-[{"name":"Nom","address":"Adresse","phone":"+XXX","hours":"24h/24","lat":LAT,"lng":LNG}]
-[/PHARMACIES_JSON]
-
-Coordonnées de référence:
+Coordonnées réelles:
 Abidjan Plateau: 5.3196,-4.0167 | Cocody: 5.3469,-3.9884 | Yopougon: 5.3278,-4.0833
-Treichville: 5.2952,-4.0022 | Dakar: 14.6928,-17.4467 | Paris: 48.8566,2.3522
-Douala: 4.0511,9.7679 | Bamako: 12.6392,-8.0029`;
+Treichville: 5.2952,-4.0022 | Marcory: 5.3011,-3.9798 | Dakar: 14.6928,-17.4467
+Paris: 48.8566,2.3522 | Douala: 4.0511,9.7679 | Bamako: 12.6392,-8.0029`;
 
   try{
-    const r=await fetch(GROQ_URL,{
+    const r=await fetch(GU,{
       method:'POST',
-      headers:{'Authorization':`Bearer ${GROQ_KEY}`,'Content-Type':'application/json'},
+      headers:{'Authorization':`Bearer ${GK}`,'Content-Type':'application/json'},
       body:JSON.stringify({
         model:'llama-3.3-70b-versatile',
         messages:[{role:'system',content:sys},...hist],
-        max_tokens:650,temperature:0.5
+        max_tokens:600,temperature:0.48
       })
     });
     if(!r.ok)throw new Error(r.status);
-    const data=await r.json();
-    let resp=data.choices[0].message.content;
+    const d=await r.json();
+    let resp=d.choices[0].message.content;
     hist.push({role:'assistant',content:resp});
 
-    // Extract pharmacies
+    // Extract pharmacy JSON
     let phs=[];
-    const pm=resp.match(/\[PHARMACIES_JSON\]([\s\S]*?)\[\/PHARMACIES_JSON\]/);
-    if(pm){try{phs=JSON.parse(pm[1].trim());}catch(e){}resp=resp.replace(/\[PHARMACIES_JSON\][\s\S]*?\[\/PHARMACIES_JSON\]/,'').trim();}
+    const pm=resp.match(/\[PH_JSON\]([\s\S]*?)\[\/PH_JSON\]/);
+    if(pm){try{phs=JSON.parse(pm[1].trim());}catch(_){}resp=resp.replace(/\[PH_JSON\][\s\S]*?\[\/PH_JSON\]/,'').trim();}
 
-    // Detect navigation intent
-    const wantsNav=resp.includes('[NAVIGATE]');
-    resp=resp.replace('[NAVIGATE]','').trim();
+    // Detect nav flag
+    const wantsNav=resp.includes('[NAV]')||isNavIntent(txt);
+    resp=resp.replace('[NAV]','').trim();
 
-    showTyping(false);
-    addMsg('aella',resp,phs);
-    if(phs.length>0)placeMarkers(phs);
+    showT(false);
+    addM('a',resp,phs);
+    if(phs.length)placeMarkers(phs);
 
-    speak(resp);
+    // Speak then auto-listen
+    speak(resp,true);
 
-    // Handle navigation intent
-    if(wantsNav||isNavIntent(rawTxt)){
-      if(phs.length>0&&phs[0].lat&&phs[0].lat!==0){
-        // Auto confirm after speaking
-        const p=phs[0];
-        setTimeout(()=>{
-          if(!awaitingConfirm)confirmAndNavigate(p.lat,p.lng,p.name);
-        },200);
+    // Handle navigation
+    if(wantsNav){
+      const valid=phs.filter(p=>p.lat&&Math.abs(p.lat)>.001);
+      if(valid.length){
+        // Ask confirmation after speaking
+        speakThen(()=>askNav(valid[0].lat,valid[0].lng,valid[0].name));
       } else {
-        // No pharmacy result yet — ask to find one first
-        const q='Pharmacies de garde près de moi maintenant';
-        setTimeout(()=>say(q),300);
+        // No pharmacy yet — first find one then navigate
+        speakThen(()=>{
+          hist.push({role:'user',content:'Pharmacies de garde près de moi maintenant'});
+          askGroq('Pharmacies de garde près de moi maintenant');
+        });
       }
     }
 
   }catch(err){
-    showTyping(false);
-    const msg=String(err).includes('429')?'Trop de requêtes, attendez un instant.':'Problème de connexion, réessayez.';
-    addMsg('aella',msg);speak(msg);
+    showT(false);
+    const msg=String(err).includes('429')?'Trop de requêtes, patientez.':'Connexion perdue, réessayez.';
+    addM('a',msg);speak(msg,true);
   }
 }
 
-function isNavIntent(txt){
-  const t=(txt||'').toLowerCase();
-  return /(amène|conduis|emmène|itinéraire|navigation|m'y conduire|route vers)/.test(t);
+function isNavIntent(t){
+  return /(amène|conduis|emmène|itinéraire|navigation|m'y conduire|route vers|guide-moi|guider)/.test((t||'').toLowerCase());
 }
 
-// Space = mic
+// Space = manual mic trigger
 document.addEventListener('keydown',e=>{
   if(e.code==='Space'&&!['INPUT','TEXTAREA','BUTTON'].includes(e.target.tagName)){
-    e.preventDefault();toggleListen();
+    e.preventDefault();toggleMic();
   }
 });
 </script>
