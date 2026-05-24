@@ -5,623 +5,273 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AELLA — Pharmacies de Garde</title>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&family=Exo+2:ital,wght@0,200;0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 :root{
-  --white:#ffffff;
-  --ice:#f0f8ff;
-  --pale:#e8f4fd;
-  --blue:#0077cc;
-  --blue2:#00aaff;
-  --blue3:#40c4ff;
-  --teal:#00bcd4;
-  --mint:#e0f7fa;
-  --glass:rgba(255,255,255,0.72);
-  --glass2:rgba(255,255,255,0.45);
-  --border:rgba(0,150,220,0.18);
-  --shadow:rgba(0,120,200,0.12);
-  --text:#0a2540;
-  --text2:#3a6080;
-  --text3:#8ab0cc;
-  --danger:#e53935;
-  --ok:#00b894;
-  --font:'Exo 2',sans-serif;
-  --mono:'Rajdhani',sans-serif;
+  --blue:#0077cc;--blue2:#00aaff;--teal:#00bcd4;
+  --ok:#00b894;--danger:#e53935;
+  --text:#0a2540;--text2:#3a6080;--text3:#8ab0cc;
+  --border:rgba(0,150,220,0.18);--shadow:rgba(0,120,200,0.12);
+  --glass:rgba(255,255,255,0.78);
+  --font:'Exo 2',sans-serif;--mono:'Rajdhani',sans-serif;
 }
-html,body{width:100%;height:100%;overflow:hidden;background:#f0f8ff;}
+html,body{width:100%;height:100%;overflow:hidden;background:#eef6ff;}
 
-/* === CANVAS BG === */
-#bgCanvas{
-  position:fixed;inset:0;z-index:0;
-  background:linear-gradient(135deg,#f0f8ff 0%,#e8f4fd 40%,#dbeeff 70%,#f0faff 100%);
+/* BG */
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;
+  background:linear-gradient(135deg,#eef6ff 0%,#e0eeff 40%,#d8f0ff 100%);
 }
 
-/* === SPLASH === */
+/* ECG canvas */
+#ecg{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.5;}
+
+/* SPLASH */
 #splash{
   position:fixed;inset:0;z-index:200;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  background:linear-gradient(135deg,#f0f8ff,#dbeeff,#f8fbff);
-  transition:opacity 1.2s ease, visibility 1.2s ease;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;
+  background:linear-gradient(135deg,#eef6ff,#dbeeff,#f5faff);
+  transition:opacity 1s ease,visibility 1s ease;
 }
 #splash.hide{opacity:0;visibility:hidden;pointer-events:none;}
-
-.sp-cross{
-  position:relative;width:200px;height:200px;margin-bottom:36px;
+.sp-logo{
+  width:110px;height:110px;position:relative;margin-bottom:28px;
 }
-/* Rotating rings */
-.sp-ring{
-  position:absolute;border-radius:50%;border:1.5px solid transparent;
-  background:transparent;
-  animation:spinRing 4s linear infinite;
-}
-.sp-ring1{
-  inset:0;
-  border-top-color:var(--blue2);border-right-color:var(--blue2);
-  filter:drop-shadow(0 0 8px var(--blue2));
-}
-.sp-ring2{
-  inset:14px;
-  border-bottom-color:var(--teal);border-left-color:var(--teal);
-  animation-duration:3s;animation-direction:reverse;
-  filter:drop-shadow(0 0 6px var(--teal));
-}
-.sp-ring3{
-  inset:28px;
-  border-top-color:rgba(0,150,220,0.4);border-right-color:rgba(0,150,220,0.4);
-  animation-duration:6s;
-}
-@keyframes spinRing{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
-
-.sp-avatar-wrap{
-  position:absolute;inset:42px;border-radius:50%;overflow:hidden;
-  background:linear-gradient(135deg,#dbeeff,#f0f8ff);
-  box-shadow:0 0 40px rgba(0,170,255,0.25);
-}
-.sp-avatar{width:100%;height:100%;object-fit:cover;border-radius:50%;}
-.sp-fallback{
-  width:100%;height:100%;border-radius:50%;
+.sp-ring{position:absolute;border-radius:50%;border:2px solid transparent;}
+.sp-r1{inset:0;border-top-color:var(--blue2);border-right-color:var(--blue2);animation:spin 3s linear infinite;filter:drop-shadow(0 0 8px var(--blue2));}
+.sp-r2{inset:10px;border-bottom-color:var(--teal);border-left-color:var(--teal);animation:spin 2s linear infinite reverse;filter:drop-shadow(0 0 6px var(--teal));}
+.sp-core{
+  position:absolute;inset:18px;border-radius:50%;
+  background:linear-gradient(135deg,#d0e8fa,#eef6ff);
   display:flex;align-items:center;justify-content:center;
-  background:linear-gradient(135deg,#c8e6fa,#e8f4fd);
-  font-family:var(--mono);font-size:36px;font-weight:700;color:var(--blue);
+  font-size:32px;
+  box-shadow:0 4px 24px rgba(0,150,220,0.2);
 }
-
-/* Medical cross holo */
-.holo-cross{
-  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
-  width:26px;height:26px;opacity:0;
-  animation:holoPulse 3s ease-in-out infinite;
-}
-.holo-cross::before,.holo-cross::after{
-  content:'';position:absolute;background:rgba(0,170,255,0.4);border-radius:2px;
-}
-.holo-cross::before{width:100%;height:35%;top:32.5%;left:0;}
-.holo-cross::after{height:100%;width:35%;left:32.5%;top:0;}
-@keyframes holoPulse{0%,100%{opacity:0.3;transform:translate(-50%,-50%) scale(0.9)}50%{opacity:0.8;transform:translate(-50%,-50%) scale(1.1)}}
-
-.sp-name{
-  font-family:var(--mono);font-size:56px;font-weight:700;letter-spacing:14px;
-  color:var(--blue);
-  text-shadow:0 0 30px rgba(0,170,255,0.4),0 2px 0 rgba(255,255,255,0.8);
-  margin-bottom:6px;
-}
-.sp-sub{
-  font-family:var(--font);font-size:11px;font-weight:300;
-  color:var(--text3);letter-spacing:4px;text-transform:uppercase;
-  margin-bottom:44px;
-}
+@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+.sp-title{font-family:var(--mono);font-size:48px;font-weight:700;letter-spacing:12px;color:var(--blue);margin-bottom:6px;text-shadow:0 0 30px rgba(0,150,220,0.25);}
+.sp-sub{font-family:var(--font);font-size:10px;font-weight:300;color:var(--text3);letter-spacing:4px;text-transform:uppercase;margin-bottom:40px;}
 .sp-btn{
-  padding:16px 56px;border-radius:40px;
-  border:1.5px solid rgba(0,150,220,0.35);
-  background:rgba(255,255,255,0.7);
-  backdrop-filter:blur(20px);
-  color:var(--blue);font-family:var(--mono);
-  font-size:15px;font-weight:600;letter-spacing:3px;
+  padding:14px 52px;border-radius:32px;
+  border:1.5px solid rgba(0,150,220,0.3);
+  background:rgba(255,255,255,0.75);backdrop-filter:blur(20px);
+  color:var(--blue);font-family:var(--mono);font-size:14px;font-weight:600;letter-spacing:3px;
   cursor:pointer;text-transform:uppercase;
-  transition:all 0.35s ease;
-  box-shadow:0 8px 32px rgba(0,120,200,0.15),inset 0 1px 0 rgba(255,255,255,0.9);
+  box-shadow:0 6px 28px rgba(0,120,200,0.12),inset 0 1px 0 rgba(255,255,255,.9);
+  transition:all .3s ease;
 }
-.sp-btn:hover{
-  background:rgba(0,170,255,0.08);
-  border-color:var(--blue2);
-  box-shadow:0 12px 48px rgba(0,120,200,0.25),0 0 0 3px rgba(0,170,255,0.1);
-  transform:translateY(-2px) scale(1.03);
+.sp-btn:hover{background:rgba(0,150,220,0.07);border-color:var(--blue2);transform:translateY(-2px);box-shadow:0 10px 36px rgba(0,120,200,0.22);}
+
+/* APP LAYOUT */
+#app{
+  position:relative;z-index:1;width:100%;height:100vh;
+  display:none;grid-template-columns:320px 1fr;grid-template-rows:60px 1fr;
 }
 
-/* scanning line on splash */
-.sp-scan{
-  position:absolute;inset:42px;border-radius:50%;overflow:hidden;pointer-events:none;
+/* TOPBAR */
+.topbar{
+  grid-column:1/-1;display:flex;align-items:center;padding:0 22px;gap:14px;
+  background:rgba(255,255,255,0.88);backdrop-filter:blur(30px);
+  border-bottom:1px solid var(--border);box-shadow:0 2px 20px var(--shadow);z-index:10;
 }
-.sp-scan::after{
+.tb-cross{width:28px;height:28px;position:relative;flex-shrink:0;}
+.tb-cross::before,.tb-cross::after{content:'';position:absolute;background:var(--blue2);border-radius:2px;transition:.3s;}
+.tb-cross::before{width:100%;height:38%;top:31%;left:0;}
+.tb-cross::after{height:100%;width:38%;left:31%;top:0;}
+.tb-cross.pulse::before,.tb-cross.pulse::after{background:var(--ok);box-shadow:0 0 10px rgba(0,184,148,.6);}
+.tb-brand{font-family:var(--mono);font-size:20px;font-weight:700;letter-spacing:5px;color:var(--blue);}
+.tb-sep{width:1px;height:20px;background:var(--border);}
+.tb-desc{font-family:var(--font);font-size:10px;font-weight:300;color:var(--text3);letter-spacing:2px;text-transform:uppercase;}
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:10px;}
+.tb-loc{font-size:10px;color:var(--text3);font-family:var(--font);}
+.status-pill{
+  display:flex;align-items:center;gap:5px;
+  background:rgba(0,184,148,.08);border:1px solid rgba(0,184,148,.25);
+  border-radius:16px;padding:4px 12px;
+  font-size:9px;font-family:var(--mono);font-weight:600;color:var(--ok);letter-spacing:2px;
+}
+.sdot{width:5px;height:5px;border-radius:50%;background:var(--ok);box-shadow:0 0 7px var(--ok);animation:blink 2s infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+
+/* LEFT */
+.left{
+  border-right:1px solid var(--border);
+  background:rgba(255,255,255,0.62);backdrop-filter:blur(40px);
+  display:flex;flex-direction:column;overflow:hidden;
+}
+
+/* Avatar */
+.av-zone{
+  padding:22px 20px 18px;border-bottom:1px solid var(--border);
+  display:flex;flex-direction:column;align-items:center;gap:0;position:relative;overflow:hidden;
+}
+.av-zone::before{
+  content:'';position:absolute;width:200px;height:200px;border-radius:50%;top:-30px;left:50%;transform:translateX(-50%);
+  background:radial-gradient(circle,rgba(0,170,255,.07),transparent 65%);
+  animation:gpulse 3s ease-in-out infinite;
+}
+@keyframes gpulse{0%,100%{transform:translateX(-50%) scale(1)}50%{transform:translateX(-50%) scale(1.1)}}
+.av-wrap{position:relative;width:100px;height:100px;margin-bottom:12px;}
+.av-r{position:absolute;border-radius:50%;border:1.5px solid transparent;}
+.av-r1{inset:-10px;border-top-color:rgba(0,190,212,.4);border-right-color:rgba(0,190,212,.4);animation:spin 6s linear infinite;}
+.av-r2{inset:-4px;border-top-color:var(--blue2);border-right-color:var(--blue2);animation:spin 3s linear infinite reverse;filter:drop-shadow(0 0 5px rgba(0,170,255,.4));}
+.av-face{
+  position:absolute;inset:0;border-radius:50%;overflow:hidden;
+  background:linear-gradient(135deg,#d0e8fa,#eef6ff);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);font-size:30px;font-weight:700;color:var(--blue);
+  box-shadow:0 6px 24px rgba(0,120,200,0.18),inset 0 2px 4px rgba(255,255,255,.8);
+}
+.av-scan{position:absolute;inset:0;border-radius:50%;overflow:hidden;pointer-events:none;}
+.av-scan::after{
   content:'';position:absolute;left:0;right:0;height:2px;
-  background:linear-gradient(to right,transparent,rgba(0,170,255,0.6),transparent);
+  background:linear-gradient(to right,transparent,rgba(0,170,255,.4),transparent);
   animation:scanPass 2.5s linear infinite;
 }
 @keyframes scanPass{from{top:0%}to{top:100%}}
+.av-name{font-family:var(--mono);font-size:18px;font-weight:700;letter-spacing:5px;color:var(--blue);margin-bottom:2px;}
+.av-role{font-family:var(--font);font-size:9px;font-weight:300;color:var(--text3);letter-spacing:3px;text-transform:uppercase;}
 
-/* === MAIN APP === */
-#app{
-  position:relative;z-index:1;
-  width:100%;height:100vh;
-  display:none;
-  grid-template-columns:360px 1fr;
-  grid-template-rows:68px 1fr;
-}
+/* Wave */
+.waves{display:flex;align-items:center;gap:2px;height:20px;margin-top:8px;}
+.wb{width:2.5px;border-radius:2px;background:var(--blue2);height:3px;transition:height .07s;}
 
-/* === TOPBAR === */
-.topbar{
-  grid-column:1/-1;
-  display:flex;align-items:center;padding:0 28px;gap:16px;
-  background:rgba(255,255,255,0.85);
-  backdrop-filter:blur(30px);
-  border-bottom:1px solid var(--border);
-  box-shadow:0 2px 24px var(--shadow);
-  position:relative;z-index:10;
+/* MIC */
+.mic-zone{padding:18px 20px;border-bottom:1px solid var(--border);display:flex;flex-direction:column;align-items:center;gap:10px;}
+.mic-btn{
+  width:76px;height:76px;border-radius:50%;cursor:pointer;
+  background:linear-gradient(145deg,#fff,#d8eeff);border:none;outline:none;
+  box-shadow:0 6px 28px rgba(0,120,200,0.15),0 2px 6px rgba(0,120,200,.1),inset 0 2px 4px rgba(255,255,255,.9);
+  display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;
+  transition:all .3s ease;
 }
-.tb-cross{
-  width:32px;height:32px;position:relative;flex-shrink:0;
-}
-.tb-cross::before,.tb-cross::after{
-  content:'';position:absolute;background:var(--blue2);border-radius:3px;
-  transition:all 0.3s;
-}
-.tb-cross::before{width:100%;height:40%;top:30%;left:0;}
-.tb-cross::after{height:100%;width:40%;left:30%;top:0;}
-.tb-cross.pulse::before,.tb-cross.pulse::after{
-  background:var(--ok);
-  box-shadow:0 0 12px rgba(0,184,148,0.6);
-}
-.tb-name{
-  font-family:var(--mono);font-size:22px;font-weight:700;
-  letter-spacing:6px;color:var(--blue);
-  text-shadow:0 1px 0 rgba(255,255,255,0.8);
-}
-.tb-divider{width:1px;height:24px;background:var(--border);}
-.tb-sub{font-family:var(--font);font-size:11px;font-weight:300;color:var(--text3);letter-spacing:2px;text-transform:uppercase;}
-.tb-right{margin-left:auto;display:flex;align-items:center;gap:12px;}
-.tb-pill{
-  display:flex;align-items:center;gap:6px;
-  background:rgba(0,184,148,0.08);
-  border:1px solid rgba(0,184,148,0.25);
-  border-radius:20px;padding:5px 14px;
-  font-size:10px;font-family:var(--mono);font-weight:600;
-  color:var(--ok);letter-spacing:2px;
-}
-.pill-dot{
-  width:6px;height:6px;border-radius:50%;
-  background:var(--ok);box-shadow:0 0 8px var(--ok);
-  animation:blink 2s infinite;
-}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
-.tb-loc{font-size:11px;color:var(--text3);font-family:var(--font);font-weight:300;}
+.mic-btn::before{content:'';position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle at 35% 35%,rgba(255,255,255,.9),transparent 55%);pointer-events:none;}
+.mic-btn:hover:not(.listening){transform:scale(1.05) translateY(-1px);box-shadow:0 10px 36px rgba(0,120,200,.22);}
+.mic-btn.listening{background:linear-gradient(145deg,#fff5f5,#ffe0e0);animation:mpulse 1.1s infinite;}
+.mic-btn.speaking{background:linear-gradient(145deg,#f0fff8,#ccf0e4);}
+@keyframes mpulse{0%{box-shadow:0 0 0 0 rgba(229,57,53,.5)}70%{box-shadow:0 0 0 18px rgba(229,57,53,0)}100%{box-shadow:0 0 0 0 rgba(229,57,53,0)}}
+.mic-ic{width:28px;height:28px;color:var(--blue);transition:color .3s;}
+.mic-btn.listening .mic-ic{color:var(--danger);}
+.mic-btn.speaking .mic-ic{color:var(--ok);}
+.mic-rings{position:absolute;inset:0;border-radius:50%;pointer-events:none;}
+.mr{position:absolute;border-radius:50%;border:1px solid rgba(0,150,220,.25);top:50%;left:50%;transform:translate(-50%,-50%);display:none;}
+.mr1{width:115%;height:115%;animation:mr 1.4s ease-out infinite;}
+.mr2{width:135%;height:135%;animation:mr 1.4s ease-out infinite .4s;}
+.mic-btn.listening .mr,.mic-btn.speaking .mr{display:block;}
+.mic-btn.listening .mr{border-color:rgba(229,57,53,.35);}
+@keyframes mr{0%{opacity:.5;transform:translate(-50%,-50%) scale(.85)}100%{opacity:0;transform:translate(-50%,-50%) scale(1)}}
+.mic-lbl{font-family:var(--mono);font-size:9px;font-weight:600;color:var(--text3);letter-spacing:2px;text-transform:uppercase;}
+.mic-lbl.on{color:var(--danger);}
+.mic-lbl.sp{color:var(--ok);}
 
-/* === LEFT PANEL === */
-.left{
-  border-right:1px solid var(--border);
-  background:rgba(255,255,255,0.6);
-  backdrop-filter:blur(40px);
-  display:flex;flex-direction:column;overflow:hidden;
-  box-shadow:2px 0 24px rgba(0,100,180,0.06);
-}
-
-/* Avatar section */
-.av-section{
-  padding:28px 24px 22px;
-  display:flex;flex-direction:column;align-items:center;
-  border-bottom:1px solid var(--border);
-  position:relative;overflow:hidden;
-}
-/* bg glow behind avatar */
-.av-section::before{
-  content:'';position:absolute;
-  width:220px;height:220px;border-radius:50%;
-  background:radial-gradient(circle,rgba(0,170,255,0.08) 0%,transparent 70%);
-  top:0;left:50%;transform:translateX(-50%);
-  animation:glowPulse 3s ease-in-out infinite;
-}
-@keyframes glowPulse{0%,100%{transform:translateX(-50%) scale(1);opacity:0.8}50%{transform:translateX(-50%) scale(1.15);opacity:1}}
-
-.av-holo{position:relative;width:130px;height:130px;margin-bottom:16px;}
-
-/* 3D layered rings */
-.av-ring{
-  position:absolute;border-radius:50%;border:1px solid transparent;
-}
-.av-r1{
-  inset:-16px;
-  border:1px dashed rgba(0,170,255,0.2);
-  animation:spinRing 10s linear infinite;
-}
-.av-r2{
-  inset:-8px;
-  border-top:1.5px solid rgba(0,190,212,0.5);
-  border-right:1.5px solid rgba(0,190,212,0.5);
-  border-bottom:1.5px solid transparent;
-  border-left:1.5px solid transparent;
-  animation:spinRing 5s linear infinite;
-  filter:drop-shadow(0 0 4px rgba(0,190,212,0.6));
-}
-.av-r3{
-  inset:-3px;
-  border-top:2px solid var(--blue2);
-  border-right:2px solid var(--blue2);
-  border-bottom:2px solid transparent;
-  border-left:2px solid transparent;
-  animation:spinRing 3s linear infinite reverse;
-  filter:drop-shadow(0 0 6px rgba(0,170,255,0.5));
-}
-.av-img-wrap{
-  position:absolute;inset:0;border-radius:50%;overflow:hidden;
-  background:linear-gradient(135deg,#dbeeff,#f0f8ff);
-  box-shadow:0 8px 32px rgba(0,120,200,0.2),inset 0 2px 4px rgba(255,255,255,0.9);
-}
-.av-img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
-.av-fallback{
-  width:100%;height:100%;border-radius:50%;
-  display:flex;align-items:center;justify-content:center;
-  font-family:var(--mono);font-size:36px;font-weight:700;color:var(--blue);
-  background:linear-gradient(135deg,#c8e6fa,#e8f4fd);
-}
-/* scan on avatar */
-.av-scan{position:absolute;inset:0;border-radius:50%;overflow:hidden;pointer-events:none;z-index:5;}
-.av-scan::after{
-  content:'';position:absolute;left:0;right:0;height:2px;
-  background:linear-gradient(to right,transparent,rgba(0,170,255,0.5),transparent);
-  animation:scanPass 3s linear infinite;
-}
-/* holo dots orbiting */
-.orbit-dot{
-  position:absolute;width:6px;height:6px;border-radius:50%;
-  background:var(--blue2);box-shadow:0 0 8px var(--blue2);
-  top:50%;left:50%;transform-origin:0 0;
-}
-.od1{animation:orbitAnim 4s linear infinite;}
-.od2{animation:orbitAnim 4s linear infinite;animation-delay:-2s;background:var(--teal);box-shadow:0 0 8px var(--teal);}
-@keyframes orbitAnim{
-  from{transform:rotate(0deg) translateX(72px) rotate(0deg)}
-  to{transform:rotate(360deg) translateX(72px) rotate(-360deg)}
-}
-
-/* Wave bars */
-.wave-bars{
-  display:flex;align-items:center;gap:3px;height:28px;
-  position:absolute;bottom:6px;left:50%;transform:translateX(-50%);
-}
-.wb{width:3px;border-radius:2px;background:var(--blue2);height:4px;transition:height 0.08s;}
-
-.av-name{
-  font-family:var(--mono);font-size:22px;font-weight:700;
-  letter-spacing:6px;color:var(--blue);
-  text-shadow:0 1px 0 rgba(255,255,255,0.8);
-  margin-bottom:4px;
-}
-.av-title{font-family:var(--font);font-size:10px;font-weight:300;color:var(--text3);letter-spacing:3px;text-transform:uppercase;}
-
-/* === BIG MIC === */
-.mic-wrap{
-  padding:22px 24px;
-  border-bottom:1px solid var(--border);
-  display:flex;flex-direction:column;align-items:center;gap:12px;
-}
-.big-mic{
-  width:86px;height:86px;border-radius:50%;cursor:pointer;
-  background:linear-gradient(145deg,#ffffff,#dbeeff);
-  border:none;outline:none;
-  box-shadow:
-    0 8px 32px rgba(0,120,200,0.18),
-    0 2px 8px rgba(0,120,200,0.1),
-    inset 0 2px 4px rgba(255,255,255,0.9),
-    inset 0 -2px 4px rgba(0,120,200,0.1);
-  display:flex;align-items:center;justify-content:center;
-  transition:all 0.3s ease;
-  position:relative;overflow:hidden;
-}
-.big-mic::before{
-  content:'';position:absolute;inset:0;border-radius:50%;
-  background:radial-gradient(circle at 35% 35%,rgba(255,255,255,0.9),transparent 60%);
-  pointer-events:none;
-}
-.big-mic:hover{
-  transform:scale(1.06) translateY(-2px);
-  box-shadow:0 14px 48px rgba(0,120,200,0.28),0 4px 12px rgba(0,120,200,0.15),inset 0 2px 4px rgba(255,255,255,0.9);
-}
-.big-mic.listening{
-  background:linear-gradient(145deg,#fff5f5,#ffe8e8);
-  box-shadow:0 0 0 0 rgba(229,57,53,0.4),0 8px 32px rgba(229,57,53,0.25);
-  animation:micPulse 1.1s infinite;
-}
-.big-mic.speaking{
-  background:linear-gradient(145deg,#f0fff8,#d4f7e8);
-  box-shadow:0 8px 40px rgba(0,184,148,0.3),inset 0 2px 4px rgba(255,255,255,0.9);
-}
-@keyframes micPulse{
-  0%{box-shadow:0 0 0 0 rgba(229,57,53,0.5),0 8px 32px rgba(229,57,53,0.25);}
-  70%{box-shadow:0 0 0 20px rgba(229,57,53,0),0 8px 32px rgba(229,57,53,0.25);}
-  100%{box-shadow:0 0 0 0 rgba(229,57,53,0),0 8px 32px rgba(229,57,53,0.25);}
-}
-.mic-svg{width:34px;height:34px;color:var(--blue);transition:color 0.3s;}
-.big-mic.listening .mic-svg{color:var(--danger);}
-.big-mic.speaking .mic-svg{color:var(--ok);}
-
-.mic-lbl{
-  font-family:var(--mono);font-size:10px;font-weight:600;
-  color:var(--text3);letter-spacing:2px;text-transform:uppercase;
-  transition:color 0.3s;
-}
-.mic-lbl.listening{color:var(--danger);}
-.mic-lbl.speaking{color:var(--ok);}
-
-/* Sound ring animation when speaking */
-.sound-rings{
-  position:absolute;inset:0;border-radius:50%;pointer-events:none;
-}
-.sr{
-  position:absolute;border-radius:50%;
-  border:1px solid rgba(0,150,220,0.3);
-  top:50%;left:50%;transform:translate(-50%,-50%);
-  opacity:0;
-}
-.sr1{width:110%;height:110%;animation:soundRing 1.5s ease-out infinite;}
-.sr2{width:130%;height:130%;animation:soundRing 1.5s ease-out infinite 0.4s;}
-.sr3{width:150%;height:150%;animation:soundRing 1.5s ease-out infinite 0.8s;}
-@keyframes soundRing{0%{opacity:0.6;transform:translate(-50%,-50%) scale(0.8)}100%{opacity:0;transform:translate(-50%,-50%) scale(1)}}
-.big-mic.speaking .sr,.big-mic.listening .sr{display:block;}
-.sr{display:none;}
-.big-mic.listening .sr{border-color:rgba(229,57,53,0.4);}
-
-/* === QUICK ACTIONS === */
-.qa-wrap{padding:16px 20px;border-bottom:1px solid var(--border);}
-.sec-lbl{font-family:var(--mono);font-size:9px;font-weight:600;color:var(--text3);letter-spacing:3px;text-transform:uppercase;margin-bottom:10px;}
-.qa-list{display:flex;flex-direction:column;gap:5px;}
+/* Quick actions */
+.qa{padding:12px 16px;border-bottom:1px solid var(--border);}
+.sec-lbl{font-family:var(--mono);font-size:8px;font-weight:600;color:var(--text3);letter-spacing:3px;text-transform:uppercase;margin-bottom:8px;}
+.qa-list{display:flex;flex-direction:column;gap:4px;}
 .qa-btn{
-  padding:9px 14px;border-radius:10px;
-  border:1px solid rgba(0,150,220,0.15);
-  background:rgba(255,255,255,0.6);
-  backdrop-filter:blur(10px);
-  color:var(--text2);font-family:var(--font);font-size:12px;font-weight:400;
-  cursor:pointer;text-align:left;
-  display:flex;align-items:center;gap:9px;
-  transition:all 0.2s ease;
-  box-shadow:0 2px 8px rgba(0,100,180,0.04);
+  padding:7px 12px;border-radius:8px;border:1px solid rgba(0,150,220,.13);
+  background:rgba(255,255,255,.6);color:var(--text2);
+  font-family:var(--font);font-size:11px;cursor:pointer;text-align:left;
+  display:flex;align-items:center;gap:8px;transition:all .2s ease;
 }
-.qa-btn:hover{
-  border-color:rgba(0,170,255,0.35);
-  background:rgba(255,255,255,0.85);
-  color:var(--blue);
-  transform:translateX(4px);
-  box-shadow:0 4px 16px rgba(0,120,200,0.12);
-}
-.qa-ic{
-  width:26px;height:26px;border-radius:7px;
-  background:linear-gradient(135deg,rgba(0,170,255,0.1),rgba(0,190,212,0.1));
-  border:1px solid rgba(0,170,255,0.15);
-  display:flex;align-items:center;justify-content:center;font-size:12px;
-  flex-shrink:0;
-}
+.qa-btn:hover{border-color:rgba(0,170,255,.3);background:rgba(255,255,255,.9);color:var(--blue);transform:translateX(3px);}
+.qi{width:22px;height:22px;border-radius:6px;background:rgba(0,170,255,.08);border:1px solid rgba(0,170,255,.15);display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;}
 
-/* === LOCATION === */
-.loc-wrap{padding:14px 20px;}
-.loc-card{
-  background:rgba(255,255,255,0.7);
-  border:1px solid var(--border);
-  border-radius:12px;padding:10px 13px;
-  display:flex;align-items:center;gap:10px;
-  box-shadow:0 2px 12px rgba(0,100,180,0.06);
-}
-.loc-ic{font-size:15px;flex-shrink:0;}
-.loc-v{font-family:var(--font);font-size:11px;font-weight:300;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+/* Location */
+.loc-zone{padding:10px 16px;}
+.loc-card{background:rgba(255,255,255,.7);border:1px solid var(--border);border-radius:10px;padding:8px 11px;display:flex;align-items:center;gap:8px;}
+.loc-val{font-family:var(--font);font-size:10px;font-weight:300;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 
-/* === RIGHT PANEL === */
-.right{display:grid;grid-template-rows:1fr 290px;overflow:hidden;}
+/* RIGHT */
+.right{display:grid;grid-template-rows:1fr 260px;overflow:hidden;}
 
-/* Chat */
-.chat{
-  overflow-y:auto;padding:22px 24px;
-  display:flex;flex-direction:column;gap:14px;
-  scroll-behavior:smooth;
-}
-.chat::-webkit-scrollbar{width:4px;}
-.chat::-webkit-scrollbar-thumb{background:rgba(0,150,220,0.2);border-radius:2px;}
-
-.msg{display:flex;gap:10px;animation:msgIn 0.4s cubic-bezier(0.34,1.56,0.64,1);}
-.msg.user{flex-direction:row-reverse;align-self:flex-end;max-width:68%;}
-.msg.aella{max-width:88%;}
-@keyframes msgIn{from{opacity:0;transform:translateY(12px) scale(0.96)}to{opacity:1;transform:none}}
-
-.msg-av{
-  width:32px;height:32px;border-radius:50%;flex-shrink:0;
-  display:flex;align-items:center;justify-content:center;
-  font-family:var(--mono);font-size:11px;font-weight:700;
-}
-.av-a{
-  background:linear-gradient(135deg,rgba(0,170,255,0.12),rgba(0,190,212,0.12));
-  border:1.5px solid rgba(0,170,255,0.25);color:var(--blue);
-}
-.av-u{
-  background:rgba(0,120,180,0.08);
-  border:1.5px solid rgba(0,120,180,0.2);color:var(--blue2);
-}
-
+/* CHAT */
+.chat{overflow-y:auto;padding:18px 20px;display:flex;flex-direction:column;gap:12px;scroll-behavior:smooth;}
+.chat::-webkit-scrollbar{width:3px;}
+.chat::-webkit-scrollbar-thumb{background:rgba(0,150,220,.2);border-radius:2px;}
+.msg{display:flex;gap:8px;animation:min 0.35s cubic-bezier(.34,1.56,.64,1);}
+.msg.user{flex-direction:row-reverse;align-self:flex-end;max-width:65%;}
+.msg.aella{max-width:86%;}
+@keyframes min{from{opacity:0;transform:translateY(10px) scale(.96)}to{opacity:1;transform:none}}
+.mav{width:28px;height:28px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:10px;font-weight:700;}
+.mav-a{background:rgba(0,170,255,.1);border:1.5px solid rgba(0,170,255,.25);color:var(--blue);}
+.mav-u{background:rgba(0,120,180,.08);border:1.5px solid rgba(0,120,180,.2);color:var(--blue2);}
 .bub{
-  background:rgba(255,255,255,0.82);
-  border:1px solid rgba(0,150,220,0.12);
-  border-radius:16px;padding:11px 15px;
-  font-family:var(--font);font-size:13px;font-weight:300;
-  line-height:1.7;color:var(--text);
-  box-shadow:0 4px 20px rgba(0,100,180,0.08);
-  backdrop-filter:blur(20px);
+  background:rgba(255,255,255,.84);border:1px solid rgba(0,150,220,.12);
+  border-radius:14px;padding:10px 14px;
+  font-family:var(--font);font-size:12.5px;font-weight:300;line-height:1.65;color:var(--text);
+  box-shadow:0 3px 16px rgba(0,100,180,.07);backdrop-filter:blur(16px);
 }
-.msg.user .bub{
-  background:linear-gradient(135deg,rgba(0,119,204,0.08),rgba(0,188,212,0.06));
-  border-color:rgba(0,170,255,0.2);
-  border-bottom-right-radius:3px;
-}
+.msg.user .bub{background:linear-gradient(135deg,rgba(0,119,204,.08),rgba(0,188,212,.06));border-color:rgba(0,170,255,.2);border-bottom-right-radius:3px;}
 .msg.aella .bub{border-bottom-left-radius:3px;}
-.msg-t{font-family:var(--mono);font-size:9px;color:var(--text3);margin-top:3px;}
-.msg.user .msg-t{text-align:right;}
+.mt{font-family:var(--mono);font-size:8px;color:var(--text3);margin-top:3px;}
+.msg.user .mt{text-align:right;}
 
-/* typing */
-.tw{display:none;gap:10px;align-items:flex-start;}
-.tbub{
-  display:none;align-items:center;gap:5px;
-  background:rgba(255,255,255,0.82);border:1px solid rgba(0,150,220,0.12);
-  border-radius:16px;border-bottom-left-radius:3px;
-  padding:12px 15px;
-  box-shadow:0 4px 20px rgba(0,100,180,0.08);
-}
+/* Typing */
+.tw{display:none;gap:8px;align-items:flex-start;}
+.tbub{display:none;align-items:center;gap:4px;background:rgba(255,255,255,.84);border:1px solid rgba(0,150,220,.12);border-radius:14px;border-bottom-left-radius:3px;padding:12px 14px;box-shadow:0 3px 16px rgba(0,100,180,.07);}
 .tbub.on{display:flex;}
 .td{width:5px;height:5px;border-radius:50%;background:var(--blue2);}
-.td:nth-child(1){animation:tdB 1s 0s infinite;}
-.td:nth-child(2){animation:tdB 1s .2s infinite;}
-.td:nth-child(3){animation:tdB 1s .4s infinite;}
-@keyframes tdB{0%,100%{opacity:0.2;transform:translateY(0)}50%{opacity:1;transform:translateY(-4px)}}
+.td:nth-child(1){animation:tdot 1s 0s infinite;}
+.td:nth-child(2){animation:tdot 1s .2s infinite;}
+.td:nth-child(3){animation:tdot 1s .4s infinite;}
+@keyframes tdot{0%,100%{opacity:.2;transform:translateY(0)}50%{opacity:1;transform:translateY(-4px)}}
 
 /* Pharmacy cards */
-.ph-cards{display:flex;flex-direction:column;gap:8px;margin-top:10px;}
+.ph-cards{display:flex;flex-direction:column;gap:7px;margin-top:8px;}
 .ph-card{
-  background:linear-gradient(135deg,rgba(240,248,255,0.95),rgba(255,255,255,0.95));
-  border:1px solid rgba(0,170,255,0.18);
-  border-radius:12px;padding:11px 13px;
-  display:flex;align-items:flex-start;gap:10px;
-  cursor:pointer;transition:all 0.25s ease;
-  box-shadow:0 3px 16px rgba(0,100,180,0.08);
-  position:relative;overflow:hidden;
+  background:linear-gradient(135deg,rgba(240,248,255,.96),rgba(255,255,255,.96));
+  border:1px solid rgba(0,170,255,.18);border-radius:10px;padding:10px 11px;
+  display:flex;align-items:flex-start;gap:8px;cursor:pointer;
+  transition:all .22s ease;box-shadow:0 2px 12px rgba(0,100,180,.07);position:relative;overflow:hidden;
 }
-.ph-card::before{
-  content:'';position:absolute;left:0;top:0;bottom:0;width:3px;
-  background:linear-gradient(to bottom,var(--blue2),var(--teal));
-  border-radius:3px 0 0 3px;
-}
-.ph-card:hover{
-  border-color:rgba(0,170,255,0.4);
-  transform:translateX(4px);
-  box-shadow:0 6px 28px rgba(0,100,180,0.15);
-}
-.ph-ic{
-  width:36px;height:36px;border-radius:9px;flex-shrink:0;
-  background:linear-gradient(135deg,rgba(0,188,212,0.12),rgba(0,170,255,0.08));
-  border:1px solid rgba(0,170,255,0.2);
-  display:flex;align-items:center;justify-content:center;font-size:17px;
-}
+.ph-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(to bottom,var(--blue2),var(--teal));}
+.ph-card:hover{border-color:rgba(0,170,255,.38);transform:translateX(3px);box-shadow:0 5px 22px rgba(0,100,180,.13);}
+.ph-ic{width:32px;height:32px;border-radius:8px;flex-shrink:0;background:rgba(0,188,212,.1);border:1px solid rgba(0,170,255,.18);display:flex;align-items:center;justify-content:center;font-size:15px;}
 .ph-info{flex:1;min-width:0;}
-.ph-n{font-family:var(--mono);font-weight:600;font-size:13px;color:var(--blue);margin-bottom:2px;}
-.ph-a{font-family:var(--font);font-size:10px;font-weight:300;color:var(--text2);margin-bottom:5px;}
-.ph-tags{display:flex;gap:5px;flex-wrap:wrap;}
-.pt{
-  font-family:var(--mono);font-size:9px;font-weight:600;
-  padding:2px 8px;border-radius:4px;letter-spacing:1px;
-}
-.pt-g{background:rgba(0,184,148,0.1);color:var(--ok);border:1px solid rgba(0,184,148,0.25);}
-.pt-b{background:rgba(0,170,255,0.08);color:var(--blue2);border:1px solid rgba(0,170,255,0.2);}
+.ph-n{font-family:var(--mono);font-weight:600;font-size:12px;color:var(--blue);margin-bottom:2px;}
+.ph-a{font-family:var(--font);font-size:9px;font-weight:300;color:var(--text2);margin-bottom:4px;}
+.ph-tags{display:flex;gap:4px;flex-wrap:wrap;}
+.pt{font-family:var(--mono);font-size:8px;font-weight:600;padding:2px 7px;border-radius:4px;letter-spacing:1px;}
+.pt-g{background:rgba(0,184,148,.1);color:var(--ok);border:1px solid rgba(0,184,148,.25);}
+.pt-b{background:rgba(0,170,255,.07);color:var(--blue2);border:1px solid rgba(0,170,255,.18);}
 .go-btn{
-  flex-shrink:0;align-self:center;
-  padding:6px 12px;border-radius:8px;
-  border:1px solid rgba(0,170,255,0.25);
-  background:linear-gradient(135deg,rgba(0,170,255,0.06),rgba(0,190,212,0.06));
-  color:var(--blue);font-family:var(--mono);font-size:10px;font-weight:600;
-  cursor:pointer;white-space:nowrap;
-  transition:all 0.2s ease;letter-spacing:1px;
+  flex-shrink:0;align-self:center;padding:5px 10px;border-radius:7px;
+  border:1px solid rgba(0,170,255,.22);background:rgba(0,170,255,.06);
+  color:var(--blue);font-family:var(--mono);font-size:9px;font-weight:600;
+  cursor:pointer;white-space:nowrap;transition:all .2s;letter-spacing:1px;
 }
-.go-btn:hover{background:rgba(0,170,255,0.14);border-color:var(--blue2);}
+.go-btn:hover{background:rgba(0,170,255,.13);border-color:var(--blue2);}
 
-/* === MAP === */
-.map-panel{
-  border-top:1px solid var(--border);position:relative;
-  background:rgba(248,252,255,0.9);
-}
+/* MAP */
+.map-panel{border-top:1px solid var(--border);position:relative;background:rgba(248,252,255,.9);}
 .map-bar{
-  position:absolute;top:0;left:0;right:0;height:34px;
-  background:rgba(255,255,255,0.88);backdrop-filter:blur(20px);
+  position:absolute;top:0;left:0;right:0;height:30px;z-index:10;
+  background:rgba(255,255,255,.9);backdrop-filter:blur(16px);
   border-bottom:1px solid var(--border);
-  display:flex;align-items:center;padding:0 16px;gap:8px;z-index:10;
-  box-shadow:0 2px 12px rgba(0,100,180,0.06);
+  display:flex;align-items:center;padding:0 14px;gap:7px;
 }
-.map-lbl{font-family:var(--mono);font-size:9px;font-weight:600;color:var(--text3);letter-spacing:2px;text-transform:uppercase;}
-.map-coord{margin-left:auto;font-family:var(--mono);font-size:9px;color:var(--blue);opacity:0.5;}
-#map{position:absolute;inset:34px 0 0 0;}
-.map-ph{
-  position:absolute;inset:34px 0 0 0;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
-}
-.map-ph-ic{font-size:40px;opacity:0.18;}
-.map-ph-t{font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:2px;opacity:0.5;}
+.map-lbl{font-family:var(--mono);font-size:8px;font-weight:600;color:var(--text3);letter-spacing:2px;text-transform:uppercase;}
+.map-coord{margin-left:auto;font-family:var(--mono);font-size:8px;color:var(--blue);opacity:.45;}
+#map{position:absolute;inset:30px 0 0 0;}
 
-/* === NAV MODAL === */
-.nav-modal{position:fixed;inset:0;background:rgba(240,248,255,0.92);backdrop-filter:blur(20px);z-index:500;display:none;flex-direction:column;}
-.nav-modal.open{display:flex;}
-.nav-hdr{
-  height:56px;background:rgba(255,255,255,0.9);
-  border-bottom:1px solid var(--border);
-  display:flex;align-items:center;padding:0 20px;gap:14px;flex-shrink:0;
-  box-shadow:0 2px 16px rgba(0,100,180,0.08);
-}
-.nav-title{font-family:var(--mono);font-size:14px;font-weight:600;color:var(--blue);flex:1;}
-.nav-close{
-  width:34px;height:34px;border-radius:8px;
-  border:1px solid rgba(0,150,220,0.2);background:transparent;
-  color:var(--text2);cursor:pointer;font-size:15px;
-  display:flex;align-items:center;justify-content:center;transition:all 0.2s;
-}
-.nav-close:hover{border-color:var(--danger);color:var(--danger);background:rgba(229,57,53,0.05);}
-#navFrame{flex:1;border:none;width:100%;}
-.nav-ftr{
-  padding:12px 20px;background:rgba(255,255,255,0.9);
-  border-top:1px solid var(--border);
-  display:flex;align-items:center;gap:12px;
-  box-shadow:0 -2px 16px rgba(0,100,180,0.06);
-}
-.nav-dest{flex:1;font-family:var(--font);font-size:12px;font-weight:300;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.gmaps-btn{
-  padding:10px 24px;border-radius:10px;border:none;
-  background:linear-gradient(135deg,var(--blue),var(--blue2));
-  color:#fff;font-family:var(--mono);font-size:12px;font-weight:600;
-  cursor:pointer;white-space:nowrap;letter-spacing:1px;
-  transition:all 0.2s;
-  box-shadow:0 4px 16px rgba(0,120,200,0.3);
-}
-.gmaps-btn:hover{transform:scale(1.04);box-shadow:0 6px 24px rgba(0,120,200,0.4);}
-
-/* holographic overlay on cards */
-@keyframes holoShift{
-  0%{background-position:0% 50%;}
-  50%{background-position:100% 50%;}
-  100%{background-position:0% 50%;}
-}
+/* Leaflet popup override */
+.leaflet-popup-content-wrapper{border-radius:12px!important;box-shadow:0 8px 28px rgba(0,100,180,.18)!important;}
 </style>
 </head>
 <body>
-
-<canvas id="bgCanvas"></canvas>
+<canvas id="ecg"></canvas>
 
 <!-- SPLASH -->
 <div id="splash">
-  <div class="sp-cross">
-    <div class="sp-ring sp-ring1"></div>
-    <div class="sp-ring sp-ring2"></div>
-    <div class="sp-ring sp-ring3"></div>
-    <div class="sp-avatar-wrap">
-      <img class="sp-avatar" src="aella.jpg" onerror="this.style.display='none';document.getElementById('spf').style.display='flex'">
-      <div class="sp-fallback" id="spf" style="display:none">A</div>
-      <div class="sp-scan"></div>
-    </div>
-    <div class="holo-cross"></div>
+  <div class="sp-logo">
+    <div class="sp-ring sp-r1"></div>
+    <div class="sp-ring sp-r2"></div>
+    <div class="sp-core">✚</div>
   </div>
-  <div class="sp-name">AELLA</div>
+  <div class="sp-title">AELLA</div>
   <div class="sp-sub">Intelligence Artificielle · Pharmacies de Garde</div>
   <button class="sp-btn" onclick="boot()">Activer AELLA</button>
-</div>
-
-<!-- NAV MODAL -->
-<div class="nav-modal" id="navModal">
-  <div class="nav-hdr">
-    <div style="width:36px;height:36px;border-radius:9px;background:linear-gradient(135deg,rgba(0,170,255,0.1),rgba(0,190,212,0.1));border:1px solid rgba(0,170,255,0.2);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0">📍</div>
-    <div class="nav-title" id="navTitle">Navigation</div>
-    <button class="nav-close" onclick="closeNav()">✕</button>
-  </div>
-  <iframe id="navFrame" src="about:blank" allowfullscreen></iframe>
-  <div class="nav-ftr">
-    <div class="nav-dest" id="navDest">—</div>
-    <button class="gmaps-btn" onclick="gmaps()">🚗 Google Maps</button>
-  </div>
 </div>
 
 <!-- APP -->
@@ -629,33 +279,29 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f0f8ff;}
   <!-- TOPBAR -->
   <div class="topbar">
     <div class="tb-cross" id="tbCross"></div>
-    <div class="tb-name">AELLA</div>
-    <div class="tb-divider"></div>
-    <div class="tb-sub">IA Médicale · Pharmacies de Garde</div>
+    <div class="tb-brand">AELLA</div>
+    <div class="tb-sep"></div>
+    <div class="tb-desc">IA Médicale · Pharmacies de Garde</div>
     <div class="tb-right">
       <div class="tb-loc" id="tbLoc">📡 Localisation...</div>
-      <div class="tb-pill"><div class="pill-dot"></div><span>SYSTÈME ACTIF</span></div>
+      <div class="status-pill"><div class="sdot"></div><span>ACTIF</span></div>
     </div>
   </div>
 
-  <!-- LEFT -->
+  <!-- LEFT PANEL -->
   <div class="left">
-    <div class="av-section">
-      <div class="av-holo">
-        <div class="av-ring av-r1"></div>
-        <div class="av-ring av-r2"></div>
-        <div class="av-ring av-r3"></div>
-        <div class="av-img-wrap">
-          <img class="av-img" src="aella.jpg" onerror="this.style.display='none';document.getElementById('af').style.display='flex'">
-          <div class="av-fallback" id="af" style="display:none">A</div>
+    <div class="av-zone">
+      <div class="av-wrap">
+        <div class="av-r av-r1"></div>
+        <div class="av-r av-r2"></div>
+        <div class="av-face">
+          ✚
           <div class="av-scan"></div>
         </div>
-        <div class="orbit-dot od1"></div>
-        <div class="orbit-dot od2"></div>
       </div>
       <div class="av-name">AELLA</div>
-      <div class="av-title">Assistante Médicale Vocale</div>
-      <div class="wave-bars" id="waveBars">
+      <div class="av-role">Assistante Médicale Vocale</div>
+      <div class="waves" id="waves">
         <div class="wb" id="w1"></div><div class="wb" id="w2"></div>
         <div class="wb" id="w3"></div><div class="wb" id="w4"></div>
         <div class="wb" id="w5"></div><div class="wb" id="w6"></div>
@@ -663,15 +309,10 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f0f8ff;}
       </div>
     </div>
 
-    <!-- MIC -->
-    <div class="mic-wrap">
-      <button class="big-mic" id="bigMic" onclick="toggleListen()">
-        <div class="sound-rings">
-          <div class="sr sr1"></div>
-          <div class="sr sr2"></div>
-          <div class="sr sr3"></div>
-        </div>
-        <svg class="mic-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <div class="mic-zone">
+      <button class="mic-btn" id="micBtn" onclick="toggleListen()">
+        <div class="mic-rings"><div class="mr mr1"></div><div class="mr mr2"></div></div>
+        <svg class="mic-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
           <rect x="9" y="2" width="6" height="11" rx="3"/>
           <path d="M5 10a7 7 0 0 0 14 0"/>
           <line x1="12" y1="19" x2="12" y2="22"/>
@@ -681,118 +322,76 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f0f8ff;}
       <div class="mic-lbl" id="micLbl">APPUYEZ POUR PARLER</div>
     </div>
 
-    <!-- QUICK ACTIONS -->
-    <div class="qa-wrap">
+    <div class="qa">
       <div class="sec-lbl">Commandes rapides</div>
       <div class="qa-list">
-        <button class="qa-btn" onclick="say('Trouve les pharmacies de garde près de moi')"><div class="qa-ic">🔍</div>Pharmacies près de moi</button>
-        <button class="qa-btn" onclick="say('Quelle pharmacie est ouverte cette nuit ?')"><div class="qa-ic">🌙</div>Ouvertes cette nuit</button>
-        <button class="qa-btn" onclick="say('Conduis-moi à la pharmacie de garde la plus proche')"><div class="qa-ic">🗺️</div>Navigation directe</button>
-        <button class="qa-btn" onclick="say('Pharmacies de garde à Abidjan maintenant')"><div class="qa-ic">📍</div>Abidjan</button>
-        <button class="qa-btn" onclick="say('Urgence médicament pharmacie ouverte maintenant')"><div class="qa-ic">🚨</div>Urgence médicament</button>
+        <button class="qa-btn" onclick="say('Pharmacies de garde près de moi maintenant')"><div class="qi">🔍</div>Pharmacies proches</button>
+        <button class="qa-btn" onclick="say('Pharmacie ouverte cette nuit')"><div class="qi">🌙</div>Ouvertes cette nuit</button>
+        <button class="qa-btn" onclick="say('Conduis-moi à la pharmacie de garde la plus proche')"><div class="qi">🗺️</div>Navigation directe</button>
+        <button class="qa-btn" onclick="say('Urgence médicament, pharmacie ouverte maintenant')"><div class="qi">🚨</div>Urgence</button>
       </div>
     </div>
 
-    <!-- LOC -->
-    <div class="loc-wrap">
+    <div class="loc-zone">
       <div class="sec-lbl">Ma position</div>
       <div class="loc-card">
-        <div class="loc-ic">📡</div>
-        <div class="loc-v" id="locVal">Localisation en cours...</div>
+        <span style="font-size:13px">📍</span>
+        <div class="loc-val" id="locVal">Localisation en cours...</div>
       </div>
     </div>
   </div>
 
-  <!-- RIGHT -->
+  <!-- RIGHT PANEL -->
   <div class="right">
     <div class="chat" id="chatArea">
       <div class="msg aella">
-        <div class="msg-av av-a">A</div>
+        <div class="mav mav-a">A</div>
         <div>
-          <div class="bub">
-            Bonjour, je suis <strong>AELLA</strong> ✚<br>
-            Votre assistante médicale vocale pour les pharmacies de garde.<br><br>
-            <em>Appuyez sur le microphone et parlez.</em> Je localise les pharmacies ouvertes partout dans le monde, vous donne leurs coordonnées et vous y guide.
-          </div>
-          <div class="msg-t" id="t0"></div>
+          <div class="bub">Bonjour, je suis <strong>AELLA</strong> ✚<br>Appuyez sur le micro et parlez. Je trouve les pharmacies de garde et vous y guide.</div>
+          <div class="mt" id="t0"></div>
         </div>
       </div>
       <div class="tw" id="tw">
-        <div class="msg-av av-a">A</div>
+        <div class="mav mav-a">A</div>
         <div class="tbub" id="tb"><div class="td"></div><div class="td"></div><div class="td"></div></div>
       </div>
     </div>
 
     <div class="map-panel">
       <div class="map-bar">
-        <span style="font-size:14px">🏥</span>
+        <span style="font-size:12px">🏥</span>
         <span class="map-lbl">Carte des pharmacies</span>
         <span class="map-coord" id="mapC">— position —</span>
       </div>
-      <div id="map" style="display:none"></div>
-      <div class="map-ph" id="mapPh">
-        <div class="map-ph-ic">🗺️</div>
-        <div class="map-ph-t">La carte des pharmacies s'affiche ici</div>
-      </div>
+      <div id="map"></div>
     </div>
   </div>
 </div>
 
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-/* ======= ANIMATED BG CANVAS ======= */
+/* ========= ECG BG ========= */
 (()=>{
-  const c=document.getElementById('bgCanvas');
+  const c=document.getElementById('ecg');
   const ctx=c.getContext('2d');
-  let W,H,pts=[];
+  let W,H,t=0;
   const resize=()=>{W=c.width=innerWidth;H=c.height=innerHeight;};
-  resize(); window.addEventListener('resize',resize);
-
-  // floating circles (cells/molecules aesthetic)
-  for(let i=0;i<22;i++){
-    pts.push({
-      x:Math.random()*2000,y:Math.random()*1200,
-      vx:(Math.random()-.5)*.18,vy:(Math.random()-.5)*.18,
-      r:Math.random()*60+20,
-      alpha:Math.random()*0.04+0.01,
-      color:Math.random()>.5?'0,170,255':'0,190,212'
-    });
-  }
-  // DNA helix particles
-  let dnaT=0;
+  resize();window.addEventListener('resize',resize);
   const draw=()=>{
     ctx.clearRect(0,0,W,H);
-    // floating orbs
-    pts.forEach(p=>{
-      ctx.beginPath();
-      ctx.arc(p.x%W,p.y%H,p.r,0,Math.PI*2);
-      ctx.fillStyle=`rgba(${p.color},${p.alpha})`;
-      ctx.fill();
-      ctx.beginPath();
-      ctx.arc(p.x%W,p.y%H,p.r,0,Math.PI*2);
-      ctx.strokeStyle=`rgba(${p.color},${p.alpha*2})`;
-      ctx.lineWidth=0.5;
-      ctx.stroke();
-      p.x+=p.vx; p.y+=p.vy;
-    });
-
-    // ECG line
-    dnaT+=0.5;
+    t+=0.4;
     ctx.beginPath();
-    ctx.strokeStyle='rgba(0,150,220,0.12)';
+    ctx.strokeStyle='rgba(0,140,220,0.15)';
     ctx.lineWidth=1.5;
     let started=false;
     for(let x=0;x<W;x+=2){
-      const phase=(x/W)*8*Math.PI+dnaT*0.04;
-      let y=H*.75+Math.sin(phase)*8;
-      // ECG spike
-      const mod=((x+Math.floor(dnaT))%(W/3));
-      if(mod<2) y=H*.75-40;
-      else if(mod<6) y=H*.75+20;
-      else if(mod<8) y=H*.75-70;
-      else if(mod<12) y=H*.75+15;
-      else if(mod<14) y=H*.75-10;
+      const mod=((x+Math.floor(t))%(W/4));
+      let y=H*.8;
+      if(mod<3)y=H*.8-38;
+      else if(mod<7)y=H*.8+18;
+      else if(mod<9)y=H*.8-65;
+      else if(mod<13)y=H*.8+14;
+      else if(mod<15)y=H*.8-8;
       if(!started){ctx.moveTo(x,y);started=true;}else ctx.lineTo(x,y);
     }
     ctx.stroke();
@@ -801,117 +400,137 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f0f8ff;}
   draw();
 })();
 
-/* ======= CONSTANTS ======= */
+/* ========= STATE ========= */
 const GROQ='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';
 const GURL='https://api.groq.com/openai/v1/chat/completions';
-
 let loc=null,map=null,mkrs=[],speaking=false,listening=false,recog=null;
 const synth=window.speechSynthesis;
-let voice=null,waveInt=null,navLat=null,navLng=null,navNm='',hist=[];
+let voice=null,waveInt=null,hist=[];
 
-/* ======= BOOT ======= */
+/* ========= BOOT ========= */
 function boot(){
   document.getElementById('t0').textContent=ftime();
+  // Geolocation
   if(navigator.geolocation){
     navigator.geolocation.getCurrentPosition(
       p=>{loc={lat:p.coords.latitude,lng:p.coords.longitude};geocode();updCoord();},
-      ()=>{loc={lat:5.36,lng:-4.0083};document.getElementById('locVal').textContent='Abidjan, Côte d\'Ivoire';updCoord();}
+      ()=>{loc={lat:5.36,lng:-4.0083};setLocText('Abidjan, Côte d\'Ivoire');}
     );
-  }else{loc={lat:5.36,lng:-4.0083};document.getElementById('locVal').textContent='Abidjan, Côte d\'Ivoire';}
-  initR();
-  synth.onvoiceschanged=loadV; setTimeout(loadV,600);
+  }else{loc={lat:5.36,lng:-4.0083};setLocText('Abidjan, Côte d\'Ivoire');}
+
+  initSTT();
+  synth.onvoiceschanged=loadVoice;setTimeout(loadVoice,500);
+
+  // Hide splash, show app
   setTimeout(()=>{
     document.getElementById('splash').classList.add('hide');
     document.getElementById('app').style.display='grid';
     initMap();
-    setTimeout(()=>speak("Bonjour ! Je suis AELLA, votre assistante médicale. Appuyez sur le microphone et parlez-moi. Je localise les pharmacies de garde près de vous et vous y guide."),900);
-  },1100);
+    setTimeout(()=>speak('Bonjour, je suis AELLA. Appuyez sur le micro et dites-moi ce dont vous avez besoin.'),800);
+  },900);
 }
 
-function loadV(){
+function setLocText(t){
+  document.getElementById('locVal').textContent=t;
+  document.getElementById('tbLoc').textContent='📍 '+t;
+}
+
+function loadVoice(){
   const vs=synth.getVoices();
-  voice=vs.find(v=>v.lang.startsWith('fr')&&/female|femme|amélie|marie|céline|léa|alice|virginie|juliette|pauline/i.test(v.name))
-    ||vs.find(v=>v.lang.startsWith('fr'))||vs.find(v=>/female|woman/i.test(v.name))||vs[0]||null;
+  voice=vs.find(v=>v.lang.startsWith('fr')&&/female|femme|amélie|marie|léa|alice|virginie/i.test(v.name))
+    ||vs.find(v=>v.lang.startsWith('fr'))||vs[0]||null;
 }
 
 function geocode(){
   fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${loc.lat}&lon=${loc.lng}`)
     .then(r=>r.json()).then(d=>{
       const a=d.address;
-      const txt=[a.city||a.town||a.village||a.county||'',a.country||''].filter(Boolean).join(', ');
-      document.getElementById('locVal').textContent=txt||`${loc.lat.toFixed(3)},${loc.lng.toFixed(3)}`;
-      document.getElementById('tbLoc').textContent='📍 '+txt;
-    }).catch(()=>{document.getElementById('locVal').textContent=`${loc.lat.toFixed(3)},${loc.lng.toFixed(3)}`;});
+      const t=[a.city||a.town||a.village||a.county||'',a.country||''].filter(Boolean).join(', ');
+      setLocText(t||`${loc.lat.toFixed(3)}, ${loc.lng.toFixed(3)}`);
+    }).catch(()=>setLocText(`${loc.lat.toFixed(3)}, ${loc.lng.toFixed(3)}`));
 }
 
 function updCoord(){
-  if(loc) document.getElementById('mapC').textContent=`${loc.lat.toFixed(4)}, ${loc.lng.toFixed(4)}`;
+  if(loc)document.getElementById('mapC').textContent=`${loc.lat.toFixed(4)}, ${loc.lng.toFixed(4)}`;
 }
 
-/* ======= MAP ======= */
+/* ========= MAP ========= */
 function initMap(){
-  document.getElementById('mapPh').style.display='none';
-  document.getElementById('map').style.display='block';
   const c=loc?[loc.lat,loc.lng]:[5.36,-4.0083];
-  map=L.map('map',{center:c,zoom:13,zoomControl:true,attributionControl:false});
-  // Light medical map tiles
+  map=L.map('map',{center:c,zoom:14,zoomControl:true,attributionControl:false});
   L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png',{maxZoom:19}).addTo(map);
-  if(loc){
-    const ico=L.divIcon({html:`<div style="width:14px;height:14px;border-radius:50%;background:#0077cc;border:2.5px solid #fff;box-shadow:0 0 12px rgba(0,120,200,0.6)"></div>`,iconSize:[14,14],iconAnchor:[7,7],className:''});
-    L.marker([loc.lat,loc.lng],{icon:ico}).addTo(map).bindPopup('<b style="color:#0077cc">Votre position</b>');
-  }
+  if(loc) addUserMarker();
+}
+
+function addUserMarker(){
+  const ico=L.divIcon({
+    html:`<div style="width:12px;height:12px;border-radius:50%;background:#0077cc;border:2.5px solid #fff;box-shadow:0 0 10px rgba(0,120,200,.6)"></div>`,
+    iconSize:[12,12],iconAnchor:[6,6],className:''
+  });
+  L.marker([loc.lat,loc.lng],{icon:ico}).addTo(map).bindPopup('<b style="color:#0077cc;font-family:Rajdhani">Votre position</b>');
 }
 
 function placeMarkers(phs){
   if(!map)return;
   mkrs.forEach(m=>map.removeLayer(m));mkrs=[];
-  phs.forEach((ph,i)=>{
-    if(!ph.lat||!ph.lng)return;
+  const valid=phs.filter(p=>p.lat&&p.lng&&p.lat!==0);
+  valid.forEach((ph,i)=>{
     const ico=L.divIcon({
-      html:`<div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#0077cc,#00aaff);border:2.5px solid #fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;box-shadow:0 4px 16px rgba(0,120,200,0.4)">${i+1}</div>`,
-      iconSize:[32,32],iconAnchor:[16,16],className:''
+      html:`<div style="width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#0077cc,#00aaff);border:2px solid #fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;font-family:Rajdhani;box-shadow:0 4px 14px rgba(0,120,200,.4)">${i+1}</div>`,
+      iconSize:[30,30],iconAnchor:[15,15],className:''
     });
-    const m=L.marker([ph.lat,ph.lng],{icon:ico}).addTo(map).bindPopup(
-      `<div style="font-family:Exo 2,sans-serif;min-width:180px;padding:4px">
-        <div style="font-family:Rajdhani,sans-serif;font-weight:700;color:#0077cc;font-size:14px;margin-bottom:4px">✚ ${ph.name}</div>
-        <div style="font-size:11px;color:#3a6080;margin-bottom:6px">${ph.address||''}</div>
-        ${ph.phone?`<div style="font-size:11px;color:#0077cc;margin-bottom:6px">📞 ${ph.phone}</div>`:''}
-        <button onclick="openNav(${ph.lat},${ph.lng},'${ph.name.replace(/'/g,"\\'")}','${(ph.address||'').replace(/'/g,"\\'")}')"
-          style="padding:5px 14px;background:linear-gradient(135deg,#0077cc,#00aaff);border:none;border-radius:7px;cursor:pointer;font-weight:700;font-size:11px;color:#fff;box-shadow:0 2px 8px rgba(0,120,200,0.3)">
-          🚗 M'y conduire
-        </button>
-      </div>`
-    );
+    const popup=`<div style="font-family:Exo 2,sans-serif;min-width:170px;padding:3px">
+      <div style="font-family:Rajdhani,sans-serif;font-weight:700;color:#0077cc;font-size:13px;margin-bottom:3px">✚ ${ph.name}</div>
+      <div style="font-size:10px;color:#3a6080;margin-bottom:5px">${ph.address||''}</div>
+      ${ph.phone?`<div style="font-size:10px;color:#0077cc;margin-bottom:5px">📞 ${ph.phone}</div>`:''}
+      <button onclick="navigate(${ph.lat},${ph.lng},'${esc(ph.name)}')"
+        style="padding:5px 12px;background:linear-gradient(135deg,#0077cc,#00aaff);border:none;border-radius:7px;cursor:pointer;font-weight:700;font-size:10px;color:#fff;box-shadow:0 2px 8px rgba(0,120,200,.3)">
+        🚗 Y aller
+      </button>
+    </div>`;
+    const m=L.marker([ph.lat,ph.lng],{icon:ico}).addTo(map).bindPopup(popup);
     mkrs.push(m);
   });
-  if(phs.length>0&&phs[0].lat) map.flyTo([phs[0].lat,phs[0].lng],14,{duration:1.5});
+  if(valid.length>0)map.flyTo([valid[0].lat,valid[0].lng],15,{duration:1.2});
 }
 
-/* ======= NAV ======= */
-function openNav(lat,lng,name,addr){
-  navLat=lat;navLng=lng;navNm=name;
-  document.getElementById('navTitle').textContent=`Navigation → ${name}`;
-  document.getElementById('navDest').textContent=`📍 ${addr||name}`;
-  const src=`https://www.openstreetmap.org/directions?engine=fossgis_osrm_car&route=${loc?loc.lat+','+loc.lng:''};${lat},${lng}#map=15/${lat}/${lng}`;
-  document.getElementById('navFrame').src=src;
-  document.getElementById('navModal').classList.add('open');
-  speak(`Navigation lancée vers ${name}. Suivez l'itinéraire sur la carte.`);
-}
-function closeNav(){document.getElementById('navModal').classList.remove('open');document.getElementById('navFrame').src='about:blank';}
-function gmaps(){
-  if(navLat&&navLng){
-    const o=loc?`${loc.lat},${loc.lng}`:'';
-    window.open(o?`https://www.google.com/maps/dir/${o}/${navLat},${navLng}`:`https://maps.google.com/?q=${navLat},${navLng}`,'_blank');
-    speak(`Ouverture de Google Maps pour vous conduire à ${navNm}.`);
-  }
+function esc(s){return s.replace(/'/g,"\\'");}
+
+/* ========= NAVIGATION ========= */
+function navigate(lat,lng,name){
+  speak('Navigation lancée vers '+name+' sur Google Maps.');
+  const o=loc?`${loc.lat},${loc.lng}`:'';
+  const url=o
+    ?`https://www.google.com/maps/dir/${o}/${lat},${lng}`
+    :`https://maps.google.com/?q=${lat},${lng}`;
+  window.open(url,'_blank');
 }
 
-/* ======= TTS ======= */
+/* ========= TTS - CLEAN ========= */
+function cleanForSpeech(txt){
+  return txt
+    .replace(/<[^>]+>/g,'')        // HTML tags
+    .replace(/\*+/g,'')            // markdown bold/italic
+    .replace(/#{1,6}\s/g,'')       // markdown headers
+    .replace(/[_~`]/g,'')          // markdown symbols
+    .replace(/\[.*?\]\(.*?\)/g,'') // markdown links
+    .replace(/•|-\s/g,'')          // bullet points
+    .replace(/\n{2,}/g,'. ')       // double newlines → pause
+    .replace(/\n/g,' ')            // single newlines → space
+    .replace(/[:;]/g,',')          // colon/semicolon → brief pause
+    .replace(/\.{2,}/g,'.')        // multiple dots → one
+    .replace(/,{2,}/g,',')         // multiple commas
+    .replace(/\s{2,}/g,' ')        // multiple spaces
+    .trim()
+    .substring(0,320);             // keep it short
+}
+
 function speak(txt){
   if(!txt)return;
   synth.cancel();speaking=true;setMS('speaking');startWave();
-  const u=new SpeechSynthesisUtterance(txt);
-  u.lang='fr-FR';u.rate=0.9;u.pitch=1.1;
+  const clean=cleanForSpeech(txt);
+  const u=new SpeechSynthesisUtterance(clean);
+  u.lang='fr-FR';u.rate=0.92;u.pitch=1.05;
   if(voice)u.voice=voice;
   u.onend=()=>{speaking=false;setMS('idle');stopWave();};
   u.onerror=()=>{speaking=false;setMS('idle');stopWave();};
@@ -919,140 +538,264 @@ function speak(txt){
 }
 function stopSpeak(){synth.cancel();speaking=false;setMS('idle');stopWave();}
 
-/* ======= STT ======= */
-function initR(){
+/* ========= STT - ROBUST PIPELINE ========= */
+function initSTT(){
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-  if(!SR){document.getElementById('micLbl').textContent='MICRO INDISPONIBLE';return;}
-  recog=new SR();recog.lang='fr-FR';recog.continuous=false;recog.interimResults=false;
-  recog.onstart=()=>{listening=true;setMS('listening');};
-  recog.onresult=e=>{const t=e.results[0][0].transcript;listening=false;setMS('idle');processInput(t);};
-  recog.onerror=e=>{listening=false;setMS('idle');if(e.error!=='no-speech')addMsg('aella','Je n\'ai pas bien entendu. Réessayez. 🎙️');};
-  recog.onend=()=>{listening=false;if(!speaking)setMS('idle');};
+  if(!SR){
+    document.getElementById('micLbl').textContent='MICRO INDISPONIBLE';
+    return;
+  }
+  // Build recognizer
+  recog=new SR();
+  recog.lang='fr-FR';
+  recog.continuous=false;
+  recog.interimResults=false;
+  recog.maxAlternatives=1;
+
+  recog.onstart=()=>{
+    listening=true;
+    setMS('listening');
+  };
+
+  recog.onresult=e=>{
+    const transcript=e.results[0][0].transcript.trim();
+    listening=false;
+    setMS('idle');
+    if(transcript){
+      // Auto-submit: add user message and call AI
+      processInput(transcript);
+    }
+  };
+
+  recog.onnomatch=()=>{
+    listening=false;setMS('idle');
+    addMsg('aella','Je n\'ai pas compris. Réessayez.');
+  };
+
+  recog.onerror=e=>{
+    listening=false;setMS('idle');
+    if(e.error==='not-allowed'){
+      addMsg('aella','Autorisez l\'accès au microphone dans votre navigateur.');
+    } else if(e.error!=='no-speech'){
+      addMsg('aella','Problème micro. Réessayez.');
+    }
+  };
+
+  recog.onend=()=>{
+    listening=false;
+    if(!speaking)setMS('idle');
+  };
 }
 
 function toggleListen(){
   if(speaking){stopSpeak();return;}
-  if(listening){if(recog)recog.stop();return;}
-  if(!recog){addMsg('aella','Veuillez utiliser Chrome pour la reconnaissance vocale. 🎙️');return;}
-  try{recog.start();}catch(e){addMsg('aella','Autorisez l\'accès au microphone. 🎙️');}
+  if(listening){
+    if(recog)recog.stop();
+    return;
+  }
+  if(!recog){
+    addMsg('aella','Utilisez Chrome ou Edge pour la reconnaissance vocale.');
+    return;
+  }
+  try{
+    recog.start();
+  }catch(e){
+    // If already running, stop and restart
+    try{recog.stop();}catch(e2){}
+    setTimeout(()=>{try{recog.start();}catch(e3){}},300);
+  }
 }
 
-function say(txt){stopSpeak();addMsg('user',txt);showT(true);askGroq(txt);}
+/* ========= QUICK ACTIONS ========= */
+function say(txt){
+  stopSpeak();
+  addMsg('user',txt);
+  showTyping(true);
+  askGroq(txt);
+}
 
+/* ========= MIC STATE ========= */
 function setMS(s){
-  const b=document.getElementById('bigMic'),l=document.getElementById('micLbl');
-  b.className='big-mic';l.className='mic-lbl';
+  const b=document.getElementById('micBtn');
+  const l=document.getElementById('micLbl');
   const cross=document.getElementById('tbCross');
-  if(s==='listening'){b.classList.add('listening');l.textContent='JE VOUS ÉCOUTE...';l.classList.add('listening');cross.classList.add('pulse');}
-  else if(s==='speaking'){b.classList.add('speaking');l.textContent='AELLA PARLE...';l.classList.add('speaking');cross.classList.add('pulse');}
-  else{l.textContent='APPUYEZ POUR PARLER';cross.classList.remove('pulse');}
+  b.className='mic-btn';l.className='mic-lbl';
+  if(s==='listening'){
+    b.classList.add('listening');
+    l.textContent='JE VOUS ÉCOUTE...';l.classList.add('on');
+    cross.classList.add('pulse');
+  } else if(s==='speaking'){
+    b.classList.add('speaking');
+    l.textContent='AELLA PARLE...';l.classList.add('sp');
+    cross.classList.add('pulse');
+  } else {
+    l.textContent='APPUYEZ POUR PARLER';
+    cross.classList.remove('pulse');
+  }
 }
 
+/* ========= WAVE ANIMATION ========= */
 function startWave(){
   const ids=['w1','w2','w3','w4','w5','w6','w7','w8'];
-  waveInt=setInterval(()=>ids.forEach(id=>{const e=document.getElementById(id);if(e)e.style.height=(Math.floor(Math.random()*20)+3)+'px';}),90);
+  waveInt=setInterval(()=>{
+    ids.forEach(id=>{
+      const e=document.getElementById(id);
+      if(e)e.style.height=(Math.floor(Math.random()*18)+3)+'px';
+    });
+  },85);
 }
 function stopWave(){
   if(waveInt)clearInterval(waveInt);
-  ['w1','w2','w3','w4','w5','w6','w7','w8'].forEach(id=>{const e=document.getElementById(id);if(e)e.style.height='4px';});
+  ['w1','w2','w3','w4','w5','w6','w7','w8'].forEach(id=>{
+    const e=document.getElementById(id);
+    if(e)e.style.height='3px';
+  });
 }
 
-/* ======= CHAT ======= */
+/* ========= CHAT UI ========= */
 function addMsg(role,content,phs){
   const area=document.getElementById('chatArea');
   const d=document.createElement('div');d.className=`msg ${role}`;
-  const av=document.createElement('div');av.className=`msg-av ${role==='aella'?'av-a':'av-u'}`;av.textContent=role==='aella'?'A':'👤';
+  const av=document.createElement('div');
+  av.className=`mav ${role==='aella'?'mav-a':'mav-u'}`;
+  av.textContent=role==='aella'?'A':'👤';
   const inner=document.createElement('div');
   const bub=document.createElement('div');bub.className='bub';
   bub.innerHTML=content.replace(/\n/g,'<br>');
+
+  // Pharmacy cards
   if(phs&&phs.length>0){
     const cards=document.createElement('div');cards.className='ph-cards';
     phs.forEach((ph,i)=>{
       const c=document.createElement('div');c.className='ph-card';
+      const hasNav=ph.lat&&ph.lng&&ph.lat!==0;
       c.innerHTML=`<div class="ph-ic">🏥</div>
         <div class="ph-info">
           <div class="ph-n">${ph.name}</div>
-          <div class="ph-a">${ph.address||'Adresse à confirmer'}</div>
-          <div class="ph-tags"><span class="pt pt-g">✚ GARDE</span>${ph.phone?`<span class="pt pt-b">📞 ${ph.phone}</span>`:''}${ph.hours?`<span class="pt pt-g">${ph.hours}</span>`:''}</div>
+          <div class="ph-a">${ph.address||''}</div>
+          <div class="ph-tags">
+            <span class="pt pt-g">✚ GARDE</span>
+            ${ph.phone?`<span class="pt pt-b">📞 ${ph.phone}</span>`:''}
+            ${ph.hours?`<span class="pt pt-g">${ph.hours}</span>`:''}
+          </div>
         </div>
-        ${ph.lat&&ph.lng?`<button class="go-btn" onclick="openNav(${ph.lat},${ph.lng},'${ph.name.replace(/'/g,"\\'")}','${(ph.address||'').replace(/'/g,"\\'")}')" >🗺️ Y aller</button>`:''}`;
+        ${hasNav?`<button class="go-btn" onclick="navigate(${ph.lat},${ph.lng},'${esc(ph.name)}')">🗺️ Y aller</button>`:''}`;
       cards.appendChild(c);
     });
     bub.appendChild(cards);
   }
-  const t=document.createElement('div');t.className='msg-t';t.textContent=ftime();
+
+  const t=document.createElement('div');t.className='mt';t.textContent=ftime();
   inner.appendChild(bub);inner.appendChild(t);
   d.appendChild(av);d.appendChild(inner);
   area.insertBefore(d,document.getElementById('tw'));
   area.scrollTop=area.scrollHeight;
 }
 
-function showT(v){
+function showTyping(v){
   document.getElementById('tw').style.display=v?'flex':'none';
   document.getElementById('tb').className='tbub'+(v?' on':'');
-  if(v){const a=document.getElementById('chatArea');a.scrollTop=a.scrollHeight;}
+  if(v){document.getElementById('chatArea').scrollTop=99999;}
 }
 
 function ftime(){return new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});}
 
-/* ======= GROQ ======= */
+/* ========= GROQ AI ========= */
 function processInput(txt){
   if(!txt||!txt.trim())return;
-  stopSpeak();addMsg('user',txt);showT(true);
+  stopSpeak();
+  addMsg('user',txt);
+  showTyping(true);
   hist.push({role:'user',content:txt});
-  if(hist.length>18)hist=hist.slice(-14);
+  if(hist.length>16)hist=hist.slice(-12);
   askGroq(txt);
 }
 
 async function askGroq(txt){
-  const lc=loc?`Position GPS: lat=${loc.lat.toFixed(4)}, lng=${loc.lng.toFixed(4)}. Ville: ${document.getElementById('locVal').textContent}.`:'Position indisponible.';
-  const sys=`Tu es AELLA, une IA médicale vocale féminine, professionnelle et bienveillante, spécialisée dans les pharmacies de garde partout dans le monde.
+  const locTxt=loc
+    ?`GPS: lat=${loc.lat.toFixed(4)}, lng=${loc.lng.toFixed(4)}. Lieu: ${document.getElementById('locVal').textContent}.`
+    :'Position inconnue.';
 
-${lc}
+  const sys=`Tu es AELLA, assistante médicale IA spécialisée en pharmacies de garde.
 
-RÈGLES:
-- Réponds toujours en français, naturellement, comme à voix haute — concis et utile
-- Fournis nom, adresse, téléphone, horaires des pharmacies
-- Si navigation demandée: confirme et fournis les coordonnées GPS précises
-- Ton médical, rassurant, précis
+${locTxt}
 
-PHARMACIES: Ajoute ce bloc JSON à la fin:
+RÈGLES STRICTES:
+1. Réponses COURTES et DIRECTES - maximum 2-3 phrases
+2. Donne immédiatement: nom, adresse, téléphone
+3. Pas de longs discours ni d'introduction
+4. Ton rassurant et professionnel
+5. Langue: français
+
+À la fin de chaque réponse avec des pharmacies, ajoute EXACTEMENT ce bloc:
 [PHARMACIES_JSON]
-[{"name":"Nom","address":"Adresse","phone":"+XX","hours":"24h/24","lat":0.0,"lng":0.0}]
+[{"name":"NomPharmacie","address":"Adresse complète","phone":"+XXX","hours":"24h/24","lat":LAT_REEL,"lng":LNG_REEL}]
 [/PHARMACIES_JSON]
 
-Coordonnées réelles des villes principales:
-Abidjan(5.3600,-4.0083) Dakar(14.7167,-17.4677) Bamako(12.6392,-8.0029) Paris(48.8566,2.3522) Douala(4.0511,9.7679) Yaoundé(3.8480,11.5021) Conakry(9.5370,-13.6773) Lomé(6.1375,1.2123) Cotonou(6.3654,2.4183) Ouagadougou(12.3714,-1.5197) Niamey(13.5117,2.1251) Abuja(9.0765,7.3986) Accra(5.5600,-0.2057) Casablanca(33.5731,-7.5898) Tunis(36.8065,10.1815)`;
+Coordonnées de référence:
+- Abidjan Plateau: 5.3196,-4.0167
+- Abidjan Cocody: 5.3469,-3.9884
+- Abidjan Yopougon: 5.3278,-4.0833
+- Abidjan Treichville: 5.2952,-4.0022
+- Dakar: 14.6928,-17.4467
+- Paris Centre: 48.8566,2.3522
+- Douala: 4.0511,9.7679
+
+Utilise des coordonnées RÉELLES et PRÉCISES pour la ville mentionnée ou détectée.`;
 
   try{
     const r=await fetch(GURL,{
       method:'POST',
       headers:{'Authorization':`Bearer ${GROQ}`,'Content-Type':'application/json'},
-      body:JSON.stringify({model:'llama-3.3-70b-versatile',messages:[{role:'system',content:sys},...hist],max_tokens:1000,temperature:0.65})
+      body:JSON.stringify({
+        model:'llama-3.3-70b-versatile',
+        messages:[{role:'system',content:sys},...hist],
+        max_tokens:700,
+        temperature:0.55
+      })
     });
     if(!r.ok)throw new Error(r.status);
     const d=await r.json();
     let resp=d.choices[0].message.content;
     hist.push({role:'assistant',content:resp});
+
+    // Extract pharmacy JSON
     let phs=[];
     const m=resp.match(/\[PHARMACIES_JSON\]([\s\S]*?)\[\/PHARMACIES_JSON\]/);
-    if(m){try{phs=JSON.parse(m[1].trim());}catch(e){}resp=resp.replace(/\[PHARMACIES_JSON\][\s\S]*?\[\/PHARMACIES_JSON\]/,'').trim();}
-    showT(false);addMsg('aella',resp,phs);
+    if(m){
+      try{phs=JSON.parse(m[1].trim());}catch(e){}
+      resp=resp.replace(/\[PHARMACIES_JSON\][\s\S]*?\[\/PHARMACIES_JSON\]/,'').trim();
+    }
+
+    showTyping(false);
+    addMsg('aella',resp,phs);
     if(phs.length>0)placeMarkers(phs);
-    const nk=['conduis-moi','conduire','navigation','itinéraire','aller à','emmène','m\'y conduire'];
-    if(nk.some(k=>txt.toLowerCase().includes(k))&&phs.length>0&&phs[0].lat&&phs[0].lng)
-      setTimeout(()=>openNav(phs[0].lat,phs[0].lng,phs[0].name,phs[0].address||''),1500);
-    const tts=resp.replace(/<[^>]+>/g,'').replace(/\*+/g,'').replace(/#{1,6}\s/g,'').replace(/\n+/g,'. ').substring(0,280);
-    speak(tts);
+
+    // Speak the response (clean, short)
+    speak(resp);
+
+    // Auto-navigate if requested
+    const navKw=['conduis-moi','conduire','navigation','itinéraire','y aller','emmène'];
+    if(navKw.some(k=>txt.toLowerCase().includes(k))&&phs.length>0&&phs[0].lat&&phs[0].lat!==0){
+      setTimeout(()=>navigate(phs[0].lat,phs[0].lng,phs[0].name),1200);
+    }
+
   }catch(err){
-    showT(false);
-    const msg=String(err).includes('429')?'Trop de requêtes. Patientez un instant. 🔧':'Problème de connexion. Réessayez. 🔧';
-    addMsg('aella',msg);speak(msg);
+    showTyping(false);
+    const msg=String(err).includes('429')
+      ?'Trop de requêtes. Attendez un instant.'
+      :'Problème de connexion. Réessayez.';
+    addMsg('aella',msg);
+    speak(msg);
   }
 }
 
-// Space = mic
-document.addEventListener('keydown',e=>{if(e.code==='Space'&&e.target.tagName!=='INPUT'){e.preventDefault();toggleListen();}});
+// Space bar = mic toggle
+document.addEventListener('keydown',e=>{
+  if(e.code==='Space'&&e.target.tagName!=='INPUT'&&e.target.tagName!=='TEXTAREA'){
+    e.preventDefault();toggleListen();
+  }
+});
 </script>
 </body>
 </html>
