@@ -1,9 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import {
-  getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import {
-  getFirestore, collection, doc, getDoc, getDocs, query, where, orderBy,
+  getFirestore, collection, doc, getDocs, query, where, orderBy,
   setDoc, updateDoc, limit
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
@@ -17,44 +14,14 @@ const firebaseConfig = {
 };
 
 const PREMIUM_MONTH_MS = 30 * 24 * 60 * 60 * 1000;
-const TRIAL_MS = 12 * 60 * 60 * 1000;
 
 const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
 const db = getFirestore(app);
 
-let adminEmails = [];
-let approvedSession = 0;
-let allUsers = [];
+let profiles = [];
+let payments = [];
 
-async function loadAdminConfig() {
-  try {
-    const snap = await getDoc(doc(db, 'server_config', 'admin_settings'));
-    if (snap.exists()) {
-      adminEmails = (snap.data().adminEmails || []).map(e => e.toLowerCase());
-    }
-  } catch (e) {
-    console.warn('Config admin:', e.message);
-  }
-  if (!adminEmails.length) {
-    adminEmails = ['zinzindohouemarcio@gmail.com'];
-  }
-}
-
-function isAdminEmail(email) {
-  return adminEmails.includes((email || '').toLowerCase());
-}
-
-function showLogin() {
-  document.getElementById('adminLogin').style.display = 'flex';
-  document.getElementById('adminPanel').style.display = 'none';
-}
-
-function showPanel(user) {
-  document.getElementById('adminLogin').style.display = 'none';
-  document.getElementById('adminPanel').style.display = 'block';
-  document.getElementById('adminUserInfo').textContent = user.email + ' · Administrateur COMEO';
-}
+function $(id) { return document.getElementById(id); }
 
 function escapeHtml(s) {
   return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -62,20 +29,41 @@ function escapeHtml(s) {
 
 function formatDate(iso) {
   if (!iso) return '—';
-  try {
-    return new Date(iso).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' });
-  } catch { return iso; }
+  try { return new Date(iso).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' }); }
+  catch { return iso; }
 }
 
 function formatDateShort(iso) {
   if (!iso) return '—';
-  try {
-    return new Date(iso).toLocaleDateString('fr-FR');
-  } catch { return iso; }
+  try { return new Date(iso).toLocaleDateString('fr-FR'); }
+  catch { return iso; }
 }
 
-function getUserSubStatus(p) {
+function toast(msg, type = 'ok') {
+  const wrap = $('toastWrap');
+  const el = document.createElement('div');
+  el.className = 'toast ' + type;
+  el.textContent = msg;
+  wrap.appendChild(el);
+  setTimeout(() => el.remove(), 4000);
+}
+
+function showLoading(v) {
+  $('loadingOverlay').style.display = v ? 'flex' : 'none';
+}
+
+function showError(msg) {
+  const el = $('errorBanner');
+  el.style.display = 'block';
+  el.innerHTML = '<strong>Erreur Firestore</strong><br>' + escapeHtml(msg) +
+    '<br><br><small>Déployez les règles admin dans Firebase Console (voir firestore.rules.example).</small>';
+}
+
+function getStatus(p) {
   const now = Date.now();
+  if (p.subscriptionStatus === 'cancelled') {
+    return { key: 'cancelled', label: 'Résilié', cls: 'badge-cancelled', expires: null };
+  }
   if (p.premiumUntil && new Date(p.premiumUntil).getTime() > now) {
     return { key: 'premium', label: 'Premium', cls: 'badge-premium', expires: p.premiumUntil };
   }
@@ -88,259 +76,241 @@ function getUserSubStatus(p) {
   return { key: 'expired', label: 'Expiré', cls: 'badge-expired', expires: p.trialEndsAt || null };
 }
 
-function statusBadgeHtml(status) {
-  return `<span class="admin-badge ${status.cls}">${escapeHtml(status.label)}</span>`;
+function badgeHtml(st) {
+  return `<span class="badge ${st.cls}">${escapeHtml(st.label)}</span>`;
 }
 
-function paymentStatusBadge(status) {
-  const map = {
-    pending: ['En attente', 'badge-pending'],
-    approved: ['Validé', 'badge-premium'],
-    rejected: ['Refusé', 'badge-expired']
-  };
-  const [label, cls] = map[status] || [status || '—', 'badge-expired'];
-  return `<span class="admin-badge ${cls}">${label}</span>`;
+function payBadge(status) {
+  const m = { pending: ['En attente', 'badge-pending'], approved: ['Validé', 'badge-premium'], rejected: ['Refusé', 'badge-expired'] };
+  const [l, c] = m[status] || [status, 'badge-expired'];
+  return `<span class="badge ${c}">${l}</span>`;
 }
 
-function adminSwitchTab(tab) {
+function updateStats() {
+  const now = Date.now();
+  $('sTotal').textContent = profiles.length;
+  $('sPremium').textContent = profiles.filter(p => p.premiumUntil && new Date(p.premiumUntil).getTime() > now).length;
+  $('sTrial').textContent = profiles.filter(p => {
+    const s = getStatus(p);
+    return s.key === 'trial';
+  }).length;
+  $('sPending').textContent = payments.filter(p => p.status === 'pending').length;
+  $('sExpired').textContent = profiles.filter(p => getStatus(p).key === 'expired').length;
+}
+
+window.switchTab = function(tab) {
   document.querySelectorAll('.admin-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
-  document.getElementById('tabPayments').style.display = tab === 'payments' ? 'block' : 'none';
-  document.getElementById('tabUsers').style.display = tab === 'users' ? 'block' : 'none';
-}
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  $('panel' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.add('active');
+};
 
-async function activateUserPremium(uid, requestId, btn) {
-  if (!uid) return;
-  if (!confirm('Activer Premium 30 jours pour cet utilisateur ?')) return;
-  if (btn) { btn.disabled = true; btn.textContent = 'Activation…'; }
+async function activatePremium(uid, paymentId) {
+  if (!confirm('Activer Premium 30 jours pour cette entreprise ?')) return;
+  showLoading(true);
   try {
     const premiumUntil = new Date(Date.now() + PREMIUM_MONTH_MS).toISOString();
     await setDoc(doc(db, 'profiles', uid), {
       premiumUntil,
       subscriptionStatus: 'active',
       lastActivationAt: new Date().toISOString(),
-      activationMethod: 'admin_manual',
-      activatedBy: auth.currentUser?.email || 'admin'
+      activationMethod: 'admin_panel',
+      cancelledAt: null
     }, { merge: true });
-    if (requestId) {
-      await updateDoc(doc(db, 'payment_requests', requestId), {
+    if (paymentId) {
+      await updateDoc(doc(db, 'payment_requests', paymentId), {
         status: 'approved',
         approvedAt: new Date().toISOString(),
-        approvedBy: auth.currentUser?.email || 'admin'
+        approvedBy: 'admin_panel'
       });
     }
-    approvedSession++;
-    document.getElementById('statApproved').textContent = approvedSession;
-    await adminRefreshAll();
-    alert('✅ Abonnement Premium activé pour 30 jours.');
+    toast('✅ Abonnement Premium activé (30 jours)');
+    await loadAll();
   } catch (e) {
-    alert('Erreur : ' + e.message + '\n\nVérifiez les règles Firestore (isAdmin + lecture profiles).');
-    if (btn) { btn.disabled = false; btn.textContent = '✅ Activer 30 jours'; }
+    toast('Erreur : ' + e.message, 'err');
+  } finally {
+    showLoading(false);
   }
 }
 
-async function rejectPayment(requestId, btn) {
-  if (!confirm('Refuser cette demande ?')) return;
-  if (btn) btn.disabled = true;
+async function cancelPremium(uid) {
+  if (!confirm('Mettre fin à l\'abonnement Premium de cette entreprise ?\n\nL\'accès sera immédiatement révoqué.')) return;
+  showLoading(true);
   try {
-    await updateDoc(doc(db, 'payment_requests', requestId), {
+    await setDoc(doc(db, 'profiles', uid), {
+      premiumUntil: null,
+      subscriptionStatus: 'cancelled',
+      cancelledAt: new Date().toISOString(),
+      cancelledBy: 'admin_panel'
+    }, { merge: true });
+    toast('Abonnement résilié');
+    await loadAll();
+  } catch (e) {
+    toast('Erreur : ' + e.message, 'err');
+  } finally {
+    showLoading(false);
+  }
+}
+
+async function rejectPayment(paymentId) {
+  if (!confirm('Refuser ce paiement ?')) return;
+  showLoading(true);
+  try {
+    await updateDoc(doc(db, 'payment_requests', paymentId), {
       status: 'rejected',
       rejectedAt: new Date().toISOString(),
-      rejectedBy: auth.currentUser?.email || 'admin'
+      rejectedBy: 'admin_panel'
     });
-    await adminRefreshPayments();
+    toast('Paiement refusé');
+    await loadAll();
   } catch (e) {
-    alert('Erreur : ' + e.message);
-    if (btn) btn.disabled = false;
+    toast('Erreur : ' + e.message, 'err');
+  } finally {
+    showLoading(false);
   }
 }
 
-async function adminRefreshPayments() {
-  const listEl = document.getElementById('paymentsList');
-  const loading = document.getElementById('paymentsLoading');
-  const empty = document.getElementById('paymentsEmpty');
-  const histBody = document.getElementById('paymentsHistoryBody');
-  if (!listEl) return;
-
-  loading.style.display = 'block';
-  empty.style.display = 'none';
-  listEl.innerHTML = '';
-
-  try {
-    const pendingQ = query(
-      collection(db, 'payment_requests'),
-      where('status', '==', 'pending'),
-      orderBy('createdAt', 'desc')
-    );
-    const pendingSnap = await getDocs(pendingQ);
-    loading.style.display = 'none';
-    document.getElementById('statPending').textContent = pendingSnap.size;
-
-    if (pendingSnap.empty) {
-      empty.style.display = 'block';
-    } else {
-      pendingSnap.forEach(d => {
-        const r = d.data();
-        const card = document.createElement('div');
-        card.className = 'admin-request-card';
-        card.innerHTML = `
-          <div class="admin-request-head">
-            <strong>${escapeHtml(r.payerName || '—')}</strong>
-            <span class="admin-request-date">${formatDate(r.createdAt)}</span>
-          </div>
-          <div class="admin-request-grid">
-            <div><span>Entreprise</span>${escapeHtml(r.company || '—')}</div>
-            <div><span>Email</span>${escapeHtml(r.email || '—')}</div>
-            <div><span>N° Wave</span><strong class="admin-wave-num">${escapeHtml(r.waveNumber || '—')}</strong></div>
-            <div><span>Montant</span>${escapeHtml(String(r.amount || 15000))} FCFA</div>
-          </div>
-          <div class="admin-request-actions">
-            <button type="button" class="admin-btn-activate" data-id="${d.id}" data-uid="${escapeHtml(r.uid)}">✅ Activer Premium (30 jours)</button>
-            <button type="button" class="admin-btn-reject" data-id="${d.id}">✕ Refuser</button>
-          </div>`;
-        listEl.appendChild(card);
-      });
-      listEl.querySelectorAll('.admin-btn-activate').forEach(btn => {
-        btn.addEventListener('click', () => activateUserPremium(btn.dataset.uid, btn.dataset.id, btn));
-      });
-      listEl.querySelectorAll('.admin-btn-reject').forEach(btn => {
-        btn.addEventListener('click', () => rejectPayment(btn.dataset.id, btn));
-      });
-    }
-
-    const histQ = query(collection(db, 'payment_requests'), orderBy('createdAt', 'desc'), limit(50));
-    const histSnap = await getDocs(histQ);
-    if (histSnap.empty) {
-      histBody.innerHTML = '<tr><td colspan="7" class="admin-td-muted">Aucun paiement enregistré</td></tr>';
-    } else {
-      histBody.innerHTML = histSnap.docs.map(d => {
-        const r = d.data();
-        return `<tr>
-          <td>${formatDate(r.createdAt)}</td>
-          <td>${escapeHtml(r.payerName)}</td>
-          <td class="admin-wave-num">${escapeHtml(r.waveNumber)}</td>
-          <td>${escapeHtml(r.company)}</td>
-          <td>${escapeHtml(r.email)}</td>
-          <td>${escapeHtml(String(r.amount || 15000))} F</td>
-          <td>${paymentStatusBadge(r.status)}</td>
-        </tr>`;
-      }).join('');
-    }
-  } catch (e) {
-    loading.style.display = 'none';
-    listEl.innerHTML = `<div class="admin-error">Erreur paiements : ${escapeHtml(e.message)}<br><small>Créez l'index Firestore payment_requests (status + createdAt).</small></div>`;
-    histBody.innerHTML = `<tr><td colspan="7" class="admin-td-muted">${escapeHtml(e.message)}</td></tr>`;
-  }
-}
-
-async function adminRefreshUsers() {
-  const tbody = document.getElementById('usersTableBody');
-  const loading = document.getElementById('usersLoading');
-  loading.style.display = 'block';
-
-  try {
-    const snap = await getDocs(collection(db, 'profiles'));
-    allUsers = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    allUsers.sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
-
-    const now = Date.now();
-    const premiumCount = allUsers.filter(u => u.premiumUntil && new Date(u.premiumUntil).getTime() > now).length;
-    document.getElementById('statUsers').textContent = allUsers.length;
-    document.getElementById('statPremium').textContent = premiumCount;
-
-    loading.style.display = 'none';
-    adminFilterUsers();
-  } catch (e) {
-    loading.style.display = 'none';
-    tbody.innerHTML = `<tr><td colspan="6" class="admin-td-muted">Erreur : ${escapeHtml(e.message)}<br><small>Autorisez la lecture profiles pour isAdmin() dans firestore.rules.</small></td></tr>`;
-  }
-}
-
-function adminFilterUsers() {
-  const tbody = document.getElementById('usersTableBody');
-  const search = (document.getElementById('userSearch')?.value || '').toLowerCase();
-  const filter = document.getElementById('userFilterStatus')?.value || 'all';
-
-  let list = allUsers.filter(u => {
-    const hay = `${u.company || ''} ${u.email || ''} ${u.id || ''}`.toLowerCase();
-    if (search && !hay.includes(search)) return false;
-    if (filter === 'all') return true;
-    return getUserSubStatus(u).key === filter;
-  });
-
+window.renderCompanies = function() {
+  const q = ($('searchCompanies').value || '').toLowerCase();
+  const list = profiles.filter(p =>
+    !q || `${p.company} ${p.email} ${p.id}`.toLowerCase().includes(q)
+  );
+  const tbody = $('companiesBody');
   if (!list.length) {
-    tbody.innerHTML = '<tr><td colspan="6" class="admin-td-muted">Aucun utilisateur trouvé</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" class="td-muted">Aucune entreprise trouvée</td></tr>';
     return;
   }
-
-  tbody.innerHTML = list.map(u => {
-    const st = getUserSubStatus(u);
-    const expires = st.expires ? formatDateShort(st.expires) : '—';
+  tbody.innerHTML = list.map(p => {
+    const st = getStatus(p);
     const isPremium = st.key === 'premium';
     return `<tr>
-      <td><strong>${escapeHtml(u.company || '—')}</strong></td>
-      <td>${escapeHtml(u.email || '—')}</td>
-      <td>${formatDateShort(u.createdAt)}</td>
-      <td>${statusBadgeHtml(st)}</td>
-      <td>${expires}</td>
-      <td class="admin-td-actions">
+      <td><div class="td-company">${escapeHtml(p.company || '—')}</div><div class="td-email td-mono">${escapeHtml(p.id?.slice(0, 8))}…</div></td>
+      <td>${escapeHtml(p.email || '—')}</td>
+      <td>${formatDateShort(p.createdAt)}</td>
+      <td>${escapeHtml(p.exercice || '—')}</td>
+      <td>${badgeHtml(st)}</td>
+      <td class="td-actions">
         ${isPremium
-          ? `<span class="admin-td-muted">Actif</span>`
-          : `<button type="button" class="admin-btn-activate admin-btn-sm" data-uid="${escapeHtml(u.id)}">✅ Activer 30 jours</button>`}
+          ? `<button class="btn btn-danger btn-sm" data-cancel="${escapeHtml(p.id)}">⏹ Fin abonnement</button>`
+          : `<button class="btn btn-success btn-sm" data-activate="${escapeHtml(p.id)}">✅ Activer 30 j</button>`}
       </td>
     </tr>`;
   }).join('');
+  tbody.querySelectorAll('[data-activate]').forEach(b => b.addEventListener('click', () => activatePremium(b.dataset.activate, null)));
+  tbody.querySelectorAll('[data-cancel]').forEach(b => b.addEventListener('click', () => cancelPremium(b.dataset.cancel)));
+};
 
-  tbody.querySelectorAll('.admin-btn-activate').forEach(btn => {
-    btn.addEventListener('click', () => activateUserPremium(btn.dataset.uid, null, btn));
+window.renderSubscriptions = function() {
+  const q = ($('searchSubs').value || '').toLowerCase();
+  const filter = $('filterSubs').value;
+  const list = profiles.filter(p => {
+    const st = getStatus(p);
+    if (filter !== 'all' && st.key !== filter) return false;
+    return !q || `${p.company} ${p.email}`.toLowerCase().includes(q);
   });
-}
-
-async function adminRefreshAll() {
-  await Promise.all([adminRefreshPayments(), adminRefreshUsers()]);
-}
-
-async function adminDoLogin() {
-  const email = document.getElementById('admin-email').value.trim();
-  const pass = document.getElementById('admin-pass').value;
-  const errEl = document.getElementById('admin-login-err');
-  errEl.classList.remove('show');
-  if (!email || !pass) {
-    errEl.textContent = 'Email et mot de passe requis.';
-    errEl.classList.add('show');
+  const tbody = $('subsBody');
+  if (!list.length) {
+    tbody.innerHTML = '<tr><td colspan="6" class="td-muted">Aucun abonnement trouvé</td></tr>';
     return;
   }
-  try {
-    await signInWithEmailAndPassword(auth, email, pass);
-  } catch (e) {
-    errEl.textContent = e.message || 'Connexion impossible.';
-    errEl.classList.add('show');
+  tbody.innerHTML = list.map(p => {
+    const st = getStatus(p);
+    const isPremium = st.key === 'premium';
+    return `<tr>
+      <td class="td-company">${escapeHtml(p.company || '—')}</td>
+      <td>${escapeHtml(p.email || '—')}</td>
+      <td>${badgeHtml(st)}</td>
+      <td>${st.expires ? formatDateShort(st.expires) : '—'}</td>
+      <td class="td-mono">${escapeHtml(p.lastWaveNumber || '—')}</td>
+      <td class="td-actions">
+        ${isPremium
+          ? `<button class="btn btn-danger btn-sm" data-cancel="${escapeHtml(p.id)}">⏹ Résilier</button>`
+          : `<button class="btn btn-success btn-sm" data-activate="${escapeHtml(p.id)}">✅ Activer 30 j</button>`}
+      </td>
+    </tr>`;
+  }).join('');
+  tbody.querySelectorAll('[data-activate]').forEach(b => b.addEventListener('click', () => activatePremium(b.dataset.activate, null)));
+  tbody.querySelectorAll('[data-cancel]').forEach(b => b.addEventListener('click', () => cancelPremium(b.dataset.cancel)));
+};
+
+function renderPayments() {
+  const pending = payments.filter(p => p.status === 'pending');
+  const grid = $('pendingPayments');
+  if (!pending.length) {
+    grid.innerHTML = '<div class="empty-state"><span>✅</span>Aucun paiement en attente</div>';
+  } else {
+    grid.innerHTML = pending.map(p => `
+      <div class="pay-card">
+        <div class="pay-card-head">
+          <strong>${escapeHtml(p.payerName)}</strong>
+          <span class="pay-card-date">${formatDate(p.createdAt)}</span>
+        </div>
+        <div class="pay-grid">
+          <div><span>Entreprise</span>${escapeHtml(p.company)}</div>
+          <div><span>Email</span>${escapeHtml(p.email)}</div>
+          <div><span>N° Wave</span><strong class="td-mono">${escapeHtml(p.waveNumber)}</strong></div>
+          <div><span>Montant</span>${escapeHtml(String(p.amount || 15000))} FCFA</div>
+        </div>
+        <div class="pay-actions">
+          <button class="btn btn-success btn-sm" data-approve="${escapeHtml(p._id)}" data-uid="${escapeHtml(p.uid)}">✅ Valider & activer</button>
+          <button class="btn btn-danger btn-sm" data-reject="${escapeHtml(p._id)}">✕ Refuser</button>
+        </div>
+      </div>`).join('');
+    grid.querySelectorAll('[data-approve]').forEach(b =>
+      b.addEventListener('click', () => activatePremium(b.dataset.uid, b.dataset.approve)));
+    grid.querySelectorAll('[data-reject]').forEach(b =>
+      b.addEventListener('click', () => rejectPayment(b.dataset.reject)));
+  }
+
+  const hist = payments.slice(0, 60);
+  const tbody = $('paymentsBody');
+  if (!hist.length) {
+    tbody.innerHTML = '<tr><td colspan="7" class="td-muted">Aucun paiement</td></tr>';
+  } else {
+    tbody.innerHTML = hist.map(p => `<tr>
+      <td>${formatDate(p.createdAt)}</td>
+      <td>${escapeHtml(p.payerName)}</td>
+      <td class="td-mono">${escapeHtml(p.waveNumber)}</td>
+      <td>${escapeHtml(p.company)}</td>
+      <td>${escapeHtml(p.email)}</td>
+      <td>${escapeHtml(String(p.amount || 15000))} F</td>
+      <td>${payBadge(p.status)}</td>
+    </tr>`).join('');
   }
 }
 
-async function adminDoLogout() {
-  await signOut(auth);
-  showLogin();
+async function loadAll() {
+  showLoading(true);
+  try {
+    const [profSnap, paySnap] = await Promise.all([
+      getDocs(collection(db, 'profiles')),
+      getDocs(query(collection(db, 'payment_requests'), orderBy('createdAt', 'desc'), limit(80)))
+        .catch(() => getDocs(collection(db, 'payment_requests')))
+    ]);
+
+    profiles = profSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+    profiles.sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+
+    payments = paySnap.docs.map(d => ({ _id: d.id, ...d.data() }));
+
+    profiles.forEach(p => {
+      const lastPay = payments.find(x => x.uid === p.id && x.status === 'pending');
+      if (lastPay) p.lastWaveNumber = lastPay.waveNumber;
+      else if (p.lastWaveNumber === undefined) p.lastWaveNumber = p.lastWaveNumber || '';
+    });
+
+    $('adminApp').style.display = 'block';
+    $('errorBanner').style.display = 'none';
+    updateStats();
+    renderCompanies();
+    renderSubscriptions();
+    renderPayments();
+  } catch (e) {
+    showError(e.message);
+  } finally {
+    showLoading(false);
+  }
 }
 
-window.adminDoLogin = adminDoLogin;
-window.adminDoLogout = adminDoLogout;
-window.adminRefreshAll = adminRefreshAll;
-window.adminSwitchTab = adminSwitchTab;
-window.adminFilterUsers = adminFilterUsers;
+window.adminRefresh = loadAll;
 
-(async function initAdmin() {
-  await loadAdminConfig();
-  onAuthStateChanged(auth, async (user) => {
-    if (!user) { showLogin(); return; }
-    if (!isAdminEmail(user.email)) {
-      await signOut(auth);
-      const errEl = document.getElementById('admin-login-err');
-      errEl.textContent = 'Accès refusé. Email non autorisé comme administrateur.';
-      errEl.classList.add('show');
-      showLogin();
-      return;
-    }
-    showPanel(user);
-    await adminRefreshAll();
-  });
-})();
+loadAll();
