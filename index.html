@@ -3,97 +3,133 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>COMEO Admin — Paiements & Utilisateurs</title>
+<title>COMEO Admin — Entreprises & Abonnements</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="as.css">
+<link rel="stylesheet" href="admin.css">
 </head>
-<body class="admin-body">
+<body>
 
-<div id="adminLogin" class="admin-login-wrap">
-  <div class="admin-login-box">
-    <div class="admin-logo">COMEO Admin</div>
-    <p class="admin-login-sub">Paiements Wave · Utilisateurs · Abonnements Premium</p>
-    <div class="af-field"><label class="af-label">Email administrateur</label>
-      <input class="af-input" type="email" id="admin-email" placeholder="admin@entreprise.com"></div>
-    <div class="af-field"><label class="af-label">Mot de passe</label>
-      <input class="af-input" type="password" id="admin-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')adminDoLogin()"></div>
-    <div class="auth-err" id="admin-login-err"></div>
-    <button class="auth-btn" onclick="adminDoLogin()">🔐 Connexion admin</button>
-    <p class="admin-login-note">Accès réservé aux administrateurs autorisés dans Firebase.</p>
+<div id="loadingOverlay" class="loading-overlay">
+  <div class="loading-box">
+    <div class="spinner"></div>
+    <div>Chargement Firestore…</div>
   </div>
 </div>
 
-<div id="adminPanel" class="admin-panel" style="display:none">
+<div id="errorBanner" class="error-banner admin-app" style="display:none"></div>
+
+<div class="admin-app" id="adminApp" style="display:none">
+
   <header class="admin-header">
-    <div>
-      <h1 class="admin-title">Tableau de bord COMEO</h1>
-      <p class="admin-sub" id="adminUserInfo">—</p>
+    <div class="admin-brand">
+      <div class="admin-brand-icon">⚙</div>
+      <div>
+        <h1>COMEO Admin</h1>
+        <p>Gestion des entreprises, abonnements & paiements Wave</p>
+      </div>
     </div>
     <div class="admin-header-actions">
-      <button class="btn btn-outline" onclick="adminRefreshAll()">↻ Actualiser tout</button>
-      <button class="btn btn-danger-outline" onclick="adminDoLogout()">Déconnexion</button>
+      <div class="admin-live"><span class="admin-live-dot"></span> Firestore connecté</div>
+      <button type="button" class="btn btn-ghost" onclick="adminRefresh()">↻ Actualiser</button>
     </div>
   </header>
 
   <div class="admin-stats">
-    <div class="admin-stat-card"><span class="admin-stat-num" id="statPending">0</span><span class="admin-stat-lbl">Paiements en attente</span></div>
-    <div class="admin-stat-card"><span class="admin-stat-num" id="statUsers">0</span><span class="admin-stat-lbl">Utilisateurs inscrits</span></div>
-    <div class="admin-stat-card"><span class="admin-stat-num" id="statPremium">0</span><span class="admin-stat-lbl">Premium actifs</span></div>
-    <div class="admin-stat-card"><span class="admin-stat-num" id="statApproved">0</span><span class="admin-stat-lbl">Activés (session)</span></div>
+    <div class="stat-card"><span class="stat-num" id="sTotal">0</span><span class="stat-lbl">Entreprises</span></div>
+    <div class="stat-card green"><span class="stat-num" id="sPremium">0</span><span class="stat-lbl">Premium actifs</span></div>
+    <div class="stat-card blue"><span class="stat-num" id="sTrial">0</span><span class="stat-lbl">Essais en cours</span></div>
+    <div class="stat-card amber"><span class="stat-num" id="sPending">0</span><span class="stat-lbl">Paiements en attente</span></div>
+    <div class="stat-card red"><span class="stat-num" id="sExpired">0</span><span class="stat-lbl">Expirés</span></div>
   </div>
 
   <nav class="admin-tabs">
-    <button type="button" class="admin-tab active" data-tab="payments" onclick="adminSwitchTab('payments')">💳 Paiements Wave</button>
-    <button type="button" class="admin-tab" data-tab="users" onclick="adminSwitchTab('users')">👥 Utilisateurs inscrits</button>
+    <button type="button" class="admin-tab active" data-tab="companies" onclick="switchTab('companies')">🏢 Entreprises</button>
+    <button type="button" class="admin-tab" data-tab="subscriptions" onclick="switchTab('subscriptions')">⭐ Abonnements</button>
+    <button type="button" class="admin-tab" data-tab="payments" onclick="switchTab('payments')">💳 Paiements Wave</button>
   </nav>
 
-  <!-- ONGLET PAIEMENTS -->
-  <section id="tabPayments" class="admin-tab-panel">
-    <h2 class="admin-section-title">Paiements en attente de validation</h2>
-    <div id="paymentsLoading" class="admin-loading" style="display:none">Chargement des paiements…</div>
-    <div id="paymentsEmpty" class="admin-empty" style="display:none">✅ Aucun paiement en attente</div>
-    <div id="paymentsList" class="admin-list"></div>
-
-    <h2 class="admin-section-title admin-section-mt">Historique des paiements</h2>
-    <div class="admin-table-wrap">
-      <table class="admin-table" id="paymentsHistoryTable">
+  <!-- ENTREPRISES -->
+  <section id="panelCompanies" class="panel active">
+    <div class="panel-head">
+      <div>
+        <div class="panel-title">Liste des entreprises inscrites</div>
+        <div class="panel-sub">Tous les profils enregistrés sur COMEO</div>
+      </div>
+    </div>
+    <div class="toolbar">
+      <input type="search" class="search-input" id="searchCompanies" placeholder="Rechercher entreprise, email…" oninput="renderCompanies()">
+    </div>
+    <div class="table-wrap">
+      <table>
         <thead>
           <tr>
-            <th>Date</th><th>Nom Wave</th><th>N° Wave</th><th>Entreprise</th><th>Email</th><th>Montant</th><th>Statut</th>
+            <th>Entreprise</th><th>Email</th><th>Inscription</th><th>Exercice</th><th>Statut</th><th>Actions</th>
           </tr>
         </thead>
-        <tbody id="paymentsHistoryBody"><tr><td colspan="7" class="admin-td-muted">Chargement…</td></tr></tbody>
+        <tbody id="companiesBody"></tbody>
       </table>
     </div>
   </section>
 
-  <!-- ONGLET UTILISATEURS -->
-  <section id="tabUsers" class="admin-tab-panel" style="display:none">
-    <div class="admin-toolbar">
-      <input type="search" id="userSearch" class="admin-search" placeholder="Rechercher entreprise, email…" oninput="adminFilterUsers()">
-      <select id="userFilterStatus" class="admin-select" onchange="adminFilterUsers()">
-        <option value="all">Tous les statuts</option>
+  <!-- ABONNEMENTS -->
+  <section id="panelSubscriptions" class="panel">
+    <div class="panel-head">
+      <div>
+        <div class="panel-title">Gestion des abonnements</div>
+        <div class="panel-sub">Activer ou mettre fin à un abonnement Premium</div>
+      </div>
+    </div>
+    <div class="toolbar">
+      <input type="search" class="search-input" id="searchSubs" placeholder="Rechercher…" oninput="renderSubscriptions()">
+      <select class="filter-select" id="filterSubs" onchange="renderSubscriptions()">
+        <option value="all">Tous</option>
         <option value="premium">Premium actif</option>
-        <option value="trial">Essai en cours</option>
-        <option value="expired">Expiré / sans accès</option>
+        <option value="trial">Essai 12 h</option>
         <option value="pending">Paiement en attente</option>
+        <option value="expired">Expiré</option>
+        <option value="cancelled">Résilié</option>
       </select>
     </div>
-    <div id="usersLoading" class="admin-loading" style="display:none">Chargement des utilisateurs…</div>
-    <div class="admin-table-wrap">
-      <table class="admin-table admin-table-users">
+    <div class="table-wrap">
+      <table>
         <thead>
           <tr>
-            <th>Entreprise</th><th>Email</th><th>Inscription</th><th>Statut</th><th>Expire le</th><th>Actions</th>
+            <th>Entreprise</th><th>Email</th><th>Statut</th><th>Expire le</th><th>Wave</th><th>Actions</th>
           </tr>
         </thead>
-        <tbody id="usersTableBody"><tr><td colspan="6" class="admin-td-muted">Chargement…</td></tr></tbody>
+        <tbody id="subsBody"></tbody>
       </table>
     </div>
   </section>
+
+  <!-- PAIEMENTS -->
+  <section id="panelPayments" class="panel">
+    <div class="panel-head">
+      <div>
+        <div class="panel-title">Paiements Wave</div>
+        <div class="panel-sub">Demandes en attente de validation manuelle</div>
+      </div>
+    </div>
+    <div id="pendingPayments" class="cards-grid"></div>
+    <div class="panel-head" style="margin-top:8px">
+      <div class="panel-title">Historique des paiements</div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th><th>Nom</th><th>N° Wave</th><th>Entreprise</th><th>Email</th><th>Montant</th><th>Statut</th>
+          </tr>
+        </thead>
+        <tbody id="paymentsBody"></tbody>
+      </table>
+    </div>
+  </section>
+
 </div>
 
+<div class="toast-wrap" id="toastWrap"></div>
 <script type="module" src="admin.js"></script>
 </body>
 </html>
