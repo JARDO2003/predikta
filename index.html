@@ -1,617 +1,99 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Express Notify — Activer les notifications</title>
-  <link rel="icon" href="u.jpg" type="image/jpeg" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
-  <style>
-    :root {
-      --bg: #0a0a0f;
-      --surface: #12121a;
-      --surface2: #1a1a26;
-      --accent: #ff5c35;
-      --accent2: #ff8c35;
-      --green: #00e676;
-      --text: #f0f0f8;
-      --muted: #6b6b88;
-      --border: #2a2a3a;
-      --glow: rgba(255, 92, 53, 0.18);
-    }
-
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'DM Sans', sans-serif;
-      min-height: 100vh;
-      overflow-x: hidden;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    /* Animated background */
-    body::before {
-      content: '';
-      position: fixed;
-      top: -50%;
-      left: -50%;
-      width: 200%;
-      height: 200%;
-      background: radial-gradient(ellipse at 30% 20%, rgba(255,92,53,0.07) 0%, transparent 50%),
-                  radial-gradient(ellipse at 70% 80%, rgba(255,140,53,0.05) 0%, transparent 50%);
-      animation: bgMove 12s ease-in-out infinite alternate;
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    @keyframes bgMove {
-      0% { transform: translate(0,0) rotate(0deg); }
-      100% { transform: translate(2%, 2%) rotate(1deg); }
-    }
-
-    /* Header */
-    header {
-      width: 100%;
-      max-width: 1100px;
-      padding: 24px 32px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      position: relative;
-      z-index: 10;
-    }
-
-    .logo-area {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .logo-img {
-      width: 38px;
-      height: 38px;
-      border-radius: 10px;
-      object-fit: cover;
-      border: 2px solid var(--accent);
-      box-shadow: 0 0 14px var(--glow);
-    }
-
-    .logo-text {
-      font-family: 'Syne', sans-serif;
-      font-weight: 800;
-      font-size: 1.2rem;
-      letter-spacing: -0.02em;
-    }
-
-    .logo-text span { color: var(--accent); }
-
-    .header-badge {
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 6px 14px;
-      font-size: 0.75rem;
-      color: var(--muted);
-      font-family: 'Syne', sans-serif;
-    }
-
-    /* Hero */
-    .hero {
-      position: relative;
-      z-index: 10;
-      text-align: center;
-      padding: 60px 24px 40px;
-      max-width: 640px;
-    }
-
-    .hero-eyebrow {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: rgba(255,92,53,0.12);
-      border: 1px solid rgba(255,92,53,0.3);
-      border-radius: 20px;
-      padding: 6px 16px;
-      font-size: 0.78rem;
-      color: var(--accent);
-      font-family: 'Syne', sans-serif;
-      font-weight: 600;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      margin-bottom: 28px;
-    }
-
-    .pulse-dot {
-      width: 7px;
-      height: 7px;
-      background: var(--accent);
-      border-radius: 50%;
-      animation: pulse 1.8s ease-in-out infinite;
-    }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.4; transform: scale(0.7); }
-    }
-
-    h1 {
-      font-family: 'Syne', sans-serif;
-      font-weight: 800;
-      font-size: clamp(2.2rem, 6vw, 3.5rem);
-      line-height: 1.08;
-      letter-spacing: -0.04em;
-      margin-bottom: 20px;
-    }
-
-    h1 .grad {
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
-    .hero-sub {
-      color: var(--muted);
-      font-size: 1.05rem;
-      line-height: 1.65;
-      max-width: 480px;
-      margin: 0 auto 40px;
-    }
-
-    /* Main Card */
-    .main-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 24px;
-      padding: 40px;
-      width: 100%;
-      max-width: 520px;
-      position: relative;
-      z-index: 10;
-      box-shadow: 0 24px 80px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,92,53,0.05);
-      margin: 0 16px;
-    }
-
-    .main-card::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 2px;
-      background: linear-gradient(90deg, transparent, var(--accent), var(--accent2), transparent);
-      border-radius: 24px 24px 0 0;
-    }
-
-    .form-group {
-      margin-bottom: 20px;
-    }
-
-    label {
-      display: block;
-      font-size: 0.82rem;
-      font-family: 'Syne', sans-serif;
-      font-weight: 600;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 0.07em;
-      margin-bottom: 10px;
-    }
-
-    input[type="text"], input[type="email"], input[type="tel"] {
-      width: 100%;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 14px 18px;
-      color: var(--text);
-      font-family: 'DM Sans', sans-serif;
-      font-size: 0.97rem;
-      outline: none;
-      transition: border-color 0.2s, box-shadow 0.2s;
-    }
-
-    input:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(255,92,53,0.12);
-    }
-
-    input::placeholder { color: var(--muted); }
-
-    .btn-primary {
-      width: 100%;
-      padding: 16px;
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      color: white;
-      border: none;
-      border-radius: 12px;
-      font-family: 'Syne', sans-serif;
-      font-weight: 700;
-      font-size: 1rem;
-      letter-spacing: 0.02em;
-      cursor: pointer;
-      transition: transform 0.18s, box-shadow 0.18s, opacity 0.18s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      margin-top: 28px;
-      box-shadow: 0 8px 32px rgba(255,92,53,0.3);
-    }
-
-    .btn-primary:hover:not(:disabled) {
-      transform: translateY(-2px);
-      box-shadow: 0 12px 40px rgba(255,92,53,0.45);
-    }
-
-    .btn-primary:active { transform: translateY(0); }
-    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
-
-    /* Status area */
-    #status-area {
-      margin-top: 24px;
-      display: none;
-    }
-
-    .status-card {
-      border-radius: 14px;
-      padding: 18px 20px;
-      display: flex;
-      align-items: flex-start;
-      gap: 14px;
-    }
-
-    .status-card.success {
-      background: rgba(0, 230, 118, 0.08);
-      border: 1px solid rgba(0, 230, 118, 0.25);
-    }
-
-    .status-card.error {
-      background: rgba(255, 80, 80, 0.08);
-      border: 1px solid rgba(255, 80, 80, 0.25);
-    }
-
-    .status-card.info {
-      background: rgba(255, 92, 53, 0.08);
-      border: 1px solid rgba(255, 92, 53, 0.2);
-    }
-
-    .status-icon {
-      font-size: 1.3rem;
-      flex-shrink: 0;
-      margin-top: 2px;
-    }
-
-    .status-msg {
-      font-size: 0.92rem;
-      line-height: 1.5;
-    }
-
-    .status-msg strong {
-      display: block;
-      font-family: 'Syne', sans-serif;
-      font-weight: 600;
-      margin-bottom: 2px;
-    }
-
-    /* Token box */
-    .token-box {
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 10px 14px;
-      margin-top: 12px;
-      font-family: monospace;
-      font-size: 0.72rem;
-      color: var(--muted);
-      word-break: break-all;
-      line-height: 1.4;
-    }
-
-    /* Features list */
-    .features {
-      margin-top: 48px;
-      width: 100%;
-      max-width: 520px;
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 14px;
-      padding: 0 16px;
-      position: relative;
-      z-index: 10;
-    }
-
-    .feature-item {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 20px 16px;
-      text-align: center;
-    }
-
-    .feature-icon {
-      font-size: 1.6rem;
-      margin-bottom: 10px;
-    }
-
-    .feature-title {
-      font-family: 'Syne', sans-serif;
-      font-weight: 600;
-      font-size: 0.82rem;
-      margin-bottom: 4px;
-    }
-
-    .feature-desc {
-      font-size: 0.75rem;
-      color: var(--muted);
-      line-height: 1.4;
-    }
-
-    footer {
-      margin-top: 48px;
-      padding: 24px;
-      color: var(--muted);
-      font-size: 0.78rem;
-      text-align: center;
-      position: relative;
-      z-index: 10;
-    }
-
-    /* Loading spinner */
-    .spinner {
-      width: 18px;
-      height: 18px;
-      border: 2px solid rgba(255,255,255,0.3);
-      border-top-color: white;
-      border-radius: 50%;
-      animation: spin 0.7s linear infinite;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    /* Registered badge */
-    .registered-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: rgba(0,230,118,0.1);
-      border: 1px solid rgba(0,230,118,0.3);
-      border-radius: 20px;
-      padding: 8px 16px;
-      font-size: 0.82rem;
-      color: var(--green);
-      font-family: 'Syne', sans-serif;
-      font-weight: 600;
-    }
-
-    .divider {
-      height: 1px;
-      background: var(--border);
-      margin: 24px 0;
-    }
-
-    @media (max-width: 480px) {
-      .main-card { padding: 28px 22px; }
-      .features { grid-template-columns: 1fr; }
-      header { padding: 16px 20px; }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>COMEO Admin — Paiements & Utilisateurs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="as.css">
 </head>
-<body>
+<body class="admin-body">
 
-<header>
-  <div class="logo-area">
-    <img src="u.jpg" alt="Express Notify Logo" class="logo-img" onerror="this.style.background='#ff5c35';this.removeAttribute('src')" />
-    <span class="logo-text">Express<span>Notify</span></span>
-  </div>
-  <span class="header-badge">v1.0</span>
-</header>
-
-<div class="hero">
-  <div class="hero-eyebrow">
-    <div class="pulse-dot"></div>
-    Notifications en temps réel
-  </div>
-  <h1>Restez <span class="grad">connecté</span><br>même hors ligne</h1>
-  <p class="hero-sub">Recevez des notifications push instantanées, même lorsque votre téléphone est verrouillé. Inscrivez-vous et ne manquez plus jamais un message important.</p>
-</div>
-
-<div class="main-card">
-  <div id="register-form">
-    <div class="form-group">
-      <label>Votre prénom</label>
-      <input type="text" id="firstName" placeholder="Ex: Jean-Pierre" autocomplete="given-name" />
-    </div>
-    <div class="form-group">
-      <label>Votre nom</label>
-      <input type="text" id="lastName" placeholder="Ex: Kouassi" autocomplete="family-name" />
-    </div>
-    <div class="form-group">
-      <label>Numéro de téléphone</label>
-      <input type="tel" id="phone" placeholder="Ex: +225 07 00 00 00" autocomplete="tel" />
-    </div>
-
-    <div class="divider"></div>
-
-    <button class="btn-primary" id="subscribeBtn" onclick="registerAndSubscribe()">
-      <span id="btnText">🔔 Activer les notifications</span>
-    </button>
-  </div>
-
-  <div id="status-area"></div>
-</div>
-
-<div class="features">
-  <div class="feature-item">
-    <div class="feature-icon">⚡</div>
-    <div class="feature-title">Instantané</div>
-    <div class="feature-desc">Livraison en moins d'une seconde</div>
-  </div>
-  <div class="feature-item">
-    <div class="feature-icon">🔒</div>
-    <div class="feature-title">Sécurisé</div>
-    <div class="feature-desc">Chiffrement Firebase end-to-end</div>
-  </div>
-  <div class="feature-item">
-    <div class="feature-icon">📵</div>
-    <div class="feature-title">Hors ligne</div>
-    <div class="feature-desc">Reçu même écran éteint</div>
+<div id="adminLogin" class="admin-login-wrap">
+  <div class="admin-login-box">
+    <div class="admin-logo">COMEO Admin</div>
+    <p class="admin-login-sub">Paiements Wave · Utilisateurs · Abonnements Premium</p>
+    <div class="af-field"><label class="af-label">Email administrateur</label>
+      <input class="af-input" type="email" id="admin-email" placeholder="admin@entreprise.com"></div>
+    <div class="af-field"><label class="af-label">Mot de passe</label>
+      <input class="af-input" type="password" id="admin-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')adminDoLogin()"></div>
+    <div class="auth-err" id="admin-login-err"></div>
+    <button class="auth-btn" onclick="adminDoLogin()">🔐 Connexion admin</button>
+    <p class="admin-login-note">Accès réservé aux administrateurs autorisés dans Firebase.</p>
   </div>
 </div>
 
-<footer>
-  &copy; 2025 Express Notify — Propulsé par Firebase Cloud Messaging
-</footer>
+<div id="adminPanel" class="admin-panel" style="display:none">
+  <header class="admin-header">
+    <div>
+      <h1 class="admin-title">Tableau de bord COMEO</h1>
+      <p class="admin-sub" id="adminUserInfo">—</p>
+    </div>
+    <div class="admin-header-actions">
+      <button class="btn btn-outline" onclick="adminRefreshAll()">↻ Actualiser tout</button>
+      <button class="btn btn-danger-outline" onclick="adminDoLogout()">Déconnexion</button>
+    </div>
+  </header>
 
-<!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <div class="admin-stats">
+    <div class="admin-stat-card"><span class="admin-stat-num" id="statPending">0</span><span class="admin-stat-lbl">Paiements en attente</span></div>
+    <div class="admin-stat-card"><span class="admin-stat-num" id="statUsers">0</span><span class="admin-stat-lbl">Utilisateurs inscrits</span></div>
+    <div class="admin-stat-card"><span class="admin-stat-num" id="statPremium">0</span><span class="admin-stat-lbl">Premium actifs</span></div>
+    <div class="admin-stat-card"><span class="admin-stat-num" id="statApproved">0</span><span class="admin-stat-lbl">Activés (session)</span></div>
+  </div>
 
-<script>
-  // Firebase config
-  const firebaseConfig = {
-    apiKey: "AIzaSyBsGrY-AqYMoI70kT3WMxLgW0HwYA4KyaQ",
-    authDomain: "livraison-c8498.firebaseapp.com",
-    projectId: "livraison-c8498",
-    storageBucket: "livraison-c8498.firebasestorage.app",
-    messagingSenderId: "403240604780",
-    appId: "1:403240604780:web:77d84ad03d68bdaddfb449"
-  };
+  <nav class="admin-tabs">
+    <button type="button" class="admin-tab active" data-tab="payments" onclick="adminSwitchTab('payments')">💳 Paiements Wave</button>
+    <button type="button" class="admin-tab" data-tab="users" onclick="adminSwitchTab('users')">👥 Utilisateurs inscrits</button>
+  </nav>
 
-  // VAPID key — à remplacer par ta clé VAPID Firebase (Web Push certificates dans la console Firebase)
-  const VAPID_KEY = "BGL6IVuJSbQjI69fot6FvfGEBmq1t4_hPP1Dhx_KYiIEFCrOLjtYFWjID_MlteNgJtm7FFbdIfBygdRi_IF-qng";
+  <!-- ONGLET PAIEMENTS -->
+  <section id="tabPayments" class="admin-tab-panel">
+    <h2 class="admin-section-title">Paiements en attente de validation</h2>
+    <div id="paymentsLoading" class="admin-loading" style="display:none">Chargement des paiements…</div>
+    <div id="paymentsEmpty" class="admin-empty" style="display:none">✅ Aucun paiement en attente</div>
+    <div id="paymentsList" class="admin-list"></div>
 
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
-  const messaging = firebase.messaging();
+    <h2 class="admin-section-title admin-section-mt">Historique des paiements</h2>
+    <div class="admin-table-wrap">
+      <table class="admin-table" id="paymentsHistoryTable">
+        <thead>
+          <tr>
+            <th>Date</th><th>Nom Wave</th><th>N° Wave</th><th>Entreprise</th><th>Email</th><th>Montant</th><th>Statut</th>
+          </tr>
+        </thead>
+        <tbody id="paymentsHistoryBody"><tr><td colspan="7" class="admin-td-muted">Chargement…</td></tr></tbody>
+      </table>
+    </div>
+  </section>
 
-  // Handle foreground notifications
-  messaging.onMessage((payload) => {
-    console.log('Foreground message:', payload);
-    showInAppNotification(payload);
-  });
+  <!-- ONGLET UTILISATEURS -->
+  <section id="tabUsers" class="admin-tab-panel" style="display:none">
+    <div class="admin-toolbar">
+      <input type="search" id="userSearch" class="admin-search" placeholder="Rechercher entreprise, email…" oninput="adminFilterUsers()">
+      <select id="userFilterStatus" class="admin-select" onchange="adminFilterUsers()">
+        <option value="all">Tous les statuts</option>
+        <option value="premium">Premium actif</option>
+        <option value="trial">Essai en cours</option>
+        <option value="expired">Expiré / sans accès</option>
+        <option value="pending">Paiement en attente</option>
+      </select>
+    </div>
+    <div id="usersLoading" class="admin-loading" style="display:none">Chargement des utilisateurs…</div>
+    <div class="admin-table-wrap">
+      <table class="admin-table admin-table-users">
+        <thead>
+          <tr>
+            <th>Entreprise</th><th>Email</th><th>Inscription</th><th>Statut</th><th>Expire le</th><th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="usersTableBody"><tr><td colspan="6" class="admin-td-muted">Chargement…</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+</div>
 
-  function showInAppNotification(payload) {
-    const title = payload.notification?.title || payload.data?.title || 'Express Notify';
-    const body = payload.notification?.body || payload.data?.body || '';
-
-    const notif = document.createElement('div');
-    notif.style.cssText = `
-      position: fixed; top: 20px; right: 20px; z-index: 9999;
-      background: #1a1a26; border: 1px solid #ff5c35;
-      border-radius: 14px; padding: 16px 20px; max-width: 320px;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
-      animation: slideIn 0.3s ease; font-family: 'DM Sans', sans-serif;
-    `;
-    notif.innerHTML = `
-      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.9rem;color:#ff5c35;margin-bottom:6px;">🔔 ${title}</div>
-      <div style="font-size:0.85rem;color:#f0f0f8;line-height:1.4;">${body}</div>
-    `;
-    document.body.appendChild(notif);
-    setTimeout(() => notif.remove(), 5000);
-  }
-
-  async function registerAndSubscribe() {
-    const firstName = document.getElementById('firstName').value.trim();
-    const lastName = document.getElementById('lastName').value.trim();
-    const phone = document.getElementById('phone').value.trim();
-
-    if (!firstName || !lastName || !phone) {
-      showStatus('error', '⚠️ Champs requis', 'Veuillez remplir tous les champs avant de continuer.');
-      return;
-    }
-
-    const btn = document.getElementById('subscribeBtn');
-    const btnText = document.getElementById('btnText');
-    btn.disabled = true;
-    btnText.innerHTML = '<div class="spinner"></div> En cours...';
-
-    try {
-      // Register service worker
-      showStatus('info', '⚙️ Installation...', 'Enregistrement du service worker de notifications...');
-
-      const swReg = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
-      console.log('SW registered:', swReg);
-
-      // Request permission
-      const permission = await Notification.requestPermission();
-      if (permission !== 'granted') {
-        throw new Error('permission_denied');
-      }
-
-      // Get FCM token
-      const token = await messaging.getToken({
-        vapidKey: VAPID_KEY,
-        serviceWorkerRegistration: swReg
-      });
-
-      if (!token) throw new Error('no_token');
-
-      // Save to Firestore
-      const userId = `user_${Date.now()}_${Math.random().toString(36).substr(2,6)}`;
-      await db.collection('subscribers').doc(userId).set({
-        firstName,
-        lastName,
-        phone,
-        token,
-        userId,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-        active: true,
-        platform: navigator.platform,
-        userAgent: navigator.userAgent.substring(0, 100)
-      });
-
-      // Save locally
-      localStorage.setItem('express_notify_user', JSON.stringify({ userId, firstName, lastName, phone, token }));
-
-      // Show success
-      document.getElementById('register-form').style.display = 'none';
-      showStatus('success', `✅ Bienvenue, ${firstName} !`, `Vous êtes maintenant inscrit. Vous recevrez les notifications push même lorsque votre téléphone est verrouillé.`, token);
-
-    } catch (err) {
-      console.error(err);
-      btn.disabled = false;
-      btnText.innerHTML = '🔔 Activer les notifications';
-
-      if (err.message === 'permission_denied') {
-        showStatus('error', '🚫 Permission refusée', 'Vous avez bloqué les notifications. Allez dans les paramètres de votre navigateur pour les autoriser.');
-      } else {
-        showStatus('error', '❌ Erreur', `Une erreur est survenue: ${err.message}. Vérifiez votre clé VAPID dans Firebase Console.`);
-      }
-    }
-  }
-
-  function showStatus(type, title, message, token = null) {
-    const area = document.getElementById('status-area');
-    area.style.display = 'block';
-    area.innerHTML = `
-      <div class="status-card ${type}">
-        <div class="status-msg">
-          <strong>${title}</strong>
-          ${message}
-          ${token ? `<div class="token-box">Token FCM: ${token.substring(0, 60)}...</div>` : ''}
-        </div>
-      </div>
-    `;
-  }
-
-  // Check if already registered
-  window.addEventListener('load', () => {
-    const saved = localStorage.getItem('express_notify_user');
-    if (saved) {
-      const user = JSON.parse(saved);
-      document.getElementById('register-form').style.display = 'none';
-      showStatus('success', `✅ Déjà inscrit(e), ${user.firstName} !`, `Vos notifications sont actives. Votre appareil est enregistré et prêt à recevoir des messages.`);
-    }
-
-    if (!('serviceWorker' in navigator) || !('Notification' in window)) {
-      showStatus('error', '⚠️ Navigateur non compatible', 'Votre navigateur ne supporte pas les notifications push. Essayez Chrome ou Firefox.');
-      document.querySelector('.btn-primary').disabled = true;
-    }
-  });
-</script>
+<script type="module" src="admin.js"></script>
 </body>
 </html>
