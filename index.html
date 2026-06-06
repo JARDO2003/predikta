@@ -3,666 +3,133 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>COMEO – SYSCOHADA Pro</title>
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
-<style>
-  :root {
-    --gold: #c9a84c;
-    --gold-light: #f0d080;
-    --dark: #050810;
-    --darker: #020407;
-    --text: #e8dfc4;
-    --accent: #1a2a4a;
-  }
-
-  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-
-  html, body {
-    width: 100%; height: 100%;
-    background: var(--darker);
-    overflow: hidden;
-    font-family: 'Cormorant Garamond', Georgia, serif;
-    color: var(--text);
-  }
-
-  /* ── CANVAS for the falling numbers ── */
-  #matrixCanvas {
-    position: fixed;
-    inset: 0;
-    z-index: 0;
-    opacity: 1;
-  }
-
-  /* ── VIGNETTE overlay ── */
-  .vignette {
-    position: fixed;
-    inset: 0;
-    z-index: 1;
-    background: radial-gradient(ellipse at center,
-      transparent 30%,
-      rgba(2,4,7,0.75) 70%,
-      rgba(2,4,7,0.97) 100%);
-    pointer-events: none;
-  }
-
-  /* ── SCANLINES ── */
-  .scanlines {
-    position: fixed;
-    inset: 0;
-    z-index: 2;
-    background: repeating-linear-gradient(
-      0deg,
-      transparent,
-      transparent 3px,
-      rgba(0,0,0,0.08) 3px,
-      rgba(0,0,0,0.08) 4px
-    );
-    pointer-events: none;
-  }
-
-  /* ── MAIN STAGE ── */
-  .stage {
-    position: fixed;
-    inset: 0;
-    z-index: 10;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 0;
-  }
-
-  /* ── TOP RULE ── */
-  .rule {
-    width: 0;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, var(--gold), transparent);
-    margin-bottom: 2.2rem;
-    animation: expandRule 1.8s 0.6s ease forwards;
-  }
-  @keyframes expandRule { to { width: min(600px, 80vw); } }
-
-  /* ── LOGO / TITLE ── */
-  .brand {
-    font-family: 'Cinzel', serif;
-    font-size: clamp(0.65rem, 1.5vw, 0.9rem);
-    letter-spacing: 0.55em;
-    color: var(--gold);
-    text-transform: uppercase;
-    opacity: 0;
-    transform: translateY(-14px);
-    animation: fadeUp 1s 1.2s ease forwards;
-    margin-bottom: 0.6rem;
-  }
-
-  .welcome {
-    font-family: 'Cinzel', serif;
-    font-weight: 900;
-    font-size: clamp(2.2rem, 7vw, 5.8rem);
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    background: linear-gradient(135deg, #f0d080 0%, #c9a84c 40%, #f0d080 70%, #a07830 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    opacity: 0;
-    transform: translateY(20px);
-    animation: fadeUp 1.2s 1.6s ease forwards;
-    text-align: center;
-    line-height: 1.05;
-    filter: drop-shadow(0 0 28px rgba(201,168,76,0.35));
-  }
-
-  .subtitle {
-    font-family: 'Cinzel', serif;
-    font-size: clamp(0.6rem, 1.2vw, 0.78rem);
-    letter-spacing: 0.48em;
-    color: rgba(201,168,76,0.6);
-    text-transform: uppercase;
-    margin-top: 0.5rem;
-    opacity: 0;
-    animation: fadeUp 1s 2.2s ease forwards;
-  }
-
-  .rule-bottom {
-    width: 0;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, var(--gold), transparent);
-    margin-top: 2rem;
-    margin-bottom: 2.4rem;
-    animation: expandRule 1.8s 2s ease forwards;
-  }
-
-  /* ── CITATION BLOCK ── */
-  .citation-wrap {
-    opacity: 0;
-    animation: fadeUp 1.2s 2.8s ease forwards;
-    text-align: center;
-    max-width: min(640px, 88vw);
-    padding: 0 1rem;
-  }
-
-  .citation-text {
-    font-size: clamp(1rem, 2.2vw, 1.35rem);
-    font-style: italic;
-    font-weight: 300;
-    color: var(--text);
-    line-height: 1.7;
-    letter-spacing: 0.02em;
-    opacity: 0;
-    transition: opacity 0.7s ease;
-  }
-  .citation-text.visible { opacity: 1; }
-
-  .citation-author {
-    margin-top: 0.9rem;
-    font-family: 'Cinzel', serif;
-    font-size: clamp(0.55rem, 1vw, 0.72rem);
-    letter-spacing: 0.38em;
-    color: var(--gold);
-    text-transform: uppercase;
-    opacity: 0;
-    transition: opacity 0.7s ease 0.2s;
-  }
-  .citation-author.visible { opacity: 1; }
-
-  /* ── CTA BUTTON ── */
-  .cta-wrap {
-    margin-top: 2.6rem;
-    opacity: 0;
-    animation: fadeUp 1s 3.4s ease forwards;
-  }
-
-  .cta-btn {
-    display: inline-block;
-    font-family: 'Cinzel', serif;
-    font-size: clamp(0.65rem, 1.2vw, 0.82rem);
-    letter-spacing: 0.42em;
-    text-transform: uppercase;
-    color: var(--dark);
-    background: linear-gradient(135deg, #f0d080, #c9a84c, #a07830);
-    border: none;
-    padding: 1rem 2.8rem;
-    cursor: pointer;
-    position: relative;
-    overflow: hidden;
-    transition: transform 0.2s ease, box-shadow 0.3s ease;
-    text-decoration: none;
-    clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
-  }
-
-  .cta-btn::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: rgba(255,255,255,0.18);
-    transform: translateX(-100%) skewX(-15deg);
-    transition: transform 0.4s ease;
-  }
-  .cta-btn:hover::before { transform: translateX(120%) skewX(-15deg); }
-  .cta-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 32px rgba(201,168,76,0.45);
-  }
-  .cta-btn:active { transform: translateY(0); }
-
-  /* ── CORNER ORNAMENTS ── */
-  .corner {
-    position: fixed;
-    z-index: 11;
-    width: 60px;
-    height: 60px;
-    opacity: 0;
-    animation: fadeIn 1s 3s ease forwards;
-  }
-  .corner svg { width: 100%; height: 100%; }
-  .corner.tl { top: 1.5rem; left: 1.5rem; }
-  .corner.tr { top: 1.5rem; right: 1.5rem; transform: scaleX(-1); }
-  .corner.bl { bottom: 1.5rem; left: 1.5rem; transform: scaleY(-1); }
-  .corner.br { bottom: 1.5rem; right: 1.5rem; transform: scale(-1,-1); }
-
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(16px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-  @keyframes fadeIn {
-    from { opacity: 0; }
-    to   { opacity: 0.55; }
-  }
-</style>
+<title>COMEO Admin — Entreprises & Abonnements</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="admin.css">
 </head>
 <body>
 
-<canvas id="matrixCanvas"></canvas>
-<div class="vignette"></div>
-<div class="scanlines"></div>
-
-<!-- Corner ornaments -->
-<div class="corner tl">
-  <svg viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M2 58 L2 2 L58 2" stroke="#c9a84c" stroke-width="1.5" fill="none"/>
-    <path d="M2 2 L18 2" stroke="#c9a84c" stroke-width="3"/>
-    <path d="M2 2 L2 18" stroke="#c9a84c" stroke-width="3"/>
-    <circle cx="2" cy="2" r="3" fill="#c9a84c"/>
-  </svg>
-</div>
-<div class="corner tr">
-  <svg viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M2 58 L2 2 L58 2" stroke="#c9a84c" stroke-width="1.5" fill="none"/>
-    <path d="M2 2 L18 2" stroke="#c9a84c" stroke-width="3"/>
-    <path d="M2 2 L2 18" stroke="#c9a84c" stroke-width="3"/>
-    <circle cx="2" cy="2" r="3" fill="#c9a84c"/>
-  </svg>
-</div>
-<div class="corner bl">
-  <svg viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M2 58 L2 2 L58 2" stroke="#c9a84c" stroke-width="1.5" fill="none"/>
-    <path d="M2 2 L18 2" stroke="#c9a84c" stroke-width="3"/>
-    <path d="M2 2 L2 18" stroke="#c9a84c" stroke-width="3"/>
-    <circle cx="2" cy="2" r="3" fill="#c9a84c"/>
-  </svg>
-</div>
-<div class="corner br">
-  <svg viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M2 58 L2 2 L58 2" stroke="#c9a84c" stroke-width="1.5" fill="none"/>
-    <path d="M2 2 L18 2" stroke="#c9a84c" stroke-width="3"/>
-    <path d="M2 2 L2 18" stroke="#c9a84c" stroke-width="3"/>
-    <circle cx="2" cy="2" r="3" fill="#c9a84c"/>
-  </svg>
+<div id="loadingOverlay" class="loading-overlay">
+  <div class="loading-box">
+    <div class="spinner"></div>
+    <div>Chargement Firestore…</div>
+  </div>
 </div>
 
-<main class="stage">
-  <div class="rule"></div>
-  <p class="brand">SYSCOHADA Pro</p>
-  <h1 class="welcome">Bienvenue à vous<br>sur COMEO</h1>
-  <p class="subtitle">Intelligence Comptable &nbsp;·&nbsp; Excellence Financière</p>
-  <div class="rule-bottom"></div>
+<div id="errorBanner" class="error-banner admin-app" style="display:none"></div>
 
-  <div class="citation-wrap">
-    <p class="citation-text" id="citText"></p>
-    <p class="citation-author" id="citAuthor"></p>
+<div class="admin-app" id="adminApp" style="display:none">
+
+  <header class="admin-header">
+    <div class="admin-brand">
+      <div class="admin-brand-icon">⚙</div>
+      <div>
+        <h1>COMEO Admin</h1>
+        <p>Gestion des entreprises, abonnements & paiements Wave</p>
+      </div>
+    </div>
+    <div class="admin-header-actions">
+      <div class="admin-live"><span class="admin-live-dot"></span> Firestore connecté</div>
+      <button type="button" class="btn btn-ghost" onclick="adminRefresh()">↻ Actualiser</button>
+    </div>
+  </header>
+
+  <div class="admin-stats">
+    <div class="stat-card"><span class="stat-num" id="sTotal">0</span><span class="stat-lbl">Entreprises</span></div>
+    <div class="stat-card green"><span class="stat-num" id="sPremium">0</span><span class="stat-lbl">Premium actifs</span></div>
+    <div class="stat-card blue"><span class="stat-num" id="sTrial">0</span><span class="stat-lbl">Essais en cours</span></div>
+    <div class="stat-card amber"><span class="stat-num" id="sPending">0</span><span class="stat-lbl">Paiements en attente</span></div>
+    <div class="stat-card red"><span class="stat-num" id="sExpired">0</span><span class="stat-lbl">Expirés</span></div>
   </div>
 
-  <div class="cta-wrap">
-    <a class="cta-btn" href="https://comptabilite-ivoirien.vercel.app/" target="_blank" rel="noopener">
-      Accéder
-    </a>
-  </div>
-</main>
+  <nav class="admin-tabs">
+    <button type="button" class="admin-tab active" data-tab="companies" onclick="switchTab('companies')">🏢 Entreprises</button>
+    <button type="button" class="admin-tab" data-tab="subscriptions" onclick="switchTab('subscriptions')">⭐ Abonnements</button>
+    <button type="button" class="admin-tab" data-tab="payments" onclick="switchTab('payments')">💳 Paiements Wave</button>
+  </nav>
 
-<script>
-/* ═══════════════════════════════════════════════
-   SYSCOHADA PLAN COMPTABLE – comptes qui pleuvent
-   ═══════════════════════════════════════════════ */
-const ACCOUNTS = [
-  "101","102","103","104","105","106","109","111","112","113","114","115","116","117","118","119",
-  "121","122","123","124","125","126","127","128","129","131","132","133","134","135","136","137","138","139",
-  "141","142","143","144","145","146","147","148","149","151","152","153","154","155","156","157","158","159",
-  "161","162","163","164","165","166","167","168","169","171","172","173","174","175","176","178","179",
-  "181","182","183","184","185","186","187","188","191","192","193","194","195","196","197","198","199",
-  "201","202","203","204","205","206","207","208","211","212","213","214","215","218","219",
-  "221","222","223","224","225","226","227","228","229","231","232","233","234","235","236","237","238","239",
-  "241","242","243","244","245","246","247","248","249","251","252","253","254","255","256","257","258","259",
-  "261","262","263","264","265","266","267","268","269","271","272","273","274","275","276","277","278","279",
-  "281","282","283","284","285","286","287","288","291","292","293","294","295","296","297","298","299",
-  "301","302","303","304","305","306","307","308","309","311","312","313","314","315","316","317","318","319",
-  "321","322","323","324","325","326","327","328","329","331","332","333","334","335","336","337","338","339",
-  "341","342","343","344","345","346","347","348","349","351","352","353","354","355","356","357","358","359",
-  "361","362","363","364","365","366","367","368","369","371","372","373","374","375","376","378","379",
-  "381","382","383","384","385","386","387","388","389","391","392","393","394","395","396","397","398","399",
-  "401","402","403","404","405","406","407","408","409","411","412","413","414","415","416","417","418","419",
-  "421","422","423","424","425","426","427","428","429","431","432","433","434","435","436","437","438","439",
-  "441","442","443","444","445","446","447","448","449","451","452","453","454","455","456","457","458","459",
-  "461","462","463","464","465","466","467","468","469","471","472","473","474","475","476","477","478","479",
-  "481","482","483","484","485","486","487","488","491","492","493","494","495","496","497","498","499",
-  "501","502","503","504","505","506","507","508","509","511","512","513","514","515","516","517","518","519",
-  "521","522","523","524","525","526","527","528","529","531","532","533","534","535","536","537","538","539",
-  "541","542","543","544","545","546","547","548","549","551","552","553","554","555","556","557","558","559",
-  "561","562","563","564","565","566","567","568","569","571","572","573","574","575","576","577","578","579",
-  "581","582","583","584","585","586","587","588","589","591","592","593","594","595","596","597","598","599",
-  "601","602","603","604","605","606","607","608","609","611","612","613","614","615","616","617","618","619",
-  "621","622","623","624","625","626","627","628","629","631","632","633","634","635","636","637","638","639",
-  "641","642","643","644","645","646","647","648","649","651","652","653","654","655","656","657","658","659",
-  "661","662","663","664","665","666","667","668","669","671","672","673","674","675","676","677","678","679",
-  "681","682","683","684","685","686","687","688","689","691","692","693","694","695","696","697","698","699",
-  "701","702","703","704","705","706","707","708","709","711","712","713","714","715","716","717","718","719",
-  "721","722","723","724","725","726","727","728","731","732","733","734","735","736","737","738","739",
-  "741","742","743","744","745","746","747","748","749","751","752","753","754","755","756","757","758","759",
-  "761","762","763","764","765","766","767","768","769","771","772","773","774","775","776","778","779",
-  "781","782","783","784","785","786","787","788","789","791","792","793","794","795","796","797","798","799",
-  "801","802","803","804","805","806","807","808","809","811","812","813","814","815","816","817","818","819",
-  "821","822","823","824","825","826","827","828","829","831","832","833","834","835","836","837","838","839",
-  "841","842","843","844","845","846","847","848","849","851","852","853","854","855","856","857","858","859",
-  "861","862","863","864","865","866","867","868","869","871","872","873","874","875","876","877","878","879",
-  "881","882","883","884","885","886","887","888","889","891","892","893","894","895","896","897","898","899",
-  "901","902","903","904","905","906","907","908","909","911","912","913","914","915","916","917","918","919",
-  "921","922","923","924","925","926","927","928","929","931","932","933","934","935","936","937","938","939",
-  "941","942","943","944","945","946","947","948","949","951","952","953","954","955","956","957","958","959",
-  "961","962","963","964","965","966","967","968","969","971","972","973","974","975","976","977","978","979",
-  "981","982","983","984","985","986","987","988","989","991","992","993","994","995","996","997","998","999"
-];
+  <!-- ENTREPRISES -->
+  <section id="panelCompanies" class="panel active">
+    <div class="panel-head">
+      <div>
+        <div class="panel-title">Liste des entreprises inscrites</div>
+        <div class="panel-sub">Tous les profils enregistrés sur COMEO</div>
+      </div>
+    </div>
+    <div class="toolbar">
+      <input type="search" class="search-input" id="searchCompanies" placeholder="Rechercher entreprise, email…" oninput="renderCompanies()">
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Entreprise</th><th>Email</th><th>Inscription</th><th>Exercice</th><th>Statut</th><th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="companiesBody"></tbody>
+      </table>
+    </div>
+  </section>
 
-/* ═══════════════════════════════════════════
-   CANVAS MATRIX RAIN
-   ═══════════════════════════════════════════ */
-const canvas = document.getElementById('matrixCanvas');
-const ctx = canvas.getContext('2d');
+  <!-- ABONNEMENTS -->
+  <section id="panelSubscriptions" class="panel">
+    <div class="panel-head">
+      <div>
+        <div class="panel-title">Gestion des abonnements</div>
+        <div class="panel-sub">Activer ou mettre fin à un abonnement Premium</div>
+      </div>
+    </div>
+    <div class="toolbar">
+      <input type="search" class="search-input" id="searchSubs" placeholder="Rechercher…" oninput="renderSubscriptions()">
+      <select class="filter-select" id="filterSubs" onchange="renderSubscriptions()">
+        <option value="all">Tous</option>
+        <option value="premium">Premium actif</option>
+        <option value="trial">Essai 12 h</option>
+        <option value="pending">Paiement en attente</option>
+        <option value="expired">Expiré</option>
+        <option value="cancelled">Résilié</option>
+      </select>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Entreprise</th><th>Email</th><th>Statut</th><th>Expire le</th><th>Wave</th><th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="subsBody"></tbody>
+      </table>
+    </div>
+  </section>
 
-let cols, drops, fontSize;
+  <!-- PAIEMENTS -->
+  <section id="panelPayments" class="panel">
+    <div class="panel-head">
+      <div>
+        <div class="panel-title">Paiements Wave</div>
+        <div class="panel-sub">Demandes en attente de validation manuelle</div>
+      </div>
+    </div>
+    <div id="pendingPayments" class="cards-grid"></div>
+    <div class="panel-head" style="margin-top:8px">
+      <div class="panel-title">Historique des paiements</div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th><th>Nom</th><th>N° Wave</th><th>Entreprise</th><th>Email</th><th>Montant</th><th>Statut</th>
+          </tr>
+        </thead>
+        <tbody id="paymentsBody"></tbody>
+      </table>
+    </div>
+  </section>
 
-function initCanvas() {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-  fontSize = window.innerWidth < 600 ? 13 : 16;
-  cols = Math.floor(canvas.width / (fontSize * 3.6));
-  drops = Array.from({length: cols}, () => Math.random() * -60);
-}
+</div>
 
-function drawMatrix() {
-  // Semi-transparent black trail — lighter = longer glowing tail
-  ctx.fillStyle = 'rgba(2,4,7,0.12)';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  for (let i = 0; i < drops.length; i++) {
-    const account = ACCOUNTS[Math.floor(Math.random() * ACCOUNTS.length)];
-    const x = i * fontSize * 3.6;
-    const y = drops[i] * fontSize;
-
-    // Head character: bright white-gold, rest: vivid gold
-    if (Math.random() > 0.92) {
-      // Brightest head drop
-      ctx.shadowColor = '#ffe066';
-      ctx.shadowBlur = 10;
-      ctx.fillStyle = '#fff5c0';
-    } else if (Math.random() > 0.6) {
-      ctx.shadowColor = '#c9a84c';
-      ctx.shadowBlur = 6;
-      ctx.fillStyle = '#f0c843';
-    } else {
-      ctx.shadowColor = 'transparent';
-      ctx.shadowBlur = 0;
-      ctx.fillStyle = '#b8922a';
-    }
-
-    ctx.font = `bold ${fontSize}px 'Courier New', monospace`;
-    ctx.fillText(account, x, y);
-
-    // Reset shadow after each draw
-    ctx.shadowBlur = 0;
-
-    if (y > canvas.height && Math.random() > 0.97) {
-      drops[i] = 0;
-    }
-    drops[i] += 0.5;
-  }
-}
-
-initCanvas();
-window.addEventListener('resize', () => { initCanvas(); });
-setInterval(drawMatrix, 45);
-
-/* ═══════════════════════════════════════════
-   3000 CITATIONS
-   ═══════════════════════════════════════════ */
-const CITATIONS_RAW = [
-  // --- Comptabilité & Finance ---
-  ["La comptabilité est le langage des affaires.", "Warren Buffett"],
-  ["Un bilan bien tenu vaut mieux qu'un discours bien tourné.", "Henry Ford"],
-  ["La rigueur comptable est la fondation de toute prospérité durable.", "Jean Tirole"],
-  ["Gérer, c'est prévoir ; comptabiliser, c'est savoir.", "Henri Fayol"],
-  ["Sans chiffres exacts, la décision n'est qu'une intuition habillée.", "Peter Drucker"],
-  ["Le profit est une opinion, la trésorerie est un fait.", "Alfred Rappaport"],
-  ["La comptabilité transforme les événements en savoir.", "Théodore Limperg"],
-  ["Ce qui se mesure se gère.", "Peter Drucker"],
-  ["La bonne comptabilité, c'est la clarté avant le bénéfice.", "Ludwig von Mises"],
-  ["Un compte mal tenu est une entreprise mal conduite.", "Proverbe comptable"],
-  ["Savoir lire un bilan, c'est savoir lire l'avenir d'une entreprise.", "Benjamin Graham"],
-  ["L'argent ne ment pas, c'est sa gestion qui peut tromper.", "George Soros"],
-  ["La transparence financière est l'oxygène de la confiance.", "Christine Lagarde"],
-  ["Les chiffres sont des témoins qui ne mentent jamais.", "Émile Wouters"],
-  ["Le contrôle de gestion, c'est la boussole du navire entreprise.", "Robert Kaplan"],
-  ["Une entreprise sans comptabilité est un navire sans gouvernail.", "Robert N. Anthony"],
-  ["La finance saine commence par une comptabilité honnête.", "John Kenneth Galbraith"],
-  ["Auditer, c'est faire parler les chiffres.", "Luca Pacioli"],
-  ["La comptabilité en partie double : l'invention qui a changé le monde.", "Goethe"],
-  ["Mesurer pour améliorer, telle est la discipline des grands gestionnaires.", "W. Edwards Deming"],
-  // --- Philosophie ---
-  ["La vie non examinée ne vaut pas la peine d'être vécue.", "Socrate"],
-  ["Je pense, donc je suis.", "René Descartes"],
-  ["L'homme est la mesure de toutes choses.", "Protagoras"],
-  ["Connais-toi toi-même.", "Socrate"],
-  ["Tout ce qui est rationnel est réel, et tout ce qui est réel est rationnel.", "Hegel"],
-  ["L'existence précède l'essence.", "Jean-Paul Sartre"],
-  ["Le doute est le commencement de la sagesse.", "Aristote"],
-  ["La vérité est une, les mensonges sont mille.", "Voltaire"],
-  ["Il n'y a qu'une seule chose qui soit vraiment importante dans la vie, c'est de savoir qui on est.", "Albert Camus"],
-  ["Le temps, c'est de l'argent.", "Benjamin Franklin"],
-  ["La liberté, c'est la responsabilité.", "George Bernard Shaw"],
-  ["Tout ce qui ne nous tue pas nous rend plus forts.", "Friedrich Nietzsche"],
-  ["On ne fait pas de grandes découvertes sans hypothèses.", "Claude Bernard"],
-  ["Le courage, c'est de chercher la vérité et de la dire.", "Jean Jaurès"],
-  ["Gouverner, c'est prévoir.", "Émile de Girardin"],
-  // --- Succès & Leadership ---
-  ["Le succès, c'est d'aller d'échec en échec sans perdre son enthousiasme.", "Winston Churchill"],
-  ["Ne jugez pas chaque journée par ce que vous récoltez, mais par les graines que vous semez.", "Robert Louis Stevenson"],
-  ["Votre temps est limité, ne le gâchez pas en vivant la vie de quelqu'un d'autre.", "Steve Jobs"],
-  ["Le seul endroit où le succès vient avant le travail, c'est dans le dictionnaire.", "Vidal Sassoon"],
-  ["Le leadership, c'est l'art de faire faire aux autres ce que vous voulez, parce qu'ils le veulent.", "Dwight D. Eisenhower"],
-  ["Je n'ai pas échoué. J'ai simplement trouvé 10 000 façons qui ne fonctionnent pas.", "Thomas Edison"],
-  ["Le meilleur moment pour planter un arbre, c'était il y a 20 ans. Le deuxième meilleur moment, c'est maintenant.", "Proverbe chinois"],
-  ["La vision sans l'action n'est qu'un rêve. L'action sans la vision est un cauchemar.", "Joel A. Barker"],
-  ["Un leader est celui qui connaît le chemin, emprunte le chemin et montre le chemin.", "John C. Maxwell"],
-  ["Ceux qui osent échouer grandement peuvent réussir grandement.", "Robert F. Kennedy"],
-  ["Le talent gagne des matchs, mais le travail d'équipe gagne des championnats.", "Michael Jordan"],
-  ["Le succès arrive quand la préparation rencontre l'opportunité.", "Seneca"],
-  ["Les personnes extraordinaires ont simplement appris à travailler avec l'extraordinaire.", "Jim Rohn"],
-  ["La discipline est le pont entre les objectifs et les accomplissements.", "Jim Rohn"],
-  ["Fais de ta vie un rêve, et de ton rêve une réalité.", "Antoine de Saint-Exupéry"],
-  // --- Innovation & Technologie ---
-  ["L'innovation distingue un leader d'un suiveur.", "Steve Jobs"],
-  ["La technologie est mieux quand elle réunit les gens.", "Matt Mullenweg"],
-  ["Toute technologie suffisamment avancée est indiscernable de la magie.", "Arthur C. Clarke"],
-  ["Le futur appartient à ceux qui croient à la beauté de leurs rêves.", "Eleanor Roosevelt"],
-  ["L'intelligence artificielle est probablement la chose la plus transformatrice de notre génération.", "Eric Schmidt"],
-  ["Nous façonnons nos outils, et ensuite nos outils nous façonnent.", "Marshall McLuhan"],
-  ["Le plus grand risque, c'est de ne prendre aucun risque.", "Mark Zuckerberg"],
-  ["L'informatique n'est pas plus à propos des ordinateurs que l'astronomie n'est à propos des télescopes.", "Edsger Dijkstra"],
-  ["La transformation numérique n'est pas une option, c'est une nécessité.", "Satya Nadella"],
-  ["Dans un monde digital, les données sont la nouvelle monnaie.", "Ginni Rometty"],
-  ["Simplifie, simplifie, simplifie.", "Henry David Thoreau"],
-  ["L'automatisation appliquée à une opération inefficace amplifie l'inefficacité.", "Bill Gates"],
-  ["Les données sont la chose la plus précieuse au monde et elles surpassent le pétrole.", "Clive Humby"],
-  ["L'avenir n'est pas quelque chose que nous entrons, c'est quelque chose que nous créons.", "Leonard I. Sweet"],
-  ["Préparez-vous au changement, car le changement est inévitable.", "Jim Rohn"],
-  // --- Afrique & Développement ---
-  ["L'Afrique est un continent de l'avenir.", "Kofi Annan"],
-  ["L'éducation est l'arme la plus puissante que vous pouvez utiliser pour changer le monde.", "Nelson Mandela"],
-  ["Je suis parce que nous sommes.", "Ubuntu - Philosophie africaine"],
-  ["Un enfant instruit ne peut pas être réduit en esclavage.", "Frederick Douglass"],
-  ["Tant qu'ils seront debout, notre avenir sera debout.", "Félix Houphouët-Boigny"],
-  ["L'Afrique doit s'unir.", "Kwame Nkrumah"],
-  ["Nous devons construire des ponts entre les peuples africains.", "Léopold Sédar Senghor"],
-  ["Le développement de l'Afrique passe par sa jeunesse.", "Macky Sall"],
-  ["Le vrai leader sert les intérêts de son peuple.", "Thomas Sankara"],
-  ["Construisons ensemble un avenir meilleur pour l'Afrique.", "Paul Kagame"],
-  ["L'indépendance économique est la vraie liberté.", "Patrice Lumumba"],
-  ["Seule l'unité peut nous donner la force nécessaire.", "Haile Selassie"],
-  ["La corruption est l'ennemi de notre développement.", "Alassane Ouattara"],
-  ["Investir dans la jeunesse africaine, c'est investir dans l'avenir du monde.", "Amina J. Mohammed"],
-  ["L'identité africaine est une richesse, non un handicap.", "Wole Soyinka"],
-  // --- Travail & Entreprise ---
-  ["La qualité n'est jamais un accident ; elle est toujours le résultat d'un effort intelligent.", "John Ruskin"],
-  ["Le client est roi.", "Proverbe commercial"],
-  ["La satisfaction du client est l'objectif de toute entreprise.", "Sam Walton"],
-  ["Prenez soin de vos employés et ils prendront soin de votre entreprise.", "Richard Branson"],
-  ["L'entreprise qui ne grandit pas régresse.", "Ray Kroc"],
-  ["Un bon produit vend deux fois : à l'achat et au rachat.", "Philip Kotler"],
-  ["La stratégie sans tactique est le plus long chemin vers la victoire.", "Sun Tzu"],
-  ["Pensez grand, agissez petit, échouez vite, apprenez rapidement.", "Gary Hamel"],
-  ["Il faut travailler dur pour travailler intelligemment.", "Susan Wojcicki"],
-  ["Le capital humain est la vraie richesse des nations.", "Gary Becker"],
-  ["Les entreprises qui durent ont des valeurs qui durent.", "Jim Collins"],
-  ["Embauchez lentement, renvoyez rapidement.", "Steve Jobs"],
-  ["Ce qui se fait bien se conçoit clairement.", "Nicolas Boileau"],
-  ["Une bonne organisation peut faire réussir un plan ordinaire.", "Sun Tzu"],
-  ["L'excellence est une habitude.", "Aristote"],
-  // --- Vie & Sagesse ---
-  ["La vie est ce qui arrive quand vous êtes occupé à faire d'autres plans.", "John Lennon"],
-  ["Soyez le changement que vous voulez voir dans le monde.", "Mahatma Gandhi"],
-  ["La santé est la vraie richesse, non les pièces d'or et d'argent.", "Mahatma Gandhi"],
-  ["Le bonheur n'est pas quelque chose de fait. Il vient de vos propres actions.", "Dalaï-Lama"],
-  ["La vie est courte, fais-la belle.", "Proverbe"],
-  ["On ne peut commander à la nature qu'en lui obéissant.", "Francis Bacon"],
-  ["Ce n'est pas parce que les choses sont difficiles que nous n'osons pas, c'est parce que nous n'osons pas qu'elles sont difficiles.", "Sénèque"],
-  ["Le silence est le plus grand cri.", "Proverbe"],
-  ["Aimer, c'est agir.", "Victor Hugo"],
-  ["On récolte ce qu'on sème.", "La Bible"],
-  ["La sagesse commence par l'étonnement.", "Socrate"],
-  ["Apprenez comme si vous deviez vivre pour toujours, vivez comme si vous deviez mourir demain.", "Mahatma Gandhi"],
-  ["La patience est la mère de toutes les vertus.", "Proverbe africain"],
-  ["Une main ne peut pas se laver seule.", "Proverbe africain"],
-  ["L'eau douce et l'eau salée ne se mélangent pas.", "Proverbe africain"],
-  // --- Éducation & Connaissance ---
-  ["La connaissance, c'est le pouvoir.", "Francis Bacon"],
-  ["Investir dans la connaissance rapporte les meilleurs intérêts.", "Benjamin Franklin"],
-  ["Une heure d'apprentissage vaut mieux qu'une heure de prière sans connaissance.", "Proverbe arabe"],
-  ["Les racines de l'éducation sont amères, mais ses fruits sont doux.", "Aristote"],
-  ["L'école prépare les enfants à vivre dans un monde qui n'existe plus.", "Albert Einstein"],
-  ["Le livre est le miroir de l'humanité.", "Proverbe"],
-  ["Former les hommes, c'est bâtir l'avenir.", "Senghor"],
-  ["L'ignorance n'a jamais aidé personne.", "Frederick Douglass"],
-  ["Plus on apprend, plus on réalise combien on ignore.", "Albert Einstein"],
-  ["La formation est un investissement, jamais une dépense.", "Dale Carnegie"],
-  ["Apprends à lire les chiffres comme d'autres lisent la poésie.", "Proverbe comptable"],
-  ["Enseigner, c'est apprendre deux fois.", "Joseph Joubert"],
-  ["Un peuple sans culture est un peuple sans âme.", "Aimé Césaire"],
-  ["La lecture est à l'esprit ce que l'exercice est au corps.", "Joseph Addison"],
-  ["Former, c'est transformer.", "Paulo Freire"],
-  // --- Courage & Persévérance ---
-  ["Tombé sept fois, relevé huit.", "Proverbe japonais"],
-  ["Le courage, c'est d'aller de l'avant malgré la peur.", "John Wayne"],
-  ["La persévérance est la clé du succès.", "Confucius"],
-  ["Ce n'est pas la taille du chien dans le combat, c'est la taille du combat dans le chien.", "Mark Twain"],
-  ["Vis comme si tu devais mourir demain. Apprends comme si tu devais vivre toujours.", "Mahatma Gandhi"],
-  ["La force ne vient pas des capacités physiques, mais d'une volonté indomptable.", "Mahatma Gandhi"],
-  ["Le succès c'est de continuer même quand on a envie d'abandonner.", "Winston Churchill"],
-  ["Là où il y a une volonté, il y a un chemin.", "Proverbe anglais"],
-  ["L'homme qui déplace les montagnes commence par porter les petites pierres.", "Proverbe chinois"],
-  ["Rien ne résiste à celui qui veut vraiment.", "Alexandre Dumas"],
-  ["Ne comptez jamais sur la chance ; comptez sur vous-même.", "Denis Waitley"],
-  ["Les obstacles sont des opportunités déguisées.", "Napoleon Hill"],
-  ["Ce que l'esprit peut concevoir et croire, l'esprit peut l'accomplir.", "Napoleon Hill"],
-  ["La ténacité est ce qui permet de surmonter les obstacles.", "Calvin Coolidge"],
-  ["La persévérance est une petite chose qui accomplit de grandes choses.", "Og Mandino"],
-  // --- Économie & Gestion ---
-  ["L'économie est l'art d'atteindre ses fins avec les moyens disponibles.", "Lionel Robbins"],
-  ["Le long terme, c'est une série de courts termes bien gérés.", "Alfred Sauvy"],
-  ["Les investissements dans les infrastructures sont des paris sur l'avenir.", "Joseph Stiglitz"],
-  ["La croissance économique est le moteur du développement humain.", "Amartya Sen"],
-  ["Gérer les risques, c'est l'essence de la finance.", "Peter Bernstein"],
-  ["Une économie saine est celle où les ressources sont utilisées efficacement.", "Paul Samuelson"],
-  ["La diversification est la seule stratégie qui reste profitable dans l'incertitude.", "Harry Markowitz"],
-  ["La valeur est créée par ceux qui font quelque chose de mieux ou différemment.", "Michael Porter"],
-  ["La bonne gestion transforme les ressources en résultats.", "Peter Drucker"],
-  ["L'économie de marché est imparfaite, mais c'est la moins mauvaise option.", "Winston Churchill"],
-  ["L'équilibre budgétaire est la base de la stabilité nationale.", "Herbert Hoover"],
-  ["Une nation prospère est une nation qui planifie.", "Franklin D. Roosevelt"],
-  ["La fiscalité doit servir le bien commun.", "Aristote"],
-  ["Le commerce unit les peuples mieux que les discours.", "Frédéric Bastiat"],
-  ["L'investissement aujourd'hui est le revenu de demain.", "Proverbe financier"],
-  // --- Intégrité & Éthique ---
-  ["L'intégrité est faire ce qui est juste même quand personne ne regarde.", "C.S. Lewis"],
-  ["La réputation prend des années à construire et des secondes à détruire.", "Warren Buffett"],
-  ["L'honnêteté est la première page du livre de la sagesse.", "Thomas Jefferson"],
-  ["Faites confiance, mais vérifiez.", "Ronald Reagan"],
-  ["La vertu est sa propre récompense.", "John Dryden"],
-  ["Mieux vaut peu avec justice que beaucoup avec injustice.", "Proverbe biblique"],
-  ["Un homme sans éthique est une bête sauvage lâchée dans ce monde.", "Albert Camus"],
-  ["La transparence est la marque des grandes institutions.", "Christine Lagarde"],
-  ["L'éthique professionnelle n'est pas un choix, c'est une obligation.", "Jean-François Mattéi"],
-  ["La probité est le fondement de la confiance.", "Marcus Aurelius"],
-  ["Faites ce que vous dites et dites ce que vous faites.", "Confucius"],
-  ["Le bien fait en secret vaut double.", "Proverbe"],
-  ["Le mensonge a des jambes courtes.", "Proverbe"],
-  ["Ce qui est juste est juste même si personne ne le fait.", "William Penn"],
-  ["L'éthique c'est l'esthétique du futur.", "Victor Hugo"],
-  // --- Proverbes africains & sagesses ---
-  ["Si tu veux aller vite, marche seul. Si tu veux aller loin, marche ensemble.", "Proverbe africain"],
-  ["L'étranger n'a pas la tête d'une mauvaise nouvelle.", "Proverbe ivoirien"],
-  ["Quand les araignées unissent leurs toiles, elles peuvent attraper un lion.", "Proverbe éthiopien"],
-  ["L'œil que tu as soigné, c'est lui qui te voit en premier.", "Proverbe africain"],
-  ["La pluie ne tombe pas sur un seul toit.", "Proverbe camerounais"],
-  ["Celui qui apprend à obéir sait commander.", "Proverbe africain"],
-  ["On ne coupe pas l'arbre dont l'ombre nous protège.", "Proverbe africain"],
-  ["La forêt serait bien silencieuse si aucun oiseau ne chantait sauf le meilleur.", "Proverbe africain"],
-  ["Chaque matin en Afrique une gazelle se réveille : elle sait qu'elle doit courir plus vite que le lion.", "Proverbe africain"],
-  ["L'homme qui ne voyage pas ne connaît que sa rivière.", "Proverbe africain"],
-  ["La pierre qu'on connaît ne tue pas le serpent.", "Proverbe ivoirien"],
-  ["Celui qui a la santé a de l'espoir, et celui qui a l'espoir a tout.", "Proverbe arabe"],
-  ["Le bœuf ne sait pas ce que vaut sa queue tant qu'il ne l'a pas perdue.", "Proverbe africain"],
-  ["Trop de hâte gâte tout.", "Proverbe africain"],
-  ["Ce que tu dis au vent, le vent l'emporte.", "Proverbe africain"],
-  // --- Motivation personnelle ---
-  ["Croyez en vous-même et en tout ce que vous êtes.", "Christian D. Larson"],
-  ["Votre attitude, pas votre aptitude, déterminera votre altitude.", "Zig Ziglar"],
-  ["La seule limite à notre réalisation de demain sera nos doutes d'aujourd'hui.", "Franklin D. Roosevelt"],
-  ["Ce que vous obtenez en atteignant vos objectifs n'est pas aussi important que ce que vous devenez.", "Henry David Thoreau"],
-  ["Chaque jour est une nouvelle chance de changer votre vie.", "Proverbe"],
-  ["Votre passion est votre pouvoir.", "Oprah Winfrey"],
-  ["Le succès est la somme de petits efforts répétés jour après jour.", "Robert Collier"],
-  ["Osez, le monde appartient aux audacieux.", "Proverbe"],
-  ["Le meilleur temps pour commencer est maintenant.", "Proverbe"],
-  ["Croyez que vous pouvez, vous êtes déjà à mi-chemin.", "Theodore Roosevelt"],
-  ["Ne rêve pas ta vie, vis tes rêves.", "Proverbe"],
-  ["L'excellence est une destination et chaque jour est un voyage.", "Wayne Dyer"],
-  ["Soyez passionné de ce que vous faites et vous ne travaillerez jamais.", "Confucius"],
-  ["Le plus grand ennemi du succès est la peur.", "Ralph Waldo Emerson"],
-  ["L'action est l'antidote au désespoir.", "Joan Baez"],
-];
-
-// Duplicate to reach ~3000
-const CITATIONS = [];
-while (CITATIONS.length < 3000) {
-  for (let i = 0; i < CITATIONS_RAW.length && CITATIONS.length < 3000; i++) {
-    CITATIONS.push(CITATIONS_RAW[i]);
-  }
-}
-// Shuffle once
-for (let i = CITATIONS.length - 1; i > 0; i--) {
-  const j = Math.floor(Math.random() * (i + 1));
-  [CITATIONS[i], CITATIONS[j]] = [CITATIONS[j], CITATIONS[i]];
-}
-
-// Pick index seeded by today's date + a random component stored in sessionStorage
-function pickCitation() {
-  const today = new Date().toDateString();
-  let stored = sessionStorage.getItem('comeo_session_id');
-  if (!stored) {
-    stored = String(Date.now() + Math.floor(Math.random() * 1e9));
-    sessionStorage.setItem('comeo_session_id', stored);
-  }
-  const key = today + stored;
-  let hash = 0;
-  for (let c of key) hash = (hash * 31 + c.charCodeAt(0)) >>> 0;
-  return CITATIONS[hash % CITATIONS.length];
-}
-
-function showCitation() {
-  const [text, author] = pickCitation();
-  const elText = document.getElementById('citText');
-  const elAuthor = document.getElementById('citAuthor');
-  elText.classList.remove('visible');
-  elAuthor.classList.remove('visible');
-  elText.textContent = `« ${text} »`;
-  elAuthor.textContent = `— ${author}`;
-  // Slight delay so fade-in animates after text is set
-  setTimeout(() => {
-    elText.classList.add('visible');
-    elAuthor.classList.add('visible');
-  }, 3200);
-}
-
-showCitation();
-</script>
+<div class="toast-wrap" id="toastWrap"></div>
+<script type="module" src="admin.js"></script>
 </body>
 </html>
