@@ -3,12 +3,6 @@ import {
   getFirestore, collection, doc, getDocs, query,
   orderBy, setDoc, updateDoc, limit
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-import {
-  getAuth,
-  signInWithEmailAndPassword,
-  signOut,
-  onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 // ══════════════════════════════════════════
 // CONFIG FIREBASE
@@ -22,12 +16,10 @@ const firebaseConfig = {
   appId: "1:276904640935:web:9cd805aeba6c34c767f682"
 };
 
-const ADMIN_UID        = '10jfiqVlYdUPvGVlnFFjjw2Ekgu2';
 const PREMIUM_MONTH_MS = 30 * 24 * 60 * 60 * 1000;
 
-const app  = initializeApp(firebaseConfig);
-const db   = getFirestore(app);
-const auth = getAuth(app);
+const app = initializeApp(firebaseConfig);
+const db  = getFirestore(app);
 
 // ══════════════════════════════════════════
 // ÉTAT
@@ -85,7 +77,7 @@ function showError(msg) {
   el.style.display = 'block';
   el.innerHTML =
     '<strong>Erreur Firestore</strong><br>' + escapeHtml(msg) +
-    '<br><small>Vérifiez les règles Firestore et votre connexion admin.</small>';
+    '<br><small>Vérifiez les règles Firestore et votre connexion.</small>';
 }
 
 // ══════════════════════════════════════════
@@ -157,7 +149,6 @@ async function activatePremium(uid, paymentId) {
   try {
     const premiumUntil = new Date(Date.now() + PREMIUM_MONTH_MS).toISOString();
 
-    // Écriture autorisée car estAdmin() == true dans les règles
     await setDoc(doc(db, 'profiles', uid), {
       premiumUntil,
       subscriptionStatus:  'active',
@@ -318,7 +309,6 @@ window.renderSubscriptions = function() {
 // RENDER — PAIEMENTS
 // ══════════════════════════════════════════
 function renderPayments() {
-  // Paiements en attente
   const pending = payments.filter(p => p.status === 'pending');
   const grid    = $('pendingPayments');
 
@@ -360,7 +350,6 @@ function renderPayments() {
     }
   }
 
-  // Historique
   const tbody = $('paymentsBody');
   if (!tbody) return;
   const hist = payments.slice(0, 60);
@@ -388,10 +377,7 @@ async function loadAll() {
   showLoading(true);
   try {
     const [profSnap, paySnap] = await Promise.all([
-      // Admin lit tous les profils — autorisé par estAdmin()
       getDocs(collection(db, 'profiles')),
-
-      // Admin lit tous les paiements — autorisé par estAdmin()
       getDocs(
         query(collection(db, 'payment_requests'), orderBy('createdAt', 'desc'), limit(80))
       ).catch(() =>
@@ -404,13 +390,12 @@ async function loadAll() {
 
     payments = paySnap.docs.map(d => ({ _id: d.id, ...d.data() }));
 
-    // Associer le dernier Wave en attente à chaque profil
     profiles.forEach(p => {
       const lastPay = payments.find(x => x.uid === p.id && x.status === 'pending');
       p.lastWaveNumber = lastPay?.waveNumber || p.lastWaveNumber || '';
     });
 
-    const adminApp   = $('adminApp');
+    const adminApp    = $('adminApp');
     const errorBanner = $('errorBanner');
     if (adminApp)    adminApp.style.display   = 'block';
     if (errorBanner) errorBanner.style.display = 'none';
@@ -431,182 +416,6 @@ async function loadAll() {
 window.adminRefresh = loadAll;
 
 // ══════════════════════════════════════════
-// FORMULAIRE LOGIN ADMIN
+// INIT — accès direct, sans connexion
 // ══════════════════════════════════════════
-function showLoginForm() {
-  showLoading(false);
-
-  // Cacher l'app et afficher le login
-  const adminApp = $('adminApp');
-  if (adminApp) adminApp.style.display = 'none';
-
-  // Injecter le formulaire si pas déjà présent
-  if ($('adminLoginBox')) return;
-
-  const box = document.createElement('div');
-  box.id = 'adminLoginBox';
-  box.style.cssText = `
-    position:fixed;inset:0;display:flex;align-items:center;
-    justify-content:center;background:#06070f;z-index:9999;
-    font-family:'Space Grotesk',system-ui,sans-serif`;
-
-  box.innerHTML = `
-    <div style="
-      background:#0f1117;
-      border:1px solid rgba(212,168,83,.25);
-      border-radius:20px;
-      padding:48px 40px;
-      width:360px;
-      box-shadow:0 32px 80px rgba(0,0,0,.6);
-      text-align:center">
-
-      <div style="font-size:40px;margin-bottom:12px">⚙️</div>
-      <h2 style="
-        color:#d4a853;margin:0 0 6px;
-        font-size:22px;letter-spacing:.02em">
-        COMEO Admin
-      </h2>
-      <p style="
-        color:rgba(255,255,255,.35);
-        font-size:13px;margin:0 0 32px;
-        line-height:1.5">
-        Accès réservé à l'administrateur
-      </p>
-
-      <input id="adminEmail" type="email" placeholder="Email administrateur"
-        style="
-          width:100%;box-sizing:border-box;
-          padding:13px 16px;margin-bottom:12px;
-          background:rgba(255,255,255,.05);
-          border:1px solid rgba(255,255,255,.1);
-          border-radius:10px;color:#fff;
-          font-size:14px;outline:none;
-          font-family:'Space Grotesk',sans-serif;
-          transition:border-color .2s"
-        onfocus="this.style.borderColor='rgba(212,168,83,.5)'"
-        onblur="this.style.borderColor='rgba(255,255,255,.1)'"
-        onkeydown="if(event.key==='Enter') doAdminLogin()">
-
-      <input id="adminPass" type="password" placeholder="Mot de passe"
-        style="
-          width:100%;box-sizing:border-box;
-          padding:13px 16px;margin-bottom:24px;
-          background:rgba(255,255,255,.05);
-          border:1px solid rgba(255,255,255,.1);
-          border-radius:10px;color:#fff;
-          font-size:14px;outline:none;
-          font-family:'Space Grotesk',sans-serif;
-          transition:border-color .2s"
-        onfocus="this.style.borderColor='rgba(212,168,83,.5)'"
-        onblur="this.style.borderColor='rgba(255,255,255,.1)'"
-        onkeydown="if(event.key==='Enter') doAdminLogin()">
-
-      <button onclick="doAdminLogin()" id="adminLoginBtn"
-        style="
-          width:100%;padding:15px;
-          background:linear-gradient(135deg,#d4a853,#b8892e);
-          color:#000;border:none;border-radius:10px;
-          font-weight:700;font-size:15px;cursor:pointer;
-          font-family:'Space Grotesk',sans-serif;
-          letter-spacing:.03em;
-          transition:opacity .2s,transform .15s">
-        Connexion
-      </button>
-
-      <div id="loginErr"
-        style="
-          color:#f87171;font-size:12px;
-          margin-top:14px;display:none;
-          padding:10px 14px;
-          background:rgba(248,113,113,.08);
-          border-radius:8px;
-          border:1px solid rgba(248,113,113,.2)">
-      </div>
-    </div>`;
-
-  document.body.appendChild(box);
-}
-
-window.doAdminLogin = async function() {
-  const email  = $('adminEmail')?.value?.trim();
-  const pass   = $('adminPass')?.value;
-  const errEl  = $('loginErr');
-  const btn    = $('adminLoginBtn');
-
-  if (!email || !pass) {
-    if (errEl) {
-      errEl.textContent = 'Remplissez tous les champs';
-      errEl.style.display = 'block';
-    }
-    return;
-  }
-
-  if (btn) btn.textContent = 'Connexion…';
-  if (errEl) errEl.style.display = 'none';
-
-  try {
-    const cred = await signInWithEmailAndPassword(auth, email, pass);
-
-    // Vérifier que c'est bien le compte admin
-    if (cred.user.uid !== ADMIN_UID) {
-      await signOut(auth);
-      if (errEl) {
-        errEl.textContent = 'Accès refusé — ce compte n\'est pas administrateur';
-        errEl.style.display = 'block';
-      }
-      if (btn) btn.textContent = 'Connexion';
-      return;
-    }
-
-    // Supprimer le formulaire login
-    const box = $('adminLoginBox');
-    if (box) box.remove();
-
-    // Charger l'app
-    await loadAll();
-
-  } catch (e) {
-    const msgs = {
-      'auth/user-not-found':   'Aucun compte avec cet email',
-      'auth/wrong-password':   'Mot de passe incorrect',
-      'auth/invalid-email':    'Email invalide',
-      'auth/too-many-requests':'Trop de tentatives — réessayez plus tard',
-      'auth/invalid-credential': 'Email ou mot de passe incorrect'
-    };
-    if (errEl) {
-      errEl.textContent   = msgs[e.code] || e.message;
-      errEl.style.display = 'block';
-    }
-    if (btn) btn.textContent = 'Connexion';
-    console.error('[COMEO Admin] login:', e.code, e.message);
-  }
-};
-
-// ══════════════════════════════════════════
-// DÉCONNEXION
-// ══════════════════════════════════════════
-window.adminLogout = async function() {
-  if (!confirm('Se déconnecter de l\'admin ?')) return;
-  await signOut(auth);
-  location.reload();
-};
-
-// ══════════════════════════════════════════
-// INIT — Vérifier auth au démarrage
-// ══════════════════════════════════════════
-onAuthStateChanged(auth, async (user) => {
-  if (user && user.uid === ADMIN_UID) {
-    // Déjà connecté en tant qu'admin — charger directement
-    const box = $('adminLoginBox');
-    if (box) box.remove();
-    await loadAll();
-  } else if (user) {
-    // Connecté mais pas admin
-    showLoading(false);
-    showError('Accès refusé — ce compte n\'est pas administrateur. UID : ' + user.uid);
-    await signOut(auth);
-  } else {
-    // Pas connecté — afficher le login
-    showLoginForm();
-  }
-});
+loadAll();
