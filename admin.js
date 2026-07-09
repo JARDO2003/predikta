@@ -3,6 +3,9 @@ import {
   getFirestore, collection, doc, getDocs, query,
   orderBy, setDoc, updateDoc, limit
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import {
+  getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 // ══════════════════════════════════════════
 // CONFIG FIREBASE
@@ -18,8 +21,12 @@ const firebaseConfig = {
 
 const PREMIUM_MONTH_MS = 30 * 24 * 60 * 60 * 1000;
 
-const app = initializeApp(firebaseConfig);
-const db  = getFirestore(app);
+// ⚠️ Doit correspondre exactement à l'UID vérifié par estAdmin() dans firestore.rules
+const ADMIN_UID = '10jfiqVlYdUPvGVlnFFjjw2Ekgu2';
+
+const app  = initializeApp(firebaseConfig);
+const db   = getFirestore(app);
+const auth = getAuth(app);
 
 // ══════════════════════════════════════════
 // ÉTAT
@@ -79,6 +86,84 @@ function showError(msg) {
     '<strong>Erreur Firestore</strong><br>' + escapeHtml(msg) +
     '<br><small>Vérifiez les règles Firestore et votre connexion.</small>';
 }
+
+// ══════════════════════════════════════════
+// AUTHENTIFICATION ADMIN — obligatoire avant tout accès Firestore
+// ══════════════════════════════════════════
+function showLoginOverlay(errMsg) {
+  const overlay = $('adminLoginOverlay');
+  const appEl   = $('adminApp');
+  if (overlay) overlay.style.display = 'flex';
+  if (appEl)   appEl.style.display   = 'none';
+  showLoading(false);
+  const errEl = $('adminLoginErr');
+  if (errEl) {
+    if (errMsg) { errEl.textContent = errMsg; errEl.classList.add('show'); }
+    else { errEl.textContent = ''; errEl.classList.remove('show'); }
+  }
+}
+
+function hideLoginOverlay() {
+  const overlay = $('adminLoginOverlay');
+  if (overlay) overlay.style.display = 'none';
+}
+
+window.adminLogin = async function() {
+  const email = ($('adminEmail')?.value || '').trim();
+  const pass  = $('adminPass')?.value || '';
+  const btn   = $('adminLoginBtn');
+  const errEl = $('adminLoginErr');
+  if (errEl) errEl.classList.remove('show');
+
+  if (!email || !pass) {
+    if (errEl) { errEl.textContent = 'Remplissez email et mot de passe.'; errEl.classList.add('show'); }
+    return;
+  }
+
+  if (btn) btn.disabled = true;
+  try {
+    const cred = await signInWithEmailAndPassword(auth, email, pass);
+    if (cred.user.uid !== ADMIN_UID) {
+      // Ce compte existe bien dans Firebase Auth mais n'est pas administrateur
+      // selon les règles Firestore (estAdmin()) : on refuse côté client aussi.
+      await signOut(auth);
+      showLoginOverlay("Ce compte n'a pas les droits administrateur.");
+      return;
+    }
+    // onAuthStateChanged prendra le relais pour charger les données
+  } catch (e) {
+    const msgs = {
+      'auth/invalid-email':        'Email invalide.',
+      'auth/user-not-found':       'Aucun compte avec cet email.',
+      'auth/wrong-password':       'Mot de passe incorrect.',
+      'auth/invalid-credential':   'Email ou mot de passe incorrect.',
+      'auth/too-many-requests':    'Trop de tentatives. Réessayez plus tard.',
+    };
+    showLoginOverlay(msgs[e.code] || e.message);
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+};
+
+window.adminLogout = async function() {
+  if (!confirm('Se déconnecter du panneau admin ?')) return;
+  await signOut(auth);
+};
+
+onAuthStateChanged(auth, (user) => {
+  if (user && user.uid === ADMIN_UID) {
+    hideLoginOverlay();
+    loadAll();
+  } else {
+    if (user) {
+      // Connecté mais pas admin → on déconnecte proprement
+      signOut(auth);
+    }
+    profiles = [];
+    payments = [];
+    showLoginOverlay();
+  }
+});
 
 // ══════════════════════════════════════════
 // STATUT ABONNEMENT
@@ -416,6 +501,7 @@ async function loadAll() {
 window.adminRefresh = loadAll;
 
 // ══════════════════════════════════════════
-// INIT — accès direct, sans connexion
+// INIT — géré par onAuthStateChanged ci-dessus :
+// l'écran de connexion s'affiche tant qu'aucun admin n'est authentifié,
+// puis loadAll() est appelé automatiquement après connexion réussie.
 // ══════════════════════════════════════════
-loadAll();
