@@ -321,36 +321,9 @@
 
 <script>
   // ─────────────────────────────────────────────────────────
-  // Accès : mot de passe simple côté client (comme azur.html).
-  // ⚠️ Ceci ne remplace pas des règles Firestore restreignant
-  // l'écriture sur "profiles" aux administrateurs authentifiés.
-  // ─────────────────────────────────────────────────────────
-  const ADMIN_PASSWORD = 'comeo-admin-2026';
-
-  function tryUnlock(){
-    const val = document.getElementById('gatePass').value;
-    const err = document.getElementById('gateErr');
-    if (val === ADMIN_PASSWORD) {
-      document.getElementById('gate').style.display = 'none';
-      document.getElementById('app').style.display = 'block';
-      sessionStorage.setItem('comeo_admin_ok', '1');
-      loadUsers();
-    } else {
-      err.textContent = 'Mot de passe incorrect.';
-      document.getElementById('gatePass').value = '';
-    }
-  }
-  document.getElementById('gatePass').addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') tryUnlock();
-  });
-  if (sessionStorage.getItem('comeo_admin_ok') === '1') {
-    document.getElementById('gate').style.display = 'none';
-    document.getElementById('app').style.display = 'block';
-  }
-
-  // ─────────────────────────────────────────────────────────
   // Données
   // ─────────────────────────────────────────────────────────
+  loadUsers();
   let allUsers = [];
   let currentFilter = 'all';
 
@@ -528,7 +501,6 @@
   }
 
   // expose to inline onclick handlers
-  window.tryUnlock = tryUnlock;
   window.setFilter = setFilter;
   window.renderTable = renderTable;
   window.activate = activate;
