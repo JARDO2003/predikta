@@ -79,7 +79,7 @@
   .gate-err{color:var(--rose); font-size:12.5px; margin-top:10px; min-height:16px;}
 
   /* ── Layout ── */
-  #app{display:block; max-width:1180px; margin:0 auto; padding:40px 28px 80px;}
+  #app{max-width:1180px; margin:0 auto; padding:40px 28px 80px; display:block;}
   header.top{
     display:flex; align-items:flex-end; justify-content:space-between;
     margin-bottom:34px; flex-wrap:wrap; gap:16px;
@@ -321,9 +321,60 @@
 
 <script>
   // ─────────────────────────────────────────────────────────
+  // Connexion (Firebase Authentication — l'accès réel est
+  // contrôlé par les règles Firestore côté serveur, fonction
+  // estAdmin()). Un compte non-admin se connectera mais recevra
+  // une erreur "permission-denied" au chargement des données.
+  // ─────────────────────────────────────────────────────────
+  function waitFirebaseModule(){
+    return new Promise((resolve) => {
+      if (window._auth) return resolve();
+      document.addEventListener('admin-firebase-ready', () => resolve(), { once:true });
+    });
+  }
+
+  async function tryLogin(){
+    const email = document.getElementById('gateEmail').value.trim();
+    const pass = document.getElementById('gatePass').value;
+    const err = document.getElementById('gateErr');
+    const btn = document.getElementById('gateBtn');
+    err.textContent = '';
+    if (!email || !pass) {
+      err.textContent = 'Renseignez l\'email et le mot de passe.';
+      return;
+    }
+    btn.disabled = true;
+    btn.textContent = 'Connexion…';
+    try {
+      await waitFirebaseModule();
+      await window._signIn(window._auth, email, pass);
+      // onAuthStateChanged prend le relais pour afficher l'app
+    } catch (e) {
+      const msgs = {
+        'auth/invalid-credential': 'Email ou mot de passe incorrect.',
+        'auth/user-not-found': 'Aucun compte avec cet email.',
+        'auth/wrong-password': 'Mot de passe incorrect.',
+        'auth/invalid-email': 'Email invalide.',
+        'auth/too-many-requests': 'Trop de tentatives. Réessayez plus tard.',
+      };
+      err.textContent = msgs[e.code] || e.message;
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Se connecter';
+    }
+  }
+  document.getElementById('gatePass').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') tryLogin();
+  });
+  document.getElementById('gateEmail').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') document.getElementById('gatePass').focus();
+  });
+
+  window.addEventListener('admin-authed', () => loadUsers(), { once:false });
+
+  // ─────────────────────────────────────────────────────────
   // Données
   // ─────────────────────────────────────────────────────────
-  loadUsers();
   let allUsers = [];
   let currentFilter = 'all';
 
@@ -372,8 +423,11 @@
       updateStats();
       renderTable();
     } catch (e) {
-      document.getElementById('loadingState').innerHTML =
-        `<div style="color:var(--rose)">Erreur de chargement : ${e.message}</div>`;
+      const isPerm = e.code === 'permission-denied';
+      document.getElementById('loadingState').innerHTML = isPerm
+        ? `<div style="color:var(--rose)">Accès refusé : ce compte n'est pas administrateur.<br>Connectez-vous avec le compte admin autorisé dans les règles Firestore.</div>
+           <button class="btn btn-deactivate" style="margin-top:14px" onclick="doLogout()">Se déconnecter</button>`
+        : `<div style="color:var(--rose)">Erreur de chargement : ${e.message}</div>`;
     }
   }
 
@@ -500,7 +554,13 @@
     toastTimer = setTimeout(() => t.classList.remove('show'), 3200);
   }
 
+  async function doLogout(){
+    try { await window._signOut(window._auth); } catch(e) {}
+  }
+
   // expose to inline onclick handlers
+  window.tryLogin = tryLogin;
+  window.doLogout = doLogout;
   window.setFilter = setFilter;
   window.renderTable = renderTable;
   window.activate = activate;
